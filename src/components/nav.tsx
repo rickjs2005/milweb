@@ -122,7 +122,7 @@ export function Nav() {
 
       <div
         className={
-          "fixed inset-0 z-50 bg-bg/95 backdrop-blur-md transition-opacity duration-300 md:hidden " +
+          "fixed inset-0 z-[60] h-[100dvh] overflow-y-auto bg-bg transition-opacity duration-300 md:hidden " +
           (open ? "opacity-100" : "pointer-events-none opacity-0")
         }
       >
