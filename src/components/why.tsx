@@ -1,11 +1,11 @@
 "use client";
 
-import { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, type LucideIcon } from "lucide-react";
+import { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck, type LucideIcon } from "lucide-react";
 import { DIFFERENTIALS, UI } from "@/lib/content";
 import { useLang } from "./lang-provider";
 import { Reveal } from "./reveal";
 
-const ICONS: Record<string, LucideIcon> = { Code2, Gauge, Search, TrendingUp, Sparkles, Timer };
+const ICONS: Record<string, LucideIcon> = { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck };
 
 export function Why() {
   const { t } = useLang();
