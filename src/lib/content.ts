@@ -137,7 +137,7 @@ export const PROJECTS: Project[] = [
     result: { pt: "Landing mobile-first, rápida, com catálogo + orçamento dinâmico enviado direto no WhatsApp. Entregue e em produção.", en: "Fast, mobile-first landing with catalog + dynamic quote sent straight to WhatsApp. Delivered and live." },
     stack: ["HTML", "CSS", "JavaScript", "Vercel"],
     metric: { pt: "Cliente real · em produção", en: "Real client · in production" },
-    live: "https://kavita-drones-landing.vercel.app",
+    live: "https://kavita.com.br",
     repos: [{ label: "Código", url: `${GH}/kavita-drones-landing` }],
     featured: true,
     media: [
