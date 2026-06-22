@@ -23,11 +23,11 @@ export function Why() {
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(UI.sections.whySub)}</p>
       </Reveal>
 
-      <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-2 lg:grid-cols-4">
         {DIFFERENTIALS.map((d, i) => {
           const Icon = ICONS[d.icon] ?? Sparkles;
           return (
-            <Reveal key={d.title.en} delay={(i % 3) * 80}>
+            <Reveal key={d.title.en} delay={(i % 4) * 80}>
               <div className="flex h-full items-start gap-4 bg-bg p-6 transition-colors hover:bg-surface/60">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">
                   <Icon className="h-5 w-5" />
