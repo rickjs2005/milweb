@@ -16,11 +16,14 @@ export function WebsitePreview({
   host,
   alt,
   frameClass = "h-60 sm:h-72",
+  fit = "scroll",
 }: {
   src: string;
   host: string;
   alt: string;
   frameClass?: string;
+  /** "scroll" = screenshot alto rolando em loop; "contain" = imagem estática inteira (ex.: print de celular). */
+  fit?: "scroll" | "contain";
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -28,6 +31,7 @@ export function WebsitePreview({
 
   useGSAP(
     () => {
+      if (fit === "contain") return; // estático: sem rolagem
       const frame = frameRef.current;
       const img = imgRef.current;
       if (!frame || !img) return;
@@ -75,10 +79,19 @@ export function WebsitePreview({
           {host}
         </span>
       </div>
-      {/* Janela com o screenshot rolando */}
+      {/* Janela com o screenshot (rolando, ou estático+inteiro quando fit=contain) */}
       <div ref={frameRef} className={"relative overflow-hidden " + frameClass}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img ref={imgRef} src={src} alt={alt} className="block w-full will-change-transform" />
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt}
+          className={
+            fit === "contain"
+              ? "block h-full w-full object-contain"
+              : "block w-full will-change-transform"
+          }
+        />
       </div>
     </div>
   );

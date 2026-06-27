@@ -106,6 +106,8 @@ export type Project = {
   note?: Localized;
   /** Screenshot real (alto) pro preview rolante. Sem imagem = preview estilizado. */
   image?: string;
+  /** true = imagem estática inteira no card (sem rolagem), ex.: print de celular. */
+  imageStatic?: boolean;
   /** Vídeos do app em uso. 2+ = toggle (ex.: Desktop | Mobile | Admin). */
   media?: { label: Localized; src: string; poster: string; kind: "desktop" | "mobile" }[];
 };
@@ -250,6 +252,7 @@ export const PROJECTS: Project[] = [
     repos: [{ label: "Código", url: `${GH}/rpg-mobile` }],
     featured: true,
     image: "/shots/imperio-cafe.jpg",
+    imageStatic: true,
   },
   {
     slug: "prospeccao",

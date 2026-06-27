@@ -44,6 +44,7 @@ function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
         host={host(p.live)}
         alt={`${p.title} — screenshot`}
         frameClass={tall ? "h-72 sm:h-80 lg:h-[26rem]" : "h-56"}
+        fit={p.imageStatic ? "contain" : "scroll"}
       />
     );
   }
