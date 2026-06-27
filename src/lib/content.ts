@@ -238,18 +238,6 @@ export const PROJECTS: Project[] = [
     featured: true,
   },
   {
-    slug: "portfolio",
-    title: "Portfólio Pessoal",
-    tagline: { pt: "Site pessoal bilíngue · SEO + PWA", en: "Bilingual personal site · SEO + PWA" },
-    problem: { pt: "Um dev precisa de uma vitrine própria rápida, achável no Google e que mostre capricho técnico.", en: "A dev needs a fast personal showcase, findable on Google, that shows technical polish." },
-    result: { pt: "Site bilíngue (pt/en) com dark mode, animações (GSAP/Lenis), vídeo (Remotion) e SEO/PWA de produção — OG dinâmico, JSON-LD, sitemap e CI a cada push.", en: "Bilingual (pt/en) site with dark mode, animations (GSAP/Lenis), video (Remotion) and production SEO/PWA — dynamic OG, JSON-LD, sitemap and CI on every push." },
-    stack: ["Next.js", "TypeScript", "Tailwind", "GSAP", "Remotion"],
-    metric: { pt: "SEO/PWA de produção · CI", en: "Production SEO/PWA · CI" },
-    status: { pt: "Projeto autoral", en: "Personal project" },
-    repos: [{ label: "Código", url: `${GH}/portfolio` }],
-    featured: true,
-  },
-  {
     slug: "prospeccao",
     title: "Automação de Prospecção",
     tagline: { pt: "Lead-gen automático · Google Places + Sheets", en: "Automated lead-gen · Google Places + Sheets" },
