@@ -226,6 +226,19 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    slug: "rjjstore",
+    title: "RJjstore",
+    tagline: { pt: "Moda premium editorial · checkout no WhatsApp", en: "Editorial premium fashion · WhatsApp checkout" },
+    problem: { pt: "Lojas de roupa de marca vendem por foto no Instagram — sem uma vitrine com cara de grife que transmita desejo e exclusividade.", en: "Branded clothing stores sell via Instagram photos — without a storefront that feels like a fashion house and conveys desire and exclusivity." },
+    result: { pt: "E-commerce de moda com estética de estúdio de luxo: hero cinematográfico, lookbook com scroll horizontal, iluminação dinâmica seguindo o cursor, vista rápida do produto, carrinho persistente e pedido fechado direto no WhatsApp — com tema Areia/Branco alternável.", en: "Fashion e-commerce with a luxury-studio aesthetic: cinematic hero, horizontal-scroll lookbook, cursor-following dynamic lighting, product quick-view, persistent cart and orders closed straight on WhatsApp — with a switchable Sand/White theme." },
+    stack: ["Next.js", "TypeScript", "Tailwind", "Framer Motion", "Lenis"],
+    metric: { pt: "Editorial de luxo · checkout no WhatsApp", en: "Luxury editorial · WhatsApp checkout" },
+    status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    repos: [{ label: "Código", url: `${GH}/rjjstore` }],
+    featured: true,
+    image: "/shots/rjjstore.png",
+  },
+  {
     slug: "imperio-cafe",
     title: "Império do Café",
     tagline: { pt: "Jogo mobile de simulação · React Native/Expo", en: "Mobile simulation game · React Native/Expo" },
@@ -236,6 +249,7 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral", en: "Personal project" },
     repos: [{ label: "Código", url: `${GH}/rpg-mobile` }],
     featured: true,
+    image: "/shots/imperio-cafe.jpg",
   },
   {
     slug: "prospeccao",
