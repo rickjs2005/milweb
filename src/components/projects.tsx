@@ -73,41 +73,50 @@ function Details({ p }: { p: Project }) {
         </div>
       )}
       <p className="font-mono text-xs uppercase tracking-wider text-accent">{t(p.tagline)}</p>
-      <div className="mt-4 space-y-3 text-sm">
-        <p className="text-fg-muted">
-          <span className="font-semibold text-fg-subtle">{t(UI.labels.problem)}: </span>
-          {t(p.problem)}
-        </p>
-        <p className="text-fg-muted">
-          <span className="font-semibold text-accent-soft">{t(UI.labels.result)}: </span>
-          {t(p.result)}
-        </p>
-        {p.note && (
-          <p className="flex items-start gap-1.5 text-xs italic text-fg-subtle">
-            <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            {t(p.note)}
-          </p>
-        )}
-      </div>
+      {/* C3: no card mostramos só a Solução (resumida). Problema + nota ficam no case. */}
+      <p className="mt-4 text-sm leading-relaxed text-fg-muted line-clamp-3">{t(p.result)}</p>
       <ul className="mt-5 flex flex-wrap gap-2">
-        {p.stack.map((s) => (
+        {p.stack.slice(0, 4).map((s) => (
           <li key={s} className="rounded-md border border-line/10 bg-surface-2/60 px-2.5 py-1 font-mono text-[11px] text-fg-muted">
             {s}
           </li>
         ))}
+        {p.stack.length > 4 && (
+          <li className="rounded-md border border-line/10 bg-surface-2/60 px-2.5 py-1 font-mono text-[11px] text-fg-subtle">
+            +{p.stack.length - 4}
+          </li>
+        )}
       </ul>
-      <div className="mt-6 flex flex-wrap items-center gap-4">
-        <Link href={`/projetos/${p.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-soft">
+      {/* C2: hierarquia de CTAs — Ver case (primário) · Ver ao vivo (secundário) · Código (terciário).
+          C1: o link "Ver case" estica via ::after p/ cobrir o card todo (precisa ser estático, sem `relative`). */}
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Link
+          href={`/projetos/${p.slug}`}
+          aria-label={`${t(UI.labels.caseStudy)}: ${p.title}`}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft after:absolute after:inset-0 after:content-['']"
+        >
           {t(UI.labels.caseStudy)} <ArrowRight className="h-4 w-4" />
         </Link>
         {p.live && (
-          <a href={p.live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-muted transition-colors hover:text-fg">
+          <a
+            href={p.live}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative z-10 inline-flex items-center gap-1.5 rounded-lg border border-line/15 px-3.5 py-2 text-sm font-medium text-fg-muted transition-colors hover:border-accent/50 hover:text-fg"
+          >
             {t(UI.labels.viewLive)} <ArrowUpRight className="h-4 w-4" />
           </a>
         )}
         {p.repos?.map((r) => (
-          <a key={r.url} href={r.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-muted transition-colors hover:text-fg">
-            <Github className="h-4 w-4" /> {r.label}
+          <a
+            key={r.url}
+            href={r.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${r.label} — ${p.title} (GitHub)`}
+            className="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-fg-subtle transition-colors hover:text-fg"
+          >
+            <Github className="h-3.5 w-3.5" /> {r.label}
           </a>
         ))}
       </div>
@@ -136,7 +145,7 @@ export function Projects() {
       {/* Carro-chefe — card grande, primeiro */}
       {flagship && (
         <Reveal>
-          <div className="mt-10 grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
+          <div className="relative mt-10 grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
             <div>
               <Preview p={flagship} tall />
             </div>
@@ -158,7 +167,7 @@ export function Projects() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         {rest.map((p, i) => (
           <Reveal key={p.slug} delay={(i % 2) * 100}>
-            <div className="flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
+            <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
               <Preview p={p} />
               <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
               <div className="mt-3 flex-1">

@@ -39,7 +39,7 @@ export function AppPreview({ media, big = false }: { media: AppMedia[]; big?: bo
   return (
     <div className="flex flex-col items-center">
       {media.length > 1 && (
-        <div className="mb-4 inline-flex rounded-lg border border-line/15 bg-surface-2/60 p-1 text-sm">
+        <div className="relative z-10 mb-4 inline-flex rounded-lg border border-line/15 bg-surface-2/60 p-1 text-sm">
           {media.map((m, i) => (
             <button
               key={m.src}
