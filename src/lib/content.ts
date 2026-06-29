@@ -380,7 +380,7 @@ export const UI = {
     whyTitle: { pt: "Por que me contratar", en: "Why hire me" },
     whySub: { pt: "Não basta funcionar. Entrego um produto rápido, bonito e que dá resultado de verdade.", en: "Working isn't enough. I ship a product that's fast, polished and that actually delivers." },
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
-    projectsTitle: { pt: "Projetos em destaque", en: "Featured projects" },
+    projectsTitle: { pt: "Projetos & produtos", en: "Projects & products" },
     projectsSub: { pt: "Produtos reais em produção — não exercícios de tutorial.", en: "Real products in production — not tutorial exercises." },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
