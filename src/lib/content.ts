@@ -176,6 +176,7 @@ export const PROJECTS: Project[] = [
     stack: ["Next.js", "TypeScript", "Three.js", "React Three Fiber", "Tailwind", "Framer Motion"],
     metric: { pt: "Cena 3D + 2 temas animados", en: "3D scene + 2 animated themes" },
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    live: "https://akatsuki-loja-animes.vercel.app",
     repos: [{ label: "Código", url: `${GH}/akatsuki-loja-animes` }],
     featured: true,
     media: [
@@ -191,6 +192,7 @@ export const PROJECTS: Project[] = [
     stack: ["Next.js", "React 19", "TypeScript", "Tailwind v4", "MediaPipe", "Framer Motion"],
     metric: { pt: "Espelho Virtual · try-on por câmera", en: "Virtual Mirror · camera try-on" },
     status: { pt: "Projeto autoral · white-label", en: "Personal project · white-label" },
+    live: "https://loja-joias-two.vercel.app",
     repos: [{ label: "Código", url: `${GH}/loja-joias` }],
     featured: true,
     media: [
@@ -206,6 +208,7 @@ export const PROJECTS: Project[] = [
     stack: ["React", "Vite", "Three.js · R3F", "react-postprocessing", "Theatre.js", "GLSL"],
     metric: { pt: "Buraco negro 3D + lente gravitacional", en: "3D black hole + gravitational lensing" },
     status: { pt: "Projeto autoral · conceito", en: "Personal project · concept" },
+    live: "https://nexus-geek-store.vercel.app",
     repos: [{ label: "Código", url: `${GH}/nexus-geek-store` }],
     featured: true,
     media: [
@@ -221,6 +224,7 @@ export const PROJECTS: Project[] = [
     stack: ["React", "Vite", "TypeScript", "Three.js · R3F", "SCSS"],
     metric: { pt: "Experiência 3D cinematográfica", en: "Cinematic 3D experience" },
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    live: "https://lumen-architecture-drab.vercel.app",
     repos: [{ label: "Código", url: `${GH}/lumen-architecture` }],
     featured: true,
     media: [
