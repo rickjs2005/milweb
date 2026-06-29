@@ -236,6 +236,7 @@ export const PROJECTS: Project[] = [
     stack: ["Next.js", "TypeScript", "Tailwind", "Framer Motion", "Lenis"],
     metric: { pt: "Editorial de luxo · checkout no WhatsApp", en: "Luxury editorial · WhatsApp checkout" },
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    live: "https://rjjstore.vercel.app",
     repos: [{ label: "Código", url: `${GH}/rjjstore` }],
     featured: true,
     image: "/shots/rjjstore.png",
