@@ -100,6 +100,12 @@ export type Project = {
   flagship?: boolean;
   /** Métrica/fato de destaque do projeto (badge no card). Só fatos verdadeiros. */
   metric?: Localized;
+  /**
+   * true = a métrica é PROVA comercial real (cliente/em produção) → pílula em accent (loud).
+   * Sem isso, a métrica é tratada como feature/trivia de demo → pílula calma/neutra.
+   * Só marque quem for cliente real / em produção.
+   */
+  metricProof?: boolean;
   /** Status honesto do projeto (tag neutra): "Protótipo de estudo", "Em desenvolvimento"... */
   status?: Localized;
   /** Nota/ressalva curta exibida no card (ex.: protótipo de estudo, SaaS em dev). */
@@ -139,6 +145,7 @@ export const PROJECTS: Project[] = [
     result: { pt: "Landing mobile-first, rápida, com catálogo + orçamento dinâmico enviado direto no WhatsApp. Entregue e em produção.", en: "Fast, mobile-first landing with catalog + dynamic quote sent straight to WhatsApp. Delivered and live." },
     stack: ["HTML", "CSS", "JavaScript", "Vercel"],
     metric: { pt: "Cliente real · em produção", en: "Real client · in production" },
+    metricProof: true,
     live: "https://kavita.com.br",
     repos: [{ label: "Código", url: `${GH}/kavita-drones-landing` }],
     featured: true,

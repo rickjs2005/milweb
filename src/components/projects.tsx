@@ -54,12 +54,22 @@ function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
 
 function Details({ p }: { p: Project }) {
   const { t } = useLang();
+  // M2: o accent (azul forte) fica reservado para PROVA comercial real (cliente/produção).
+  // Métricas de feature/trivia em demos recebem tratamento calmo/neutro.
+  const metricClass = p.metricProof
+    ? "border-accent/30 bg-accent/10 font-semibold text-accent"
+    : "border-line/15 bg-surface-2/60 font-medium text-fg-subtle";
   return (
     <>
+      {/* M1: hierarquia — título lidera; a tagline é a ÚNICA linha de apoio (calma),
+          depois a descrição. As pílulas de métrica/status descem para junto da stack. */}
+      <p className="font-mono text-xs uppercase tracking-wider text-fg-subtle">{t(p.tagline)}</p>
+      {/* C3: no card mostramos só a Solução (resumida). Problema + nota ficam no case. */}
+      <p className="mt-3 text-sm leading-relaxed text-fg-muted line-clamp-3">{t(p.result)}</p>
       {(p.metric || p.status) && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           {p.metric && (
-            <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-semibold text-accent">
+            <span className={"inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] " + metricClass}>
               <TrendingUp className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{t(p.metric)}</span>
             </span>
@@ -72,9 +82,6 @@ function Details({ p }: { p: Project }) {
           )}
         </div>
       )}
-      <p className="font-mono text-xs uppercase tracking-wider text-accent">{t(p.tagline)}</p>
-      {/* C3: no card mostramos só a Solução (resumida). Problema + nota ficam no case. */}
-      <p className="mt-4 text-sm leading-relaxed text-fg-muted line-clamp-3">{t(p.result)}</p>
       <ul className="mt-5 flex flex-wrap gap-2">
         {p.stack.slice(0, 4).map((s) => (
           <li key={s} className="rounded-md border border-line/10 bg-surface-2/60 px-2.5 py-1 font-mono text-[11px] text-fg-muted">

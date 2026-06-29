@@ -13,13 +13,16 @@ gsap.registerPlugin(useGSAP);
  */
 export function WebsitePreview({
   src,
-  host,
   alt,
   frameClass = "h-60 sm:h-72",
   fit = "scroll",
 }: {
   src: string;
-  host: string;
+  /**
+   * Mantido por compatibilidade com quem chama (projects/case-study passam o
+   * host). Não exibimos URL crua na barra — ver decisão na barra abaixo.
+   */
+  host?: string;
   alt: string;
   frameClass?: string;
   /** "scroll" = screenshot alto rolando em loop; "contain" = imagem estática inteira (ex.: print de celular). */
@@ -70,17 +73,28 @@ export function WebsitePreview({
       onMouseEnter={pause}
       onMouseLeave={resume}
     >
-      {/* Barra do "navegador" */}
+      {/* Barra do "navegador" — só as 3 bolinhas, idêntica à do AppPreview
+          (decisão: nada de URL crua *.vercel.app). */}
       <div className="flex items-center gap-1.5 border-b border-line/10 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
         <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
         <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
-        <span className="ml-2 truncate rounded-md bg-bg/70 px-2 py-0.5 font-mono text-[11px] text-fg-subtle">
-          {host}
-        </span>
       </div>
       {/* Janela com o screenshot (rolando, ou estático+inteiro quando fit=contain) */}
-      <div ref={frameRef} className={"relative overflow-hidden " + frameClass}>
+      <div
+        ref={frameRef}
+        className={
+          "relative overflow-hidden " +
+          frameClass +
+          (fit === "contain" ? " flex items-center justify-center px-4 py-4" : "")
+        }
+      >
+        {fit === "contain" && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-accent/15 blur-3xl"
+          />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
@@ -88,7 +102,9 @@ export function WebsitePreview({
           alt={alt}
           className={
             fit === "contain"
-              ? "block h-full w-full object-contain"
+              ? // Print retrato/de celular: coluna estreita centralizada, enquadrada
+                // como um mockup (sem letterbox feio numa moldura wide). Mantém proporção.
+                "relative block h-full w-auto max-w-full rounded-xl border border-line/10 object-contain shadow-[0_10px_30px_-12px_rgb(0_0_0/0.55)]"
               : "block w-full will-change-transform"
           }
         />

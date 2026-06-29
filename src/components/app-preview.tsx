@@ -57,7 +57,8 @@ export function AppPreview({ media, big = false }: { media: AppMedia[]; big?: bo
       )}
       {current.kind === "desktop" ? (
         <div className="w-full overflow-hidden rounded-xl border border-line/15 bg-black shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
-          <div className="flex items-center gap-1.5 border-b border-line/15 px-4 py-2.5">
+          {/* Barra do "navegador" — idêntica à do WebsitePreview: só as 3 bolinhas. */}
+          <div className="flex items-center gap-1.5 border-b border-line/10 px-4 py-2.5">
             <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
             <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
             <span className="h-2.5 w-2.5 rounded-full bg-line/20" />
