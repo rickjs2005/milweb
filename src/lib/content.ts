@@ -381,7 +381,7 @@ export const UI = {
     whySub: { pt: "Não basta funcionar. Entrego um produto rápido, bonito e que dá resultado de verdade.", en: "Working isn't enough. I ship a product that's fast, polished and that actually delivers." },
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
     projectsTitle: { pt: "Projetos & produtos", en: "Projects & products" },
-    projectsSub: { pt: "Produtos reais em produção — não exercícios de tutorial.", en: "Real products in production — not tutorial exercises." },
+    projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS — uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS — a sample of what I can build." },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },
