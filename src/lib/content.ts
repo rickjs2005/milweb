@@ -178,8 +178,9 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
     repos: [{ label: "Código", url: `${GH}/akatsuki-loja-animes` }],
     featured: true,
-    image: "/shots/akatsuki-desktop.jpg",
-    imageStatic: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/akatsuki-desktop.mp4", poster: "/shots/akatsuki-desktop.jpg", kind: "desktop" },
+    ],
   },
   {
     slug: "loja-joias",
@@ -192,8 +193,9 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · white-label", en: "Personal project · white-label" },
     repos: [{ label: "Código", url: `${GH}/loja-joias` }],
     featured: true,
-    image: "/shots/joias-desktop.jpg",
-    imageStatic: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/joias-desktop.mp4", poster: "/shots/joias-desktop.jpg", kind: "desktop" },
+    ],
   },
   {
     slug: "nexus-geek",
@@ -206,8 +208,9 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · conceito", en: "Personal project · concept" },
     repos: [{ label: "Código", url: `${GH}/nexus-geek-store` }],
     featured: true,
-    image: "/shots/geek-desktop.jpg",
-    imageStatic: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/geek-desktop.mp4", poster: "/shots/geek-desktop.jpg", kind: "desktop" },
+    ],
   },
   {
     slug: "lumen-architecture",
@@ -220,6 +223,9 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
     repos: [{ label: "Código", url: `${GH}/lumen-architecture` }],
     featured: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/lumen-desktop.mp4", poster: "/shots/lumen-desktop.jpg", kind: "desktop" },
+    ],
   },
   {
     slug: "rjjstore",
@@ -233,6 +239,22 @@ export const PROJECTS: Project[] = [
     repos: [{ label: "Código", url: `${GH}/rjjstore` }],
     featured: true,
     image: "/shots/rjjstore.png",
+  },
+  {
+    slug: "rjs-laticinios",
+    title: "RJS Laticínios",
+    tagline: { pt: "Vitrine de laticínios artesanais · pedido no WhatsApp", en: "Artisanal dairy showcase · WhatsApp ordering" },
+    problem: { pt: "Produtores de laticínios artesanais vendem no boca a boca e no WhatsApp, sem uma vitrine própria que mostre os produtos com profissionalismo.", en: "Artisanal dairy producers sell by word of mouth and WhatsApp, without a proper storefront that showcases products professionally." },
+    result: { pt: "Vitrine com catálogo de produtos e pedido fechado direto no WhatsApp — uma base simples e rápida para o produtor vender online sem depender só das redes sociais.", en: "A storefront with a product catalog and orders closed straight on WhatsApp — a simple, fast base for the producer to sell online without relying only on social media." },
+    stack: ["Next.js", "TypeScript", "Tailwind", "Vercel"],
+    metric: { pt: "Catálogo · pedido no WhatsApp", en: "Catalog · WhatsApp ordering" },
+    status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    live: "https://rjs-laticinios.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/rjs-laticinios` }],
+    featured: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/rjs-laticinios-desktop.mp4", poster: "/shots/rjs-laticinios-desktop.jpg", kind: "desktop" },
+    ],
   },
   {
     slug: "imperio-cafe",
