@@ -1,12 +1,15 @@
-/** Logo MilWeb (badge do monograma "MW" em SVG inline) + wordmark opcional. */
+/** Logo MilWeb (badge do monograma "MW" em SVG inline) + wordmark opcional.
+ *  `animate`: desenha os traços do "MW" uma vez ao montar (assinatura da marca). */
 export function Logo({
   withWordmark = true,
   size = 36,
   className = "",
+  animate = false,
 }: {
   withWordmark?: boolean;
   size?: number;
   className?: string;
+  animate?: boolean;
 }) {
   return (
     <span className={"flex items-center gap-2.5 " + className}>
@@ -41,11 +44,12 @@ export function Logo({
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
+          className={animate ? "mw-draw" : undefined}
         >
           {/* M — left half: up-stroke, down to inner valley, back up to shared center peak */}
-          <path d="M7 34 V15 L16 26 L24 14" />
+          <path pathLength={1} d="M7 34 V15 L16 26 L24 14" />
           {/* W — right half: down from shared center peak, up to inner peak, down */}
-          <path d="M24 14 L32 26 L41 15 V34" />
+          <path pathLength={1} d="M24 14 L32 26 L41 15 V34" />
         </g>
       </svg>
       {withWordmark && (

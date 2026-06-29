@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight, MessageCircle, Github } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 import { useLang } from "./lang-provider";
 import { Magnetic } from "./magnetic";
 import { UI, PROFILE } from "@/lib/content";
@@ -77,8 +77,8 @@ export function Hero() {
             data-hero
             className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg"
           >
-            Transformo processos, operações e ideias em{" "}
-            <span className="text-gradient">produtos digitais que geram resultado</span>.
+            {t(UI.hero.titleLead)}{" "}
+            <span className="text-gradient">{t(UI.hero.titleHighlight)}</span>.
           </h1>
 
           <p data-hero className="mt-6 max-w-2xl text-lg text-fg-muted xl:text-xl">
@@ -102,15 +102,6 @@ export function Hero() {
           <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
-                href="#projects"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/15 px-5 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent/50 sm:w-auto"
-              >
-                {t(UI.hero.ctaProjects)}
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </Magnetic>
-            <Magnetic strength={0.5} className="w-full sm:w-auto">
-              <a
                 href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -120,15 +111,15 @@ export function Hero() {
                 {t(UI.hero.ctaWhats)}
               </a>
             </Magnetic>
-            <a
-              href={PROFILE.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/15 px-5 py-3 text-sm font-semibold text-fg-muted transition-colors hover:border-accent/50 hover:text-fg sm:w-auto"
-            >
-              <Github className="h-4 w-4" />
-              GitHub
-            </a>
+            <Magnetic strength={0.5} className="w-full sm:w-auto">
+              <a
+                href="#projects"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/15 px-5 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent/50 sm:w-auto"
+              >
+                {t(UI.hero.ctaProjects)}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </Magnetic>
           </div>
         </div>
 

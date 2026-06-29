@@ -5,10 +5,27 @@ import { FAQ, UI } from "@/lib/content";
 import { useLang } from "./lang-provider";
 import { Reveal } from "./reveal";
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map((item) => ({
+    "@type": "Question",
+    name: item.q.pt,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.a.pt,
+    },
+  })),
+};
+
 export function Faq() {
   const { t } = useLang();
   return (
     <section id="faq" className="container-page scroll-mt-20 py-20 sm:py-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
           <span className="text-accent/40">06 / </span>

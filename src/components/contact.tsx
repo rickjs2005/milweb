@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Mail, Github, Linkedin } from "lucide-react";
+import { MessageCircle, Mail, Github, Linkedin, ShieldCheck, LifeBuoy, Code2, BadgeCheck } from "lucide-react";
 import { useLang } from "./lang-provider";
 import { Magnetic } from "./magnetic";
 import { Reveal } from "./reveal";
@@ -45,6 +45,21 @@ export function Contact() {
               {t(UI.cta.email)}
             </a>
           </div>
+
+          {/* Selos de confiança honestos — sem preço nem depoimento inventado. */}
+          <ul className="relative mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-xs font-medium text-fg-subtle sm:text-sm">
+            {[
+              { icon: ShieldCheck, label: UI.trust.contract },
+              { icon: LifeBuoy, label: UI.trust.support },
+              { icon: Code2, label: UI.trust.ownCode },
+              { icon: BadgeCheck, label: UI.trust.freeQuote },
+            ].map(({ icon: Icon, label }) => (
+              <li key={label.en} className="inline-flex items-center gap-1.5">
+                <Icon className="h-4 w-4 text-accent/70" aria-hidden />
+                {t(label)}
+              </li>
+            ))}
+          </ul>
 
           <div className="relative mt-8 flex items-center justify-center gap-5 text-fg-subtle">
             <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="transition-colors hover:text-accent">

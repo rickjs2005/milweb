@@ -67,7 +67,7 @@ export function Nav() {
       />
       <nav className="container-page flex h-16 items-center justify-between">
         <a href="#top" aria-label="MilWeb — início">
-          <Logo />
+          <Logo animate />
         </a>
 
         <div className="hidden items-center gap-1 md:flex md:gap-2">

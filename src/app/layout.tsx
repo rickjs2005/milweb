@@ -42,7 +42,6 @@ export const metadata: Metadata = {
     "MilWeb",
     "Rick",
   ],
-  icons: { icon: PROFILE.logo, apple: PROFILE.logo },
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -67,7 +66,7 @@ const jsonLd = {
   name: "MilWeb",
   url: SITE_URL,
   email: `mailto:${PROFILE.email}`,
-  image: `${SITE_URL}${PROFILE.logo}`,
+  image: `${SITE_URL}/opengraph-image`,
   description,
   areaServed: "BR",
   founder: { "@type": "Person", name: "Rick", sameAs: [PROFILE.github, PROFILE.linkedin].filter(Boolean) },

@@ -53,7 +53,8 @@
     background-image:
       radial-gradient(60rem 42rem at 85% -10%, rgb(var(--accent) / 0.10), transparent 62%),
       radial-gradient(52rem 40rem at -8% 12%, rgb(var(--accent) / 0.06), transparent 62%);
-    background-attachment: fixed;
+    /* Sem `background-attachment: fixed`: em mobile ele força repaint a cada
+       frame de scroll (jank/INP). O gradiente cobre a página mesmo sem fixed. */
   }
   /* Grão de filme: textura quase imperceptível, mata o "chapado". */
   body::after {
@@ -73,6 +74,14 @@
   }
   ::selection {
     @apply bg-accent/30 text-fg;
+  }
+  /* Foco visível desenhado (acessibilidade): anel da cor de acento em todos os
+     elementos interativos. Só aparece em navegação por teclado (:focus-visible),
+     não no clique de mouse. */
+  :where(a, button, [role="button"], summary, input, textarea, select):focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 }
 
@@ -159,5 +168,24 @@
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+  /* Assinatura da marca: o monograma "MW" se desenha uma vez ao montar.
+     pathLength=1 nos paths normaliza o comprimento, então dasharray/offset
+     funcionam independentemente do tamanho real do traço. */
+  .mw-draw path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: mw-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+  }
+  @keyframes mw-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mw-draw path {
+      stroke-dashoffset: 0;
+      animation: none;
+    }
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowUpRight, Github, Crown, TrendingUp, FlaskConical } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical } from "lucide-react";
 import { PROJECTS, UI, type Project, type Localized } from "@/lib/content";
 import { useLang } from "./lang-provider";
 import { Reveal } from "./reveal";
@@ -96,8 +97,11 @@ function Details({ p }: { p: Project }) {
         ))}
       </ul>
       <div className="mt-6 flex flex-wrap items-center gap-4">
+        <Link href={`/projetos/${p.slug}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-soft">
+          {t(UI.labels.caseStudy)} <ArrowRight className="h-4 w-4" />
+        </Link>
         {p.live && (
-          <a href={p.live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-soft">
+          <a href={p.live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-muted transition-colors hover:text-fg">
             {t(UI.labels.viewLive)} <ArrowUpRight className="h-4 w-4" />
           </a>
         )}

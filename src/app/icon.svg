@@ -1,24 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="MilWeb">
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" role="img" aria-label="MilWeb">
   <defs>
-    <linearGradient id="mwGrad" x1="11" y1="16" x2="53" y2="48" gradientUnits="userSpaceOnUse">
+    <linearGradient id="mwGrad" x1="8" y1="12" x2="40" y2="36" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#7DD3FC" />
       <stop offset="55%" stop-color="#38BDF8" />
       <stop offset="100%" stop-color="#0EA5E9" />
     </linearGradient>
-    <linearGradient id="mwBg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+    <linearGradient id="mwBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#0d1424" />
       <stop offset="100%" stop-color="#070a12" />
     </linearGradient>
   </defs>
 
   <!-- dark rounded badge background -->
-  <rect width="64" height="64" rx="15" fill="url(#mwBg)" />
+  <rect width="48" height="48" rx="11" fill="url(#mwBg)" />
 
   <!-- "MW" monogram: M (left), W (right), sharing a center apex -->
-  <g stroke="url(#mwGrad)" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <g stroke="url(#mwGrad)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
     <!-- M -->
-    <path d="M10 46 V21 L21 35 L32 19" />
+    <path d="M7 34 V15 L16 26 L24 14" />
     <!-- W -->
-    <path d="M32 19 L43 35 L54 21 V46" />
+    <path d="M24 14 L32 26 L41 15 V34" />
   </g>
 </svg>

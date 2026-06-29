@@ -20,12 +20,12 @@ export const PROFILE = {
     en: "Web Systems & SaaS Developer",
   } as Localized,
   headline: {
-    pt: "Transformo processos, operações e ideias em produtos digitais que geram resultado.",
-    en: "I turn processes, operations and ideas into digital products that drive results.",
+    pt: "Sites e sistemas que fazem seu negócio vender.",
+    en: "Websites and systems that make your business sell.",
   } as Localized,
   subtitle: {
-    pt: "Desenvolvo plataformas SaaS, sistemas internos e aplicações web modernas para empresas que precisam de velocidade, performance e escalabilidade.",
-    en: "I build SaaS platforms, internal systems and modern web applications for companies that need speed, performance and scalability.",
+    pt: "Desenvolvo plataformas, lojas e sistemas sob medida — rápidos, bonitos e prontos pra escalar.",
+    en: "I build custom platforms, stores and systems — fast, polished and ready to scale.",
   } as Localized,
   location: { pt: "Brasil · 100% remoto", en: "Brazil · fully remote" } as Localized,
   email: "rickjanuario0@gmail.com",
@@ -178,10 +178,8 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
     repos: [{ label: "Código", url: `${GH}/akatsuki-loja-animes` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/akatsuki-desktop.mp4", poster: "/shots/akatsuki-desktop.jpg", kind: "desktop" },
-      { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/akatsuki-mobile.mp4", poster: "/shots/akatsuki-mobile.jpg", kind: "mobile" },
-    ],
+    image: "/shots/akatsuki-desktop.jpg",
+    imageStatic: true,
   },
   {
     slug: "loja-joias",
@@ -194,10 +192,8 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · white-label", en: "Personal project · white-label" },
     repos: [{ label: "Código", url: `${GH}/loja-joias` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/joias-desktop.mp4", poster: "/shots/joias-desktop.jpg", kind: "desktop" },
-      { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/joias-mobile.mp4", poster: "/shots/joias-mobile.jpg", kind: "mobile" },
-    ],
+    image: "/shots/joias-desktop.jpg",
+    imageStatic: true,
   },
   {
     slug: "nexus-geek",
@@ -210,10 +206,20 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · conceito", en: "Personal project · concept" },
     repos: [{ label: "Código", url: `${GH}/nexus-geek-store` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/geek-desktop.mp4", poster: "/shots/geek-desktop.jpg", kind: "desktop" },
-      { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/geek-mobile.mp4", poster: "/shots/geek-mobile.jpg", kind: "mobile" },
-    ],
+    image: "/shots/geek-desktop.jpg",
+    imageStatic: true,
+  },
+  {
+    slug: "lumen-architecture",
+    title: "Lumen",
+    tagline: { pt: "Site cinematográfico 3D para arquitetura · React Three Fiber", en: "Cinematic 3D site for architecture · React Three Fiber" },
+    problem: { pt: "Escritórios de arquitetura precisam transmitir sofisticação e domínio do espaço — um site comum não passa a sensação do trabalho deles.", en: "Architecture studios need to convey sophistication and spatial mastery — a plain website doesn't capture the feel of their work." },
+    result: { pt: "Vitrine imersiva em 3D (React Three Fiber) com cenas cinematográficas e navegação fluida que apresentam o escritório como uma experiência, não como uma lista de fotos.", en: "Immersive 3D showcase (React Three Fiber) with cinematic scenes and fluid navigation that present the studio as an experience, not a list of photos." },
+    stack: ["React", "Vite", "TypeScript", "Three.js · R3F", "SCSS"],
+    metric: { pt: "Experiência 3D cinematográfica", en: "Cinematic 3D experience" },
+    status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    repos: [{ label: "Código", url: `${GH}/lumen-architecture` }],
+    featured: true,
   },
   {
     slug: "rjjstore",
@@ -325,7 +331,10 @@ export const UI = {
     contact: { pt: "Contato", en: "Contact" },
   },
   hero: {
-    eyebrow: { pt: "Desenvolvimento de SaaS e Sistemas Web de Alto Valor", en: "High-Value SaaS & Web Systems Development" },
+    eyebrow: { pt: "Dev full-stack · SaaS e sistemas web", en: "Full-stack dev · SaaS & web systems" },
+    // H1 dividido em duas partes p/ aplicar o gradiente só na última palavra.
+    titleLead: { pt: "Sites e sistemas que fazem seu negócio", en: "Websites and systems that make your business" },
+    titleHighlight: { pt: "vender", en: "sell" },
     ctaProjects: { pt: "Ver projetos", en: "View projects" },
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
@@ -336,7 +345,7 @@ export const UI = {
     deliverablesSub: { pt: "Do site simples ao sistema completo — eu resolvo o problema digital do seu negócio.", en: "From a simple site to a full system — I solve your business's digital problem." },
     whyEyebrow: { pt: "Diferenciais", en: "Why me" },
     whyTitle: { pt: "Por que me contratar", en: "Why hire me" },
-    whySub: { pt: "Não é só fazer funcionar — é entregar um produto rápido, bonito e que dá resultado.", en: "It's not just making it work — it's shipping a fast, polished product that delivers." },
+    whySub: { pt: "Não basta funcionar. Entrego um produto rápido, bonito e que dá resultado de verdade.", en: "Working isn't enough. I ship a product that's fast, polished and that actually delivers." },
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
     projectsTitle: { pt: "Projetos em destaque", en: "Featured projects" },
     projectsSub: { pt: "Produtos reais em produção — não exercícios de tutorial.", en: "Real products in production — not tutorial exercises." },
@@ -357,11 +366,23 @@ export const UI = {
   },
   cta: {
     title: { pt: "Pronto para transformar sua ideia em um produto digital?", en: "Ready to turn your idea into a digital product?" },
-    sub: { pt: "Me conta o que você precisa. Respondo rápido e o orçamento é gratuito.", en: "Tell me what you need. I reply fast and the quote is free." },
+    sub: { pt: "Me conta o que você precisa. Respondo rápido e te passo um orçamento gratuito, sem compromisso.", en: "Tell me what you need. I reply fast and send a free quote, no strings attached." },
     whats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     email: { pt: "Enviar e-mail", en: "Send email" },
   },
+  /* Selos de confiança honestos (sem preço/depoimento) — exibidos no ponto de
+     conversão. Cada item é uma garantia real já oferecida (ver DIFFERENTIALS/FAQ). */
+  trust: {
+    contract: { pt: "Contrato de garantia", en: "Service contract" },
+    support: { pt: "Suporte pós-entrega", en: "Post-launch support" },
+    ownCode: { pt: "O código é seu", en: "You own the code" },
+    freeQuote: { pt: "Orçamento gratuito", en: "Free quote" },
+  },
   labels: {
+    caseStudy: { pt: "Ver case", en: "View case" },
+    backToProjects: { pt: "Voltar aos projetos", en: "Back to projects" },
+    prev: { pt: "Anterior", en: "Previous" },
+    next: { pt: "Próximo", en: "Next" },
     viewLive: { pt: "Ver ao vivo", en: "Live demo" },
     code: { pt: "Código", en: "Code" },
     problem: { pt: "Problema", en: "Problem" },
