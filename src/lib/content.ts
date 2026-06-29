@@ -34,7 +34,7 @@ export const PROFILE = {
   github: "https://github.com/rickjs2005",
   linkedin: "https://www.linkedin.com/in/rick-januario-41211b238",
   logo: "/milweb-logo.png",
-  heroImage: "/hero.webp",
+  heroImage: "/milo2.png",
 };
 
 /** O QUE EU ENTREGO — a oferta concreta (resolve o problema do cliente). */
