@@ -120,6 +120,22 @@ export type Project = {
 const GH = "https://github.com/rickjs2005";
 export const PROJECTS: Project[] = [
   {
+    slug: "milsaca",
+    title: "Milsaca",
+    tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
+    problem: { pt: "Um setor inteiro rodava no improviso entre planilhas e WhatsApp, sem um sistema único.", en: "A whole sector ran improvised between spreadsheets and WhatsApp, with no single system." },
+    result: { pt: "SaaS multi-tenant (web + mobile) com painéis por papel, automações e dados seguros (RLS) — prova de que entrego produto complexo de ponta a ponta.", en: "Multi-tenant SaaS (web + mobile) with role-based panels, automations and secure data (RLS) — proof I ship complex products end to end." },
+    stack: ["Next.js", "Expo", "Supabase", "PostgreSQL", "TypeScript"],
+    metric: { pt: "Multi-tenant · web + mobile · RLS", en: "Multi-tenant · web + mobile · RLS" },
+    status: { pt: "Em desenvolvimento", en: "In development" },
+    note: {
+      pt: "SaaS em desenvolvimento ativo.",
+      en: "SaaS under active development.",
+    },
+    featured: true,
+    image: "/shots/milsaca.png",
+  },
+  {
     slug: "loja-iphone",
     title: "Loja de iPhone",
     tagline: { pt: "E-commerce white-label · checkout no WhatsApp", en: "White-label e-commerce · WhatsApp checkout" },
@@ -130,7 +146,6 @@ export const PROJECTS: Project[] = [
     live: "https://loja-iphone-kohl.vercel.app",
     repos: [{ label: "Código", url: `${GH}/loja-iphone` }],
     featured: true,
-    flagship: true,
     media: [
       { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/iphone-desktop.mp4", poster: "/shots/iphone-desktop.jpg", kind: "desktop" },
       { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/iphone-cliente.mp4", poster: "/shots/iphone-cliente.jpg", kind: "mobile" },
@@ -281,22 +296,6 @@ export const PROJECTS: Project[] = [
     featured: true,
     image: "/shots/imperio-cafe.jpg",
     imageStatic: true,
-  },
-  {
-    slug: "milsaca",
-    title: "Milsaca",
-    tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
-    problem: { pt: "Um setor inteiro rodava no improviso entre planilhas e WhatsApp, sem um sistema único.", en: "A whole sector ran improvised between spreadsheets and WhatsApp, with no single system." },
-    result: { pt: "SaaS multi-tenant (web + mobile) com painéis por papel, automações e dados seguros (RLS) — prova de que entrego produto complexo de ponta a ponta.", en: "Multi-tenant SaaS (web + mobile) with role-based panels, automations and secure data (RLS) — proof I ship complex products end to end." },
-    stack: ["Next.js", "Expo", "Supabase", "PostgreSQL", "TypeScript"],
-    metric: { pt: "Multi-tenant · web + mobile · RLS", en: "Multi-tenant · web + mobile · RLS" },
-    status: { pt: "Em desenvolvimento", en: "In development" },
-    note: {
-      pt: "SaaS em desenvolvimento ativo.",
-      en: "SaaS under active development.",
-    },
-    featured: false,
-    image: "/shots/milsaca.png",
   },
 ];
 

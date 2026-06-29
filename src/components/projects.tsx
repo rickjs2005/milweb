@@ -171,7 +171,7 @@ export function Projects() {
         </Reveal>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-10 grid gap-6 lg:grid-cols-2">
         {rest.map((p, i) => (
           <Reveal key={p.slug} delay={(i % 2) * 100}>
             <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
