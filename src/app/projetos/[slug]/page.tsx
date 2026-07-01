@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { PROJECTS, PROFILE, SITE_URL } from "@/lib/content";
+import { getLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { CaseStudy } from "@/components/case-study";
 import { Contact, Footer } from "@/components/contact";
@@ -40,6 +41,7 @@ export default async function ProjectPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const idx = PROJECTS.findIndex((p) => p.slug === slug);
   if (idx === -1) notFound();
 
@@ -97,11 +99,12 @@ export default async function ProjectPage({
           project={project}
           prev={prev && { slug: prev.slug, title: prev.title }}
           next={next && { slug: next.slug, title: next.title }}
+          locale={locale}
         />
       </main>
 
-      <Contact />
-      <Footer />
+      <Contact locale={locale} />
+      <Footer locale={locale} />
     </>
   );
 }

@@ -1,31 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Menu, X, MessageCircle } from "lucide-react";
-import { useLang } from "./lang-provider";
 import { ThemeToggle } from "./theme-toggle";
 import { Logo } from "./logo";
-import { UI, PROFILE } from "@/lib/content";
+import { PROFILE, type Locale } from "@/lib/content";
 
-const LINKS = [
-  { href: "#deliverables", label: UI.nav.deliverables },
-  { href: "#projects", label: UI.nav.projects },
-  { href: "#process", label: UI.nav.process },
-  { href: "#faq", label: UI.nav.faq },
-  { href: "#contact", label: UI.nav.contact },
-] as const;
+/** Nome do cookie de idioma (espelha LOCALE_COOKIE de lib/i18n, que é server-only). */
+const LOCALE_COOKIE = "lang";
+
+type NavLink = { href: string; label: string };
 
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
-export function Nav() {
-  const { t, lang, toggle } = useLang();
+export function Nav({
+  locale,
+  links,
+  contactLabel,
+}: {
+  locale: Locale;
+  links: NavLink[];
+  contactLabel: string;
+}) {
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
-    const ids = LINKS.map((l) => l.href.slice(1));
+    const ids = links.map((l) => l.href.slice(1));
     const sections = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
@@ -38,7 +42,7 @@ export function Nav() {
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, []);
+  }, [links]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -71,7 +75,7 @@ export function Nav() {
         </a>
 
         <div className="hidden items-center gap-1 md:flex md:gap-2">
-          {LINKS.map((l) => {
+          {links.map((l) => {
             const isActive = active === l.href.slice(1);
             return (
               <a
@@ -83,7 +87,7 @@ export function Nav() {
                   (isActive ? "text-fg" : "text-fg-subtle hover:text-fg")
                 }
               >
-                {t(l.label)}
+                {l.label}
                 <span
                   className={
                     "absolute inset-x-3 -bottom-px h-px origin-left bg-accent transition-transform duration-300 " +
@@ -94,7 +98,7 @@ export function Nav() {
             );
           })}
           <ThemeToggle />
-          <LangToggle lang={lang} toggle={toggle} />
+          <LangToggle locale={locale} />
           <a
             href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
             target="_blank"
@@ -102,13 +106,13 @@ export function Nav() {
             className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"
           >
             <MessageCircle className="h-4 w-4" />
-            {t(UI.nav.contact)}
+            {contactLabel}
           </a>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
-          <LangToggle lang={lang} toggle={toggle} />
+          <LangToggle locale={locale} />
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -138,7 +142,7 @@ export function Nav() {
           </button>
         </div>
         <nav className="container-page mt-6 flex flex-col gap-1">
-          {LINKS.map((l, i) => (
+          {links.map((l, i) => (
             <a
               key={l.href}
               href={l.href}
@@ -149,7 +153,7 @@ export function Nav() {
                 (open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
               }
             >
-              {t(l.label)}
+              {l.label}
             </a>
           ))}
           <a
@@ -157,7 +161,7 @@ export function Nav() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}
-            style={{ transitionDelay: open ? `${80 + LINKS.length * 60}ms` : "0ms" }}
+            style={{ transitionDelay: open ? `${80 + links.length * 60}ms` : "0ms" }}
             className={
               "mt-3 inline-flex items-center justify-center gap-2 rounded-lg bg-accent py-4 text-center text-2xl font-semibold tracking-tight text-accent-fg transition-all duration-300 hover:bg-accent-soft " +
               (open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
@@ -172,17 +176,40 @@ export function Nav() {
   );
 }
 
-function LangToggle({ lang, toggle }: { lang: "pt" | "en"; toggle: () => void }) {
+/** Grava o cookie de idioma e re-renderiza no servidor (router.refresh). */
+function LangToggle({ locale }: { locale: Locale }) {
+  const router = useRouter();
+
+  const set = (l: Locale) => {
+    if (l === locale) return;
+    document.cookie = `${LOCALE_COOKIE}=${l};path=/;max-age=31536000;samesite=lax`;
+    document.documentElement.lang = l === "pt" ? "pt-BR" : "en";
+    router.refresh();
+  };
+
   return (
-    <button
-      type="button"
-      onClick={toggle}
+    <div
+      role="group"
       aria-label="Trocar idioma / Switch language"
-      className="inline-flex items-center gap-1.5 rounded-md border border-line/15 px-2.5 py-1.5 font-mono text-xs font-medium text-fg-muted transition-colors hover:border-accent/40 hover:text-accent"
+      className="inline-flex items-center gap-1.5 rounded-md border border-line/15 px-2.5 py-1.5 font-mono text-xs font-medium text-fg-muted"
     >
-      <span className={lang === "pt" ? "text-accent" : ""}>PT</span>
+      <button
+        type="button"
+        onClick={() => set("pt")}
+        aria-pressed={locale === "pt"}
+        className={"transition-colors hover:text-accent " + (locale === "pt" ? "text-accent" : "")}
+      >
+        PT
+      </button>
       <span className="text-fg-subtle">/</span>
-      <span className={lang === "en" ? "text-accent" : ""}>EN</span>
-    </button>
+      <button
+        type="button"
+        onClick={() => set("en")}
+        aria-pressed={locale === "en"}
+        className={"transition-colors hover:text-accent " + (locale === "en" ? "text-accent" : "")}
+      >
+        EN
+      </button>
+    </div>
   );
 }

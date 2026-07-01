@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLang } from "./lang-provider";
-import type { Localized } from "@/lib/content";
+import type { Localized, Locale } from "@/lib/content";
 
 export type AppMedia = {
   label: Localized;
@@ -15,8 +14,8 @@ export type AppMedia = {
  * Preview do app em uma "moldura de celular": vídeo mudo em loop que toca
  * só quando visível (economia de banda/CPU). Com 2+ telas, mostra um toggle.
  */
-export function AppPreview({ media, big = false }: { media: AppMedia[]; big?: boolean }) {
-  const { t } = useLang();
+export function AppPreview({ media, big = false, locale }: { media: AppMedia[]; big?: boolean; locale: Locale }) {
+  const t = (v: Localized) => v[locale];
   const [active, setActive] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const current = media[active];

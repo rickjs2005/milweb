@@ -1,11 +1,9 @@
-"use client";
-
-import { PROCESS, UI } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { PROCESS, UI, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 
-export function Process() {
-  const { t } = useLang();
+export function Process({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
 
   return (
     <section id="process" className="container-page scroll-mt-20 py-20 sm:py-32">

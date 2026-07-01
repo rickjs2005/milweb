@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Rocket,
   Globe,
@@ -12,8 +10,8 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
-import { DELIVERABLES, UI } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { DELIVERABLES, UI, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -28,8 +26,8 @@ const ICONS: Record<string, LucideIcon> = {
   Wrench,
 };
 
-export function Deliverables() {
-  const { t } = useLang();
+export function Deliverables({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
 
   return (
     <section id="deliverables" className="container-page scroll-mt-20 py-20 sm:py-32">

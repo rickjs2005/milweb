@@ -1,39 +1,12 @@
-"use client";
-
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { useLang } from "./lang-provider";
+import { UI, TECH, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
-import { UI, TECH } from "@/lib/content";
-
-gsap.registerPlugin(useGSAP);
+import { TechMarquee } from "./tech-marquee";
 
 const ALL_TECH = TECH.flatMap((g) => g.items);
 
-export function Tech() {
-  const { t } = useLang();
-  const scope = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const tweenRef = useRef<gsap.core.Tween | null>(null);
-
-  useGSAP(
-    () => {
-      const track = trackRef.current;
-      if (!track) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      tweenRef.current = gsap.to(track, {
-        xPercent: -50,
-        duration: ALL_TECH.length * 2.4,
-        ease: "none",
-        repeat: -1,
-      });
-    },
-    { scope },
-  );
-
-  const slow = () => tweenRef.current?.timeScale(0);
-  const resume = () => tweenRef.current?.timeScale(1);
+export function Tech({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
 
   return (
     <section id="tech" className="container-page scroll-mt-20 py-20 sm:py-32">
@@ -49,32 +22,7 @@ export function Tech() {
       </Reveal>
 
       <Reveal delay={60}>
-        <div
-          ref={scope}
-          className="mt-10 rounded-2xl border border-line/10 glass py-5"
-          onMouseEnter={slow}
-          onMouseLeave={resume}
-        >
-          <div
-            className="overflow-hidden"
-            style={{
-              WebkitMaskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
-              maskImage: "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
-            }}
-          >
-            <div ref={trackRef} className="flex w-max gap-3 will-change-transform">
-              {[...ALL_TECH, ...ALL_TECH].map((it, i) => (
-                <span
-                  key={`${it}-${i}`}
-                  aria-hidden={i >= ALL_TECH.length ? true : undefined}
-                  className="shrink-0 rounded-lg border border-line/10 bg-surface-2 px-3 py-1.5 text-sm text-fg-muted transition-colors hover:border-accent/40 hover:text-fg"
-                >
-                  {it}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+        <TechMarquee items={ALL_TECH} />
       </Reveal>
 
       <div className="mt-6 grid gap-5 md:grid-cols-3">

@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical } from "lucide-react";
-import { PROJECTS, UI, type Project, type Localized } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { PROJECTS, UI, type Project, type Localized, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { WebsitePreview } from "./website-preview";
 import { AppPreview } from "./app-preview";
@@ -34,9 +32,9 @@ function FauxPreview({ p, tall = false }: { p: Project; tall?: boolean }) {
   );
 }
 
-function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
+function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall?: boolean }) {
   if (p.media?.length) {
-    return <AppPreview media={p.media} big={tall} />;
+    return <AppPreview media={p.media} big={tall} locale={locale} />;
   }
   if (p.image) {
     return (
@@ -52,8 +50,8 @@ function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
   return <FauxPreview p={p} tall={tall} />;
 }
 
-function Details({ p }: { p: Project }) {
-  const { t } = useLang();
+function Details({ p, locale }: { p: Project; locale: Locale }) {
+  const t = makeT(locale);
   // M2: o accent (azul forte) fica reservado para PROVA comercial real (cliente/produção).
   // Métricas de feature/trivia em demos recebem tratamento calmo/neutro.
   const metricClass = p.metricProof
@@ -131,8 +129,8 @@ function Details({ p }: { p: Project }) {
   );
 }
 
-export function Projects() {
-  const { t } = useLang();
+export function Projects({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
   const flagship = PROJECTS.find((p) => p.flagship);
   const rest = PROJECTS.filter((p) => !p.flagship);
 
@@ -147,6 +145,22 @@ export function Projects() {
           {t(UI.sections.projectsTitle)}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(UI.sections.projectsSub)}</p>
+        {/* Legenda honesta: distingue cliente real em produção de projetos autorais/demos
+            (mesma linguagem visual das pílulas de métrica no card). */}
+        <ul className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-fg-subtle">
+          <li className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 font-semibold text-accent">
+              <TrendingUp className="h-3 w-3 shrink-0" />
+            </span>
+            {t(UI.sections.projectsLegendProof)}
+          </li>
+          <li className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-line/20 bg-surface-2/70 px-2.5 py-0.5 font-medium text-fg-subtle">
+              <FlaskConical className="h-3 w-3 shrink-0" />
+            </span>
+            {t(UI.sections.projectsLegendDemo)}
+          </li>
+        </ul>
       </Reveal>
 
       {/* Carro-chefe — card grande, primeiro */}
@@ -154,7 +168,7 @@ export function Projects() {
         <Reveal>
           <div className="relative mt-10 grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
             <div>
-              <Preview p={flagship} tall />
+              <Preview p={flagship} locale={locale} tall />
             </div>
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
@@ -164,7 +178,7 @@ export function Projects() {
                 {flagship.title}
               </h3>
               <div className="mt-4">
-                <Details p={flagship} />
+                <Details p={flagship} locale={locale} />
               </div>
             </div>
           </div>
@@ -175,10 +189,10 @@ export function Projects() {
         {rest.map((p, i) => (
           <Reveal key={p.slug} delay={(i % 2) * 100}>
             <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
-              <Preview p={p} />
+              <Preview p={p} locale={locale} />
               <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
               <div className="mt-3 flex-1">
-                <Details p={p} />
+                <Details p={p} locale={locale} />
               </div>
             </div>
           </Reveal>

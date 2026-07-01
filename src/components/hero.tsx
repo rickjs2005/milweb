@@ -1,55 +1,19 @@
-"use client";
-
 import Image from "next/image";
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, MessageCircle } from "lucide-react";
-import { useLang } from "./lang-provider";
 import { Magnetic } from "./magnetic";
-import { UI, PROFILE } from "@/lib/content";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+import { HeroAnim } from "./hero-anim";
+import { UI, PROFILE, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
-export function Hero() {
-  const { t } = useLang();
-  const scope = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      const root = scope.current;
-      if (!root) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const items = root.querySelectorAll<HTMLElement>("[data-hero]");
-      const visual = root.querySelector<HTMLElement>(".hero-visual");
-      gsap.set(items, { autoAlpha: 0, y: 26 });
-      if (visual) gsap.set(visual, { autoAlpha: 0, scale: 0.9 });
-
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7 }, 0.1);
-      if (visual) {
-        tl.to(visual, { autoAlpha: 1, scale: 1, duration: 1, ease: "power4.out" }, 0.2);
-        // Float contínuo + parallax sutil ao rolar.
-        gsap.to(visual, { y: -14, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(visual, {
-          yPercent: -10,
-          ease: "none",
-          scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true },
-        });
-      }
-    },
-    { scope },
-  );
+export function Hero({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
 
   return (
-    <section
+    <HeroAnim
       id="top"
-      ref={scope}
       className="relative isolate overflow-hidden border-b border-line/10 bg-grid"
     >
       <div
@@ -139,6 +103,6 @@ export function Hero() {
           />
         </div>
       </div>
-    </section>
+    </HeroAnim>
   );
 }

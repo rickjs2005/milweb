@@ -1,13 +1,11 @@
-"use client";
-
-import { useLang } from "./lang-provider";
 import { Reveal } from "./reveal";
 import { Logo } from "./logo";
-import { UI } from "@/lib/content";
+import { UI, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 
 /** "Sobre a MilWeb" — discreto: autoridade sem parecer agência. */
-export function About() {
-  const { t } = useLang();
+export function About({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
   return (
     <section id="about" className="container-page scroll-mt-20 py-16 sm:py-24">
       <Reveal>

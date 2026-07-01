@@ -1,17 +1,15 @@
-"use client";
-
 import { MessageCircle, Mail, Github, Linkedin, ShieldCheck, LifeBuoy, Code2, BadgeCheck } from "lucide-react";
-import { useLang } from "./lang-provider";
 import { Magnetic } from "./magnetic";
 import { Reveal } from "./reveal";
 import { Logo } from "./logo";
-import { UI, PROFILE } from "@/lib/content";
+import { UI, PROFILE, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
-export function Contact() {
-  const { t } = useLang();
+export function Contact({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
   return (
     <section id="contact" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
@@ -78,8 +76,8 @@ export function Contact() {
   );
 }
 
-export function Footer() {
-  const { t } = useLang();
+export function Footer({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-line/10">

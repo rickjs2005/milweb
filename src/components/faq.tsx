@@ -1,25 +1,19 @@
-"use client";
-
 import { Plus } from "lucide-react";
-import { FAQ, UI } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { FAQ, UI, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ.map((item) => ({
-    "@type": "Question",
-    name: item.q.pt,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: item.a.pt,
-    },
-  })),
-};
-
-export function Faq() {
-  const { t } = useLang();
+export function Faq({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map((item) => ({
+      "@type": "Question",
+      name: t(item.q),
+      acceptedAnswer: { "@type": "Answer", text: t(item.a) },
+    })),
+  };
   return (
     <section id="faq" className="container-page scroll-mt-20 py-20 sm:py-32">
       <script

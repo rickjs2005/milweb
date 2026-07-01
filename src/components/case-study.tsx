@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,8 +8,8 @@ import {
   FlaskConical,
   MessageCircle,
 } from "lucide-react";
-import { UI, PROFILE, type Project } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { UI, PROFILE, type Project, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { AppPreview } from "./app-preview";
 import { WebsitePreview } from "./website-preview";
 
@@ -23,8 +21,8 @@ function host(url?: string) {
 }
 
 /** Preview grande do projeto (vídeo, screenshot rolante ou print estático). */
-function Preview({ p }: { p: Project }) {
-  if (p.media?.length) return <AppPreview media={p.media} big />;
+function Preview({ p, locale }: { p: Project; locale: Locale }) {
+  if (p.media?.length) return <AppPreview media={p.media} big locale={locale} />;
   if (p.image)
     return (
       <WebsitePreview
@@ -48,12 +46,14 @@ export function CaseStudy({
   project: p,
   prev,
   next,
+  locale,
 }: {
   project: Project;
   prev?: Sibling;
   next?: Sibling;
+  locale: Locale;
 }) {
-  const { t } = useLang();
+  const t = makeT(locale);
 
   return (
     <article className="container-page py-12 sm:py-16">
@@ -91,7 +91,7 @@ export function CaseStudy({
 
       {/* Preview grande */}
       <div className="mt-10">
-        <Preview p={p} />
+        <Preview p={p} locale={locale} />
       </div>
 
       {/* Problema → Solução */}

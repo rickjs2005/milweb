@@ -1,14 +1,12 @@
-"use client";
-
 import { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck, LifeBuoy, type LucideIcon } from "lucide-react";
-import { DIFFERENTIALS, UI } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { DIFFERENTIALS, UI, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 
 const ICONS: Record<string, LucideIcon> = { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck, LifeBuoy };
 
-export function Why() {
-  const { t } = useLang();
+export function Why({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
 
   return (
     <section id="why" className="container-page scroll-mt-20 py-20 sm:py-32">

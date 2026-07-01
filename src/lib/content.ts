@@ -9,7 +9,7 @@ export type Localized = { pt: string; en: string };
 
 /** URL pública (sem barra final). Definir NEXT_PUBLIC_SITE_URL no Vercel. */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://milweb.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://milweb.com.br"
 ).replace(/\/$/, "");
 
 export const PROFILE = {
@@ -33,8 +33,8 @@ export const PROFILE = {
   whatsapp: "5533998779375",
   github: "https://github.com/rickjs2005",
   linkedin: "https://www.linkedin.com/in/rick-januario-41211b238",
-  logo: "/milweb-logo.png",
-  heroImage: "/milo2.png",
+  logo: "/icon.svg",
+  heroImage: "/milo2.webp",
 };
 
 /** O QUE EU ENTREGO — a oferta concreta (resolve o problema do cliente). */
@@ -382,6 +382,8 @@ export const UI = {
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
     projectsTitle: { pt: "Projetos & produtos", en: "Projects & products" },
     projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS — uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS — a sample of what I can build." },
+    projectsLegendProof: { pt: "Cliente real · em produção", en: "Real client · in production" },
+    projectsLegendDemo: { pt: "Projeto autoral · demo/protótipo", en: "Personal project · demo/prototype" },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },

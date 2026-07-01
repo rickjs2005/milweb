@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { LangProvider } from "@/components/lang-provider";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { WhatsappFab } from "@/components/whatsapp-fab";
 import { PROFILE, SITE_URL } from "@/lib/content";
+import { getLocale, htmlLang } from "@/lib/i18n";
 import "./globals.css";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -73,9 +73,10 @@ const jsonLd = {
   knowsAbout: ["Next.js", "React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "SEO"],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
   return (
-    <html lang="pt-BR" className={`${sans.variable} ${mono.variable} ${display.variable}`} suppressHydrationWarning>
+    <html lang={htmlLang(locale)} className={`${sans.variable} ${mono.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
         {/* Anti-flash: aplica o tema salvo antes do paint (default = dark). */}
         <script
@@ -88,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <SmoothScroll />
-        <LangProvider>{children}</LangProvider>
+        {children}
         <WhatsappFab />
         <Analytics />
         <SpeedInsights />

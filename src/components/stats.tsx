@@ -1,11 +1,9 @@
-"use client";
-
-import { STATS } from "@/lib/content";
-import { useLang } from "./lang-provider";
+import { STATS, type Locale } from "@/lib/content";
+import { makeT } from "@/lib/i18n";
 import { Reveal, Counter } from "./reveal";
 
-export function Stats() {
-  const { t } = useLang();
+export function Stats({ locale }: { locale: Locale }) {
+  const t = makeT(locale);
   return (
     <section className="container-page py-12 sm:py-16">
       <Reveal>
