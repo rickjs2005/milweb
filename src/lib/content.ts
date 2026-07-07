@@ -136,6 +136,23 @@ export const PROJECTS: Project[] = [
     image: "/shots/milsaca.png",
   },
   {
+    slug: "inkvision",
+    title: "InkVision",
+    tagline: { pt: "SaaS de tatuagem · simulação de tattoo com IA", en: "Tattoo SaaS · AI tattoo simulation" },
+    problem: { pt: "Cliente de tatuagem decide no escuro: só vê como a arte vai ficar na pele durante a sessão, já com a agulha na mão.", en: "Tattoo clients decide in the dark: they only see how the art looks on skin during the session, needle already in hand." },
+    result: { pt: "Simulação da tatuagem na própria foto via IA, chat com o tatuador pra aprovar o desenho, agendamento e um marketplace multi-tenant conectando clientes a estúdios e artistas.", en: "AI-powered tattoo simulation on the client's own photo, in-app chat with the artist to approve the design, scheduling and a multi-tenant marketplace connecting clients to studios and artists." },
+    stack: ["Next.js", "TypeScript", "Prisma", "PostgreSQL", "Turborepo", "Stripe"],
+    metric: { pt: "Simulação de tattoo por IA · multi-tenant", en: "AI tattoo simulation · multi-tenant" },
+    status: { pt: "Em desenvolvimento", en: "In development" },
+    note: {
+      pt: "SaaS em desenvolvimento ativo.",
+      en: "SaaS under active development.",
+    },
+    repos: [{ label: "Código", url: `${GH}/inkvision` }],
+    featured: true,
+    image: "/shots/inkvision.webp",
+  },
+  {
     slug: "as-copas",
     title: "As Copas",
     tagline: { pt: "Site imersivo · estádios históricos em 3D (WebGL)", en: "Immersive site · historic stadiums in 3D (WebGL)" },
