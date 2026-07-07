@@ -214,8 +214,8 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
-    slug: "kavita",
-    title: "Kavita",
+    slug: "ecommerce-do-agro",
+    title: "E-commerce do Agro",
     tagline: { pt: "Sistema web completo · e-commerce + painéis", en: "Full web system · e-commerce + dashboards" },
     problem: { pt: "Um negócio do agro precisava de muito mais que uma loja: vendas, pagamentos, entregas e gestão por papel.", en: "An agribusiness needed far more than a store: sales, payments, deliveries and role-based management." },
     result: { pt: "Plataforma com loja, checkout com pagamento, 5 painéis por papel, app de entregas e API documentada — do pedido à entrega.", en: "Platform with store, paid checkout, 5 role-based panels, delivery app and a documented API — from order to delivery." },
