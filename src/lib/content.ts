@@ -227,8 +227,8 @@ export const PROJECTS: Project[] = [
       en: "It's just a prototype I built to test and sharpen my skills — not a client product.",
     },
     repos: [
-      { label: "Frontend", url: `${GH}/kavita-frontend` },
-      { label: "Backend", url: `${GH}/kavita-backend` },
+      { label: "Frontend", url: `${GH}/ecommerce-do-agro-frontend` },
+      { label: "Backend", url: `${GH}/ecommerce-do-agro-backend` },
     ],
     featured: true,
     image: "/shots/kavita.png",
