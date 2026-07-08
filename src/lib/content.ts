@@ -153,6 +153,21 @@ export const PROJECTS: Project[] = [
     image: "/shots/inkvision.webp",
   },
   {
+    slug: "rockverse",
+    title: "ROCKVERSE",
+    tagline: { pt: "Site-experiência sobre Rock · motion design de ponta a ponta", en: "Rock experience site · end-to-end motion design" },
+    problem: { pt: "Marcas de música e cultura disputam atenção em segundos — e sites institucionais comuns não geram desejo, memória nem compartilhamento.", en: "Music and culture brands fight for attention in seconds — and ordinary websites create no desire, memory or shares." },
+    result: { pt: "Experiência imersiva pela história do rock: headline cinética letra a letra, scroll com inércia (Lenis), cursor contextual, vinis interativos com modal, timeline com scrub e seção editorial em papel — projeto auditado como jurado de premiação e refinado em 5 fases, mantendo Lighthouse 99/100/100/100 no desktop.", en: "An immersive journey through rock history: letter-by-letter kinetic headline, inertia scrolling (Lenis), contextual cursor, interactive vinyl sleeves with modal, scrubbed timeline and a paper editorial section — audited like an awards juror and refined in 5 phases, keeping a 99/100/100/100 desktop Lighthouse." },
+    stack: ["Next.js 16", "TypeScript", "Tailwind v4", "Framer Motion", "Lenis"],
+    metric: { pt: "Lighthouse 99 · A11y 100 · motion 60fps", en: "Lighthouse 99 · A11y 100 · 60fps motion" },
+    status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
+    repos: [{ label: "Código", url: `${GH}/rockverse` }],
+    featured: true,
+    media: [
+      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/rockverse-desktop.mp4", poster: "/shots/rockverse-desktop.jpg", kind: "desktop" },
+    ],
+  },
+  {
     slug: "as-copas",
     title: "As Copas",
     tagline: { pt: "Site imersivo · estádios históricos em 3D (WebGL)", en: "Immersive site · historic stadiums in 3D (WebGL)" },
