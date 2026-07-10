@@ -22,6 +22,24 @@ export type CalcStrings = {
   hours: string;
   note: string;
   milo: [string, string, string];
+  /* diagnóstico + compartilhamento */
+  diagButton: string;
+  diagTitle: string;
+  riskLabel: string;
+  rec1a: string;
+  rec1b: string;
+  rec2a: string;
+  rec2b: string;
+  rec3: string;
+  diagWhats: string;
+  diagWhatsMsg: string; // {revenue} {share} {loss} {duration} {score}
+  share: string;
+  shareTitle1: string;
+  shareTitle2: string;
+  shareSub: string; // {duration} {share}
+  shareFooter: string;
+  shareFile: string;
+  whatsapp: string; // só dígitos
 };
 
 /** Número que reanima suavemente a cada mudança de alvo (easeOutCubic). */
@@ -109,12 +127,80 @@ function Slider({
   );
 }
 
+const fill = (template: string, vars: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+
+/** Gera a imagem 1080×1080 do resultado (pra stories/feed) num canvas. */
+function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, share: number) {
+  const size = 1080;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const sans = getComputedStyle(document.body).fontFamily || "sans-serif";
+
+  // fundo + brilhos da marca
+  ctx.fillStyle = "#080a10";
+  ctx.fillRect(0, 0, size, size);
+  const glow = ctx.createRadialGradient(size * 0.8, 0, 0, size * 0.8, 0, 700);
+  glow.addColorStop(0, "rgba(56,189,248,0.22)");
+  glow.addColorStop(1, "rgba(56,189,248,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, size, size);
+  const glow2 = ctx.createRadialGradient(0, size, 0, 0, size, 640);
+  glow2.addColorStop(0, "rgba(251,113,133,0.14)");
+  glow2.addColorStop(1, "rgba(251,113,133,0)");
+  ctx.fillStyle = glow2;
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.textAlign = "center";
+
+  // eyebrow
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = `700 30px ${sans}`;
+  ctx.fillText("MILWEB · RAIO-X", size / 2, 190);
+
+  // título
+  ctx.fillStyle = "#f4f7fc";
+  ctx.font = `700 58px ${sans}`;
+  ctx.fillText(s.shareTitle1, size / 2, 330);
+  ctx.fillText(s.shareTitle2, size / 2, 405);
+
+  // valor
+  ctx.fillStyle = "#fb7185";
+  ctx.font = `800 132px ${sans}`;
+  ctx.fillText(loss, size / 2, 580);
+
+  // sub
+  ctx.fillStyle = "#adb6c7";
+  ctx.font = `400 36px ${sans}`;
+  ctx.fillText(fill(s.shareSub, { duration: durationLabel, share }), size / 2, 665);
+
+  // divisor
+  ctx.strokeStyle = "rgba(120,180,255,0.25)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(size / 2 - 180, 760);
+  ctx.lineTo(size / 2 + 180, 760);
+  ctx.stroke();
+
+  // rodapé
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = `700 40px ${sans}`;
+  ctx.fillText(s.shareFooter, size / 2, 850);
+
+  return canvas;
+}
+
 export function DependencyCalc({ s }: { s: CalcStrings }) {
   const [revenue, setRevenue] = useState(60000);
   const [igShare, setIgShare] = useState(65);
   const [waShare, setWaShare] = useState(30);
   const [clients, setClients] = useState(220);
   const [days, setDays] = useState(1);
+  const [diagOpen, setDiagOpen] = useState(false);
 
   const nf = useMemo(
     () => new Intl.NumberFormat(s.locale === "pt" ? "pt-BR" : "en-US", { maximumFractionDigits: 0 }),
@@ -148,9 +234,43 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
 
   const pose: MiloPose = r.tier === 2 ? "shocked" : r.tier === 1 ? "think" : "idle";
   const durationLabel = days === 1 ? s.h24 : s.d7;
-  const loseSub = s.loseSub
-    .replace("{duration}", durationLabel)
-    .replace("{share}", String(share));
+  const loseSub = fill(s.loseSub, { duration: durationLabel, share });
+
+  // nota de risco: dominada pela dependência de redes, com leve peso do volume
+  const riskScore = Math.min(98, Math.round(share * 0.82 + Math.min(14, revenue / 45000) + 4));
+  const recs = [share >= 50 ? s.rec1a : s.rec1b, waShare >= 30 ? s.rec2a : s.rec2b, s.rec3];
+
+  const waHref = `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(
+    fill(s.diagWhatsMsg, {
+      revenue: money(revenue),
+      share,
+      loss: money(r.lostRevenue),
+      duration: durationLabel,
+      score: riskScore,
+    }),
+  )}`;
+
+  const shareResult = async () => {
+    const canvas = drawShareCard(s, money(r.lostRevenue), durationLabel, share);
+    if (!canvas) return;
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
+    if (!blob) return;
+    const file = new File([blob], `${s.shareFile}.png`, { type: "image/png" });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return;
+      } catch {
+        /* usuário cancelou — cai no download */
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${s.shareFile}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const metrics = [
     { label: s.orders, value: r.lostOrders, format: num },
@@ -218,6 +338,56 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
             {s.milo[r.tier]}
           </p>
         </div>
+
+        {/* diagnóstico gratuito: lead com contexto */}
+        {!diagOpen ? (
+          <button
+            type="button"
+            onClick={() => setDiagOpen(true)}
+            className="glow-accent mt-5 w-full rounded-xl bg-accent px-5 py-3.5 text-sm font-semibold text-accent-fg transition-transform hover:scale-[1.02]"
+          >
+            {s.diagButton}
+          </button>
+        ) : (
+          <div className="animate-fade-up mt-5 rounded-xl border border-accent/25 bg-accent/5 p-5">
+            <div className="flex items-center justify-between gap-4">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{s.diagTitle}</p>
+              <p className="text-xs text-fg-subtle">{s.riskLabel}</p>
+            </div>
+            <p className="mt-2 font-display text-4xl font-bold text-fg tabular-nums">
+              <LiveNumber value={riskScore} format={(v) => `${Math.round(v)}`} />
+              <span className="text-base text-fg-subtle">/100</span>
+            </p>
+            <ul className="mt-4 grid gap-2.5">
+              {recs.map((rec, i) => (
+                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-fg-muted">
+                  <span className="mt-0.5 font-display font-bold text-accent">{i + 1}.</span>
+                  {rec}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glow-accent inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-accent-fg transition-transform hover:scale-[1.02]"
+              >
+                {s.diagWhats}
+              </a>
+              <button
+                type="button"
+                onClick={shareResult}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-line/15 px-4 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent/50"
+              >
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden>
+                  <path d="M7.5 9.5V1.5m0 0L4.5 4.5m3-3l3 3M2.5 8.5v4a1 1 0 001 1h8a1 1 0 001-1v-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {s.share}
+              </button>
+            </div>
+          </div>
+        )}
 
         <p className="mt-4 text-[11px] text-fg-subtle/70">{s.note}</p>
       </div>

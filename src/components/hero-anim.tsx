@@ -30,12 +30,17 @@ export function HeroAnim({
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const items = root.querySelectorAll<HTMLElement>("[data-hero]");
+      const words = root.querySelectorAll<HTMLElement>("[data-hero-word]");
       const visual = root.querySelector<HTMLElement>(".hero-visual");
       gsap.set(items, { autoAlpha: 0, y: 26 });
+      if (words.length) gsap.set(words, { autoAlpha: 0, y: 30, rotateX: 45, transformPerspective: 600 });
       if (visual) gsap.set(visual, { autoAlpha: 0, scale: 0.9 });
 
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7 }, 0.1);
+      if (words.length) {
+        tl.to(words, { autoAlpha: 1, y: 0, rotateX: 0, stagger: 0.055, duration: 0.7 }, 0.2);
+      }
       if (visual) {
         tl.to(visual, { autoAlpha: 1, scale: 1, duration: 1, ease: "power4.out" }, 0.2);
         // Float contínuo + parallax sutil ao rolar.

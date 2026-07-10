@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
+import { Milo } from "./milo";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
@@ -37,12 +38,24 @@ export function Hero({ locale }: { locale: Locale }) {
             {t(UI.hero.eyebrow)}
           </p>
 
-          <h1
-            data-hero
-            className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg"
-          >
-            {t(UI.hero.titleLead)}{" "}
-            <span className="text-gradient">{t(UI.hero.titleHighlight)}</span>.
+          {/* Headline com stagger palavra a palavra (hero-anim anima [data-hero-word]).
+              O espaço fica FORA do span animado — inline-block descarta espaço final. */}
+          <h1 className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg">
+            {t(UI.hero.titleLead)
+              .split(" ")
+              .map((word, i) => (
+                <span key={i}>
+                  <span data-hero-word className="inline-block">
+                    {word}
+                  </span>{" "}
+                </span>
+              ))}
+            <span data-hero-word className="text-gradient inline-block">
+              {t(UI.hero.titleHighlight)}
+            </span>
+            <span data-hero-word className="inline-block">
+              .
+            </span>
           </h1>
 
           <p data-hero className="mt-6 max-w-2xl text-lg text-fg-muted xl:text-xl">
@@ -101,6 +114,14 @@ export function Hero({ locale }: { locale: Locale }) {
             sizes="(max-width: 1024px) 92vw, 46vw"
             className="w-full rounded-2xl border border-line/15 ring-1 ring-inset ring-accent/20 shadow-[0_0_80px_-20px_rgb(var(--accent)/0.5)]"
           />
+
+          {/* Milo vivo debruçado no canto da cena (pisca + flutua via CSS) */}
+          <div className="animate-fade-up absolute -bottom-10 -left-5 z-10 hidden w-28 [animation-delay:1.2s] sm:block">
+            <span className="animate-fade-up absolute -top-8 left-20 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
+              {t(UI.hero.miloHi)}
+            </span>
+            <Milo className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
+          </div>
         </div>
       </div>
     </HeroAnim>

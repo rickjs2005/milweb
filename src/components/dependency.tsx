@@ -32,6 +32,23 @@ export function Dependency({ locale }: { locale: Locale }) {
     hours: t(c.hours),
     note: t(c.note),
     milo: [t(c.milo0), t(c.milo1), t(c.milo2)],
+    diagButton: t(c.diagButton),
+    diagTitle: t(c.diagTitle),
+    riskLabel: t(c.riskLabel),
+    rec1a: t(c.rec1a),
+    rec1b: t(c.rec1b),
+    rec2a: t(c.rec2a),
+    rec2b: t(c.rec2b),
+    rec3: t(c.rec3),
+    diagWhats: t(c.diagWhats),
+    diagWhatsMsg: t(c.diagWhatsMsg),
+    share: t(c.share),
+    shareTitle1: t(c.shareTitle1),
+    shareTitle2: t(c.shareTitle2),
+    shareSub: t(c.shareSub),
+    shareFooter: t(c.shareFooter),
+    shareFile: t(c.shareFile),
+    whatsapp: PROFILE.whatsapp,
   };
 
   const widgetStrings: WidgetStrings = {

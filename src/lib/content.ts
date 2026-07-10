@@ -435,6 +435,7 @@ export const UI = {
     ctaProjects: { pt: "Ver projetos", en: "View projects" },
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
+    miloHi: { pt: "Oi! Eu sou o Milo 👋", en: "Hi! I'm Milo 👋" },
   },
   sections: {
     deliverablesEyebrow: { pt: "O que eu faço", en: "What I do" },
@@ -538,6 +539,44 @@ export const DEPENDENCY = {
       pt: "Dói só de calcular. Um site próprio não cai junto com o feed.",
       en: "It hurts just to calculate. Your own site doesn't go down with the feed.",
     },
+    /* Diagnóstico gratuito: transforma o resultado em lead com contexto. */
+    diagButton: { pt: "Gerar meu diagnóstico gratuito", en: "Get my free diagnosis" },
+    diagTitle: { pt: "Seu diagnóstico", en: "Your diagnosis" },
+    riskLabel: { pt: "Nota de risco do seu negócio", en: "Your business risk score" },
+    rec1a: {
+      pt: "Mais da metade das suas vendas nasce no Instagram. Prioridade nº 1: um canal de captura fora do feed — site próprio com SEO.",
+      en: "Over half of your sales are born on Instagram. Priority #1: an acquisition channel outside the feed — your own website with SEO.",
+    },
+    rec1b: {
+      pt: "Sua dependência de redes ainda é moderada — é o melhor momento para construir o canal próprio antes que ela cresça.",
+      en: "Your social dependency is still moderate — it's the best moment to build your own channel before it grows.",
+    },
+    rec2a: {
+      pt: "Fechar tudo no WhatsApp não escala: com catálogo ou agendamento no site, o pedido chega pronto e o WhatsApp vira só o fechamento.",
+      en: "Closing everything on WhatsApp doesn't scale: with a catalog or booking on your site, orders arrive ready and WhatsApp becomes just the closing step.",
+    },
+    rec2b: {
+      pt: "Automatize a entrada de pedidos no site para o atendimento não virar gargalo quando as vendas crescerem.",
+      en: "Automate order intake on your website so support doesn't become a bottleneck as sales grow.",
+    },
+    rec3: {
+      pt: "Um site otimizado transforma o Google em canal de aquisição contínuo — clientes chegando sem depender de post.",
+      en: "An optimized website turns Google into a continuous acquisition channel — customers arriving without a single post.",
+    },
+    diagWhats: { pt: "Receber um plano no WhatsApp", en: "Get a plan on WhatsApp" },
+    diagWhatsMsg: {
+      pt: "Olá Rick! Fiz o diagnóstico no milweb.com.br → faturamento {revenue}/mês, {share}% das vendas em redes sociais, prejuízo estimado de {loss} em {duration} e nota de risco {score}/100. Quero um plano para ter meu site próprio.",
+      en: "Hi Rick! I ran the diagnosis at milweb.com.br → {revenue}/month in revenue, {share}% of sales on social media, an estimated {loss} loss in {duration} and a {score}/100 risk score. I want a plan for my own website.",
+    },
+    share: { pt: "Compartilhar resultado", en: "Share result" },
+    shareTitle1: { pt: "Se o Instagram cair amanhã,", en: "If Instagram goes down tomorrow," },
+    shareTitle2: { pt: "eu perderia", en: "I'd lose" },
+    shareSub: {
+      pt: "em {duration}, com {share}% das vendas em redes sociais",
+      en: "in {duration}, with {share}% of sales on social media",
+    },
+    shareFooter: { pt: "Calcule o seu → milweb.com.br", en: "Calculate yours → milweb.com.br" },
+    shareFile: { pt: "meu-diagnostico-milweb", en: "my-milweb-diagnosis" },
   },
   widgets: {
     risk: { pt: "Risco do negócio", en: "Business risk" },
