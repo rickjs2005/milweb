@@ -7,9 +7,13 @@
 export type Locale = "pt" | "en";
 export type Localized = { pt: string; en: string };
 
-/** URL pública (sem barra final). Definir NEXT_PUBLIC_SITE_URL no Vercel. */
+/** URL pública (sem barra final). Definir NEXT_PUBLIC_SITE_URL no Vercel.
+ *  Blindado: env ausente, vazia ou malformada cai no domínio canônico —
+ *  `new URL(SITE_URL)` roda a cada request no generateMetadata, e um valor
+ *  inválido aqui derruba o site inteiro (aprendido em produção). */
+const RAW_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://milweb.com.br"
+  /^https?:\/\/\S+$/.test(RAW_SITE_URL) ? RAW_SITE_URL : "https://milweb.com.br"
 ).replace(/\/$/, "");
 
 export const PROFILE = {
