@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PROFILE } from "@/lib/content";
-
-const HREF = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(
-  "Olá Rick! Vim pelo site da MilWeb e quero um orçamento.",
-)}`;
+import { MILO_FAB, PROFILE, type Locale } from "@/lib/content";
+import { Milo } from "./milo";
 
 /** Logo oficial do WhatsApp (glifo). */
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -16,8 +13,14 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-export function WhatsappFab() {
+/**
+ * FAB do WhatsApp estrelado pelo Milo: o mascote flutua no canto com um
+ * selo do WhatsApp; no hover (desktop) ele solta um convite em balão.
+ * Depois de 2,5s visível, o balão dá um "oi" sozinho uma vez.
+ */
+export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
   const [visible, setVisible] = useState(false);
+  const [wave, setWave] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 300);
@@ -26,16 +29,27 @@ export function WhatsappFab() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Convite espontâneo: aparece uma vez, alguns segundos após o FAB surgir.
+  useEffect(() => {
+    if (!visible) return;
+    const show = setTimeout(() => setWave(true), 2500);
+    const hide = setTimeout(() => setWave(false), 8000);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [visible]);
+
+  const href = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(MILO_FAB.message[locale])}`;
+
   return (
     <a
-      href={HREF}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Falar no WhatsApp"
+      aria-label={MILO_FAB.label[locale]}
       className={[
-        "group fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center",
-        "rounded-full bg-[#25D366] text-white",
-        "shadow-lg shadow-[#25D366]/30 ring-1 ring-white/15",
+        "group fixed bottom-4 right-4 z-40 block",
         "transition-[opacity,transform] duration-300 ease-out",
         "hover:scale-105 active:scale-95",
         "motion-reduce:transition-opacity motion-reduce:hover:scale-100",
@@ -44,25 +58,25 @@ export function WhatsappFab() {
           : "pointer-events-none opacity-0 translate-y-4 motion-reduce:translate-y-0",
       ].join(" ")}
     >
-      {/* Subtle pulse ring (rendered behind, not clipped) */}
-      <span
-        aria-hidden
-        className="absolute inset-0 -z-10 rounded-full bg-[#25D366]/40 motion-safe:animate-ping motion-reduce:hidden"
-      />
+      <Milo pose="idle" className="w-[74px] drop-shadow-[0_6px_18px_rgb(var(--accent)/0.35)]" />
 
-      <WhatsAppIcon className="h-7 w-7 shrink-0" />
+      {/* selo do WhatsApp sobre o mascote */}
+      <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 ring-2 ring-bg">
+        <WhatsAppIcon className="h-[18px] w-[18px]" />
+      </span>
 
-      {/* Desktop-only label that reveals on hover */}
+      {/* balão-convite: hover no desktop + "oi" espontâneo uma vez */}
       <span
         className={[
-          "pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap",
-          "rounded-md bg-bg px-3 py-1.5 text-sm font-medium text-fg",
-          "border border-line/15 shadow-md",
-          "opacity-0 transition-opacity duration-200",
-          "sm:block sm:group-hover:opacity-100",
+          "pointer-events-none absolute right-full top-3 mr-3 whitespace-nowrap",
+          "rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-4 py-2.5",
+          "text-sm font-medium text-fg shadow-lg",
+          "transition-all duration-300",
+          wave ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0",
+          "sm:group-hover:translate-x-0 sm:group-hover:opacity-100",
         ].join(" ")}
       >
-        WhatsApp
+        {MILO_FAB.bubble[locale]}
       </span>
     </a>
   );

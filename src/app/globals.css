@@ -169,6 +169,60 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  /* ===== Raio-X da dependência (calculadora + widgets) ===== */
+  /* Slider com trilho preenchido na cor da marca (--pct vem do React). */
+  input.range {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    background:
+      linear-gradient(90deg, rgb(var(--accent-deep)), rgb(var(--accent)))
+        0 0 / var(--pct, 50%) 100% no-repeat,
+      rgb(var(--surface-2));
+    outline-offset: 4px;
+  }
+  input.range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: rgb(var(--fg));
+    border: 3px solid rgb(var(--accent));
+    box-shadow: 0 0 14px rgb(var(--accent) / 0.55);
+    cursor: grab;
+    transition: transform 0.15s ease;
+  }
+  input.range::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+  input.range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: rgb(var(--fg));
+    border: 3px solid rgb(var(--accent));
+    box-shadow: 0 0 14px rgb(var(--accent) / 0.55);
+    cursor: grab;
+  }
+  /* Milo (mascote SVG): flutuação de holograma + piscada dos olhos. */
+  .milo-float {
+    animation: milo-float 4.6s ease-in-out infinite;
+  }
+  .milo-blink {
+    animation: milo-blink 5.4s ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  @keyframes milo-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+  @keyframes milo-blink {
+    0%, 4%, 100% { transform: scaleY(1); }
+    2% { transform: scaleY(0.1); }
+  }
   /* Assinatura da marca: o monograma "MW" se desenha uma vez ao montar.
      pathLength=1 nos paths normaliza o comprimento, então dasharray/offset
      funcionam independentemente do tamanho real do traço. */

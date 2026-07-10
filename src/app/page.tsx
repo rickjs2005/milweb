@@ -1,6 +1,8 @@
 import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
 import { Deliverables } from "@/components/deliverables";
+import { Dependency } from "@/components/dependency";
+import { Google } from "@/components/google";
 import { Why } from "@/components/why";
 import { Stats } from "@/components/stats";
 import { Projects } from "@/components/projects";
@@ -18,6 +20,7 @@ export default async function Home() {
 
   const navLinks = [
     { href: "#deliverables", label: t(UI.nav.deliverables) },
+    { href: "#raio-x", label: t(UI.nav.risk) },
     { href: "#projects", label: t(UI.nav.projects) },
     { href: "#process", label: t(UI.nav.process) },
     { href: "#faq", label: t(UI.nav.faq) },
@@ -35,6 +38,8 @@ export default async function Home() {
         <Deliverables locale={locale} />
         <Why locale={locale} />
         <Stats locale={locale} />
+        <Dependency locale={locale} />
+        <Google locale={locale} />
         <Projects locale={locale} />
         <Process locale={locale} />
         <Tech locale={locale} />

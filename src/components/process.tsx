@@ -9,7 +9,7 @@ export function Process({ locale }: { locale: Locale }) {
     <section id="process" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          <span className="text-accent/40">04 / </span>
+          <span className="text-accent/40">06 / </span>
           {t(UI.sections.processEyebrow)}
         </p>
         <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">

@@ -12,7 +12,7 @@ export function Tech({ locale }: { locale: Locale }) {
     <section id="tech" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          <span className="text-accent/40">05 / </span>
+          <span className="text-accent/40">07 / </span>
           {t(UI.sections.techEyebrow)}
         </p>
         <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">

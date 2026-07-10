@@ -417,6 +417,7 @@ export const TESTIMONIALS: Testimonial[] = [];
 export const UI = {
   nav: {
     deliverables: { pt: "Serviços", en: "Services" },
+    risk: { pt: "Raio-X", en: "X-Ray" },
     projects: { pt: "Projetos", en: "Projects" },
     process: { pt: "Processo", en: "Process" },
     faq: { pt: "FAQ", en: "FAQ" },
@@ -485,3 +486,141 @@ export const UI = {
     footerNote: { pt: "Freelancer independente · fundador da MilWeb.", en: "Independent freelancer · founder of MilWeb." },
   },
 } satisfies Record<string, Record<string, unknown>>;
+
+/** RAIO-X DA DEPENDÊNCIA — bloco interativo de conversão (calculadora +
+ *  mini-dashboard). Argumento: depender só de rede social é risco; a saída
+ *  é um site próprio (que é exatamente o que eu vendo). */
+export const DEPENDENCY = {
+  eyebrow: { pt: "Raio-X da dependência", en: "Dependency X-ray" },
+  title: {
+    pt: "Depender só de rede social custa caro",
+    en: "Relying only on social media gets expensive",
+  },
+  sub: {
+    pt: "O Instagram já ficou quase 7 horas fora do ar — levando as vendas junto. Veja o risco de operar 100% em plataformas alugadas e calcule o que um apagão custaria pra você.",
+    en: "Instagram has already gone dark for almost 7 hours — taking sales with it. See the risk of running 100% on rented platforms and calculate what an outage would cost you.",
+  },
+  calc: {
+    title: { pt: "Calculadora de prejuízo", en: "Loss calculator" },
+    revenue: { pt: "Faturamento mensal", en: "Monthly revenue" },
+    ig: { pt: "Vendas que nascem no Instagram", en: "Sales born on Instagram" },
+    wa: { pt: "Vendas fechadas no WhatsApp", en: "Sales closed on WhatsApp" },
+    clients: { pt: "Clientes por mês", en: "Customers per month" },
+    duration: { pt: "Duração do apagão", en: "Outage length" },
+    h24: { pt: "24 horas", en: "24 hours" },
+    d7: { pt: "7 dias", en: "7 days" },
+    lose: { pt: "Você perderia", en: "You'd lose" },
+    loseSub: {
+      pt: "em {duration} fora do ar, com {share}% das vendas presas em plataformas alugadas.",
+      en: "in {duration} offline, with {share}% of sales locked inside rented platforms.",
+    },
+    orders: { pt: "Pedidos perdidos", en: "Lost orders" },
+    leads: { pt: "Leads que não chegam", en: "Leads that never arrive" },
+    messages: { pt: "Mensagens sem resposta", en: "Unanswered messages" },
+    hours: { pt: "Horas de venda paradas", en: "Selling hours on hold" },
+    note: {
+      pt: "* Estimativa ilustrativa a partir dos valores informados.",
+      en: "* Illustrative estimate based on your inputs.",
+    },
+    milo0: {
+      pt: "Parece pouco? Multiplica pelos apagões que acontecem todo ano.",
+      en: "Looks small? Multiply it by the outages that happen every year.",
+    },
+    milo1: {
+      pt: "Não é pouco, né? E apagões reais já passaram de 6 horas.",
+      en: "Not small, right? Real outages have lasted over 6 hours.",
+    },
+    milo2: {
+      pt: "Dói só de calcular. Um site próprio não cai junto com o feed.",
+      en: "It hurts just to calculate. Your own site doesn't go down with the feed.",
+    },
+  },
+  widgets: {
+    risk: { pt: "Risco do negócio", en: "Business risk" },
+    riskHigh: { pt: "Risco alto", en: "High risk" },
+    live: { pt: "ao vivo", en: "live" },
+    channels: { pt: "Dependência por canal", en: "Dependency by channel" },
+    ownSite: { pt: "Site próprio", en: "Own website" },
+    channelsNote: {
+      pt: "Perfil típico de quem vende \"pelo direct\".",
+      en: "Typical profile of a DM-driven business.",
+    },
+    salesOrigin: { pt: "Origem das vendas", en: "Where sales come from" },
+    referral: { pt: "Indicação", en: "Referrals" },
+    googleSite: { pt: "Google / site", en: "Google / website" },
+    outage: { pt: "Simulação de apagão · 24h", en: "Outage simulation · 24h" },
+    outageAxis: { pt: "Vendas/hora num dia comum", en: "Sales/hour on a normal day" },
+    outageWindow: { pt: "janela do apagão", en: "outage window" },
+  },
+  punch: {
+    pt: "O único canal que é realmente seu é o seu site.",
+    en: "The only channel you truly own is your website.",
+  },
+  cta: { pt: "Quero um site próprio", en: "I want my own website" },
+  ctaWhats: {
+    pt: "Olá! Usei a calculadora do milweb.com.br e quero um site próprio para o meu negócio.",
+    en: "Hi! I used the calculator at milweb.com.br and I want my own website.",
+  },
+};
+
+/** O TESTE DO GOOGLE — SERP simulada que mostra concorrentes ocupando a
+ *  posição do visitante. Templates usam {q}/{Q} (nicho minúsculo/capitalizado). */
+export const GOOGLE_SIM = {
+  eyebrow: { pt: "O teste do Google", en: "The Google test" },
+  title: {
+    pt: "É assim que clientes procuram você agora",
+    en: "This is how customers search for you right now",
+  },
+  sub: {
+    pt: "Digite o que você faz — ou escolha um exemplo — e veja quem aparece quando alguém pesquisa no Google.",
+    en: "Type what you do — or pick an example — and see who shows up when someone searches on Google.",
+  },
+  placeholder: { pt: "Ex.: dentista, doceria, personal…", en: "E.g.: dentist, bakery, trainer…" },
+  search: { pt: "Buscar", en: "Search" },
+  suggestions: {
+    pt: "tatuador|advogada|restaurante|pet shop|arquiteto|loja de roupas",
+    en: "tattoo artist|lawyer|restaurant|pet shop|architect|clothing store",
+  },
+  autorun: { pt: "tatuador", en: "tattoo artist" },
+  emptyHint: { pt: "Os resultados aparecem aqui ✦", en: "Results show up here ✦" },
+  r1t: { pt: "{Q} perto de você | Agende online em 2 minutos", en: "{Q} near you | Book online in 2 minutes" },
+  r1d: {
+    pt: "Atendimento profissional de {q} com horários online, avaliações verificadas e orçamento na hora. Referência na sua região.",
+    en: "Professional {q} services with online booking, verified reviews and instant quotes. A local reference.",
+  },
+  r1r: { pt: "4,9 ★★★★★ (312)", en: "4.9 ★★★★★ (312)" },
+  r2t: { pt: "Top 10 melhores profissionais de {q} — ranking 2026", en: "Top 10 best {q} professionals — 2026 ranking" },
+  r2d: {
+    pt: "Comparamos preço, avaliações e tempo de resposta dos mais procurados. Veja quem lidera o ranking deste ano.",
+    en: "We compared price, reviews and response time of the most searched. See who leads this year's ranking.",
+  },
+  r3t: { pt: "{Q} — orçamento rápido pelo site", en: "{Q} — quick quote via website" },
+  r3d: {
+    pt: "Solicite orçamento sem sair do Google. Página otimizada, resposta automática e atendimento em minutos.",
+    en: "Request a quote without leaving Google. Optimized page, automatic reply, service in minutes.",
+  },
+  slotTitle: { pt: "Sua empresa poderia estar aqui.", en: "Your business could be right here." },
+  slotSub: {
+    pt: "Com um site otimizado, essa posição trabalha para você 24h — sem depender de post, story ou sorte.",
+    en: "With an optimized website this spot works for you 24/7 — no posts, stories or luck required.",
+  },
+  slotCta: { pt: "Quero aparecer no Google", en: "I want to show up on Google" },
+  slotWhats: {
+    pt: "Olá! Fiz o teste do Google no milweb.com.br e quero aparecer nas buscas.",
+    en: "Hi! I tried the Google test at milweb.com.br and I want to show up in searches.",
+  },
+  milo: {
+    pt: "Sua empresa apareceu aí? Se não… seu concorrente apareceu.",
+    en: "Did your business show up? If not… your competitor did.",
+  },
+};
+
+/** MILO FAB — o mascote como botão flutuante de WhatsApp. */
+export const MILO_FAB = {
+  label: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
+  bubble: { pt: "Fala com o Rick 👋", en: "Talk to Rick 👋" },
+  message: {
+    pt: "Olá Rick! Vim pelo site da MilWeb e quero um orçamento.",
+    en: "Hi Rick! I came from the MilWeb site and I'd like a quote.",
+  },
+};
