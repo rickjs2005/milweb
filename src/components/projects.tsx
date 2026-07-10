@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical } from "lucide-react";
 import { PROJECTS, UI, type Project, type Localized, type Locale } from "@/lib/content";
-import { makeT } from "@/lib/i18n";
+import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { WebsitePreview } from "./website-preview";
 import { AppPreview } from "./app-preview";
@@ -96,7 +96,7 @@ function Details({ p, locale }: { p: Project; locale: Locale }) {
           C1: o link "Ver case" estica via ::after p/ cobrir o card todo (precisa ser estático, sem `relative`). */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Link
-          href={`/projetos/${p.slug}`}
+          href={withLocale(locale, `/projetos/${p.slug}`)}
           aria-label={`${t(UI.labels.caseStudy)}: ${p.title}`}
           className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft after:absolute after:inset-0 after:content-['']"
         >

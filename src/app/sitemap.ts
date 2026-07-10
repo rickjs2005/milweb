@@ -1,20 +1,42 @@
 import type { MetadataRoute } from "next";
 import { PROJECTS, SITE_URL } from "@/lib/content";
 
+/** Sitemap bilíngue: cada URL PT declara sua alternativa EN (e vice-versa). */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return [
+
+  const entry = (
+    path: string,
+    priority: number,
+  ): MetadataRoute.Sitemap[number][] => [
     {
-      url: `${SITE_URL}/`,
+      url: `${SITE_URL}${path === "/" ? "/" : path}`,
       lastModified: now,
       changeFrequency: "monthly",
-      priority: 1,
+      priority,
+      alternates: {
+        languages: {
+          "pt-BR": `${SITE_URL}${path === "/" ? "/" : path}`,
+          en: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
+        },
+      },
     },
-    ...PROJECTS.map((p) => ({
-      url: `${SITE_URL}/projetos/${p.slug}`,
+    {
+      url: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
       lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-    })),
+      changeFrequency: "monthly",
+      priority: priority - 0.1,
+      alternates: {
+        languages: {
+          "pt-BR": `${SITE_URL}${path === "/" ? "/" : path}`,
+          en: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
+        },
+      },
+    },
+  ];
+
+  return [
+    ...entry("/", 1),
+    ...PROJECTS.flatMap((p) => entry(`/projetos/${p.slug}`, 0.8)),
   ];
 }

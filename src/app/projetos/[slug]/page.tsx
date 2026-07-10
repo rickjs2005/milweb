@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { PROJECTS, PROFILE, SITE_URL } from "@/lib/content";
-import { getLocale } from "@/lib/i18n";
+import { getLocale, withLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { CaseStudy } from "@/components/case-study";
 import { Contact, Footer } from "@/components/contact";
@@ -20,13 +20,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const p = PROJECTS.find((x) => x.slug === slug);
   if (!p) return {};
-  // Idioma indexável padrão = PT (o site é toggle client-side).
-  const description = p.result.pt;
-  const url = `${SITE_URL}/projetos/${p.slug}`;
+  const locale = await getLocale();
+  const description = p.result[locale];
+  const canonical = `${locale === "en" ? "/en" : ""}/projetos/${p.slug}`;
+  const url = `${SITE_URL}${canonical}`;
   return {
     title: p.title,
     description,
-    alternates: { canonical: `/projetos/${p.slug}` },
+    alternates: {
+      canonical,
+      languages: {
+        "pt-BR": `/projetos/${p.slug}`,
+        en: `/en/projetos/${p.slug}`,
+        "x-default": `/projetos/${p.slug}`,
+      },
+    },
     openGraph: { type: "article", title: `${p.title} — MilWeb`, description, url },
     twitter: { card: "summary_large_image", title: `${p.title} — MilWeb`, description },
   };
@@ -79,7 +87,7 @@ export default async function ProjectPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href="/" aria-label="MilWeb — início">
+          <Link href={withLocale(locale, "/")} aria-label="MilWeb — início">
             <Logo />
           </Link>
           <a

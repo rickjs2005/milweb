@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { Logo } from "./logo";
 import { PROFILE, type Locale } from "@/lib/content";
-
-/** Nome do cookie de idioma (espelha LOCALE_COOKIE de lib/i18n, que é server-only). */
-const LOCALE_COOKIE = "lang";
 
 type NavLink = { href: string; label: string };
 
@@ -176,16 +173,27 @@ export function Nav({
   );
 }
 
-/** Grava o cookie de idioma e re-renderiza no servidor (router.refresh). */
+/**
+ * Troca de idioma por URL (i18n indexável): PT vive na raiz e EN em /en.
+ * Navegação completa (<a>) — o middleware normaliza o idioma pelo path.
+ */
 function LangToggle({ locale }: { locale: Locale }) {
-  const router = useRouter();
+  const pathname = usePathname() ?? "/";
+  // path equivalente sem o prefixo /en
+  const base = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+  const ptHref = base;
+  const enHref = base === "/" ? "/en" : `/en${base}`;
 
-  const set = (l: Locale) => {
-    if (l === locale) return;
-    document.cookie = `${LOCALE_COOKIE}=${l};path=/;max-age=31536000;samesite=lax`;
-    document.documentElement.lang = l === "pt" ? "pt-BR" : "en";
-    router.refresh();
-  };
+  const item = (l: Locale, href: string, label: string) =>
+    locale === l ? (
+      <span aria-current="true" className="text-accent">
+        {label}
+      </span>
+    ) : (
+      <a href={href} className="transition-colors hover:text-accent" rel="alternate" hrefLang={l === "pt" ? "pt-BR" : "en"}>
+        {label}
+      </a>
+    );
 
   return (
     <div
@@ -193,23 +201,9 @@ function LangToggle({ locale }: { locale: Locale }) {
       aria-label="Trocar idioma / Switch language"
       className="inline-flex items-center gap-1.5 rounded-md border border-line/15 px-2.5 py-1.5 font-mono text-xs font-medium text-fg-muted"
     >
-      <button
-        type="button"
-        onClick={() => set("pt")}
-        aria-pressed={locale === "pt"}
-        className={"transition-colors hover:text-accent " + (locale === "pt" ? "text-accent" : "")}
-      >
-        PT
-      </button>
+      {item("pt", ptHref, "PT")}
       <span className="text-fg-subtle">/</span>
-      <button
-        type="button"
-        onClick={() => set("en")}
-        aria-pressed={locale === "en"}
-        className={"transition-colors hover:text-accent " + (locale === "en" ? "text-accent" : "")}
-      >
-        EN
-      </button>
+      {item("en", enHref, "EN")}
     </div>
   );
 }

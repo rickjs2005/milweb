@@ -24,3 +24,9 @@ export function htmlLang(locale: Locale): string {
 export function makeT(locale: Locale) {
   return (v: Localized) => v[locale];
 }
+
+/** Prefixa um path interno com o locale da URL (en → /en/..., pt → sem prefixo). */
+export function withLocale(locale: Locale, path: string): string {
+  if (locale !== "en") return path;
+  return path === "/" ? "/en" : `/en${path}`;
+}
