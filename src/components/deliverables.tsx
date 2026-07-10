@@ -10,8 +10,10 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { DELIVERABLES, UI, type Locale } from "@/lib/content";
-import { makeT } from "@/lib/i18n";
+import { SERVICES } from "@/lib/services";
+import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -60,6 +62,24 @@ export function Deliverables({ locale }: { locale: Locale }) {
           );
         })}
       </div>
+
+      {/* links internos pras páginas de serviço (SEO + aprofundamento) */}
+      <Reveal delay={200}>
+        <p className="mt-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-subtle">
+          {t({ pt: "Saiba mais:", en: "Learn more:" })}
+          {SERVICES.map((s, i) => (
+            <span key={s.slug}>
+              <Link
+                href={withLocale(locale, `/${s.slug}`)}
+                className="font-medium text-accent underline-offset-4 transition-colors hover:text-accent-soft hover:underline"
+              >
+                {t(s.label)}
+              </Link>
+              {i < SERVICES.length - 1 && <span className="ml-2 text-fg-subtle/50">·</span>}
+            </span>
+          ))}
+        </p>
+      </Reveal>
     </section>
   );
 }

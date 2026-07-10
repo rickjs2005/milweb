@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { PROJECTS, SITE_URL } from "@/lib/content";
+import { SERVICES } from "@/lib/services";
 
 /** Sitemap bilíngue: cada URL PT declara sua alternativa EN (e vice-versa). */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -37,6 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...entry("/", 1),
+    ...SERVICES.flatMap((s) => entry(`/${s.slug}`, 0.9)),
     ...PROJECTS.flatMap((p) => entry(`/projetos/${p.slug}`, 0.8)),
   ];
 }
