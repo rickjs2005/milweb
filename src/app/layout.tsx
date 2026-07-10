@@ -64,6 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "Rick",
     ],
     alternates: { canonical, languages: LANGUAGE_ALTERNATES },
+    verification: { google: "2CbbaRNR_vN6f0XIjYuMmTu9UpHcKuleYfJtOjWyNmE" },
     openGraph: {
       type: "website",
       locale: locale === "en" ? "en_US" : "pt_BR",
