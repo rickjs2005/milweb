@@ -624,3 +624,76 @@ export const MILO_FAB = {
     en: "Hi Rick! I came from the MilWeb site and I'd like a quote.",
   },
 };
+
+/** APAGÕES REAIS — mini-timeline de prova histórica dentro do Raio-X. */
+export type OutageEvent = {
+  date: Localized;
+  title: Localized;
+  value: number;
+  suffix: Localized;
+  statLabel: Localized;
+  desc: Localized;
+  color: string;
+};
+export const OUTAGE_EVENTS = {
+  label: {
+    pt: "Isso não é hipótese — já aconteceu:",
+    en: "This isn't hypothetical — it already happened:",
+  } as Localized,
+  events: [
+    {
+      date: { pt: "04 out 2021", en: "Oct 4, 2021" },
+      title: { pt: "O dia em que a Meta sumiu", en: "The day Meta vanished" },
+      value: 7,
+      suffix: { pt: "h", en: "h" },
+      statLabel: { pt: "fora do ar", en: "offline" },
+      desc: {
+        pt: "Facebook, Instagram e WhatsApp caíram juntos no mundo inteiro. Milhões de negócios ficaram mudos por quase 7 horas.",
+        en: "Facebook, Instagram and WhatsApp went down together worldwide. Millions of businesses went silent for almost 7 hours.",
+      },
+      color: "#fb7185",
+    },
+    {
+      date: { pt: "18 jan 2025", en: "Jan 18, 2025" },
+      title: { pt: "TikTok apagado nos EUA", en: "TikTok switched off in the US" },
+      value: 170,
+      suffix: { pt: " mi", en: "M" },
+      statLabel: { pt: "de usuários no escuro, da noite pro dia", en: "users in the dark, overnight" },
+      desc: {
+        pt: "Audiência construída por anos, congelada por uma decisão de governo. Quem só existia lá, sumiu junto.",
+        en: "Audiences built over years, frozen by a government decision. Whoever only existed there vanished too.",
+      },
+      color: "#a78bfa",
+    },
+    {
+      date: { pt: "Todos os anos", en: "Every year" },
+      title: { pt: "Contas banidas sem aviso", en: "Accounts banned without warning" },
+      value: 100,
+      suffix: { pt: "%", en: "%" },
+      statLabel: { pt: "das contas sujeitas a bloqueio", en: "of accounts subject to blocking" },
+      desc: {
+        pt: "Perfis são bloqueados por engano todos os dias — e o recurso pode levar semanas. Um site não é banido por robô de moderação.",
+        en: "Profiles get blocked by mistake every day — appeals can take weeks. A website can't be banned by a moderation bot.",
+      },
+      color: "#fbbf24",
+    },
+  ] as OutageEvent[],
+};
+
+/** LIGHTHOUSE — prova técnica na seção de números. */
+export const LIGHTHOUSE = {
+  title: {
+    pt: "Lighthouse deste site — a auditoria do próprio Google",
+    en: "This site's Lighthouse — Google's own audit",
+  } as Localized,
+  note: {
+    pt: "Nota máxima não é promessa: é o padrão de tudo que eu entrego.",
+    en: "A perfect score isn't a promise: it's the baseline of everything I ship.",
+  } as Localized,
+  labels: {
+    perf: { pt: "Performance", en: "Performance" },
+    a11y: { pt: "Acessibilidade", en: "Accessibility" },
+    best: { pt: "Boas práticas", en: "Best practices" },
+    seo: { pt: "SEO", en: "SEO" },
+  },
+};

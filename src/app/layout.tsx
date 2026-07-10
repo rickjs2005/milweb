@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { WhatsappFab } from "@/components/whatsapp-fab";
+import { Konami } from "@/components/konami";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { getLocale, htmlLang } from "@/lib/i18n";
 import "./globals.css";
@@ -91,6 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SmoothScroll />
         {children}
         <WhatsappFab locale={locale} />
+        <Konami />
         <Analytics />
         <SpeedInsights />
       </body>

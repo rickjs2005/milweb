@@ -223,6 +223,14 @@
     0%, 4%, 100% { transform: scaleY(1); }
     2% { transform: scaleY(0.1); }
   }
+  /* Modo festa (Konami code ↑↑↓↓←→←→BA): a paleta inteira gira em hue. */
+  .party {
+    animation: party-hue 4s linear infinite;
+  }
+  @keyframes party-hue {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(360deg); }
+  }
   /* Assinatura da marca: o monograma "MW" se desenha uma vez ao montar.
      pathLength=1 nos paths normaliza o comprimento, então dasharray/offset
      funcionam independentemente do tamanho real do traço. */

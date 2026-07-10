@@ -1,6 +1,6 @@
-import { DEPENDENCY, PROFILE, type Locale } from "@/lib/content";
+import { DEPENDENCY, OUTAGE_EVENTS, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
-import { Reveal } from "./reveal";
+import { Reveal, Counter } from "./reveal";
 import { DependencyCalc, type CalcStrings } from "./dependency-calc";
 import { DependencyWidgets, type WidgetStrings } from "./dependency-widgets";
 
@@ -70,6 +70,31 @@ export function Dependency({ locale }: { locale: Locale }) {
 
       <Reveal delay={100} className="mt-4">
         <DependencyWidgets s={widgetStrings} />
+      </Reveal>
+
+      {/* prova histórica: apagões que já aconteceram */}
+      <Reveal delay={100} className="mt-10">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle">
+          {t(OUTAGE_EVENTS.label)}
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {OUTAGE_EVENTS.events.map((e, i) => (
+            <div key={e.title.en} className="glass rounded-2xl p-6">
+              <span
+                className="inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: e.color, border: `1px solid ${e.color}44`, background: `${e.color}14` }}
+              >
+                {t(e.date)}
+              </span>
+              <h3 className="font-display mt-4 text-lg font-bold text-fg">{t(e.title)}</h3>
+              <p className="font-display mt-3 text-4xl font-bold tabular-nums" style={{ color: e.color }}>
+                <Counter value={e.value} suffix={t(e.suffix)} delay={i * 140} />
+              </p>
+              <p className="mt-0.5 text-xs text-fg-subtle">{t(e.statLabel)}</p>
+              <p className="mt-3 text-sm leading-relaxed text-fg-muted">{t(e.desc)}</p>
+            </div>
+          ))}
+        </div>
       </Reveal>
 
       <Reveal delay={100} className="mt-12 text-center">

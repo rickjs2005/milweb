@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Counter } from "./reveal";
+import { useInViewOnce } from "@/lib/use-in-view-once";
 
 /** Strings já localizadas pros widgets do mini-dashboard. */
 export type WidgetStrings = {
@@ -18,41 +18,6 @@ export type WidgetStrings = {
   outageAxis: string;
   outageWindow: string;
 };
-
-/** Dispara uma vez quando o elemento entra na viewport (com fail-safe). */
-function useInViewOnce<T extends HTMLElement>(): [React.RefObject<T | null>, boolean] {
-  const ref = useRef<T>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!el || reduce || typeof IntersectionObserver === "undefined") {
-      setShown(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.3, rootMargin: "0px 0px -40px 0px" },
-    );
-    io.observe(el);
-    const fallback = setTimeout(() => {
-      setShown(true);
-      io.disconnect();
-    }, 1400);
-    return () => {
-      clearTimeout(fallback);
-      io.disconnect();
-    };
-  }, []);
-
-  return [ref, shown];
-}
 
 const DANGER = "#fb7185";
 const AMBER = "#fbbf24";
