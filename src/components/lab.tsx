@@ -1,5 +1,7 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { LAB, UI, type Locale } from "@/lib/content";
-import { makeT } from "@/lib/i18n";
+import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { LabVideo } from "./lab-video";
 
@@ -53,6 +55,15 @@ export function Lab({ locale }: { locale: Locale }) {
           </Reveal>
         ))}
       </div>
+
+      <Reveal>
+        <Link
+          href={withLocale(locale, "/lab")}
+          className="mt-10 inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-soft"
+        >
+          {t(UI.sections.labCta)} <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Reveal>
     </section>
   );
 }

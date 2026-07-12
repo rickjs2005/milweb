@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SmoothScroll } from "@/components/smooth-scroll";
+import { TrackConversions } from "@/components/track-conversions";
 import { WhatsappFab } from "@/components/whatsapp-fab";
 import { Konami } from "@/components/konami";
 import { PROFILE, SITE_URL } from "@/lib/content";
@@ -112,6 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <SmoothScroll />
+        <TrackConversions />
         {children}
         <WhatsappFab locale={locale} />
         <Konami />

@@ -39,6 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...entry("/", 1),
     ...SERVICES.flatMap((s) => entry(`/${s.slug}`, 0.9)),
+    ...entry("/lab", 0.8),
     ...PROJECTS.flatMap((p) => entry(`/projetos/${p.slug}`, 0.8)),
   ];
 }

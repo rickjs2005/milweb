@@ -367,6 +367,8 @@ export type Step = { n: string; title: Localized; desc: Localized };
 /** Vídeos do Lab: animações autorais feitas 100% em código (Remotion). */
 export type LabClip = {
   src: string;
+  /** versão completa, com áudio (página /lab) */
+  full: string;
   poster: string;
   title: Localized;
   desc: Localized;
@@ -375,6 +377,7 @@ export type LabClip = {
 export const LAB: LabClip[] = [
   {
     src: "/lab/cosmos.mp4",
+    full: "/lab/full-cosmos.mp4",
     poster: "/lab/cosmos.jpg",
     title: { pt: "Cosmos", en: "Cosmos" },
     desc: {
@@ -385,6 +388,7 @@ export const LAB: LabClip[] = [
   },
   {
     src: "/lab/explosion.mp4",
+    full: "/lab/full-explosion.mp4",
     poster: "/lab/explosion.jpg",
     title: { pt: "Element Explosion", en: "Element Explosion" },
     desc: {
@@ -395,6 +399,7 @@ export const LAB: LabClip[] = [
   },
   {
     src: "/lab/reel.mp4",
+    full: "/lab/full-reel.mp4",
     poster: "/lab/reel.jpg",
     title: { pt: "Site em 30s", en: "Website in 30s" },
     desc: {
@@ -404,6 +409,34 @@ export const LAB: LabClip[] = [
     tags: ["Remotion", "TypeScript", "60fps"],
   },
 ];
+
+/** Página /lab (destino de bio nas redes): strings próprias. */
+export const LAB_PAGE = {
+  metaTitle: {
+    pt: "Lab MilWeb — animações e vídeos feitos 100% em código",
+    en: "MilWeb Lab — animations and videos made 100% in code",
+  },
+  metaDescription: {
+    pt: "Os filmes do Lab da MilWeb: universo, partículas e interfaces animados inteiramente em código com React, Remotion, Three.js e shaders. Veja como foram feitos.",
+    en: "MilWeb Lab films: universe, particles and interfaces animated entirely in code with React, Remotion, Three.js and shaders. See how they were made.",
+  },
+  eyebrow: { pt: "Lab MilWeb", en: "MilWeb Lab" },
+  title: { pt: "Feito de código,", en: "Made of code," },
+  titleHighlight: { pt: "do primeiro ao último frame", en: "from the first frame to the last" },
+  sub: {
+    pt: "Nenhuma imagem de banco, nenhum editor de vídeo: cada frame destes filmes foi renderizado por código que eu escrevi — a mesma engenharia que coloco nos projetos dos clientes.",
+    en: "No stock footage, no video editor: every frame of these films was rendered by code I wrote — the same engineering I put into client projects.",
+  },
+  madeWith: { pt: "Feito com", en: "Made with" },
+  watchHint: { pt: "Toque para assistir com som", en: "Tap to watch with sound" },
+  ctaTitle: { pt: "Quer esse nível de capricho no seu projeto?", en: "Want this level of craft in your project?" },
+  ctaWhats: {
+    pt: "Olá Rick! Vi os vídeos do Lab e quero algo nesse nível para minha marca.",
+    en: "Hi Rick! I saw the Lab videos and want something at this level for my brand.",
+  },
+  ctaButton: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
+  back: { pt: "Voltar para o site", en: "Back to the site" },
+} as const;
 
 export const PROCESS: Step[] = [
   { n: "01", title: { pt: "Descoberta", en: "Discovery" }, desc: { pt: "Entendo seu negócio, o problema e o objetivo. Sem isso, não começo.", en: "I understand your business, the problem and the goal. I don't start without it." } },
@@ -496,6 +529,7 @@ export const UI = {
       pt: "Nada de banco de vídeo: estes filmes foram programados em React, Three.js e shaders — o mesmo capricho técnico que vai para o seu projeto.",
       en: "No stock footage: these films were programmed with React, Three.js and shaders — the same technical care that goes into your project.",
     },
+    labCta: { pt: "Assistir com som e ver como foi feito", en: "Watch with sound and see how it was made" },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },

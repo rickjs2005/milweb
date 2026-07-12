@@ -151,4 +151,90 @@ export const SERVICES: Service[] = [
       en: "Hi Rick! I'd like a quote for a high-conversion landing page.",
     },
   },
+  {
+    slug: "loja-virtual",
+    label: { pt: "Loja virtual", en: "Online store" },
+    metaTitle: {
+      pt: "Loja Virtual Sob Medida — venda online sem taxa por pedido",
+      en: "Custom Online Store — sell online without per-order fees",
+    },
+    metaDescription: {
+      pt: "Loja virtual completa e sob medida: Pix e cartão integrados, gestão de pedidos e estoque, produtos indexados no Google e zero taxa por venda. Orçamento gratuito pelo WhatsApp.",
+      en: "A complete custom online store: integrated payments, order and stock management, Google-indexed products and zero per-sale fees. Free quote via WhatsApp.",
+    },
+    eyebrow: { pt: "Loja virtual", en: "Online store" },
+    title: { pt: "Sua loja online vendendo", en: "Your online store selling" },
+    titleHighlight: { pt: "24 horas por dia", en: "24 hours a day" },
+    sub: {
+      pt: "E-commerce completo com a cara da sua marca: pagamento integrado, gestão de pedidos e estoque — sem mensalidade de plataforma, sem taxa mordendo cada venda.",
+      en: "A complete e-commerce with your brand's identity: integrated payments, order and stock management — no platform subscription, no fee biting every sale.",
+    },
+    benefits: [
+      { icon: "CreditCard", title: { pt: "Pix e cartão integrados", en: "Integrated payments" }, desc: { pt: "Checkout com Pix, cartão e boleto caindo direto na sua conta — sem intermediário seu.", en: "Checkout with the payment methods your customers use, settling straight to your account." } },
+      { icon: "BadgePercent", title: { pt: "Zero taxa por venda", en: "Zero per-sale fees" }, desc: { pt: "Plataformas prontas cobram mensalidade + % por pedido. Aqui a loja é sua, e a margem também.", en: "Ready-made platforms charge subscriptions + a cut per order. Here the store is yours — and so is the margin." } },
+      { icon: "Package", title: { pt: "Pedidos e estoque na mão", en: "Orders and stock in hand" }, desc: { pt: "Painel pra acompanhar pedidos, baixar estoque e organizar entregas sem planilha.", en: "A panel to track orders, update stock and organize deliveries without spreadsheets." } },
+      { icon: "Search", title: { pt: "Produtos no Google", en: "Products on Google" }, desc: { pt: "Cada produto vira página indexável com dados estruturados — tráfego grátis todo mês.", en: "Every product becomes an indexable page with structured data — free traffic every month." } },
+      { icon: "Zap", title: { pt: "Rápida como um app", en: "Fast like an app" }, desc: { pt: "Loja lenta perde carrinho: aqui as páginas abrem instantaneamente, no 4G do seu cliente.", en: "Slow stores lose carts: here pages open instantly, even on your customer's mobile data." } },
+      { icon: "LifeBuoy", title: { pt: "Suporte pós-lançamento", en: "Post-launch support" }, desc: { pt: "Ajustes e acompanhamento depois do ar, previstos em contrato.", en: "Tweaks and follow-up after launch, guaranteed by contract." } },
+    ],
+    steps: [
+      { title: { pt: "Briefing", en: "Briefing" }, desc: { pt: "Produtos, categorias, formas de pagamento e logística de entrega.", en: "Products, categories, payment methods and delivery logistics." } },
+      { title: { pt: "Design da loja", en: "Store design" }, desc: { pt: "Vitrine, página de produto e checkout com a identidade da marca.", en: "Showcase, product page and checkout with your brand identity." } },
+      { title: { pt: "Pagamentos + frete", en: "Payments + shipping" }, desc: { pt: "Integração de pagamento e cálculo de frete testados de ponta a ponta.", en: "Payment integration and shipping calculation, tested end to end." } },
+      { title: { pt: "Lançamento", en: "Launch" }, desc: { pt: "No ar com domínio, produtos cadastrados e você treinado no painel.", en: "Live with your domain, products loaded and you trained on the panel." } },
+    ],
+    faq: [
+      { q: { pt: "Qual a diferença pra Shopify/Nuvemshop?", en: "How is it different from Shopify?" }, a: { pt: "Plataformas prontas cobram mensalidade pra sempre e limitam o design ao tema. Uma loja sob medida é sua: sem aluguel, com a cara exata da marca e liberdade total pra crescer — o custo fixo é só hospedagem.", en: "Ready-made platforms charge forever and limit design to themes. A custom store is yours: no rent, your brand's exact look and total freedom to grow — the only fixed cost is hosting." } },
+      { q: { pt: "Como recebo o dinheiro das vendas?", en: "How do I receive the money?" }, a: { pt: "Integro um gateway de pagamento (Pix, cartão, boleto) na SUA conta — o dinheiro cai direto pra você, sem passar por mim.", en: "I integrate a payment gateway into YOUR account — the money settles straight to you, never through me." } },
+      { q: { pt: "Já vendo em marketplace. Vale a pena?", en: "I already sell on a marketplace. Is it worth it?" }, a: { pt: "Vale — como canal próprio em paralelo. No marketplace o cliente é deles (e a taxa também); na sua loja você constrói base própria, remarketing e recompra sem comissão.", en: "Yes — as your own parallel channel. On a marketplace the customer is theirs (and so is the fee); in your store you build your own base, remarketing and repeat purchases with no commission." } },
+      { q: { pt: "Eu mesmo cadastro os produtos?", en: "Can I manage products myself?" }, a: { pt: "Sim: painel simples pra adicionar produtos, fotos, preços, variações e estoque — do computador ou do celular.", en: "Yes: a simple panel to add products, photos, prices, variants and stock — from desktop or phone." } },
+    ],
+    ctaWhats: {
+      pt: "Olá Rick! Quero um orçamento para uma loja virtual sob medida.",
+      en: "Hi Rick! I'd like a quote for a custom online store.",
+    },
+  },
+  {
+    slug: "sistemas-sob-medida",
+    label: { pt: "Sistemas sob medida", en: "Custom systems" },
+    metaTitle: {
+      pt: "Sistemas Web Sob Medida e SaaS — automatize a operação do seu negócio",
+      en: "Custom Web Systems & SaaS — automate your business operations",
+    },
+    metaDescription: {
+      pt: "Desenvolvimento de sistemas web sob medida: automatize processos, organize dados e tenha relatórios em tempo real. Do controle interno ao SaaS completo. Orçamento gratuito.",
+      en: "Custom web system development: automate processes, organize data and get real-time reports. From internal tools to a full SaaS. Free quote.",
+    },
+    eyebrow: { pt: "Sistemas sob medida", en: "Custom systems" },
+    title: { pt: "O sistema que a sua operação", en: "The system your operation" },
+    titleHighlight: { pt: "pedia há anos", en: "has needed for years" },
+    sub: {
+      pt: "Chega de planilha quebrada e processo manual: um sistema web feito pro SEU fluxo — pedidos, clientes, financeiro, relatórios — acessível de qualquer lugar.",
+      en: "No more broken spreadsheets and manual processes: a web system built for YOUR workflow — orders, customers, finances, reports — accessible from anywhere.",
+    },
+    benefits: [
+      { icon: "Workflow", title: { pt: "Seu processo, automatizado", en: "Your process, automated" }, desc: { pt: "O sistema segue o jeito que o SEU negócio funciona — não o contrário.", en: "The system follows how YOUR business works — not the other way around." } },
+      { icon: "Database", title: { pt: "Dados organizados", en: "Organized data" }, desc: { pt: "Clientes, pedidos e histórico num lugar só, com busca instantânea — adeus planilhas espalhadas.", en: "Customers, orders and history in one place with instant search — goodbye scattered spreadsheets." } },
+      { icon: "LineChart", title: { pt: "Relatórios em tempo real", en: "Real-time reports" }, desc: { pt: "Dashboards com os números que importam pra decidir — sem esperar fechamento do mês.", en: "Dashboards with the numbers that matter — no waiting for month-end closing." } },
+      { icon: "ShieldCheck", title: { pt: "Acessos e permissões", en: "Access and permissions" }, desc: { pt: "Cada pessoa da equipe vê só o que deve — com registro de quem fez o quê.", en: "Each team member sees only what they should — with a log of who did what." } },
+      { icon: "Smartphone", title: { pt: "Funciona em qualquer tela", en: "Works on any screen" }, desc: { pt: "Do balcão ao campo: computador, tablet e celular, sem instalar nada.", en: "From the counter to the field: desktop, tablet and phone, nothing to install." } },
+      { icon: "LifeBuoy", title: { pt: "Evolui com o negócio", en: "Grows with the business" }, desc: { pt: "Começa pelo essencial e ganha módulos conforme a operação cresce.", en: "Starts with the essentials and gains modules as the operation grows." } },
+    ],
+    steps: [
+      { title: { pt: "Descoberta", en: "Discovery" }, desc: { pt: "Mapeio seu fluxo real: onde dói, onde se perde tempo e dinheiro.", en: "I map your real workflow: where it hurts, where time and money leak." } },
+      { title: { pt: "Protótipo", en: "Prototype" }, desc: { pt: "Você navega nas telas e aprova antes de qualquer linha de código.", en: "You navigate the screens and approve before any line of code." } },
+      { title: { pt: "Sprints", en: "Sprints" }, desc: { pt: "Entregas quinzenais funcionando — você acompanha o progresso de verdade.", en: "Working deliveries every two weeks — you follow real progress." } },
+      { title: { pt: "Implantação", en: "Rollout" }, desc: { pt: "Migração dos dados, treinamento da equipe e suporte de perto no início.", en: "Data migration, team training and close support at the start." } },
+    ],
+    faq: [
+      { q: { pt: "Não é mais barato usar um sistema pronto?", en: "Isn't off-the-shelf software cheaper?" }, a: { pt: "No começo, sim — mas você paga mensalidade pra sempre por algo que atende 70% do seu fluxo e te obriga a contornar os outros 30% na planilha. O sob medida custa mais uma vez e atende 100%, sem aluguel.", en: "Initially, yes — but you pay a subscription forever for something that covers 70% of your workflow and forces spreadsheets for the other 30%. Custom costs once and covers 100%, with no rent." } },
+      { q: { pt: "Quanto tempo leva?", en: "How long does it take?" }, a: { pt: "A primeira versão útil (MVP) normalmente sai entre 4 e 8 semanas, dependendo do escopo. Você começa a usar cedo e o sistema evolui em sprints.", en: "The first useful version (MVP) usually ships in 4–8 weeks depending on scope. You start using it early and it evolves in sprints." } },
+      { q: { pt: "Integra com o que eu já uso?", en: "Does it integrate with what I already use?" }, a: { pt: "Sim: WhatsApp, planilhas, emissão de nota, meios de pagamento, ERPs — levanto as integrações no briefing e o sistema conversa com o que já existe.", en: "Yes: WhatsApp, spreadsheets, invoicing, payment providers, ERPs — I map integrations at the briefing and the system talks to what already exists." } },
+      { q: { pt: "O código é meu?", en: "Do I own the code?" }, a: { pt: "Sim — código e dados são seus, por contrato. Sem aprisionamento: qualquer dev consegue dar manutenção no futuro.", en: "Yes — code and data are yours, by contract. No lock-in: any developer can maintain it in the future." } },
+    ],
+    ctaWhats: {
+      pt: "Olá Rick! Quero um orçamento para um sistema sob medida para meu negócio.",
+      en: "Hi Rick! I'd like a quote for a custom system for my business.",
+    },
+  },
 ];

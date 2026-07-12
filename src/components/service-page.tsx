@@ -2,6 +2,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgePercent,
+  CreditCard,
+  Database,
   FlaskConical,
   Gauge,
   Globe,
@@ -10,12 +12,15 @@ import {
   LineChart,
   Link2,
   MessageCircle,
+  Package,
   Palette,
   Search,
+  ShieldCheck,
   ShoppingCart,
   Smartphone,
   Sparkles,
   Target,
+  Workflow,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -30,6 +35,7 @@ const ICONS: Record<string, LucideIcon> = {
   Palette, Gauge, Search, Smartphone, Globe, LifeBuoy,
   ShoppingCart, BadgePercent, ImageUp, Link2,
   Target, Zap, MessageCircle, LineChart, FlaskConical,
+  CreditCard, Package, Workflow, Database, ShieldCheck,
 };
 
 /** Página de serviço (SEO): hero → benefícios → processo → FAQ → contato. */
