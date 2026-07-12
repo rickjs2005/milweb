@@ -117,6 +117,59 @@ export function CaseStudy({
         </p>
       )}
 
+      {/* Aprofundamento técnico: arquitetura/decisões + destaques + galeria */}
+      {p.caseStudy && (
+        <div className="mt-14 border-t border-line/10 pt-12">
+          <p className="font-mono text-xs uppercase tracking-wider text-accent">
+            {t(UI.labels.howItWasBuilt)}
+          </p>
+          <div className="mt-5 space-y-4">
+            {p.caseStudy.narrative.map((paragraph, i) => (
+              <p key={i} className="text-base leading-relaxed text-fg-muted sm:text-lg">
+                {t(paragraph)}
+              </p>
+            ))}
+          </div>
+
+          {!!p.caseStudy.highlights?.length && (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {p.caseStudy.highlights.map((h, i) => (
+                <div key={i} className="rounded-xl border border-line/10 bg-surface-2/40 p-5">
+                  <p className="font-semibold text-fg">{t(h.label)}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-fg-subtle">{t(h.detail)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!!p.caseStudy.gallery?.length && (
+            <div className="mt-10">
+              <p className="font-mono text-xs uppercase tracking-wider text-fg-subtle">
+                {t(UI.labels.gallery)}
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {p.caseStudy.gallery.map((g, i) => (
+                  <a
+                    key={i}
+                    href={g.src}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block overflow-hidden rounded-xl border border-line/10 bg-surface-2/60 transition-colors hover:border-accent/40"
+                  >
+                    <img
+                      src={g.src}
+                      alt={t(g.alt)}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Stack */}
       <div className="mt-10">
         <p className="font-mono text-xs uppercase tracking-wider text-fg-subtle">Stack</p>
