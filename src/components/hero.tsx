@@ -115,8 +115,17 @@ export function Hero({ locale }: { locale: Locale }) {
             className="w-full rounded-2xl border border-line/15 ring-1 ring-inset ring-accent/20 shadow-[0_0_80px_-20px_rgb(var(--accent)/0.5)]"
           />
 
-          {/* Milo vivo debruçado no canto da cena (pisca + flutua via CSS) */}
-          <div className="animate-fade-up absolute -bottom-10 -left-5 z-10 hidden w-28 [animation-delay:1.2s] sm:block">
+          {/* Milo vivo debruçado no canto da cena (pisca + flutua via CSS).
+              Fica quase todo SOBRE a foto (só -bottom-3, não -bottom-10) E
+              ganha um halo próprio atrás (glow-pad abaixo): sem isso, o azul
+              do hoodie é parecido demais com o canto escuro da própria foto
+              e com o bg-grid da seção, então ele "some" onde não há esse
+              contraste — dando a falsa impressão de um corpo cortado/solto. */}
+          <div className="animate-fade-up absolute -bottom-3 -left-6 z-10 hidden w-28 [animation-delay:1.2s] sm:block">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-24 scale-110 rounded-full bg-accent/35 blur-2xl"
+            />
             <span className="animate-fade-up absolute -top-8 left-20 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
               {t(UI.hero.miloHi)}
             </span>
