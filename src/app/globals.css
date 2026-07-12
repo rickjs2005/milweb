@@ -12,7 +12,7 @@
     --surface-2: 22 27 40;
     --fg: 244 247 252;
     --fg-muted: 173 182 199;
-    --fg-subtle: 120 131 150;
+    --fg-subtle: 137 148 166; /* #8994A6 — 5.9:1 no fundo escuro (AA com folga) */
     --line: 120 180 255;
     --accent: 56 189 248;       /* #38BDF8 — azul MilWeb */
     --accent-soft: 125 211 252; /* #7DD3FC */
@@ -26,7 +26,7 @@
     --surface-2: 241 245 249;
     --fg: 15 23 42;
     --fg-muted: 51 65 85;
-    --fg-subtle: 100 116 139;
+    --fg-subtle: 82 96 117; /* #526075 — 5.5:1 no fundo claro (o anterior falhava AA) */
     --line: 14 116 180;
     --accent: 2 132 199;        /* #0284C7 — azul fechado (AA em fundo claro) */
     --accent-soft: 3 105 161;
@@ -35,8 +35,17 @@
     color-scheme: light;
   }
 
-  /* Scroll suave é gerenciado pelo Lenis (SmoothScroll). Em
-     prefers-reduced-motion o Lenis não inicia e o scroll nativo assume. */
+  /* Scroll suave: Lenis no desktop; em telas de toque (pointer: coarse) o
+     Lenis não inicia (INP) e o smooth nativo do browser assume nas âncoras.
+     scroll-padding compensa a nav sticky em qualquer modo. */
+  html {
+    scroll-padding-top: 5rem;
+  }
+  @media (pointer: coarse) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

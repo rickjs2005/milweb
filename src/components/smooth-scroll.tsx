@@ -29,6 +29,10 @@ export function SmoothScroll() {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
+    // Em telas de toque o Lenis não melhora nada (só roda JS por frame e
+    // piora o INP): o scroll nativo assume, com smooth via CSS no globals.
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    if (coarse) return;
 
     const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
 

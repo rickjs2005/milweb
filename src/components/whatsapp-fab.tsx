@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MILO_FAB, PROFILE, type Locale } from "@/lib/content";
 import { Milo } from "./milo";
 
@@ -21,9 +21,18 @@ function WhatsAppIcon({ className }: { className?: string }) {
 export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
   const [visible, setVisible] = useState(false);
   const [wave, setWave] = useState(false);
+  const visibleRef = useRef(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 300);
+    // setState só quando o limiar é CRUZADO — o listener em si vira um
+    // comparativo barato e o React não é acionado a cada pixel de scroll.
+    const onScroll = () => {
+      const v = window.scrollY > 300;
+      if (v !== visibleRef.current) {
+        visibleRef.current = v;
+        setVisible(v);
+      }
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

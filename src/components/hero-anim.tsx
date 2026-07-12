@@ -4,8 +4,9 @@ import { useRef, type ReactNode } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 
 /**
  * Ilha client do Hero: roda a animação de entrada (GSAP) sobre os filhos
@@ -30,16 +31,33 @@ export function HeroAnim({
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const items = root.querySelectorAll<HTMLElement>("[data-hero]");
-      const words = root.querySelectorAll<HTMLElement>("[data-hero-word]");
+      // Palavras normais viram letras (SplitText, grátis desde o GSAP 3.13);
+      // a palavra em gradiente anima inteira — split quebraria o bg-clip.
+      const leadWords = root.querySelectorAll<HTMLElement>(
+        "[data-hero-word]:not(.text-gradient)",
+      );
+      const gradWord = root.querySelector<HTMLElement>("[data-hero-word].text-gradient");
       const visual = root.querySelector<HTMLElement>(".hero-visual");
       gsap.set(items, { autoAlpha: 0, y: 26 });
-      if (words.length) gsap.set(words, { autoAlpha: 0, y: 30, rotateX: 45, transformPerspective: 600 });
       if (visual) gsap.set(visual, { autoAlpha: 0, scale: 0.9 });
 
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7 }, 0.1);
-      if (words.length) {
-        tl.to(words, { autoAlpha: 1, y: 0, rotateX: 0, stagger: 0.055, duration: 0.7 }, 0.2);
+      if (leadWords.length) {
+        // Letras sobem de dentro de uma máscara — o reveal "de editorial".
+        const split = SplitText.create(leadWords, { type: "chars", mask: "chars" });
+        tl.from(
+          split.chars,
+          { yPercent: 118, stagger: 0.016, duration: 0.75, ease: "power4.out" },
+          0.18,
+        );
+      }
+      if (gradWord) {
+        tl.from(
+          gradWord,
+          { yPercent: 55, autoAlpha: 0, filter: "blur(12px)", duration: 0.8 },
+          "-=0.45",
+        );
       }
       if (visual) {
         tl.to(visual, { autoAlpha: 1, scale: 1, duration: 1, ease: "power4.out" }, 0.2);

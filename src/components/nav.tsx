@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
@@ -22,8 +22,8 @@ export function Nav({
   contactLabel: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<string>("");
+  const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ids = links.map((l) => l.href.slice(1));
@@ -41,15 +41,27 @@ export function Nav({
     return () => io.disconnect();
   }, [links]);
 
+  // Barra de progresso escrita direto no DOM (via rAF): zero re-render da
+  // Nav durante o scroll — era a maior fonte de INP ruim no mobile.
   useEffect(() => {
-    const onScroll = () => {
+    let raf = 0;
+    const paint = () => {
+      raf = 0;
       const h = document.documentElement;
       const max = h.scrollHeight - h.clientHeight;
-      setProgress(max > 0 ? h.scrollTop / max : 0);
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${max > 0 ? h.scrollTop / max : 0})`;
+      }
     };
-    onScroll();
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(paint);
+    };
+    paint();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,9 +74,10 @@ export function Nav({
   return (
     <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
       <div
+        ref={progressRef}
         aria-hidden
         className="absolute inset-x-0 top-0 h-px origin-left bg-accent"
-        style={{ transform: `scaleX(${progress})` }}
+        style={{ transform: "scaleX(0)" }}
       />
       <nav className="container-page flex h-16 items-center justify-between">
         <a href="#top" aria-label="MilWeb — início">
