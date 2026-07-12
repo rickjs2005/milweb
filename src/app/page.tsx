@@ -6,6 +6,7 @@ import { Google } from "@/components/google";
 import { Why } from "@/components/why";
 import { Stats } from "@/components/stats";
 import { Projects } from "@/components/projects";
+import { Lab } from "@/components/lab";
 import { Process } from "@/components/process";
 import { Tech } from "@/components/tech";
 import { Faq } from "@/components/faq";
@@ -41,6 +42,7 @@ export default async function Home() {
         <Dependency locale={locale} />
         <Google locale={locale} />
         <Projects locale={locale} />
+        <Lab locale={locale} />
         <Process locale={locale} />
         <Tech locale={locale} />
         <Faq locale={locale} />

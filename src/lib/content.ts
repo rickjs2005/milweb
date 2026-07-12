@@ -364,6 +364,47 @@ export const PROJECTS: Project[] = [
 
 /** COMO EU TRABALHO — processo em 4 passos. */
 export type Step = { n: string; title: Localized; desc: Localized };
+/** Vídeos do Lab: animações autorais feitas 100% em código (Remotion). */
+export type LabClip = {
+  src: string;
+  poster: string;
+  title: Localized;
+  desc: Localized;
+  tags: string[];
+};
+export const LAB: LabClip[] = [
+  {
+    src: "/lab/cosmos.mp4",
+    poster: "/lab/cosmos.jpg",
+    title: { pt: "Cosmos", en: "Cosmos" },
+    desc: {
+      pt: "Da Terra à teia cósmica: zoom-out contínuo com a Terra real da NASA em shader.",
+      en: "From Earth to the cosmic web: a continuous zoom-out with NASA's real Earth in a shader.",
+    },
+    tags: ["Three.js", "WebGL", "GLSL"],
+  },
+  {
+    src: "/lab/explosion.mp4",
+    poster: "/lab/explosion.jpg",
+    title: { pt: "Element Explosion", en: "Element Explosion" },
+    desc: {
+      pt: "Um ponto de luz explode e vira interface, dashboard e devices — física de partículas própria.",
+      en: "A point of light explodes into interface, dashboard and devices — a custom particle system.",
+    },
+    tags: ["Remotion", "React", "Partículas"],
+  },
+  {
+    src: "/lab/reel.mp4",
+    poster: "/lab/reel.jpg",
+    title: { pt: "Site em 30s", en: "Website in 30s" },
+    desc: {
+      pt: "Um site nascendo do zero — wireframe, componentes e dashboard, tudo animado em código.",
+      en: "A website born from scratch — wireframe, components and dashboard, all animated in code.",
+    },
+    tags: ["Remotion", "TypeScript", "60fps"],
+  },
+];
+
 export const PROCESS: Step[] = [
   { n: "01", title: { pt: "Descoberta", en: "Discovery" }, desc: { pt: "Entendo seu negócio, o problema e o objetivo. Sem isso, não começo.", en: "I understand your business, the problem and the goal. I don't start without it." } },
   { n: "02", title: { pt: "Design & Protótipo", en: "Design & Prototype" }, desc: { pt: "Desenho a solução e a interface antes de codar — você aprova a direção.", en: "I design the solution and the UI before coding — you approve the direction." } },
@@ -449,6 +490,12 @@ export const UI = {
     projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS — uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS — a sample of what I can build." },
     projectsLegendProof: { pt: "Cliente real · em produção", en: "Real client · in production" },
     projectsLegendDemo: { pt: "Projeto autoral · demo/protótipo", en: "Personal project · demo/prototype" },
+    labEyebrow: { pt: "Lab", en: "Lab" },
+    labTitle: { pt: "Animações 100% em código", en: "Animations 100% in code" },
+    labSub: {
+      pt: "Nada de banco de vídeo: estes filmes foram programados em React, Three.js e shaders — o mesmo capricho técnico que vai para o seu projeto.",
+      en: "No stock footage: these films were programmed with React, Three.js and shaders — the same technical care that goes into your project.",
+    },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },

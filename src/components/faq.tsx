@@ -22,7 +22,7 @@ export function Faq({ locale }: { locale: Locale }) {
       />
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
-          <span className="text-accent/40">08 / </span>
+          <span className="text-accent/40">09 / </span>
           {t(UI.sections.faqEyebrow)}
         </p>
         <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">

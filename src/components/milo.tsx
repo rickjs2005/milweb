@@ -62,7 +62,9 @@ export function Milo({
         <path d="M156 110v5a4 4 0 0 1-4 4h-5" />
       </g>
 
-      {/* rosto por pose */}
+      {/* rosto por pose — o grupo inteiro "olha" na direção de
+          --milo-lx/--milo-ly (setadas pela ilha MiloLive; 0 por padrão) */}
+      <g style={{ transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" }}>
       {pose === "shocked" ? (
         <g>
           <circle cx="89" cy="80" r="13" fill="none" stroke="rgb(var(--accent))" strokeWidth="6" />
@@ -81,6 +83,7 @@ export function Milo({
           <path d="M98 106c4 5 20 5 24 0" fill="none" stroke="rgb(var(--accent))" strokeWidth="4.5" strokeLinecap="round" />
         </g>
       )}
+      </g>
     </svg>
   );
 }

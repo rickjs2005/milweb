@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
-import { Milo } from "./milo";
+import { MiloLive } from "./milo-live";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
@@ -120,7 +120,7 @@ export function Hero({ locale }: { locale: Locale }) {
             <span className="animate-fade-up absolute -top-8 left-20 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
               {t(UI.hero.miloHi)}
             </span>
-            <Milo className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
+            <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
           </div>
         </div>
       </div>
