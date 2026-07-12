@@ -6,6 +6,7 @@ import { getLocale, makeT, withLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Reveal } from "@/components/reveal";
 import { Footer } from "@/components/contact";
+import { LabPlayer } from "@/components/lab-player";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -65,15 +66,12 @@ export default async function LabPage() {
             <Reveal key={clip.full} delay={i * 0.08}>
               <figure className="overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
                 <div className="relative aspect-[9/16]">
-                  {/* Vídeo completo, com som — o visitante dá o play. */}
-                  <video
+                  {/* Filme completo já tocando (mudo) — som a um toque. */}
+                  <LabPlayer
                     src={clip.full}
                     poster={clip.poster}
-                    controls
-                    playsInline
-                    preload="none"
-                    aria-label={t(clip.title)}
-                    className="block h-full w-full object-cover"
+                    label={t(clip.title)}
+                    hint={t(LAB_PAGE.watchHint)}
                   />
                 </div>
                 <figcaption className="space-y-2 p-5">
