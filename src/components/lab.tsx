@@ -4,6 +4,7 @@ import { LAB, UI, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { LabVideo } from "./lab-video";
+import { LabCarousel } from "./lab-carousel";
 
 /**
  * Lab — vitrine dos filmes autorais feitos 100% em código (Remotion,
@@ -28,15 +29,20 @@ export function Lab({ locale }: { locale: Locale }) {
 
       {/* Carrossel horizontal: cards no tamanho original (3 por tela em
           telas sm+), os demais aparecem rolando -- em vez de espremer
-          todos os clipes numa grade fixa e encolher os cards. */}
-      <div className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4">
+          todos os clipes numa grade fixa e encolher os cards. figcaption em
+          coluna com as tags em mt-auto: como as descrições têm tamanhos bem
+          diferentes entre si, só dar altura mínima ao título não bastava --
+          as tags ficavam em alturas diferentes de card pra card. Com altura
+          mínima no bloco inteiro + tags empurradas pro fim, tudo alinha
+          na mesma linha não importa quantas linhas a descrição ocupe. */}
+      <LabCarousel className="mt-12">
         {LAB.map((clip, i) => (
           <Reveal
             key={clip.src}
             delay={i * 0.08}
             className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-3rem)/3)]"
           >
-            <figure className="group overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
+            <figure data-lab-card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
               <div className="relative aspect-[9/16] overflow-hidden">
                 <LabVideo src={clip.src} poster={clip.poster} label={t(clip.title)} />
                 <div
@@ -44,10 +50,10 @@ export function Lab({ locale }: { locale: Locale }) {
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg/80 to-transparent"
                 />
               </div>
-              <figcaption className="space-y-2 p-5">
-                <p className="min-h-[3.5rem] text-lg font-semibold text-fg">{t(clip.title)}</p>
+              <figcaption className="flex min-h-[13.5rem] flex-1 flex-col gap-2 p-5">
+                <p className="text-lg font-semibold text-fg">{t(clip.title)}</p>
                 <p className="text-sm text-fg-muted">{t(clip.desc)}</p>
-                <p className="flex flex-wrap gap-1.5 pt-1">
+                <p className="mt-auto flex flex-wrap gap-1.5 pt-1">
                   {clip.tags.map((tag) => (
                     <span
                       key={tag}
@@ -61,7 +67,7 @@ export function Lab({ locale }: { locale: Locale }) {
             </figure>
           </Reveal>
         ))}
-      </div>
+      </LabCarousel>
 
       <Reveal>
         <Link

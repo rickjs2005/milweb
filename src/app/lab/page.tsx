@@ -7,6 +7,7 @@ import { Logo } from "@/components/logo";
 import { Reveal } from "@/components/reveal";
 import { Footer } from "@/components/contact";
 import { LabPlayer } from "@/components/lab-player";
+import { LabCarousel } from "@/components/lab-carousel";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -62,15 +63,20 @@ export default async function LabPage() {
         </Reveal>
 
         {/* Carrossel horizontal: cards no tamanho original (3 por tela em
-            telas sm+), os demais aparecem rolando. */}
-        <div className="mt-14 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth pb-4">
+            telas sm+), os demais aparecem rolando. figcaption em coluna com
+            a linha de tags em mt-auto -- as descrições variam bastante de
+            tamanho entre os clipes, então só a altura mínima do título não
+            bastava pra alinhar; com altura mínima no bloco inteiro + a
+            linha de tags empurrada pro fim, tudo alinha na mesma linha
+            independente de quantas linhas a descrição ocupe. */}
+        <LabCarousel className="mt-14">
           {LAB.map((clip, i) => (
             <Reveal
               key={clip.full}
               delay={i * 0.08}
               className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-4rem)/3)]"
             >
-              <figure className="overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
+              <figure data-lab-card className="flex h-full flex-col overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
                 <div className="relative aspect-[9/16]">
                   {/* Filme completo já tocando (mudo) — som a um toque. */}
                   <LabPlayer
@@ -80,17 +86,17 @@ export default async function LabPage() {
                     hint={t(LAB_PAGE.watchHint)}
                   />
                 </div>
-                <figcaption className="space-y-2 p-5">
-                  <p className="min-h-[3.5rem] text-lg font-semibold text-fg">{t(clip.title)}</p>
+                <figcaption className="flex min-h-[11.5rem] flex-1 flex-col gap-2 p-5">
+                  <p className="text-lg font-semibold text-fg">{t(clip.title)}</p>
                   <p className="text-sm text-fg-muted">{t(clip.desc)}</p>
-                  <p className="pt-1 font-mono text-[11px] uppercase tracking-wide text-fg-subtle">
+                  <p className="mt-auto pt-1 font-mono text-[11px] uppercase tracking-wide text-fg-subtle">
                     {t(LAB_PAGE.madeWith)}: {clip.tags.join(" · ")}
                   </p>
                 </figcaption>
               </figure>
             </Reveal>
           ))}
-        </div>
+        </LabCarousel>
 
         <Reveal>
           <div className="mt-16 rounded-2xl border border-line/10 bg-surface/60 p-8 text-center sm:p-12">
