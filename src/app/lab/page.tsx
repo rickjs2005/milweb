@@ -61,7 +61,7 @@ export default async function LabPage() {
           <p className="mt-5 max-w-2xl text-lg text-fg-muted">{t(LAB_PAGE.sub)}</p>
         </Reveal>
 
-        <div className="mt-14 grid gap-8 sm:grid-cols-3">
+        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
           {LAB.map((clip, i) => (
             <Reveal key={clip.full} delay={i * 0.08}>
               <figure className="overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">

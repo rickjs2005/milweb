@@ -1049,6 +1049,39 @@ export const LAB: LabClip[] = [
     },
     tags: ["Remotion", "TypeScript", "60fps"],
   },
+  {
+    src: "/lab/unveil.mp4",
+    full: "/lab/full-unveil.mp4",
+    poster: "/lab/unveil.jpg",
+    title: { pt: "Revelação de Produto", en: "Product Reveal" },
+    desc: {
+      pt: "Um enxame de partículas se monta em um smartphone 3D — vidro, titânio e uma explosão de luz revelando o aparelho.",
+      en: "A swarm of particles assembles into a 3D smartphone — glass, titanium and a burst of light revealing the device.",
+    },
+    tags: ["React Three Fiber", "GLSL", "GSAP"],
+  },
+  {
+    src: "/lab/timescale.mp4",
+    full: "/lab/full-timescale.mp4",
+    poster: "/lab/timescale.jpg",
+    title: { pt: "Escala do Tempo", en: "Timescale" },
+    desc: {
+      pt: "Do tique de um segundo à história da humanidade até a Terra vista do espaço — uma jornada sobre o valor do tempo, renderizada em shader.",
+      en: "From the tick of a second to the history of humankind to Earth seen from space — a journey about the value of time, rendered in shader.",
+    },
+    tags: ["Three.js", "WebGL", "Shader"],
+  },
+  {
+    src: "/lab/blackhole.mp4",
+    full: "/lab/full-blackhole.mp4",
+    poster: "/lab/blackhole.jpg",
+    title: { pt: "Horizonte de Eventos", en: "Event Horizon" },
+    desc: {
+      pt: "Uma jornada em alta velocidade por estrelas e nebulosas até um buraco negro — lente gravitacional e disco de acreção com física real, trilha sonora sintetizada em código.",
+      en: "A high-speed journey through stars and nebulae into a black hole — real gravitational lensing and accretion disk physics, with a code-synthesized score.",
+    },
+    tags: ["React Three Fiber", "GLSL", "Remotion"],
+  },
 ];
 
 /** Página /lab (destino de bio nas redes): strings próprias. */

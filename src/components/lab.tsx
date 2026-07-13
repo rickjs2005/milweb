@@ -26,7 +26,7 @@ export function Lab({ locale }: { locale: Locale }) {
         <p className="mt-4 max-w-2xl text-lg text-fg-muted">{t(UI.sections.labSub)}</p>
       </Reveal>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-3">
+      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-6">
         {LAB.map((clip, i) => (
           <Reveal key={clip.src} delay={i * 0.08}>
             <figure className="group overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
