@@ -3,16 +3,18 @@
  * Flutuação e piscada via CSS (globals: .milo-float / .milo-blink); a "pose"
  * troca só o rosto (olhos/boca), o suficiente pra ele reagir na calculadora.
  */
-export type MiloPose = "idle" | "think" | "shocked";
+export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
 
 export function Milo({
   pose = "idle",
   className = "",
   title = "Milo, o mascote da MilWeb",
+  waving = false,
 }: {
   pose?: MiloPose;
   className?: string;
   title?: string;
+  waving?: boolean;
 }) {
   return (
     <svg
@@ -49,8 +51,10 @@ export function Milo({
       {/* braços wireframe */}
       <path d="M62 170c-14 8-20 26-18 46" fill="none" stroke="#6ea6ff" strokeWidth="7" strokeLinecap="round" opacity="0.85" />
       <circle cx="44" cy="218" r="8" fill="#0d1330" stroke="rgb(var(--accent))" strokeWidth="2.4" />
-      <path d="M158 170c14 8 20 26 18 46" fill="none" stroke="#6ea6ff" strokeWidth="7" strokeLinecap="round" opacity="0.85" />
-      <circle cx="176" cy="218" r="8" fill="#0d1330" stroke="rgb(var(--accent))" strokeWidth="2.4" />
+      <g className={waving ? "milo-arm-wave" : undefined}>
+        <path d="M158 170c14 8 20 26 18 46" fill="none" stroke="#6ea6ff" strokeWidth="7" strokeLinecap="round" opacity="0.85" />
+        <circle cx="176" cy="218" r="8" fill="#0d1330" stroke="rgb(var(--accent))" strokeWidth="2.4" />
+      </g>
 
       {/* cabeça */}
       <rect x="45" y="30" width="130" height="102" rx="30" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" />
@@ -71,6 +75,18 @@ export function Milo({
           <circle cx="131" cy="80" r="13" fill="none" stroke="rgb(var(--accent))" strokeWidth="6" />
           <ellipse cx="110" cy="107" rx="7" ry="9" fill="rgb(var(--accent))" opacity="0.9" />
         </g>
+      ) : pose === "happy" ? (
+        <g fill="none" stroke="rgb(var(--accent))" strokeLinecap="round">
+          <path d="M81 86q7.5 -11 15 0" strokeWidth="5.5" />
+          <path d="M124 86q7.5 -11 15 0" strokeWidth="5.5" />
+          <path d="M94 102c6 10 26 10 32 0" strokeWidth="5" />
+        </g>
+      ) : pose === "sleepy" ? (
+        <g fill="none" stroke="rgb(var(--accent))" strokeLinecap="round">
+          <path d="M81 84q7.5 7 15 0" strokeWidth="5" />
+          <path d="M124 84q7.5 7 15 0" strokeWidth="5" />
+          <path d="M104 106h12" strokeWidth="4.5" opacity="0.8" />
+        </g>
       ) : pose === "think" ? (
         <g fill="rgb(var(--accent))">
           <rect x="81" y="66" width="15" height="30" rx="7.5" />
@@ -84,6 +100,14 @@ export function Milo({
         </g>
       )}
       </g>
+
+      {/* zZ do cochilo — fora do grupo do rosto pra não seguir o cursor */}
+      {pose === "sleepy" && (
+        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <path className="milo-zzz" d="M152 22h9l-9 9h9" />
+          <path className="milo-zzz [animation-delay:0.9s]" d="M170 8h12l-12 12h12" />
+        </g>
+      )}
     </svg>
   );
 }
