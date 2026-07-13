@@ -61,9 +61,15 @@ export default async function LabPage() {
           <p className="mt-5 max-w-2xl text-lg text-fg-muted">{t(LAB_PAGE.sub)}</p>
         </Reveal>
 
-        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
+        {/* Carrossel horizontal: cards no tamanho original (3 por tela em
+            telas sm+), os demais aparecem rolando. */}
+        <div className="mt-14 flex snap-x snap-mandatory gap-8 overflow-x-auto scroll-smooth pb-4">
           {LAB.map((clip, i) => (
-            <Reveal key={clip.full} delay={i * 0.08}>
+            <Reveal
+              key={clip.full}
+              delay={i * 0.08}
+              className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-4rem)/3)]"
+            >
               <figure className="overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
                 <div className="relative aspect-[9/16]">
                   {/* Filme completo já tocando (mudo) — som a um toque. */}
@@ -75,7 +81,7 @@ export default async function LabPage() {
                   />
                 </div>
                 <figcaption className="space-y-2 p-5">
-                  <p className="text-lg font-semibold text-fg">{t(clip.title)}</p>
+                  <p className="min-h-[3.5rem] text-lg font-semibold text-fg">{t(clip.title)}</p>
                   <p className="text-sm text-fg-muted">{t(clip.desc)}</p>
                   <p className="pt-1 font-mono text-[11px] uppercase tracking-wide text-fg-subtle">
                     {t(LAB_PAGE.madeWith)}: {clip.tags.join(" · ")}

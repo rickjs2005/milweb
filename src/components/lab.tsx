@@ -26,9 +26,16 @@ export function Lab({ locale }: { locale: Locale }) {
         <p className="mt-4 max-w-2xl text-lg text-fg-muted">{t(UI.sections.labSub)}</p>
       </Reveal>
 
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-6">
+      {/* Carrossel horizontal: cards no tamanho original (3 por tela em
+          telas sm+), os demais aparecem rolando -- em vez de espremer
+          todos os clipes numa grade fixa e encolher os cards. */}
+      <div className="mt-12 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4">
         {LAB.map((clip, i) => (
-          <Reveal key={clip.src} delay={i * 0.08}>
+          <Reveal
+            key={clip.src}
+            delay={i * 0.08}
+            className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-3rem)/3)]"
+          >
             <figure className="group overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
               <div className="relative aspect-[9/16] overflow-hidden">
                 <LabVideo src={clip.src} poster={clip.poster} label={t(clip.title)} />
@@ -38,7 +45,7 @@ export function Lab({ locale }: { locale: Locale }) {
                 />
               </div>
               <figcaption className="space-y-2 p-5">
-                <p className="text-lg font-semibold text-fg">{t(clip.title)}</p>
+                <p className="min-h-[3.5rem] text-lg font-semibold text-fg">{t(clip.title)}</p>
                 <p className="text-sm text-fg-muted">{t(clip.desc)}</p>
                 <p className="flex flex-wrap gap-1.5 pt-1">
                   {clip.tags.map((tag) => (
