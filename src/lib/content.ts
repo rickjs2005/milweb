@@ -202,6 +202,7 @@ export const PROJECTS: Project[] = [
     result: { pt: "CRM interno completo: pipeline kanban, auditoria automática de sites (performance, SEO, segurança), IA que pontua leads, escreve mensagens e gera landing pages de demonstração publicáveis com um clique.", en: "A complete internal CRM: kanban pipeline, automated website audits (performance, SEO, security), and AI that scores leads, writes outreach and generates demo landing pages publishable in one click." },
     stack: ["Next.js", "Express", "PostgreSQL", "Prisma", "BullMQ", "Claude API"],
     metric: { pt: "Auditoria de sites · IA · landing pages", en: "Website audits · AI · landing pages" },
+    repos: [{ label: "Código", url: `${GH}/millead` }],
     status: { pt: "Ferramenta interna da MilWeb", en: "MilWeb internal tool" },
     note: {
       pt: "CRM interno usado na prospecção da própria MilWeb.",
