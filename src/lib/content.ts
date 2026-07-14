@@ -195,6 +195,55 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "millead",
+    title: "MilLead",
+    tagline: { pt: "CRM com IA · prospecção de clientes", en: "AI-powered CRM · client prospecting" },
+    problem: { pt: "Prospectar clientes pra agência era manual: achar negócios com site fraco, avaliar um por um e escrever cada abordagem do zero.", en: "Prospecting clients for the agency was manual: finding businesses with weak websites, assessing each one and writing every outreach from scratch." },
+    result: { pt: "CRM interno completo: pipeline kanban, auditoria automática de sites (performance, SEO, segurança), IA que pontua leads, escreve mensagens e gera landing pages de demonstração publicáveis com um clique.", en: "A complete internal CRM: kanban pipeline, automated website audits (performance, SEO, security), and AI that scores leads, writes outreach and generates demo landing pages publishable in one click." },
+    stack: ["Next.js", "Express", "PostgreSQL", "Prisma", "BullMQ", "Claude API"],
+    metric: { pt: "Auditoria de sites · IA · landing pages", en: "Website audits · AI · landing pages" },
+    status: { pt: "Ferramenta interna da MilWeb", en: "MilWeb internal tool" },
+    note: {
+      pt: "CRM interno usado na prospecção da própria MilWeb.",
+      en: "Internal CRM used in MilWeb's own prospecting.",
+    },
+    featured: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "Monorepo pnpm + Turborepo com API Express em Clean Architecture (domain/application/infrastructure/interfaces) e web Next.js 15. Multi-tenant por coluna discriminadora com RLS habilitado em todas as tabelas do Postgres (Supabase), auth JWT com refresh token de rotação atômica e RBAC com catálogo de permissões por papel.",
+          en: "A pnpm + Turborepo monorepo with an Express API in Clean Architecture (domain/application/infrastructure/interfaces) and a Next.js 15 web app. Multi-tenant via discriminator column with RLS enabled on every Postgres table (Supabase), JWT auth with atomic refresh-token rotation, and RBAC with a per-role permission catalog.",
+        },
+        {
+          pt: "O diferencial é o funil de prospecção automatizado: um worker BullMQ (Redis/Upstash) baixa o site do prospect e roda ~30 checagens próprias em 6 categorias (performance, SEO, acessibilidade, segurança, mobile, design), cada nota explicável check a check. Esses achados alimentam a IA (Claude, via SDK oficial): score de oportunidade 0-100 com justificativa, rascunhos de mensagem personalizados por canal e um relatório executivo do lead.",
+          en: "The differentiator is the automated prospecting funnel: a BullMQ worker (Redis/Upstash) fetches the prospect's website and runs ~30 custom checks across 6 categories (performance, SEO, accessibility, security, mobile, design), every score explainable check by check. Those findings feed the AI (Claude, official SDK): a 0-100 opportunity score with rationale, per-channel personalized outreach drafts, and an executive lead report.",
+        },
+        {
+          pt: "O fecho do funil são as landing pages geradas por IA: HTML único e autocontido (sem JS nem recursos externos), criado a partir dos dados da empresa + auditoria, servido numa URL pública com slug não-enumerável e contador de visitas — a demonstração \"veja como o site de vocês poderia ficar\" que a agência manda pro prospect.",
+          en: "The funnel closes with AI-generated landing pages: a single self-contained HTML file (no JS, no external resources) built from the company data + audit, served at a public URL with a non-enumerable slug and a view counter — the \"here's what your website could look like\" demo the agency sends to prospects.",
+        },
+      ],
+      highlights: [
+        {
+          label: { pt: "Auditoria de sites própria", en: "Custom website audits" },
+          detail: { pt: "~30 checagens em 6 categorias via fila BullMQ, sem depender de API externa — nota explicável check a check.", en: "~30 checks across 6 categories via a BullMQ queue, no external API — scores explainable check by check." },
+        },
+        {
+          label: { pt: "IA aplicada a vendas", en: "AI applied to sales" },
+          detail: { pt: "Score de oportunidade, mensagens e relatórios com Claude, usando lead + empresa + auditoria como contexto.", en: "Opportunity scoring, outreach and reports with Claude, using lead + company + audit as context." },
+        },
+        {
+          label: { pt: "Landing pages por IA", en: "AI-built landing pages" },
+          detail: { pt: "HTML autocontido gerado sob demanda e publicado em URL pública com contador de visitas.", en: "Self-contained HTML generated on demand and published at a public URL with a view counter." },
+        },
+        {
+          label: { pt: "Multi-tenant seguro", en: "Secure multi-tenant" },
+          detail: { pt: "organizationId em toda tabela + RLS no Postgres, JWT com rotação atômica de refresh token e RBAC.", en: "organizationId on every table + Postgres RLS, JWT with atomic refresh-token rotation, and RBAC." },
+        },
+      ],
+    },
+  },
+  {
     slug: "inkvision",
     title: "InkVision",
     tagline: { pt: "SaaS de tatuagem · simulação de tattoo com IA", en: "Tattoo SaaS · AI tattoo simulation" },
