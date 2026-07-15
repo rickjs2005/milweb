@@ -6,6 +6,7 @@ import { SmoothScroll } from "@/components/smooth-scroll";
 import { TrackConversions } from "@/components/track-conversions";
 import { WhatsappFab } from "@/components/whatsapp-fab";
 import { Konami } from "@/components/konami";
+import { CursorGlow } from "@/components/cursor-glow";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { getLocale, htmlLang } from "@/lib/i18n";
 import "./globals.css";
@@ -114,6 +115,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <SmoothScroll />
         <TrackConversions />
+        <CursorGlow />
         {children}
         <WhatsappFab locale={locale} />
         <Konami />
