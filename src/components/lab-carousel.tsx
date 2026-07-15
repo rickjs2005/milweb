@@ -20,9 +20,8 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Parallax vertical: cards alternam em zigue-zague conforme a seção rola
-  // (não mexe no scroll horizontal do trilho). Cards pares sobem, ímpares
-  // descem -- dá profundidade sem competir com o carrossel.
+  // Parallax do Lab: dois efeitos independentes por card (propriedades
+  // diferentes, não competem entre si).
   useGSAP(
     () => {
       const scroller = scrollerRef.current;
@@ -31,6 +30,29 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
 
       const cards = scroller.querySelectorAll<HTMLElement>("[data-lab-card]");
       cards.forEach((card, i) => {
+        // Revelação presa ao scroll: opacidade e escala crescem em
+        // sincronia contínua com o quanto a página rolou (scrub), não é
+        // um fade binário -- o card "nasce" junto com o movimento do
+        // scroll. Scrub crescente por índice cria uma leve cascata sem
+        // precisar de pontos de disparo diferentes por card.
+        gsap.fromTo(
+          card,
+          { opacity: 0, scale: 0.88 },
+          {
+            opacity: 1,
+            scale: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 92%",
+              end: "top 55%",
+              scrub: 0.3 + i * 0.1,
+            },
+          },
+        );
+
+        // Zigue-zague vertical: cards pares sobem, ímpares descem --
+        // dá profundidade enquanto a seção inteira rola.
         const offset = i % 2 === 0 ? -28 : 28;
         gsap.fromTo(
           card,

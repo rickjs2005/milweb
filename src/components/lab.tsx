@@ -36,12 +36,8 @@ export function Lab({ locale }: { locale: Locale }) {
           mínima no bloco inteiro + tags empurradas pro fim, tudo alinha
           na mesma linha não importa quantas linhas a descrição ocupe. */}
       <LabCarousel className="mt-12">
-        {LAB.map((clip, i) => (
-          <Reveal
-            key={clip.src}
-            delay={i * 0.08}
-            className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-3rem)/3)]"
-          >
+        {LAB.map((clip) => (
+          <div key={clip.src} className="w-[82%] shrink-0 snap-start sm:w-[calc((100%-3rem)/3)]">
             <figure data-lab-card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line/10 bg-surface-2/60">
               <div className="relative aspect-[9/16] overflow-hidden">
                 <LabVideo src={clip.src} poster={clip.poster} label={t(clip.title)} />
@@ -65,7 +61,7 @@ export function Lab({ locale }: { locale: Locale }) {
                 </p>
               </figcaption>
             </figure>
-          </Reveal>
+          </div>
         ))}
       </LabCarousel>
 
