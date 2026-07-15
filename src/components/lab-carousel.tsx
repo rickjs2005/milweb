@@ -20,8 +20,10 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Parallax do Lab: dois efeitos independentes por card (propriedades
-  // diferentes, não competem entre si).
+  // Revelação de entrada dos cards: dispara UMA vez ao cruzar o ponto de
+  // gatilho (não é scrub). Sem deslocamento vertical entre cards — todos
+  // alinhados na mesma linha (o zigue-zague antigo fazia parecerem de
+  // tamanhos diferentes).
   useGSAP(
     () => {
       const scroller = scrollerRef.current;
@@ -35,9 +37,6 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
 
       const cards = scroller.querySelectorAll<HTMLElement>("[data-lab-card]");
       cards.forEach((card, i) => {
-        // Revelação de entrada: dispara UMA vez ao cruzar o ponto de
-        // gatilho (não é scrub) -- fica visível rápido, sem exigir uma
-        // quantidade exata de scroll pra sair do quase-invisível.
         gsap.fromTo(
           card,
           { opacity: 0, scale: 0.88 },
@@ -48,24 +47,6 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
             delay: i * 0.06,
             ease: "power3.out",
             scrollTrigger: { trigger: card, start: "top 92%", toggleActions: "play none none none" },
-          },
-        );
-
-        // Zigue-zague vertical: cards pares sobem, ímpares descem --
-        // dá profundidade enquanto a seção inteira rola.
-        const offset = i % 2 === 0 ? -28 : 28;
-        gsap.fromTo(
-          card,
-          { y: -offset },
-          {
-            y: offset,
-            ease: "none",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.6,
-            },
           },
         );
       });
@@ -117,7 +98,7 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
     <div ref={containerRef} className={`relative ${className}`}>
       <div
         ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth py-9 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
