@@ -1280,6 +1280,7 @@ export const UI = {
     labCta: { pt: "Assistir com som e ver como foi feito", en: "Watch with sound and see how it was made" },
     labCardCta: { pt: "Explorar projeto", en: "Explore project" },
     labScrollHint: { pt: "Role para explorar a vitrine", en: "Scroll to explore the showcase" },
+    labMiloCenter: { pt: "Boa escolha — {title}! Clica de novo pra explorar 👀", en: "Nice pick — {title}! Click again to explore 👀" },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },
@@ -1397,6 +1398,19 @@ export const DEPENDENCY = {
       en: "An optimized website turns Google into a continuous acquisition channel — customers arriving without a single post.",
     },
     diagWhats: { pt: "Receber um plano no WhatsApp", en: "Get a plan on WhatsApp" },
+    /** Reação do Milo do FAB quando o diagnóstico é gerado ({score}). */
+    miloDiag0: {
+      pt: "Nota {score} — tranquilo! Mas um site próprio garante 😉",
+      en: "Score {score} — you're fine! But your own site seals it 😉",
+    },
+    miloDiag1: {
+      pt: "Nota {score} de dependência… dá pra melhorar, hein 🤔",
+      en: "Dependency score {score}… room to improve, huh 🤔",
+    },
+    miloDiag2: {
+      pt: "Eita, nota {score}?! Fala com o Rick AGORA 😱",
+      en: "Whoa, score {score}?! Talk to Rick NOW 😱",
+    },
     diagWhatsMsg: {
       pt: "Olá Rick! Fiz o diagnóstico no milweb.com.br → faturamento {revenue}/mês, {share}% das vendas em redes sociais, prejuízo estimado de {loss} em {duration} e nota de risco {score}/100. Quero um plano para ter meu site próprio.",
       en: "Hi Rick! I ran the diagnosis at milweb.com.br → {revenue}/month in revenue, {share}% of sales on social media, an estimated {loss} loss in {duration} and a {score}/100 risk score. I want a plan for my own website.",

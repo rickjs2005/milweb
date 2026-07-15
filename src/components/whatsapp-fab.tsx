@@ -52,6 +52,24 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
     };
   }, [visible]);
 
+  // Reações avulsas: qualquer ilha pode fazer o Milo falar via milo:say
+  // (calculadora do Raio-X, vitrine do Lab...). Última fala vence.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onSay = (e: Event) => {
+      const d = (e as CustomEvent).detail as { text?: string; pose?: MiloPose; ttl?: number };
+      if (!d?.text) return;
+      setTour({ text: d.text, pose: d.pose ?? "idle" });
+      clearTimeout(timer);
+      timer = setTimeout(() => setTour(null), d.ttl ?? 4500);
+    };
+    window.addEventListener("milo:say", onSay);
+    return () => {
+      window.removeEventListener("milo:say", onSay);
+      clearTimeout(timer);
+    };
+  }, []);
+
   // Tour guiado: o Milo comenta cada seção quando ela cruza o meio da
   // viewport (banda central via rootMargin — funciona mesmo em seções mais
   // altas que a tela, onde um threshold por fração nunca dispararia).

@@ -180,7 +180,7 @@ export function Projects({ locale }: { locale: Locale }) {
         <Reveal>
           <TiltCard strength={2} className="mt-10 rounded-3xl">
             <div className="relative grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
-              <div>
+              <div style={{ viewTransitionName: `case-${flagship.slug}` }}>
                 <Preview p={flagship} locale={locale} tall />
               </div>
               <div>
@@ -213,7 +213,11 @@ export function Projects({ locale }: { locale: Locale }) {
             <Reveal delay={(i % 2) * 100} className="h-full">
               <TiltCard className="h-full rounded-2xl">
                 <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
-                  <Preview p={p} locale={locale} />
+                  {/* Elemento compartilhado da View Transition: morfa para o
+                      preview grande do case (mesmo nome em case-study.tsx). */}
+                  <div style={{ viewTransitionName: `case-${p.slug}` }}>
+                    <Preview p={p} locale={locale} />
+                  </div>
                   <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
                   <div className="mt-3 flex-1">
                     <Details p={p} locale={locale} />

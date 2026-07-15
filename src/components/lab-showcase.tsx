@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { LabVideo } from "./lab-video";
+import { miloSay } from "@/lib/milo-bus";
 
 gsap.registerPlugin(useGSAP);
 
@@ -42,11 +43,19 @@ const DRIFT = 26;
  * toque quebram medidas de efeitos de scroll, ver histórico do projeto);
  * o modo esteira só liga no client em desktop com ponteiro fino.
  */
-export function LabShowcase({ items }: { items: LabShowcaseItem[] }) {
+export function LabShowcase({
+  items,
+  miloCenterMsg,
+}: {
+  items: LabShowcaseItem[];
+  /** Fala do Milo ao centralizar um card por clique ({title}). */
+  miloCenterMsg?: string;
+}) {
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const innerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const announcedRef = useRef(new Set<string>());
   const [belt, setBelt] = useState(false);
   const [center, setCenter] = useState(0);
 
@@ -167,10 +176,16 @@ export function LabShowcase({ items }: { items: LabShowcaseItem[] }) {
         onComplete: () => router.push(href),
       });
     } else {
-      // Card lateral: desliza a esteira até centralizá-lo.
+      // Card lateral: desliza a esteira até centralizá-lo; o Milo anuncia
+      // o projeto escolhido (uma vez por projeto por visita).
       const delta = -d * (s.width / 2);
       s.holdUntil = performance.now() + 900;
       gsap.to(s, { pos: s.pos + delta, duration: 0.85, ease: "power3.out" });
+      const item = items[i];
+      if (miloCenterMsg && item && !announcedRef.current.has(item.key)) {
+        announcedRef.current.add(item.key);
+        miloSay({ text: miloCenterMsg.replace("{title}", item.title), pose: "happy" });
+      }
     }
   };
 

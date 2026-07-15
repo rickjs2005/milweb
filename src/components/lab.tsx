@@ -59,7 +59,7 @@ export function Lab({ locale }: { locale: Locale }) {
         </Reveal>
 
         <div className="mt-16 sm:mt-20">
-          <LabShowcase items={items} />
+          <LabShowcase items={items} miloCenterMsg={t(UI.sections.labMiloCenter)} />
         </div>
 
         <Reveal>

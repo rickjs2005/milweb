@@ -164,6 +164,20 @@
   .text-gradient {
     @apply bg-gradient-to-br from-fg via-accent-soft to-accent bg-clip-text text-transparent;
   }
+  /* View Transitions: cross-fade rápido no root; os elementos nomeados
+     (case-<slug>) morfam com o timing padrão do navegador. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*),
+    ::view-transition-group(*) {
+      animation: none !important;
+    }
+  }
+
   /* Anel de spotlight: gradiente radial que segue o cursor (--spot-x/y
      setados pelo tilt-card), mascarado para pintar SÓ a borda de 1px. */
   .spotlight-ring {

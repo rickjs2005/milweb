@@ -41,6 +41,7 @@ export function Dependency({ locale }: { locale: Locale }) {
     rec2b: t(c.rec2b),
     rec3: t(c.rec3),
     diagWhats: t(c.diagWhats),
+    miloDiag: [t(c.miloDiag0), t(c.miloDiag1), t(c.miloDiag2)],
     diagWhatsMsg: t(c.diagWhatsMsg),
     share: t(c.share),
     shareTitle1: t(c.shareTitle1),

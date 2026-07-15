@@ -89,8 +89,9 @@ export function CaseStudy({
         )}
       </header>
 
-      {/* Preview grande */}
-      <div className="mt-10">
+      {/* Preview grande — mesmo view-transition-name do card na home:
+          o navegador morfa o card para cá ao navegar (view-transitions.tsx). */}
+      <div className="mt-10" style={{ viewTransitionName: `case-${p.slug}` }}>
         <Preview p={p} locale={locale} />
       </div>
 
