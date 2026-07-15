@@ -5,28 +5,25 @@ import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { LabShowcase, type LabShowcaseItem } from "./lab-showcase";
 
-/** Velocidades de parallax por card (ecoa o exemplo pedido: 0.7 / 1 / 1.3 / 0.8...). */
-const SHOWCASE_SPEEDS = [0.7, 1, 1.3, 0.8, 1.15, 0.9];
-
 /**
- * Lab — vitrine premium dos filmes autorais feitos 100% em código (Three.js,
- * shaders, física de partículas). Cada card nasce sozinho conforme o
- * scroll, com parallax de profundidade -- prova técnica de motion no
- * mesmo nível dos projetos entregues aos clientes.
+ * Lab — vitrine infinita 3D dos filmes autorais feitos 100% em código
+ * (Three.js, shaders, física de partículas): esteira em perspectiva no
+ * desktop, carrossel nativo no mobile. Prova técnica de motion no mesmo
+ * nível dos projetos entregues aos clientes.
  */
 export function Lab({ locale }: { locale: Locale }) {
   const t = makeT(locale);
 
-  const items: LabShowcaseItem[] = LAB.map((clip, i) => ({
+  const items: LabShowcaseItem[] = LAB.map((clip) => ({
     key: clip.src,
     category: clip.tags[0] ?? "Lab",
     title: t(clip.title),
     desc: t(clip.desc),
     poster: clip.poster,
     src: clip.src,
+    tags: clip.tags,
     ctaLabel: t(UI.sections.labCardCta),
     ctaHref: withLocale(locale, "/lab"),
-    speed: SHOWCASE_SPEEDS[i % SHOWCASE_SPEEDS.length],
   }));
 
   return (
@@ -55,6 +52,10 @@ export function Lab({ locale }: { locale: Locale }) {
             {t(UI.sections.labTitle)}
           </h2>
           <p className="mt-4 max-w-2xl text-lg text-fg-muted">{t(UI.sections.labSub)}</p>
+          <p className="mt-8 hidden items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle lg:flex">
+            <span className="animate-bounce text-accent">↓</span>
+            {t(UI.sections.labScrollHint)}
+          </p>
         </Reveal>
 
         <div className="mt-16 sm:mt-20">
