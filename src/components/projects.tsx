@@ -7,6 +7,7 @@ import { WebsitePreview } from "./website-preview";
 import { AppPreview } from "./app-preview";
 import { TiltCard } from "./tilt-card";
 import { ProjectsGrid } from "./projects-grid";
+import { ProjectsShowcase, type ProjectShowcaseItem } from "./projects-showcase";
 
 /** Ordem e rótulos das categorias do filtro. */
 const FILTER_CATEGORIES = ["saas", "ecommerce", "site", "mobile"] as const;
@@ -199,34 +200,75 @@ export function Projects({ locale }: { locale: Locale }) {
         </Reveal>
       )}
 
-      <ProjectsGrid
+      <ProjectsShowcase
         allLabel={t(UI.sections.projectsFilterAll)}
         filters={FILTER_CATEGORIES.filter((c) => rest.some((p) => p.category === c)).map((c) => ({
           key: c,
           label: t(FILTER_LABELS[c]),
           count: rest.filter((p) => p.category === c).length,
         }))}
-        items={rest.map((p, i) => ({
-          key: p.slug,
-          category: p.category,
-          node: (
-            <Reveal delay={(i % 2) * 100} className="h-full">
-              <TiltCard className="h-full rounded-2xl">
-                <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
-                  {/* Elemento compartilhado da View Transition: morfa para o
-                      preview grande do case (mesmo nome em case-study.tsx). */}
-                  <div style={{ viewTransitionName: `case-${p.slug}` }}>
-                    <Preview p={p} locale={locale} />
-                  </div>
-                  <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
-                  <div className="mt-3 flex-1">
-                    <Details p={p} locale={locale} />
-                  </div>
+        items={rest.map(
+          (p): ProjectShowcaseItem => ({
+            key: p.slug,
+            category: p.category,
+            // Card compacto da esteira 3D: preview + faixa de título. O
+            // viewTransitionName morfa pro preview grande do case (só um
+            // modo fica montado por vez -- sem nome duplicado com a grade).
+            beltNode: (
+              <div>
+                <div style={{ viewTransitionName: `case-${p.slug}` }}>
+                  <Preview p={p} locale={locale} />
                 </div>
-              </TiltCard>
-            </Reveal>
-          ),
-        }))}
+                <p className="border-t border-line/10 px-4 py-3 font-display text-base font-bold tracking-tight text-fg">
+                  {p.title}
+                </p>
+              </div>
+            ),
+            panel: {
+              title: p.title,
+              tagline: t(p.tagline),
+              result: t(p.result),
+              stack: p.stack,
+              metric: p.metric ? t(p.metric) : undefined,
+              metricProof: p.metricProof,
+              caseHref: withLocale(locale, `/projetos/${p.slug}`),
+              live: p.live,
+              caseLabel: t(UI.labels.caseStudy),
+              liveLabel: t(UI.labels.viewLive),
+            },
+          }),
+        )}
+        fallback={
+          <ProjectsGrid
+            allLabel={t(UI.sections.projectsFilterAll)}
+            filters={FILTER_CATEGORIES.filter((c) => rest.some((p) => p.category === c)).map((c) => ({
+              key: c,
+              label: t(FILTER_LABELS[c]),
+              count: rest.filter((p) => p.category === c).length,
+            }))}
+            items={rest.map((p, i) => ({
+              key: p.slug,
+              category: p.category,
+              node: (
+                <Reveal delay={(i % 2) * 100} className="h-full">
+                  <TiltCard className="h-full rounded-2xl">
+                    <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
+                      {/* Elemento compartilhado da View Transition: morfa para o
+                          preview grande do case (mesmo nome em case-study.tsx). */}
+                      <div style={{ viewTransitionName: `case-${p.slug}` }}>
+                        <Preview p={p} locale={locale} />
+                      </div>
+                      <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
+                      <div className="mt-3 flex-1">
+                        <Details p={p} locale={locale} />
+                      </div>
+                    </div>
+                  </TiltCard>
+                </Reveal>
+              ),
+            }))}
+          />
+        }
       />
     </section>
   );

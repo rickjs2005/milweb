@@ -23,14 +23,26 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
   const [visible, setVisible] = useState(false);
   const [wave, setWave] = useState(false);
   const [tour, setTour] = useState<{ text: string; pose: MiloPose } | null>(null);
+  const [handoff, setHandoff] = useState(false);
   const visibleRef = useRef(false);
   const pathname = usePathname();
+
+  // Passa o bastão: nos viewports em que o Milo protagonista está ativo
+  // (desktop lg+ fino, sem reduced-motion), o FAB sai de cena — é o
+  // protagonista quem fala, reage e vira o botão do WhatsApp no contato.
+  useEffect(() => {
+    const ok =
+      window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setHandoff(ok);
+  }, []);
 
   useEffect(() => {
     // setState só quando o limiar é CRUZADO — o listener em si vira um
     // comparativo barato e o React não é acionado a cada pixel de scroll.
-    // Também detecta o FIM da página (uma vez) pra despedida do Milo: o
-    // footer é baixo demais pra cruzar a banda central do observer do tour.
+    // A visibilidade roda SEMPRE (o botão verde do modo protagonista também
+    // usa); a despedida só quando o FAB é o Milo (senão é o protagonista
+    // quem se despede).
     let saidGoodbye = false;
     let goodbyeTimer: ReturnType<typeof setTimeout> | undefined;
     const onScroll = () => {
@@ -40,6 +52,7 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
         setVisible(v);
       }
       if (
+        !handoff &&
         !saidGoodbye &&
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80
       ) {
@@ -54,22 +67,23 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
       window.removeEventListener("scroll", onScroll);
       clearTimeout(goodbyeTimer);
     };
-  }, [locale]);
+  }, [locale, handoff]);
 
   // Convite espontâneo: aparece uma vez, alguns segundos após o FAB surgir.
   useEffect(() => {
-    if (!visible) return;
+    if (handoff || !visible) return;
     const show = setTimeout(() => setWave(true), 2500);
     const hide = setTimeout(() => setWave(false), 8000);
     return () => {
       clearTimeout(show);
       clearTimeout(hide);
     };
-  }, [visible]);
+  }, [visible, handoff]);
 
   // Reações avulsas: qualquer ilha pode fazer o Milo falar via milo:say
   // (calculadora do Raio-X, vitrine do Lab...). Última fala vence.
   useEffect(() => {
+    if (handoff) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const onSay = (e: Event) => {
       const d = (e as CustomEvent).detail as { text?: string; pose?: MiloPose; ttl?: number };
@@ -83,13 +97,14 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
       window.removeEventListener("milo:say", onSay);
       clearTimeout(timer);
     };
-  }, []);
+  }, [handoff]);
 
   // Tour guiado: o Milo comenta cada seção quando ela cruza o meio da
   // viewport (banda central via rootMargin — funciona mesmo em seções mais
   // altas que a tela, onde um threshold por fração nunca dispararia).
   // Cada fala aparece UMA vez por visita à página; a fala troca a pose.
   useEffect(() => {
+    if (handoff) return;
     const targets = MILO_TOUR.map((t) => document.getElementById(t.id)).filter(
       (el): el is HTMLElement => el !== null,
     );
@@ -119,9 +134,33 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
       clearTimeout(hideTimer);
       setTour(null);
     };
-  }, [pathname, locale]);
+  }, [pathname, locale, handoff]);
 
   const href = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(MILO_FAB.message[locale])}`;
+
+  // Modo protagonista (desktop): o Milo anda pelo site, então o FAB vira só
+  // o botão verde do WhatsApp — sempre acessível, sem mascote duplicado. No
+  // contato o protagonista caminha até aqui e fica ao lado dele.
+  if (handoff) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={MILO_FAB.label[locale]}
+        className={[
+          "fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full",
+          "bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 ring-2 ring-bg",
+          "transition-[opacity,transform] duration-300 ease-out hover:scale-110 active:scale-95",
+          visible
+            ? "pointer-events-auto opacity-100 translate-y-0"
+            : "pointer-events-none opacity-0 translate-y-4",
+        ].join(" ")}
+      >
+        <WhatsAppIcon className="h-7 w-7" />
+      </a>
+    );
+  }
 
   return (
     <a
