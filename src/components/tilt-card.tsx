@@ -64,7 +64,7 @@ export function TiltCard({
       {children}
       <div
         aria-hidden
-        className="spotlight-ring pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover/tilt:opacity-100"
+        className="spotlight-ring pointer-events-none absolute inset-0 hidden rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover/tilt:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:block"
       />
     </div>
   );

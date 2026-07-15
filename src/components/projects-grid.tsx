@@ -56,14 +56,19 @@ export function ProjectsGrid({
   };
 
   const pill = (selected: boolean) =>
-    "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors " +
+    "shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-medium transition-colors " +
     (selected
       ? "border-accent/50 bg-accent/15 text-accent"
       : "border-line/15 bg-surface-2/50 text-fg-subtle hover:border-accent/30 hover:text-fg-muted");
 
   return (
     <div>
-      <div role="group" className="mt-10 flex flex-wrap items-center gap-2">
+      {/* Mobile: linha única rolável (chips) sangrando até a borda da tela;
+          sm+: quebra em linhas normalmente. */}
+      <div
+        role="group"
+        className="-mx-5 mt-10 flex items-center gap-2 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+      >
         <button type="button" aria-pressed={active === "all"} onClick={() => apply("all")} className={pill(active === "all")}>
           {allLabel}{" "}
           <span className="font-mono text-[11px] opacity-60">{items.length}</span>

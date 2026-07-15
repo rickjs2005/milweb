@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MILO_FAB, PROFILE, type Locale } from "@/lib/content";
-import { Milo } from "./milo";
+import { usePathname } from "next/navigation";
+import { MILO_FAB, MILO_TOUR, PROFILE, type Locale } from "@/lib/content";
+import { Milo, type MiloPose } from "./milo";
 
 /** Logo oficial do WhatsApp (glifo). */
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -21,7 +22,9 @@ function WhatsAppIcon({ className }: { className?: string }) {
 export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
   const [visible, setVisible] = useState(false);
   const [wave, setWave] = useState(false);
+  const [tour, setTour] = useState<{ text: string; pose: MiloPose } | null>(null);
   const visibleRef = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     // setState só quando o limiar é CRUZADO — o listener em si vira um
@@ -49,6 +52,42 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
     };
   }, [visible]);
 
+  // Tour guiado: o Milo comenta cada seção quando ela cruza o meio da
+  // viewport (banda central via rootMargin — funciona mesmo em seções mais
+  // altas que a tela, onde um threshold por fração nunca dispararia).
+  // Cada fala aparece UMA vez por visita à página; a fala troca a pose.
+  useEffect(() => {
+    const targets = MILO_TOUR.map((t) => document.getElementById(t.id)).filter(
+      (el): el is HTMLElement => el !== null,
+    );
+    if (!targets.length) return;
+    const shown = new Set<string>();
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const id = entry.target.id;
+          if (shown.has(id)) continue;
+          shown.add(id);
+          const step = MILO_TOUR.find((t) => t.id === id);
+          if (!step) continue;
+          setTour({ text: step.text[locale], pose: step.pose ?? "idle" });
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => setTour(null), 4500);
+        }
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
+    );
+    targets.forEach((el) => io.observe(el));
+    return () => {
+      io.disconnect();
+      clearTimeout(hideTimer);
+      setTour(null);
+    };
+  }, [pathname, locale]);
+
   const href = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(MILO_FAB.message[locale])}`;
 
   return (
@@ -67,25 +106,25 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
           : "pointer-events-none opacity-0 translate-y-4 motion-reduce:translate-y-0",
       ].join(" ")}
     >
-      <Milo pose="idle" className="w-[74px] drop-shadow-[0_6px_18px_rgb(var(--accent)/0.35)]" />
+      <Milo pose={tour?.pose ?? "idle"} className="w-[74px] drop-shadow-[0_6px_18px_rgb(var(--accent)/0.35)]" />
 
       {/* selo do WhatsApp sobre o mascote */}
       <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 ring-2 ring-bg">
         <WhatsAppIcon className="h-[18px] w-[18px]" />
       </span>
 
-      {/* balão-convite: hover no desktop + "oi" espontâneo uma vez */}
+      {/* balão: fala do tour (por seção) > "oi" espontâneo > hover desktop */}
       <span
         className={[
-          "pointer-events-none absolute right-full top-3 mr-3 whitespace-nowrap",
+          "pointer-events-none absolute right-full top-3 mr-3 w-max max-w-[220px] sm:max-w-[300px]",
           "rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-4 py-2.5",
-          "text-sm font-medium text-fg shadow-lg",
+          "text-sm font-medium leading-snug text-fg shadow-lg",
           "transition-all duration-300",
-          wave ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0",
+          tour || wave ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0",
           "sm:group-hover:translate-x-0 sm:group-hover:opacity-100",
         ].join(" ")}
       >
-        {MILO_FAB.bubble[locale]}
+        {tour?.text ?? MILO_FAB.bubble[locale]}
       </span>
     </a>
   );

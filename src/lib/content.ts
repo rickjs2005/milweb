@@ -1501,6 +1501,26 @@ export const MILO_FAB = {
   },
 };
 
+/** Tour do Milo: o FAB comenta cada seção da home conforme o visitante
+ * rola (uma fala por seção, uma vez por visita à página). */
+export const MILO_TOUR: {
+  id: string;
+  pose?: "idle" | "think" | "shocked";
+  text: Localized;
+}[] = [
+  { id: "deliverables", text: { pt: "Tudo isso o Rick faz pra você 👆", en: "Rick builds all of this for you 👆" } },
+  { id: "why", text: { pt: "Por que ele? Já te mostro 😉", en: "Why him? Let me show you 😉" } },
+  { id: "raio-x", pose: "think", text: { pt: "Bora medir sua dependência das redes? 🔍", en: "Shall we measure your social media dependency? 🔍" } },
+  { id: "google", pose: "think", text: { pt: "Seu negócio aparece no Google? 👀", en: "Does your business show up on Google? 👀" } },
+  { id: "projects", text: { pt: "Projetos reais! Use os filtros pra achar o seu tipo 🚀", en: "Real projects! Use the filters to find your kind 🚀" } },
+  { id: "lab", pose: "shocked", text: { pt: "Essa é a vitrine de animações — tudo feito em código! ✨", en: "This is the animation showcase — all made in code! ✨" } },
+  { id: "process", text: { pt: "É assim que o Rick trabalha, passo a passo 📋", en: "This is how Rick works, step by step 📋" } },
+  { id: "tech", text: { pt: "As ferramentas do arsenal 🛠️", en: "The tools of the trade 🛠️" } },
+  { id: "faq", text: { pt: "Dúvidas? A resposta deve estar aqui 💬", en: "Questions? The answer is probably here 💬" } },
+  { id: "about", text: { pt: "Esse é o Rick, o humano da MilWeb 😄", en: "That's Rick, the human behind MilWeb 😄" } },
+  { id: "contact", text: { pt: "Fala com o Rick e faz seu orçamento — é grátis! 👋", en: "Talk to Rick and get your quote — it's free! 👋" } },
+];
+
 /** APAGÕES REAIS — mini-timeline de prova histórica dentro do Raio-X. */
 export type OutageEvent = {
   date: Localized;
