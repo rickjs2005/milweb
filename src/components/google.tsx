@@ -39,13 +39,13 @@ export function Google({ locale }: { locale: Locale }) {
           <span className="text-accent/40">04 / </span>
           {t(g.eyebrow)}
         </p>
-        <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
+        <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
           {t(g.title)}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(g.sub)}</p>
       </Reveal>
 
-      <Reveal delay={100} className="mt-10">
+      <Reveal delay={100} variant="zoom" className="mt-10">
         <GoogleSim s={strings} />
       </Reveal>
     </section>

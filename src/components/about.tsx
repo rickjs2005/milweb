@@ -1,5 +1,6 @@
 import { Reveal } from "./reveal";
 import { Logo } from "./logo";
+import { SplitHeading } from "./split-heading";
 import { UI, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
@@ -13,9 +14,9 @@ export function About({ locale }: { locale: Locale }) {
           <div className="mb-5 flex justify-center">
             <Logo />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-fg sm:text-3xl">
+          <SplitHeading className="text-2xl font-bold tracking-tight text-fg sm:text-3xl">
             {t(UI.sections.aboutTitle)}
-          </h2>
+          </SplitHeading>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-fg-muted">
             {t(UI.sections.aboutBody)}
           </p>

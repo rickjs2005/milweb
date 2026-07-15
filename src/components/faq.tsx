@@ -25,7 +25,7 @@ export function Faq({ locale }: { locale: Locale }) {
           <span className="text-accent/40">09 / </span>
           {t(UI.sections.faqEyebrow)}
         </p>
-        <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
+        <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
           {t(UI.sections.faqTitle)}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(UI.sections.faqSub)}</p>
@@ -33,7 +33,11 @@ export function Faq({ locale }: { locale: Locale }) {
 
       <div className="mx-auto mt-10 max-w-3xl divide-y divide-line/10 rounded-2xl border border-line/10 glass">
         {FAQ.map((item, i) => (
-          <Reveal key={item.q.en} delay={(i % 3) * 60}>
+          <Reveal
+            key={item.q.en}
+            delay={(i % 3) * 60}
+            variant={i % 2 === 0 ? "slide-left" : "slide-right"}
+          >
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-semibold text-fg transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
                 {t(item.q)}

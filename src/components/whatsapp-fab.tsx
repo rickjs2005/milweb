@@ -29,17 +29,32 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
   useEffect(() => {
     // setState só quando o limiar é CRUZADO — o listener em si vira um
     // comparativo barato e o React não é acionado a cada pixel de scroll.
+    // Também detecta o FIM da página (uma vez) pra despedida do Milo: o
+    // footer é baixo demais pra cruzar a banda central do observer do tour.
+    let saidGoodbye = false;
+    let goodbyeTimer: ReturnType<typeof setTimeout> | undefined;
     const onScroll = () => {
       const v = window.scrollY > 300;
       if (v !== visibleRef.current) {
         visibleRef.current = v;
         setVisible(v);
       }
+      if (
+        !saidGoodbye &&
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80
+      ) {
+        saidGoodbye = true;
+        setTour({ text: MILO_FAB.goodbye[locale], pose: "happy" });
+        goodbyeTimer = setTimeout(() => setTour(null), 5000);
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(goodbyeTimer);
+    };
+  }, [locale]);
 
   // Convite espontâneo: aparece uma vez, alguns segundos após o FAB surgir.
   useEffect(() => {

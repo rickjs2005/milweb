@@ -76,7 +76,7 @@ export function Dependency({ locale }: { locale: Locale }) {
           <span className="text-accent/40">03 / </span>
           {t(DEPENDENCY.eyebrow)}
         </p>
-        <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
+        <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
           {t(DEPENDENCY.title)}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(DEPENDENCY.sub)}</p>
@@ -97,7 +97,7 @@ export function Dependency({ locale }: { locale: Locale }) {
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {OUTAGE_EVENTS.events.map((e, i) => (
-            <div key={e.title.en} className="glass rounded-2xl p-6">
+            <Reveal key={e.title.en} as="div" variant="stack" delay={i * 100} className="glass rounded-2xl p-6">
               <span
                 className="inline-block rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest"
                 style={{ color: e.color, border: `1px solid ${e.color}44`, background: `${e.color}14` }}
@@ -110,7 +110,7 @@ export function Dependency({ locale }: { locale: Locale }) {
               </p>
               <p className="mt-0.5 text-xs text-fg-subtle">{t(e.statLabel)}</p>
               <p className="mt-3 text-sm leading-relaxed text-fg-muted">{t(e.desc)}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Reveal>

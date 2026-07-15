@@ -30,7 +30,7 @@ export function Lab({ locale }: { locale: Locale }) {
     <section id="lab" className="relative isolate scroll-mt-20 overflow-hidden bg-grid py-20 sm:py-32">
       {/* Fundo decorativo: glows azuis + linhas finas + partículas discretas.
           O grão de filme e o gradiente radial de base já são globais (body). */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+      <div aria-hidden data-depth="0.4" className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 left-[8%] h-[28rem] w-[28rem] rounded-full bg-accent/15 blur-[140px]" />
         <div className="absolute -bottom-40 right-[6%] h-[26rem] w-[26rem] rounded-full bg-accent-deep/20 blur-[140px]" />
         <div className="absolute left-1/4 top-1/3 h-1 w-1 animate-pulse rounded-full bg-accent/70 [animation-delay:0.2s]" />
@@ -48,7 +48,7 @@ export function Lab({ locale }: { locale: Locale }) {
             <span className="text-accent/40">06 / </span>
             {t(UI.sections.labEyebrow)}
           </p>
-          <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
+          <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
             {t(UI.sections.labTitle)}
           </h2>
           <p className="mt-4 max-w-2xl text-lg text-fg-muted">{t(UI.sections.labSub)}</p>

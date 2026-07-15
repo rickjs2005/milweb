@@ -1,6 +1,7 @@
 import { MessageCircle, Mail, Github, Linkedin, ShieldCheck, LifeBuoy, Code2, BadgeCheck } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { Reveal } from "./reveal";
+import { CtaGlow } from "./cta-glow";
 import { Logo } from "./logo";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
@@ -12,12 +13,9 @@ export function Contact({ locale }: { locale: Locale }) {
   const t = makeT(locale);
   return (
     <section id="contact" className="container-page scroll-mt-20 py-20 sm:py-32">
-      <Reveal>
+      <Reveal variant="depth">
         <div className="relative overflow-hidden rounded-3xl border border-accent/30 glass p-8 text-center sm:p-14">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 h-72 w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/25 blur-[120px]"
-          />
+          <CtaGlow />
           <h2 className="relative mx-auto max-w-3xl text-3xl font-bold tracking-tight text-fg sm:text-5xl">
             {t(UI.cta.title)}
           </h2>
@@ -80,13 +78,13 @@ export function Footer({ locale }: { locale: Locale }) {
   const t = makeT(locale);
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-line/10">
+    <footer id="footer" className="border-t border-line/10">
       <div className="container-page flex flex-col items-center justify-between gap-6 py-10 sm:flex-row">
-        <div className="flex flex-col items-center gap-2 sm:items-start">
+        <Reveal variant="slide-left" className="flex flex-col items-center gap-2 sm:items-start">
           <Logo />
           <p className="text-sm text-fg-subtle">{t(UI.labels.footerNote)}</p>
-        </div>
-        <div className="flex flex-col items-center gap-2 sm:items-end">
+        </Reveal>
+        <Reveal variant="slide-right" delay={120} className="flex flex-col items-center gap-2 sm:items-end">
           <div className="flex items-center gap-4 text-fg-subtle">
             <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="transition-colors hover:text-accent">
               <Github className="h-4 w-4" />
@@ -101,7 +99,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <p className="text-xs text-fg-subtle">
             © {year} MilWeb · {t(UI.labels.rights)}
           </p>
-        </div>
+        </Reveal>
       </div>
     </footer>
   );

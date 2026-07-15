@@ -1509,6 +1509,10 @@ export const GOOGLE_SIM = {
 export const MILO_FAB = {
   label: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
   bubble: { pt: "Fala com o Rick 👋", en: "Talk to Rick 👋" },
+  goodbye: {
+    pt: "Até a próxima! Qualquer coisa, me chama aqui 👋",
+    en: "See you next time! Ping me here anytime 👋",
+  },
   message: {
     pt: "Olá Rick! Vim pelo site da MilWeb e quero um orçamento.",
     en: "Hi Rick! I came from the MilWeb site and I'd like a quote.",

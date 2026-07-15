@@ -15,7 +15,7 @@ export function Tech({ locale }: { locale: Locale }) {
           <span className="text-accent/40">08 / </span>
           {t(UI.sections.techEyebrow)}
         </p>
-        <h2 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
+        <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
           {t(UI.sections.techTitle)}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(UI.sections.techSub)}</p>

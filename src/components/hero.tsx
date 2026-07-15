@@ -19,6 +19,7 @@ export function Hero({ locale }: { locale: Locale }) {
     >
       <div
         aria-hidden
+        data-depth="0.5"
         className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[140px]"
       />
       <div className="container-page relative z-10 grid min-h-[88vh] items-center gap-12 py-20 sm:py-28 lg:grid-cols-[1.25fr_1fr] lg:gap-16">
@@ -40,7 +41,10 @@ export function Hero({ locale }: { locale: Locale }) {
 
           {/* Headline com stagger palavra a palavra (hero-anim anima [data-hero-word]).
               O espaço fica FORA do span animado — inline-block descarta espaço final. */}
-          <h1 className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg">
+          <h1
+            data-depth="0.08"
+            className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg"
+          >
             {t(UI.hero.titleLead)
               .split(" ")
               .map((word, i) => (
@@ -112,6 +116,7 @@ export function Hero({ locale }: { locale: Locale }) {
             height={894}
             priority
             sizes="(max-width: 1024px) 92vw, 46vw"
+            data-depth="0.22"
             className="w-full rounded-2xl border border-line/15 ring-1 ring-inset ring-accent/20 shadow-[0_0_80px_-20px_rgb(var(--accent)/0.5)]"
           />
 

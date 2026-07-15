@@ -8,21 +8,19 @@ export function Stats({ locale }: { locale: Locale }) {
   const l = LIGHTHOUSE.labels;
   return (
     <section className="container-page py-12 sm:py-16">
-      <Reveal>
-        <div className="grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-3">
-          {STATS.map((s, i) => (
-            <div key={s.label.en} className="glass p-8 text-center">
-              <p className="font-display text-5xl font-bold tracking-tight text-fg sm:text-6xl">
-                <Counter value={s.value} suffix={s.suffix} delay={i * 120} />
-              </p>
-              <p className="mt-2 text-sm text-fg-subtle">{t(s.label)}</p>
-            </div>
-          ))}
-        </div>
-      </Reveal>
+      <div className="grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-3">
+        {STATS.map((s, i) => (
+          <Reveal key={s.label.en} as="div" variant="zoom" delay={i * 100} className="glass p-8 text-center">
+            <p className="font-display text-5xl font-bold tracking-tight text-fg sm:text-6xl">
+              <Counter value={s.value} suffix={s.suffix} delay={i * 120} />
+            </p>
+            <p className="mt-2 text-sm text-fg-subtle">{t(s.label)}</p>
+          </Reveal>
+        ))}
+      </div>
 
       {/* Prova técnica: auditoria Lighthouse do próprio Google, 100 em tudo. */}
-      <Reveal delay={100}>
+      <Reveal delay={100} variant="depth">
         <div className="glass mt-4 rounded-2xl p-8">
           <p className="mb-8 text-center font-mono text-xs uppercase tracking-[0.2em] text-fg-subtle">
             {t(LIGHTHOUSE.title)}

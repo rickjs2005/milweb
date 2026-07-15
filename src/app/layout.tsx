@@ -7,6 +7,7 @@ import { TrackConversions } from "@/components/track-conversions";
 import { WhatsappFab } from "@/components/whatsapp-fab";
 import { Konami } from "@/components/konami";
 import { CursorGlow } from "@/components/cursor-glow";
+import { MouseParallax } from "@/components/mouse-parallax";
 import { ViewTransitions } from "@/components/view-transitions";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { getLocale, htmlLang } from "@/lib/i18n";
@@ -117,6 +118,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SmoothScroll />
         <TrackConversions />
         <CursorGlow />
+        <MouseParallax />
         <ViewTransitions />
         {children}
         <WhatsappFab locale={locale} />
