@@ -16,13 +16,20 @@ gsap.registerPlugin(ScrollTrigger);
 export function SmoothScroll() {
   const pathname = usePathname();
 
-  // Ao SAIR de uma rota, mata todos os ScrollTriggers para a próxima página
-  // começar com a lista global do GSAP limpa. Sem isso, triggers de uma página
-  // sobrevivem à navegação client-side e corrompem o refresh da próxima
-  // (re-entrância → "Cannot read properties of undefined (reading 'end')").
+  // Ao trocar de rota, mata os ScrollTriggers ÓRFÃOS (trigger fora do DOM):
+  // são eles que corrompem o refresh da página seguinte (re-entrância →
+  // "Cannot read properties of undefined (reading 'end')"). NÃO pode ser um
+  // kill geral: este cleanup roda DEPOIS dos effects da página nova (ordem
+  // filho→pai do React), então um kill geral mataria os triggers recém-
+  // criados — cards com revelação em opacity:0 ficavam invisíveis pra
+  // sempre ao navegar client-side (bug real em /lab).
   useEffect(() => {
     return () => {
-      ScrollTrigger.getAll().forEach((st) => st.kill());
+      ScrollTrigger.getAll().forEach((st) => {
+        const el = st.trigger as Element | null;
+        if (!el || !document.contains(el)) st.kill();
+      });
+      ScrollTrigger.refresh();
     };
   }, [pathname]);
 
