@@ -40,6 +40,11 @@ export function LabShowcase({ items }: { items: LabShowcaseItem[] }) {
   useGSAP(
     () => {
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // Telas de toque ficam sem os efeitos de scroll: viewports móveis
+      // (barra de endereço, in-app browsers) quebram as medidas do
+      // ScrollTrigger e os cards ficavam presos quase invisíveis.
+      // O conteúdo aparece direto; o hover/glow é desktop de qualquer jeito.
+      if (window.matchMedia("(pointer: coarse)").matches) return;
 
       const cards = gsap.utils.toArray<HTMLElement>("[data-showcase-card]");
       cards.forEach((card, i) => {

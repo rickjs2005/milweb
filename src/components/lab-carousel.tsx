@@ -27,6 +27,11 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
       const scroller = scrollerRef.current;
       if (!scroller) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // Em telas de toque os triggers de scroll são frágeis (barra de
+      // endereço redimensiona a viewport, in-app browsers medem errado) e
+      // o efeito é imperceptível num trilho de 1 card por tela: cards
+      // ficavam presos quase invisíveis. Mobile mostra tudo direto.
+      if (window.matchMedia("(pointer: coarse)").matches) return;
 
       const cards = scroller.querySelectorAll<HTMLElement>("[data-lab-card]");
       cards.forEach((card, i) => {
