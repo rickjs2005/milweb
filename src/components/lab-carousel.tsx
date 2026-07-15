@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
  * Trilho horizontal do Lab: esconde a scrollbar nativa (feia por padrão) e
@@ -10,9 +15,41 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
  * indicador estático.
  */
 export function LabCarousel({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Parallax vertical: cards alternam em zigue-zague conforme a seção rola
+  // (não mexe no scroll horizontal do trilho). Cards pares sobem, ímpares
+  // descem -- dá profundidade sem competir com o carrossel.
+  useGSAP(
+    () => {
+      const scroller = scrollerRef.current;
+      if (!scroller) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const cards = scroller.querySelectorAll<HTMLElement>("[data-lab-card]");
+      cards.forEach((card, i) => {
+        const offset = i % 2 === 0 ? -28 : 28;
+        gsap.fromTo(
+          card,
+          { y: -offset },
+          {
+            y: offset,
+            ease: "none",
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.6,
+            },
+          },
+        );
+      });
+    },
+    { scope: containerRef },
+  );
 
   const updateEdges = () => {
     const el = scrollerRef.current;
@@ -55,10 +92,10 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       <div
         ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth py-9 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {children}
       </div>
