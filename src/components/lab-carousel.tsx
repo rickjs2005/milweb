@@ -30,24 +30,19 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
 
       const cards = scroller.querySelectorAll<HTMLElement>("[data-lab-card]");
       cards.forEach((card, i) => {
-        // Revelação presa ao scroll: opacidade e escala crescem em
-        // sincronia contínua com o quanto a página rolou (scrub), não é
-        // um fade binário -- o card "nasce" junto com o movimento do
-        // scroll. Scrub crescente por índice cria uma leve cascata sem
-        // precisar de pontos de disparo diferentes por card.
+        // Revelação de entrada: dispara UMA vez ao cruzar o ponto de
+        // gatilho (não é scrub) -- fica visível rápido, sem exigir uma
+        // quantidade exata de scroll pra sair do quase-invisível.
         gsap.fromTo(
           card,
           { opacity: 0, scale: 0.88 },
           {
             opacity: 1,
             scale: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 92%",
-              end: "top 55%",
-              scrub: 0.3 + i * 0.1,
-            },
+            duration: 0.8,
+            delay: i * 0.06,
+            ease: "power3.out",
+            scrollTrigger: { trigger: card, start: "top 92%", toggleActions: "play none none none" },
           },
         );
 

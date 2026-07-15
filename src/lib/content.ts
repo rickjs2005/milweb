@@ -1255,6 +1255,7 @@ export const UI = {
       en: "No stock footage: these films were programmed with React, Three.js and shaders — the same technical care that goes into your project.",
     },
     labCta: { pt: "Assistir com som e ver como foi feito", en: "Watch with sound and see how it was made" },
+    labCardCta: { pt: "Ver projeto", en: "View project" },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },

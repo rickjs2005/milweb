@@ -36,9 +36,14 @@ export default {
           "0%": { opacity: "0", transform: "translateY(12px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "line-drift": {
+          "0%, 100%": { transform: "translateX(-6%)", opacity: "0.35" },
+          "50%": { transform: "translateX(6%)", opacity: "0.7" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.6s ease-out both",
+        "line-drift": "line-drift 9s ease-in-out infinite",
       },
     },
   },
