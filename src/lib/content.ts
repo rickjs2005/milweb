@@ -93,6 +93,8 @@ export const DIFFERENTIALS: Differential[] = [
 export type Project = {
   slug: string;
   title: string;
+  /** Categoria do filtro na seção Projetos. */
+  category: "saas" | "ecommerce" | "site" | "mobile";
   tagline: Localized;
   problem: Localized;
   result: Localized;
@@ -137,6 +139,7 @@ const GH = "https://github.com/rickjs2005";
 export const PROJECTS: Project[] = [
   {
     slug: "milsaca",
+    category: "saas",
     title: "Milsaca",
     tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
     problem: { pt: "Um setor inteiro rodava no improviso entre planilhas e WhatsApp, sem um sistema único.", en: "A whole sector ran improvised between spreadsheets and WhatsApp, with no single system." },
@@ -196,6 +199,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "millead",
+    category: "saas",
     title: "MilLead",
     tagline: { pt: "CRM com IA · prospecção de clientes", en: "AI-powered CRM · client prospecting" },
     problem: { pt: "Prospectar clientes pra agência era manual: achar negócios com site fraco, avaliar um por um e escrever cada abordagem do zero.", en: "Prospecting clients for the agency was manual: finding businesses with weak websites, assessing each one and writing every outreach from scratch." },
@@ -247,6 +251,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "inkvision",
+    category: "saas",
     title: "InkVision",
     tagline: { pt: "SaaS de tatuagem · simulação de tattoo com IA", en: "Tattoo SaaS · AI tattoo simulation" },
     problem: { pt: "Cliente de tatuagem decide no escuro: só vê como a arte vai ficar na pele durante a sessão, já com a agulha na mão.", en: "Tattoo clients decide in the dark: they only see how the art looks on skin during the session, needle already in hand." },
@@ -302,6 +307,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rockverse",
+    category: "site",
     title: "ROCKVERSE",
     tagline: { pt: "Site-experiência sobre Rock · motion design de ponta a ponta", en: "Rock experience site · end-to-end motion design" },
     problem: { pt: "Marcas de música e cultura disputam atenção em segundos — e sites institucionais comuns não geram desejo, memória nem compartilhamento.", en: "Music and culture brands fight for attention in seconds — and ordinary websites create no desire, memory or shares." },
@@ -359,6 +365,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "as-copas",
+    category: "site",
     title: "As Copas",
     tagline: { pt: "Site imersivo · estádios históricos em 3D (WebGL)", en: "Immersive site · historic stadiums in 3D (WebGL)" },
     problem: { pt: "Conteúdo esportivo na web é tudo igual: listas de texto sem identidade, nada que alguém queira compartilhar.", en: "Sports content on the web all looks the same: identity-less text lists, nothing anyone wants to share." },
@@ -415,6 +422,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecoa",
+    category: "saas",
     title: "ECOA",
     tagline: { pt: "Rede social anônima · produto completo com IA", en: "Anonymous social network · full product with AI" },
     problem: { pt: "Pessoas querem desabafar e ser ouvidas sem expor o rosto — e as redes tradicionais punem a vulnerabilidade.", en: "People want to vent and be heard without showing their face — and traditional networks punish vulnerability." },
@@ -472,6 +480,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "loja-iphone",
+    category: "ecommerce",
     title: "Loja de iPhone",
     tagline: { pt: "E-commerce white-label · checkout no WhatsApp", en: "White-label e-commerce · WhatsApp checkout" },
     problem: { pt: "Lojas de iPhone vendem só pelo Instagram, sem uma vitrine própria e profissional.", en: "iPhone stores sell only on Instagram, without a proper professional storefront." },
@@ -532,6 +541,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "kavita-drones",
+    category: "site",
     title: "Kavita Drones",
     tagline: { pt: "Landing de alta conversão · cliente real, no ar", en: "High-conversion landing · real client, live" },
     problem: { pt: "Uma revenda de drones agrícolas precisava apresentar produtos e captar orçamento sem depender de rede social.", en: "An agricultural-drone reseller needed to showcase products and capture quotes without relying on social media." },
@@ -592,6 +602,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecommerce-do-agro",
+    category: "ecommerce",
     title: "E-commerce do Agro",
     tagline: { pt: "Sistema web completo · e-commerce + painéis", en: "Full web system · e-commerce + dashboards" },
     problem: { pt: "Um negócio do agro precisava de muito mais que uma loja: vendas, pagamentos, entregas e gestão por papel.", en: "An agribusiness needed far more than a store: sales, payments, deliveries and role-based management." },
@@ -650,6 +661,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "akatsuki",
+    category: "ecommerce",
     title: "Akatsuki",
     tagline: { pt: "Loja de animes cinematográfica em 3D · checkout no WhatsApp", en: "Cinematic 3D anime store · WhatsApp checkout" },
     problem: { pt: "Lojas de nicho (animes e colecionáveis) disputam atenção e precisam de uma vitrine memorável que venda sem fricção.", en: "Niche stores (anime & collectibles) fight for attention and need a memorable storefront that sells without friction." },
@@ -709,6 +721,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "loja-joias",
+    category: "ecommerce",
     title: "AURÉA — Joalheria",
     tagline: { pt: "Vitrine premium · Espelho Virtual (try-on) · WhatsApp", en: "Premium showcase · Virtual Mirror (try-on) · WhatsApp" },
     problem: { pt: "Joalherias autorais vendem por foto no Instagram — sem uma vitrine elegante e sem o cliente conseguir “experimentar” a peça.", en: "Indie jewelers sell via Instagram photos — no elegant storefront and no way for the customer to “try on” the piece." },
@@ -768,6 +781,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "nexus-geek",
+    category: "site",
     title: "NEXUS — Loja Geek",
     tagline: { pt: "Hero buraco negro 3D (R3F) · pós-processamento de cinema", en: "3D black-hole hero (R3F) · cinematic postprocessing" },
     problem: { pt: "Marcas geek/gamer precisam de uma vitrine com cara de produto premium — impacto visual que diferencia da concorrência.", en: "Geek/gamer brands need a storefront that feels premium — visual impact that stands out from competitors." },
@@ -827,6 +841,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "lumen-architecture",
+    category: "site",
     title: "Lumen",
     tagline: { pt: "Site cinematográfico 3D para arquitetura · React Three Fiber", en: "Cinematic 3D site for architecture · React Three Fiber" },
     problem: { pt: "Escritórios de arquitetura precisam transmitir sofisticação e domínio do espaço — um site comum não passa a sensação do trabalho deles.", en: "Architecture studios need to convey sophistication and spatial mastery — a plain website doesn't capture the feel of their work." },
@@ -886,6 +901,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjjstore",
+    category: "ecommerce",
     title: "RJjstore",
     tagline: { pt: "Moda premium editorial · checkout no WhatsApp", en: "Editorial premium fashion · WhatsApp checkout" },
     problem: { pt: "Lojas de roupa de marca vendem por foto no Instagram — sem uma vitrine com cara de grife que transmita desejo e exclusividade.", en: "Branded clothing stores sell via Instagram photos — without a storefront that feels like a fashion house and conveys desire and exclusivity." },
@@ -943,6 +959,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjs-laticinios",
+    category: "ecommerce",
     title: "RJS Laticínios",
     tagline: { pt: "Vitrine de laticínios artesanais · pedido no WhatsApp", en: "Artisanal dairy showcase · WhatsApp ordering" },
     problem: { pt: "Produtores de laticínios artesanais vendem no boca a boca e no WhatsApp, sem uma vitrine própria que mostre os produtos com profissionalismo.", en: "Artisanal dairy producers sell by word of mouth and WhatsApp, without a proper storefront that showcases products professionally." },
@@ -1002,6 +1019,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "imperio-cafe",
+    category: "mobile",
     title: "Império do Café",
     tagline: { pt: "Jogo mobile de simulação · React Native/Expo", en: "Mobile simulation game · React Native/Expo" },
     problem: { pt: "Mostrar domínio de mobile e de lógica complexa exige mais que um CRUD — pede um produto com profundidade real.", en: "Showing mobile + complex-logic mastery takes more than a CRUD — it calls for a product with real depth." },
@@ -1248,6 +1266,11 @@ export const UI = {
     projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS — uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS — a sample of what I can build." },
     projectsLegendProof: { pt: "Cliente real · em produção", en: "Real client · in production" },
     projectsLegendDemo: { pt: "Projeto autoral · demo/protótipo", en: "Personal project · demo/prototype" },
+    projectsFilterAll: { pt: "Todos", en: "All" },
+    projectsFilterSaas: { pt: "SaaS & Sistemas", en: "SaaS & Systems" },
+    projectsFilterEcommerce: { pt: "Lojas & E-commerce", en: "Stores & E-commerce" },
+    projectsFilterSite: { pt: "Sites & Landings", en: "Sites & Landing pages" },
+    projectsFilterMobile: { pt: "Apps Mobile", en: "Mobile apps" },
     labEyebrow: { pt: "Lab", en: "Lab" },
     labTitle: { pt: "Animações 100% em código", en: "Animations 100% in code" },
     labSub: {

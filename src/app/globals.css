@@ -164,6 +164,25 @@
   .text-gradient {
     @apply bg-gradient-to-br from-fg via-accent-soft to-accent bg-clip-text text-transparent;
   }
+  /* Anel de spotlight: gradiente radial que segue o cursor (--spot-x/y
+     setados pelo tilt-card), mascarado para pintar SÓ a borda de 1px. */
+  .spotlight-ring {
+    padding: 1px;
+    background: radial-gradient(
+      220px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      rgb(var(--accent) / 0.6),
+      rgb(var(--accent) / 0.08) 55%,
+      transparent 75%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
   /* Glow azul da marca (hero/CTA). */
   .glow-accent {
     box-shadow: 0 0 60px -12px rgb(var(--accent) / 0.55);

@@ -5,6 +5,17 @@ import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { WebsitePreview } from "./website-preview";
 import { AppPreview } from "./app-preview";
+import { TiltCard } from "./tilt-card";
+import { ProjectsGrid } from "./projects-grid";
+
+/** Ordem e rótulos das categorias do filtro. */
+const FILTER_CATEGORIES = ["saas", "ecommerce", "site", "mobile"] as const;
+const FILTER_LABELS: Record<Project["category"], Localized> = {
+  saas: UI.sections.projectsFilterSaas,
+  ecommerce: UI.sections.projectsFilterEcommerce,
+  site: UI.sections.projectsFilterSite,
+  mobile: UI.sections.projectsFilterMobile,
+};
 
 function host(url?: string) {
   return url ? url.replace(/^https?:\/\//, "").replace(/\/$/, "") : "preview";
@@ -163,41 +174,56 @@ export function Projects({ locale }: { locale: Locale }) {
         </ul>
       </Reveal>
 
-      {/* Carro-chefe — card grande, primeiro */}
+      {/* Carro-chefe — card grande, primeiro (tilt bem sutil: card grande
+          demais pra inclinar forte). Fica fora do filtro de propósito. */}
       {flagship && (
         <Reveal>
-          <div className="relative mt-10 grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
-            <div>
-              <Preview p={flagship} locale={locale} tall />
-            </div>
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                <Crown className="h-3.5 w-3.5" /> {t(FLAGSHIP_LABEL)}
-              </span>
-              <h3 className="mt-3 font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
-                {flagship.title}
-              </h3>
-              <div className="mt-4">
-                <Details p={flagship} locale={locale} />
+          <TiltCard strength={2} className="mt-10 rounded-3xl">
+            <div className="relative grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
+              <div>
+                <Preview p={flagship} locale={locale} tall />
+              </div>
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                  <Crown className="h-3.5 w-3.5" /> {t(FLAGSHIP_LABEL)}
+                </span>
+                <h3 className="mt-3 font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
+                  {flagship.title}
+                </h3>
+                <div className="mt-4">
+                  <Details p={flagship} locale={locale} />
+                </div>
               </div>
             </div>
-          </div>
+          </TiltCard>
         </Reveal>
       )}
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        {rest.map((p, i) => (
-          <Reveal key={p.slug} delay={(i % 2) * 100}>
-            <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
-              <Preview p={p} locale={locale} />
-              <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
-              <div className="mt-3 flex-1">
-                <Details p={p} locale={locale} />
-              </div>
-            </div>
-          </Reveal>
-        ))}
-      </div>
+      <ProjectsGrid
+        allLabel={t(UI.sections.projectsFilterAll)}
+        filters={FILTER_CATEGORIES.filter((c) => rest.some((p) => p.category === c)).map((c) => ({
+          key: c,
+          label: t(FILTER_LABELS[c]),
+          count: rest.filter((p) => p.category === c).length,
+        }))}
+        items={rest.map((p, i) => ({
+          key: p.slug,
+          category: p.category,
+          node: (
+            <Reveal delay={(i % 2) * 100} className="h-full">
+              <TiltCard className="h-full rounded-2xl">
+                <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
+                  <Preview p={p} locale={locale} />
+                  <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
+                  <div className="mt-3 flex-1">
+                    <Details p={p} locale={locale} />
+                  </div>
+                </div>
+              </TiltCard>
+            </Reveal>
+          ),
+        }))}
+      />
     </section>
   );
 }
