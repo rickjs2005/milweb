@@ -364,6 +364,47 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "aurex-motors",
+    category: "site",
+    title: "AUREX MOTORS",
+    tagline: { pt: "Experiência cinematográfica · carro 3D em tempo real", en: "Cinematic experience · real-time 3D car" },
+    problem: { pt: "Site de produto premium quase sempre vira catálogo estático: não transmite a sensação da marca nem dá vontade de explorar.", en: "Premium product sites almost always end up as static catalogs: they carry none of the brand's feeling and give no reason to explore." },
+    result: { pt: "Um comercial de carro de luxo navegável: filme em 14 cenas dirigido pelo scroll (a câmera muda, o carro gira, as luzes acendem), closeups de design, números contando, galeria-showroom horizontal e configurador 3D — pintura, rodas, luz de cabine e underglow mudam o carro em tempo real com preço reativo.", en: "A navigable luxury-car commercial: a 14-scene film directed by scroll (the camera moves, the car turns, lights ignite), design close-ups, counting numbers, a horizontal showroom gallery and a 3D configurator — paint, wheels, cabin light and underglow change the car in real time with a reactive price." },
+    stack: ["Next.js", "TypeScript", "React Three Fiber", "Three.js", "GSAP", "Lenis", "Tailwind"],
+    metric: { pt: "Filme em 14 cenas · configurador 3D", en: "14-scene film · 3D configurator" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://aurex-motors-ecru.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/aurex-motors` }],
+    featured: true,
+    image: "/shots/aurex-motors.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "A arquitetura separa o mundo DOM do mundo 3D por um estado mutável compartilhado (world.ts): um ScrollTrigger por seção escreve (cena, progresso) e o rig de câmera lê isso a cada frame dentro do canvas — scroll nunca re-renderiza React. O roteiro do filme vive num arquivo só (scenes.ts): keyframes de posição/alvo/fov da câmera, rotação do carro e intensidade de cada luz por cena, interpolados com damping exponencial — é o damping que transforma cortes secos em movimentos de dolly. Por cima, parallax de mouse desloca câmera e key light, então os reflexos na lataria seguem o cursor.",
+          en: "The architecture splits the DOM world from the 3D world with a shared mutable state (world.ts): one ScrollTrigger per section writes (scene, progress) and the camera rig reads it every frame inside the canvas — scroll never re-renders React. The film script lives in a single file (scenes.ts): per-scene keyframes for camera position/target/fov, car rotation and every light's intensity, interpolated with exponential damping — the damping is what turns hard cuts into dolly moves. On top, mouse parallax offsets the camera and key light, so the paint reflections follow the cursor.",
+        },
+        {
+          pt: "O carro é o Ferrari 458 dos exemplos oficiais do three.js (GLB com Draco, decoder servido localmente — zero CDN), rebrandizado por nome de material em runtime: pintura vira MeshPhysicalMaterial configurável com clearcoat, acentos amarelos viram vermelho AUREX, faróis/lanternas viram emissivos ligados ao roteiro (acendem na cena certa), cromados viram satin escuro e o interior vira couro preto com friso vermelho. O configurador escreve direto no estado compartilhado e o carro faz lerp dos materiais por frame — a troca de cor é líquida, sem nenhum re-render da árvore 3D. Estúdio 100% procedural: Lightformers no lugar de HDRI, piso MeshReflectorMaterial, cones aditivos como luz volumétrica.",
+          en: "The car is the Ferrari 458 from the official three.js examples (Draco-compressed GLB, decoder served locally — zero CDN), rebranded by material name at runtime: paint becomes a configurable clearcoat MeshPhysicalMaterial, yellow accents become AUREX red, head/taillights become script-driven emissives (they ignite on cue), chrome goes satin dark and the interior becomes black leather with red piping. The configurator writes straight into the shared state and the car lerps its materials per frame — color changes feel liquid, with zero 3D-tree re-renders. The studio is fully procedural: Lightformers instead of HDRIs, a MeshReflectorMaterial floor, additive cones as volumetric shafts.",
+        },
+        {
+          pt: "Performance e robustez: PerformanceMonitor degrada o DPR automaticamente em GPU fraca, o canvas principal pausa (frameloop never) quando a galeria — que tem canvas próprio — cobre a tela, Lenis desliga em touch e prefers-reduced-motion troca todo damping por poses instantâneas. O debug rendeu gotchas documentados: GSAP interpreta translateY(115%) inline como pixels (animar y, não yPercent), CSS fora de @layer vence qualquer utility no Tailwind v4, e Chromium headless renderiza a ~1fps — câmera com damping nunca converge em screenshot, o que virou um modo ?snap de validação visual.",
+          en: "Performance and robustness: PerformanceMonitor steps the DPR down on weak GPUs, the main canvas pauses (frameloop never) while the gallery — which owns its own canvas — covers the screen, Lenis is disabled on touch and prefers-reduced-motion swaps all damping for instant poses. Debugging produced documented gotchas: GSAP parses inline translateY(115%) as pixels (animate y, not yPercent), un-layered CSS beats any utility in Tailwind v4, and headless Chromium renders at ~1fps — a damped camera never converges in screenshots, which became a ?snap visual-testing mode.",
+        },
+      ],
+      highlights: [
+        { label: { pt: "Roteiro de câmera em arquivo único", en: "Single-file camera script" }, detail: { pt: "14 cenas com keyframes de câmera, rotação e luzes, dirigidas pelo scroll com damping exponencial.", en: "14 scenes of camera, rotation and light keyframes, scroll-directed with exponential damping." } },
+        { label: { pt: "Configurador sem re-render", en: "Re-render-free configurator" }, detail: { pt: "Painel escreve num estado compartilhado; o carro faz lerp de materiais por frame.", en: "The panel writes to shared state; the car lerps materials per frame." } },
+        { label: { pt: "Zero downloads externos", en: "Zero external downloads" }, detail: { pt: "Modelo local, decoder Draco local, ambiente por Lightformers — sem HDRI nem CDN.", en: "Local model, local Draco decoder, Lightformer environment — no HDRIs, no CDNs." } },
+      ],
+      gallery: [
+        { src: "/shots/aurex-motors/config.webp", alt: { pt: "Configurador 3D com pintura, rodas e cabine em tempo real", en: "3D configurator with real-time paint, wheels and cabin" } },
+        { src: "/shots/aurex-motors/tail.webp", alt: { pt: "Cena traseira do filme com a lanterna acesa", en: "Rear film scene with the taillight lit" } },
+      ],
+    },
+  },
+  {
     slug: "as-copas",
     category: "site",
     title: "As Copas",
@@ -487,7 +528,8 @@ export const PROJECTS: Project[] = [
     result: { pt: "Loja completa com catálogo, painel admin de produtos/estoque e pedido direto no WhatsApp — uma base white-label que vira várias lojas trocando só cor, logo e contato.", en: "Full store with catalog, admin panel for products/stock and orders straight to WhatsApp — a white-label base that becomes many stores by swapping color, logo and contact." },
     stack: ["Next.js", "TypeScript", "Tailwind", "Supabase", "Zustand"],
     metric: { pt: "1 base white-label → várias lojas", en: "1 white-label base → many stores" },
-    live: "https://loja-iphone-kohl.vercel.app",
+    // live removido: o deploy de demonstração tem um 500 conhecido em
+    // /produtos/[id] — sem link até o fix (os vídeos do card cobrem a demo)
     repos: [{ label: "Código", url: `${GH}/loja-iphone` }],
     featured: true,
     media: [
