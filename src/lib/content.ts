@@ -405,6 +405,88 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "atelier-vertex",
+    category: "site",
+    title: "ATELIER VERTEX",
+    tagline: { pt: "Scrollytelling arquitetônico · vídeo real controlado pelo scroll", en: "Architectural scrollytelling · real footage driven by scroll" },
+    problem: { pt: "Site de escritório de arquitetura quase sempre é catálogo de fotos estáticas — não mostra o processo, só o resultado, e não convence quem valoriza execução.", en: "Architecture firm sites are almost always static photo catalogs — they show the result, never the process, and don't convince clients who value execution." },
+    result: { pt: "Um filme real de obra (do andaime à fachada pronta) cujo tempo de vídeo é 100% amarrado ao scroll — sem autoplay: rolar constrói o prédio, voltar desconstrói. A planta baixa se desenha sobre o vídeo como numa mesa de luz, uma linha de cota mede a obra em dias, e depois do filme o site vira o arquivo completo do estúdio: obras entregues, processo e contato.", en: "A real construction film (from scaffolding to finished façade) whose video time is 100% tied to scroll — no autoplay: scrolling down builds the building, scrolling up tears it down. The floor plan draws itself over the video like on a light table, a dimension line measures the build in days, and after the film the site becomes the studio's full archive: delivered work, process, and contact." },
+    stack: ["Next.js", "TypeScript", "GSAP", "ScrollTrigger", "Lenis", "Tailwind", "FFmpeg"],
+    metric: { pt: "Vídeo real · 100% controlado pelo scroll", en: "Real footage · 100% scroll-controlled" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://atelier-vertex-v2.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/atelier-vertex-v2` }],
+    featured: true,
+    image: "/shots/atelier-vertex.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "A arquitetura separa o vídeo do scroll do DOM por um estado mutável compartilhado (world.ts), a mesma base do AUREX MOTORS: um ScrollTrigger por seção escreve (cena, progresso) e um rAF lê isso a cada frame pra perseguir o currentTime do vídeo com damping — pular de cena vira um dolly de tempo, nunca um corte seco. O roteiro do filme vive num arquivo único (scenes.ts) mapeando cada cena a uma fração da duração do vídeo. O vídeo em si é codificado com GOP 1 — todo frame é keyframe — porque sem isso o seek durante o scrub engasga; o preço é um arquivo maior, pago conscientemente.",
+          en: "The architecture splits video from scroll via a shared mutable state (world.ts), the same base as AUREX MOTORS: one ScrollTrigger per section writes (scene, progress), and a rAF loop reads it every frame to chase the video's currentTime with damping — jumping scenes becomes a time dolly, never a hard cut. The film's script lives in one file (scenes.ts) mapping each scene to a fraction of the video's duration. The video itself is encoded with GOP 1 — every frame a keyframe — because without it, seeking during scrub stutters; the tradeoff is a larger file, paid knowingly.",
+        },
+        {
+          pt: "A cena mais autoral é a 'Prancha': o vídeo escurece até virar uma mesa de luz e a planta do pavimento tipo se desenha amarrada ao scroll — paredes, mobiliário, linhas de cota com medidas reais e um carimbo de prancha, com a mesma técnica de pathLength=1 usada num projeto anterior da família. As fronteiras do roteiro não foram um chute: extraí frames do vídeo-fonte a cada 0,5s pra achar onde a transformação visual de verdade acontece (concentrada entre 40% e 70% da duração) e recalibrei as cenas pra que 'Vedação' e 'Fachada' realmente parecessem etapas diferentes — antes disso, duas das três cenas mostravam praticamente o mesmo andaime parado.",
+          en: "The most distinctive scene is 'Prancha' (Blueprint): the video darkens into a light table and the floor plan draws itself in sync with scroll — walls, furniture, dimension lines with real measurements and a drafting stamp, using the same pathLength=1 technique from an earlier project in the same family. The script's boundaries weren't guessed: I extracted frames from the source video every 0.5s to find where the real visual transformation happens (concentrated between 40% and 70% of the duration) and recalibrated the scenes so 'Vedação' and 'Fachada' actually read as different stages — before that fix, two of the three scenes showed nearly the same static scaffolding.",
+        },
+        {
+          pt: "Como no projeto anterior de estádios, o site passou por uma auto-auditoria crítica de design (hero, storytelling, UX, UI, responsividade, nota 0-10 por eixo) rodada contra o próprio build de produção — não contra a intenção. O achado mais grave: o header fixo não tinha fundo opaco de verdade, então qualquer título claro que passasse por baixo dele durante o scroll virava texto sobre texto ilegível; a correção revelou um gotcha sutil de CSS — 'backdrop-filter' no header vira containing block pra 'position: fixed', então o menu mobile em tela cheia estava sendo calculado relativo à altura do próprio header, não do viewport, até o painel ser movido pra fora do elemento. Depois da auditoria: navegação mobile com hambúrguer de verdade, CTAs diferenciados (um fecha o filme, só o outro converte), trilho de progresso do filme e um cursor customizado.",
+          en: "Like the earlier stadiums project, the site went through a critical self-audit of its design (hero, storytelling, UX, UI, responsiveness, scored 0-10 per axis) run against the actual production build — not against intent. The most serious finding: the fixed header had no real opaque background, so any light-colored heading scrolling underneath it turned into illegible text-on-text; the fix surfaced a subtle CSS gotcha — a 'backdrop-filter' on the header becomes a containing block for 'position: fixed', so the fullscreen mobile menu was being sized relative to the header's own height, not the viewport, until the panel was moved outside that element. Post-audit: a real hamburger mobile nav, differentiated CTAs (one closes the film, only the other converts), a film progress rail, and a custom cursor.",
+        },
+      ],
+      highlights: [
+        { label: { pt: "Vídeo 100% scroll-driven", en: "100% scroll-driven video" }, detail: { pt: "Sem autoplay: currentTime do vídeo perseguido por rAF com damping, GOP 1 pra seek instantâneo.", en: "No autoplay: video currentTime chased by a damped rAF loop, GOP 1 for instant seek." } },
+        { label: { pt: "Planta que se desenha", en: "Self-drawing floor plan" }, detail: { pt: "Cena 'Prancha' com paredes, cotas e carimbo desenhados ao vivo sobre o vídeo escurecido.", en: "'Blueprint' scene with walls, dimensions and stamp drawn live over the dimmed video." } },
+        { label: { pt: "Auto-auditoria de design", en: "Design self-audit" }, detail: { pt: "Parecer crítico 0-10 rodado contra o build real; achou e corrigiu um bug de nav ilegível e outro de menu mobile quebrado.", en: "Critical 0-10 review run against the real build; found and fixed an illegible nav bug and a broken mobile menu." } },
+      ],
+      gallery: [
+        { src: "/shots/atelier-vertex/prancha.webp", alt: { pt: "Planta do pavimento tipo se desenhando sobre o vídeo escurecido", en: "Floor plan drawing itself over the dimmed video" } },
+        { src: "/shots/atelier-vertex/entregue.webp", alt: { pt: "Cena final do filme com o prédio pronto e CTA", en: "Final film scene with the finished building and CTA" } },
+      ],
+    },
+  },
+  {
+    slug: "aurex-timepieces",
+    category: "site",
+    title: "AUREX TIMEPIECES",
+    tagline: { pt: "Experiência cinematográfica · relógio 3D que desmonta no scroll", en: "Cinematic experience · a 3D watch that disassembles on scroll" },
+    problem: { pt: "Relojoaria de luxo na web quase sempre é foto de produto parada — não transmite a complexidade mecânica que justifica o preço.", en: "Luxury watches on the web are almost always static product photos — they don't convey the mechanical complexity that justifies the price." },
+    result: { pt: "Um relógio 100% procedural (Calibre AX-01 Tourbillon) que desmonta peça por peça conforme o scroll — caixa, bezel, coroa, mostrador, ponteiros, trem de engrenagens, mola espiral, escape, rotor e a gaiola giratória do tourbillon — e remonta no caminho inverso exato. Filme em 15 cenas, configurador com troca de material em tempo real e galeria 360° por arrasto.", en: "A 100% procedural watch (Calibre AX-01 Tourbillon) that disassembles piece by piece as you scroll — case, bezel, crown, dial, hands, gear train, mainspring, escapement, rotor, and the tourbillon's spinning cage — then reassembles along the exact reverse path. A 15-scene film, a real-time material configurator, and a drag-to-rotate 360° gallery." },
+    stack: ["Next.js", "TypeScript", "React Three Fiber", "Three.js", "GSAP", "Lenis", "Tailwind"],
+    metric: { pt: "15 cenas · relógio 100% procedural", en: "15 scenes · 100% procedural watch" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://aurex-timepieces.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/aurex-timepieces` }],
+    featured: true,
+    image: "/shots/aurex-timepieces.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "Herda a arquitetura de estado compartilhado do AUREX MOTORS (canvas fixo, roteiro de cenas em arquivo único, câmera com damping), mas o diferencial é o sistema de desmontagem: cada componente do relógio é um <Part> com posição de origem, deslocamento, rotação e uma janela de progresso (delay/span) própria. Uma função de smoothstep lê um valor global de 'explosão' e cada peça sai e volta em cascata dentro da sua janela — a remontagem não é uma animação separada, é o caminho de saída percorrido ao contrário.",
+          en: "It inherits the shared-state architecture from AUREX MOTORS (fixed canvas, single-file scene script, damped camera), but the differentiator is the disassembly system: every watch component is a <Part> with a home position, offset, rotation and its own progress window (delay/span). A smoothstep function reads a global 'explode' value and each piece slides out and back in cascade within its window — reassembly isn't a separate animation, it's the exact same exit path walked backwards.",
+        },
+        {
+          pt: "O relógio é 100% procedural: caixa em anel (ExtrudeGeometry com furo, não um cilindro sólido), bezel, coroa serrilhada, mostrador com índices instanciados, cinco engrenagens paramétricas com dentes instanciados, mola espiral como tubo em espiral de Arquimedes, escape oscilante e a gaiola giratória do tourbillon com seu próprio balanço. Um bug real ilustra o valor de instrumentar em vez de adivinhar: a caixa começou como um cilindro sólido, e a tampa frontal — invisível na intuição — tapava o mostrador durante toda uma sessão de trabalho; o diagnóstico só veio de um raycast do centro da tela listando os hits em ordem, que expôs o cilindro a 6cm na frente do dial.",
+          en: "The watch is 100% procedural: a ring-shaped case (a hollowed ExtrudeGeometry, not a solid cylinder), a bezel, a knurled crown, a dial with instanced hour markers, five parametric gears with instanced teeth, a mainspring built as an Archimedean-spiral tube, an oscillating escapement and the tourbillon's own spinning cage with its balance wheel. One real bug shows the value of instrumenting instead of guessing: the case started as a solid cylinder, and its front cap — invisible by intuition — hid the dial for an entire work session; the diagnosis only came from a raycast fired from screen center listing hits in order, which exposed the cylinder sitting 6cm in front of the dial.",
+        },
+        {
+          pt: "O maior salto de realismo custou zero geometria extra: uma CanvasTexture impressa sobre o mostrador (trilha dos minutos, nome da marca, numerais) resolveu o que nenhuma troca de material resolvia sozinha. Vidro também exigiu um ajuste contraintuitivo — MeshPhysicalMaterial transparente em ângulo raso reflete quase 100% da luz (Fresnel), criando um véu leitoso sobre o mostrador independente de opacidade; a solução foi um MeshBasicMaterial com tinta constante, deixando os reflexos por conta só dos metais.",
+          en: "The biggest realism jump cost zero extra geometry: a CanvasTexture printed onto the dial (minute track, brand name, numerals) solved what no material swap could fix alone. Glass also demanded a counter-intuitive call — a transparent MeshPhysicalMaterial at a grazing angle reflects almost 100% of direct light (Fresnel), creating a milky veil over the dial regardless of opacity; the fix was a MeshBasicMaterial with a constant tint, leaving reflections entirely to the metal parts.",
+        },
+      ],
+      highlights: [
+        { label: { pt: "Sistema de explosão modular", en: "Modular explosion system" }, detail: { pt: "Cada peça com janela própria de saída/retorno; remontagem é o caminho inverso exato, não uma animação separada.", en: "Each part has its own exit/return window; reassembly is the exact reverse path, not a separate animation." } },
+        { label: { pt: "Debug por raycast", en: "Raycast-driven debugging" }, detail: { pt: "Bug de geometria sólida tapando o mostrador só foi achado listando hits de um raycast, não por tentativa e erro visual.", en: "A solid-geometry bug hiding the dial was only found by listing raycast hits, not by visual trial and error." } },
+        { label: { pt: "Realismo via CanvasTexture", en: "Realism via CanvasTexture" }, detail: { pt: "Impressão do mostrador (trilha de minutos, marca) foi o maior ganho visual do projeto, sem custo de geometria.", en: "The printed dial (minute track, brand) was the project's single biggest visual win, at zero geometry cost." } },
+      ],
+      gallery: [
+        { src: "/shots/aurex-timepieces/config.webp", alt: { pt: "Configurador com troca de caixa, mostrador, ponteiros e pulseira em tempo real", en: "Configurator with real-time case, dial, hands and strap swaps" } },
+        { src: "/shots/aurex-timepieces/colecao.webp", alt: { pt: "Vitrine da coleção com as quatro expressões do calibre", en: "Collection showcase with the calibre's four expressions" } },
+      ],
+    },
+  },
+  {
     slug: "as-copas",
     category: "site",
     title: "As Copas",
