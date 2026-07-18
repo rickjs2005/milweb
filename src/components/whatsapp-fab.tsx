@@ -178,21 +178,43 @@ export function WhatsappFab({ locale = "pt" }: { locale?: Locale }) {
           : "pointer-events-none opacity-0 translate-y-4 motion-reduce:translate-y-0",
       ].join(" ")}
     >
-      <Milo pose={tour?.pose ?? "idle"} className="w-[74px] drop-shadow-[0_6px_18px_rgb(var(--accent)/0.35)]" />
+      {/* Fundo borrado (só mobile): a coluna de conteúdo ocupa quase a tela
+          toda, então o balão inevitavelmente abre em cima de algum texto —
+          esse painel garante contraste como um vidro fosco de propósito, em
+          vez do texto de baixo simplesmente sumir cortado atrás do balão. */}
+      <span
+        aria-hidden
+        className={[
+          // largura cobre o balão inteiro (max-w-[170px], ancorado à direita
+          // do widget), não só a largura do Milo -- por isso -left-[190px]
+          // em vez de um inset simétrico.
+          "absolute -bottom-3 -top-28 -left-[190px] right-0 -z-10 rounded-3xl bg-bg/45 backdrop-blur-md transition-opacity duration-300 sm:hidden",
+          tour || wave ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      />
+
+      {/* Milo menor no mobile: no telefone o widget vive rente à borda da
+          tela, sem a margem lateral que existe no desktop — encolher reduz
+          a área que pode encostar em conteúdo por baixo. */}
+      <Milo pose={tour?.pose ?? "idle"} className="w-14 drop-shadow-[0_6px_18px_rgb(var(--accent)/0.35)] sm:w-[74px]" />
 
       {/* selo do WhatsApp sobre o mascote */}
-      <span className="absolute -bottom-0.5 -right-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 ring-2 ring-bg">
-        <WhatsAppIcon className="h-[18px] w-[18px]" />
+      <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 ring-2 ring-bg sm:h-8 sm:w-8">
+        <WhatsAppIcon className="h-3.5 w-3.5 sm:h-[18px] sm:w-[18px]" />
       </span>
 
-      {/* balão: fala do tour (por seção) > "oi" espontâneo > hover desktop */}
+      {/* balão: fala do tour (por seção) > "oi" espontâneo > hover desktop.
+          No mobile sobe ACIMA do Milo (não pra esquerda): a coluna de
+          conteúdo ocupa quase a largura toda da tela, então um balão lateral
+          sempre acabava em cima de texto — em cima dele sobra só o fundo. */}
       <span
         className={[
-          "pointer-events-none absolute right-full top-3 mr-3 w-max max-w-[220px] sm:max-w-[300px]",
-          "rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-4 py-2.5",
-          "text-sm font-medium leading-snug text-fg shadow-lg",
+          "pointer-events-none absolute bottom-full right-0 mb-3 w-max max-w-[170px] line-clamp-2",
+          "sm:bottom-auto sm:right-full sm:top-3 sm:mb-0 sm:mr-3 sm:max-w-[300px] sm:line-clamp-none",
+          "rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-3.5 py-2 sm:px-4 sm:py-2.5",
+          "text-xs font-medium leading-snug text-fg shadow-lg sm:text-sm",
           "transition-all duration-300",
-          tour || wave ? "translate-x-0 opacity-100" : "translate-x-2 opacity-0",
+          tour || wave ? "translate-y-0 opacity-100 sm:translate-x-0" : "translate-y-2 opacity-0 sm:translate-x-2 sm:translate-y-0",
           "sm:group-hover:translate-x-0 sm:group-hover:opacity-100",
         ].join(" ")}
       >

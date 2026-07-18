@@ -3,6 +3,7 @@ import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical } fro
 import { PROJECTS, UI, type Project, type Localized, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
+import { REVEAL_VARIANT_ROTATION } from "./reveal-variants";
 import { WebsitePreview } from "./website-preview";
 import { AppPreview } from "./app-preview";
 import { TiltCard } from "./tilt-card";
@@ -250,9 +251,13 @@ export function Projects({ locale }: { locale: Locale }) {
               key: p.slug,
               category: p.category,
               node: (
-                <Reveal delay={(i % 2) * 100} className="h-full">
+                <Reveal
+                  delay={(i % 2) * 100}
+                  variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
+                  className="h-full"
+                >
                   <TiltCard className="h-full rounded-2xl">
-                    <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
+                    <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)] active:border-accent/40 active:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
                       {/* Elemento compartilhado da View Transition: morfa para o
                           preview grande do case (mesmo nome em case-study.tsx). */}
                       <div style={{ viewTransitionName: `case-${p.slug}` }}>

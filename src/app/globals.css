@@ -120,6 +120,26 @@
     /* Sem `background-attachment: fixed`: em mobile ele força repaint a cada
        frame de scroll (jank/INP). O gradiente cobre a página mesmo sem fixed. */
   }
+  /* Respiro ambiente: um terceiro brilho que deriva bem devagar (16s), atrás
+     de tudo (z-index -1, pinta antes do conteúdo em fluxo normal). Existe em
+     QUALQUER viewport -- no desktop é imperceptível perto dos outros efeitos
+     (parallax, tour do Milo etc.), mas no mobile (onde nada mais respira
+     sozinho) é o que tira o fundo de "parado". Só transform+opacity (GPU),
+     reduced-motion já mata via regra global no topo do arquivo. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -12%;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(34rem 34rem at 24% 28%, rgb(var(--accent) / 0.12), transparent 60%);
+    animation: ambient-drift 18s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes ambient-drift {
+    0% { transform: translate(-3%, -2%) scale(1); opacity: 0.7; }
+    100% { transform: translate(4%, 3%) scale(1.15); opacity: 1; }
+  }
   /* Grão de filme: textura quase imperceptível, mata o "chapado". */
   body::after {
     content: "";
@@ -131,6 +151,7 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   .light body::after { opacity: 0.02; }
+  .light body::before { opacity: 0.6; }
   /* Títulos na fonte display (personalidade) com tracking apertado. */
   h1, h2, h3, h4 {
     font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
@@ -335,6 +356,18 @@
     .mw-draw path {
       stroke-dashoffset: 0;
       animation: none;
+    }
+  }
+  /* Feedback de toque: em ponteiro fino o :hover já avisa "isso é clicável";
+     em touch não existe hover nenhum, então botão/link/card ficava sem
+     resposta nenhuma ao toque. `:active` cobre esse vazio só em telas de
+     toque -- no desktop TiltCard/spotlight-ring já fazem esse papel. */
+  @media (pointer: coarse) {
+    a, button, [role="button"], summary {
+      transition: transform 0.15s ease;
+    }
+    a:active, button:active, [role="button"]:active, summary:active {
+      transform: scale(0.96);
     }
   }
 }
