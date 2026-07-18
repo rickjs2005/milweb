@@ -29,6 +29,18 @@ const ICONS: Record<string, LucideIcon> = {
   Wrench,
 };
 
+/** Acento por card -- SÓ no mobile (revertido em `sm:` pro tratamento
+ * neutro/azul único que já existe no desktop). Cicla por índice, mesma
+ * ideia do Tech: tira as 6 caixas de terem só o ícone mudando. */
+const CARD_ACCENT = [
+  { icon: "text-accent", bg: "bg-accent/10", ring: "ring-accent/20", border: "border-accent/25" },
+  { icon: "text-emerald-400", bg: "bg-emerald-400/10", ring: "ring-emerald-400/20", border: "border-emerald-400/25" },
+  { icon: "text-amber-400", bg: "bg-amber-400/10", ring: "ring-amber-400/20", border: "border-amber-400/25" },
+  { icon: "text-violet-400", bg: "bg-violet-400/10", ring: "ring-violet-400/20", border: "border-violet-400/25" },
+  { icon: "text-rose-400", bg: "bg-rose-400/10", ring: "ring-rose-400/20", border: "border-rose-400/25" },
+  { icon: "text-cyan-400", bg: "bg-cyan-400/10", ring: "ring-cyan-400/20", border: "border-cyan-400/25" },
+];
+
 export function Deliverables({ locale }: { locale: Locale }) {
   const t = makeT(locale);
 
@@ -50,14 +62,27 @@ export function Deliverables({ locale }: { locale: Locale }) {
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {DELIVERABLES.map((d, i) => {
           const Icon = ICONS[d.icon] ?? Rocket;
+          const accent = CARD_ACCENT[i % CARD_ACCENT.length]!;
           return (
             <Reveal
               key={d.title.en}
               delay={(i % 3) * 80}
               variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
             >
-              <div className="group h-full rounded-2xl border border-line/10 glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)]">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20 transition-colors group-hover:bg-accent/20">
+              <div
+                className={
+                  "group h-full rounded-2xl border glass p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)] active:-translate-y-1 " +
+                  accent.border +
+                  " sm:border-line/10"
+                }
+              >
+                <div
+                  className={
+                    "flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-inset transition-colors group-hover:bg-accent/20 " +
+                    accent.bg + " " + accent.icon + " " + accent.ring +
+                    " sm:bg-accent/10 sm:text-accent sm:ring-accent/20"
+                  }
+                >
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-fg">{t(d.title)}</h3>

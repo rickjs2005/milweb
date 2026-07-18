@@ -19,6 +19,17 @@ const FILTER_LABELS: Record<Project["category"], Localized> = {
   mobile: UI.sections.projectsFilterMobile,
 };
 
+/** Acento por categoria -- SÓ no mobile (grade fallback; a esteira 3D do
+ * desktop não usa isso). O filtro por categoria já existe, mas sem pista
+ * visual de qual card é qual sem ler o texto -- a faixa lateral colorida
+ * resolve isso num piscar de olhos, na mesma linguagem do card do Tech. */
+const CATEGORY_ACCENT: Record<Project["category"], string> = {
+  saas: "border-l-accent/70",
+  ecommerce: "border-l-emerald-400/70",
+  site: "border-l-violet-400/70",
+  mobile: "border-l-amber-400/70",
+};
+
 function host(url?: string) {
   return url ? url.replace(/^https?:\/\//, "").replace(/\/$/, "") : "preview";
 }
@@ -257,7 +268,13 @@ export function Projects({ locale }: { locale: Locale }) {
                   className="h-full"
                 >
                   <TiltCard className="h-full rounded-2xl">
-                    <div className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)] active:border-accent/40 active:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)]">
+                    <div
+                      className={
+                        "relative flex h-full flex-col rounded-2xl border border-l-4 border-line/10 glass p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/40 hover:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)] active:border-accent/40 active:shadow-[0_0_60px_-16px_rgb(var(--accent)/0.45)] " +
+                        CATEGORY_ACCENT[p.category] +
+                        " sm:border-l sm:border-l-line/10"
+                      }
+                    >
                       {/* Elemento compartilhado da View Transition: morfa para o
                           preview grande do case (mesmo nome em case-study.tsx). */}
                       <div style={{ viewTransitionName: `case-${p.slug}` }}>
