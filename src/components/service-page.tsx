@@ -102,7 +102,7 @@ export function ServicePage({ service, locale }: { service: Service; locale: Loc
             aria-hidden
             className="pointer-events-none absolute -top-40 left-1/2 h-[30rem] w-[46rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[140px]"
           />
-          <div className="container-page relative py-20 sm:py-28">
+          <div className="container-page relative py-16 sm:py-28">
             <Reveal>
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
                 <Link href={home} className="text-accent/60 transition-colors hover:text-accent">
@@ -137,13 +137,13 @@ export function ServicePage({ service, locale }: { service: Service; locale: Loc
         </section>
 
         {/* benefícios */}
-        <section className="container-page py-16 sm:py-24">
+        <section className="container-page py-12 sm:py-24">
           <Reveal>
             <h2 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">
               {t({ pt: "O que você recebe", en: "What you get" })}
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
             {service.benefits.map((b, i) => {
               const Icon = ICONS[b.icon] ?? Sparkles;
               return (
@@ -163,36 +163,56 @@ export function ServicePage({ service, locale }: { service: Service; locale: Loc
           </div>
         </section>
 
-        {/* processo */}
-        <section className="container-page py-16 sm:py-24">
+        {/* processo — mobile: timeline compacta (número num trilho à esquerda,
+            linha vertical ligando os passos); sm:+ mantém os 4 cards. Os cards
+            em coluna única no celular viravam ~350px cada pra uma linha de
+            texto — a seção inteira era rolagem vazia. */}
+        <section className="container-page py-12 sm:py-24">
           <Reveal>
             <h2 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">
               {t({ pt: "Como funciona", en: "How it works" })}
             </h2>
           </Reveal>
-          <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {service.steps.map((s, i) => (
-              <Reveal key={s.title.pt} delay={i * 90} as="li">
-                <div className="glass h-full rounded-2xl p-6">
-                  <span className="font-mono text-xs font-bold text-accent/60">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-2 font-semibold text-fg">{t(s.title)}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{t(s.desc)}</p>
-                </div>
-              </Reveal>
-            ))}
+          <ol className="mt-8 grid sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            {service.steps.map((s, i) => {
+              const last = i === service.steps.length - 1;
+              return (
+                <Reveal key={s.title.pt} delay={i * 90} as="li">
+                  {/* mobile: item de timeline */}
+                  <div className="flex gap-4 sm:hidden">
+                    <div className="flex flex-col items-center">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/10 font-mono text-[11px] font-bold text-accent">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {!last && <span aria-hidden className="mt-2 w-px flex-1 bg-line/15" />}
+                    </div>
+                    <div className={last ? "" : "pb-7"}>
+                      <h3 className="pt-1.5 font-semibold text-fg">{t(s.title)}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-fg-muted">{t(s.desc)}</p>
+                    </div>
+                  </div>
+                  {/* desktop: card de sempre */}
+                  <div className="glass hidden h-full rounded-2xl p-6 sm:block">
+                    <span className="font-mono text-xs font-bold text-accent/60">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="mt-2 font-semibold text-fg">{t(s.title)}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{t(s.desc)}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </ol>
         </section>
 
         {/* FAQ do serviço */}
-        <section className="container-page py-16 sm:py-24">
+        <section className="container-page py-12 sm:py-24">
           <Reveal>
             <h2 className="text-3xl font-bold tracking-tight text-fg sm:text-4xl">
               {t({ pt: "Perguntas frequentes", en: "Frequently asked questions" })}
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-3">
+          <div className="mt-8 grid gap-3 sm:mt-10">
             {service.faq.map((f) => (
               <Reveal key={f.q.pt}>
                 <details className="group glass rounded-2xl px-6 py-5">
