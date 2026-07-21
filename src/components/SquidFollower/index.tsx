@@ -255,8 +255,10 @@ export function SquidFollower(props: SquidFollowerProps) {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none fixed inset-0"
-      style={{ zIndex: cfg.zIndex, opacity: cfg.opacity }}
+      // Opacidade via CSS (.squid-canvas no globals): o tema claro dilui o
+      // canvas pra lula não lavar o contraste dos textos por cima.
+      className="squid-canvas pointer-events-none fixed inset-0"
+      style={{ zIndex: cfg.zIndex, "--squid-opacity": cfg.opacity } as React.CSSProperties}
     />
   );
 }

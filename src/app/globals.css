@@ -181,6 +181,16 @@
       linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
     background-size: 56px 56px;
   }
+  /* Lula (SquidFollower): no tema claro o canvas dilui — o corpo azul-médio
+     atrás de rótulos/textos de acento lavava o contraste (ilegível onde ela
+     passava). A opacidade base vem do componente via --squid-opacity. */
+  .squid-canvas {
+    opacity: var(--squid-opacity, 0.65);
+  }
+  .light .squid-canvas {
+    opacity: calc(var(--squid-opacity, 0.65) * 0.68);
+  }
+
   /* No claro as mesmas linhas a 5% viram listras — fundo branco amplifica
      o contraste; 3% mantém a textura sem gritar. */
   .light .bg-grid {

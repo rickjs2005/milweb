@@ -105,7 +105,11 @@ export function WebsitePreview({
               ? // Print retrato/de celular: coluna estreita centralizada, enquadrada
                 // como um mockup (sem letterbox feio numa moldura wide). Mantém proporção.
                 "relative block h-full w-auto max-w-full rounded-xl border border-line/10 object-contain shadow-[0_10px_30px_-12px_rgb(0_0_0/0.55)]"
-              : "block w-full will-change-transform"
+              : // min-h-full + cover: screenshot mais BAIXO que a moldura (16:9
+                // em card estreito no mobile) preenche em vez de deixar uma
+                // faixa vazia embaixo — no tema claro ela aparecia branca.
+                // Screenshot alto segue com altura natural e rola normalmente.
+                "block min-h-full w-full object-cover will-change-transform"
           }
         />
       </div>
