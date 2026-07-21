@@ -1386,9 +1386,10 @@ export const UI = {
   },
   hero: {
     eyebrow: { pt: "Dev full-stack · SaaS e sistemas web", en: "Full-stack dev · SaaS & web systems" },
-    // H1 dividido em duas partes p/ aplicar o gradiente só na última palavra.
-    titleLead: { pt: "Sites e sistemas que fazem seu negócio", en: "Websites and systems that make your business" },
-    titleHighlight: { pt: "vender", en: "sell" },
+    // H1 em três partes: lead + destaque em gradiente + cauda (pode ser vazia).
+    titleLead: { pt: "Seu site pode ser o melhor", en: "Your website can be your company's best" },
+    titleHighlight: { pt: "vendedor", en: "salesperson" },
+    titleTail: { pt: "da sua empresa", en: "" },
     ctaProjects: { pt: "Ver projetos", en: "View projects" },
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },

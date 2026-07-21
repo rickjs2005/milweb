@@ -3,6 +3,7 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
+import { HeroScene } from "./hero-scene";
 import { MiloLive } from "./milo-live";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
@@ -16,7 +17,7 @@ export function Hero({ locale }: { locale: Locale }) {
   return (
     <HeroAnim
       id="top"
-      className="hero-dark relative isolate overflow-hidden border-b border-line/10 bg-grid"
+      className="hero-dark relative isolate overflow-hidden border-b border-line/10 bg-bg bg-grid"
     >
       {/* Fallback e base da cena: se a imagem do HeroCinema falhar, este glow
           + o bg-grid da seção continuam segurando o fundo. */}
@@ -26,6 +27,7 @@ export function Hero({ locale }: { locale: Locale }) {
         className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[140px]"
       />
       <HeroCinema />
+      <HeroScene />
 
       <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
         <div className="max-w-3xl">
@@ -59,12 +61,23 @@ export function Hero({ locale }: { locale: Locale }) {
                   </span>{" "}
                 </span>
               ))}
+            {/* O "." vai grudado na última palavra (nunca quebra sozinho). */}
             <span data-hero-word className="text-gradient inline-block">
               {t(UI.hero.titleHighlight)}
+              {!t(UI.hero.titleTail) && "."}
             </span>
-            <span data-hero-word className="inline-block">
-              .
-            </span>
+            {t(UI.hero.titleTail) &&
+              t(UI.hero.titleTail)
+                .split(" ")
+                .map((word, i, arr) => (
+                  <span key={`tail-${i}`}>
+                    {" "}
+                    <span data-hero-word className="inline-block">
+                      {word}
+                      {i === arr.length - 1 && "."}
+                    </span>
+                  </span>
+                ))}
           </h1>
 
           <p data-hero className="mt-6 max-w-2xl text-lg text-fg-muted xl:text-xl">
@@ -85,13 +98,17 @@ export function Hero({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          {/* CTAs + Milo NA MESMA LINHA: o mascote deixa de ser um widget
+              solto no canto e vira parte da composição — de pé ao lado do
+              botão principal, olhando pro cursor (MiloLive) e acenando no
+              clique. O balão aponta pro CTA. */}
+          <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
                 href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto glow-accent"
+                className="cta-pulse inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto"
               >
                 <MessageCircle className="h-4 w-4" />
                 {t(UI.hero.ctaWhats)}
@@ -106,22 +123,19 @@ export function Hero({ locale }: { locale: Locale }) {
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Magnetic>
+
+            <div className="relative ml-2 hidden w-24 sm:block">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-20 scale-110 rounded-full bg-accent/30 blur-2xl"
+              />
+              <span className="animate-fade-up absolute bottom-full left-1/2 mb-2 -translate-x-1/3 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
+                {t(UI.hero.miloHi)}
+              </span>
+              <MiloLive className="w-24 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Milo vivo no canto direito da cena (pisca + flutua via CSS), com halo
-          próprio atrás — sem ele o hoodie azul some contra a foto escura.
-          Balão ACIMA do mascote: ancorado no rodapé do hero, embaixo vazaria. */}
-      <div className="animate-fade-up absolute bottom-8 right-8 z-10 hidden w-28 [animation-delay:1.2s] sm:block lg:right-16">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-24 scale-110 rounded-full bg-accent/35 blur-2xl"
-        />
-        <span className="animate-fade-up absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
-          {t(UI.hero.miloHi)}
-        </span>
-        <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
       </div>
 
       {/* Indicador de scroll (decorativo — a âncora real é a própria rolagem;

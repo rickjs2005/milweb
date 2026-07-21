@@ -224,17 +224,18 @@
       linear-gradient(to right, rgb(var(--line) / 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
   }
-  /* Ken Burns: zoom lento contínuo na imagem de fundo. Fica num wrapper
-     PRÓPRIO, separado do wrapper [data-depth] — o parallax de mouse (GSAP)
-     escreve x/y no transform e brigaria com o scale desta animação se
-     dividissem o mesmo elemento. reduced-motion global já zera a duração. */
-  @keyframes hero-kenburns {
-    from { transform: scale(1.02); }
-    to { transform: scale(1.1); }
+  /* Pulso do CTA principal: anel de glow que expande e dissolve — chama o
+     olho sem mexer no layout. reduced-motion global zera. */
+  @keyframes cta-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgb(var(--accent) / 0.5), 0 0 26px -6px rgb(var(--accent) / 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 9px rgb(var(--accent) / 0), 0 0 34px -4px rgb(var(--accent) / 0.7);
+    }
   }
-  .hero-kenburns {
-    animation: hero-kenburns 26s ease-in-out infinite alternate;
-    will-change: transform;
+  .cta-pulse {
+    animation: cta-pulse 2.6s ease-in-out infinite;
   }
   /* Poeira em suspensão nos feixes de luz: cada mote sobe devagar com
      deriva lateral e pisca — o "ar" da cena. Valores por elemento via

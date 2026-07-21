@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ElementType } from "react";
+import { useRef, type ElementType, type Ref } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -55,9 +55,12 @@ export function SplitHeading({
     { scope: ref },
   );
 
+  // Cast pro mesmo motivo do Reveal: o augment de JSX do @react-three/fiber
+  // faz o union de children de ElementType colapsar em never.
+  const T = Tag as "h2";
   return (
-    <Tag ref={ref} className={className}>
+    <T ref={ref as Ref<HTMLHeadingElement>} className={className}>
       {children}
-    </Tag>
+    </T>
   );
 }

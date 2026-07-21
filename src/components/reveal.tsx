@@ -7,6 +7,7 @@ import {
   useState,
   type ElementType,
   type ReactNode,
+  type Ref,
 } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -132,14 +133,18 @@ export function Reveal({
     : "transition-all duration-700 ease-out " +
       (shown ? v.shown : v.hidden) +
       (className ? " " + className : "");
+  // O augment global de JSX do @react-three/fiber faz ElementType incluir os
+  // elementos three e o union de `children` colapsa em never — o cast fixa a
+  // checagem num tag DOM (uso real aqui é sempre div/section/h2...).
+  const T = Tag as "div";
   return (
-    <Tag
-      ref={ref}
+    <T
+      ref={ref as Ref<HTMLDivElement>}
       style={scrub ? undefined : { transitionDelay: `${delay}ms` }}
       className={cls}
     >
       {children}
-    </Tag>
+    </T>
   );
 }
 
