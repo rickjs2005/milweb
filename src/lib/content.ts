@@ -152,7 +152,7 @@ export const PROJECTS: Project[] = [
       en: "SaaS under active development.",
     },
     featured: true,
-    image: "/shots/milsaca.png",
+    image: "/shots/milsaca.webp",
     caseStudy: {
       narrative: [
         {
@@ -208,7 +208,7 @@ export const PROJECTS: Project[] = [
     metric: { pt: "Auditoria de sites · IA · landing pages", en: "Website audits · AI · landing pages" },
     repos: [{ label: "Código", url: `${GH}/millead` }],
     status: { pt: "Ferramenta interna da MilWeb", en: "MilWeb internal tool" },
-    image: "/shots/millead.png",
+    image: "/shots/millead.webp",
     note: {
       pt: "CRM interno usado na prospecção da própria MilWeb.",
       en: "Internal CRM used in MilWeb's own prospecting.",
@@ -743,7 +743,7 @@ export const PROJECTS: Project[] = [
       { label: "Backend", url: `${GH}/ecommerce-do-agro-backend` },
     ],
     featured: true,
-    image: "/shots/kavita.png",
+    image: "/shots/kavita.webp",
     caseStudy: {
       narrative: [
         {
@@ -1036,7 +1036,7 @@ export const PROJECTS: Project[] = [
     live: "https://rjjstore.vercel.app",
     repos: [{ label: "Código", url: `${GH}/rjjstore` }],
     featured: true,
-    image: "/shots/rjjstore.png",
+    image: "/shots/rjjstore.webp",
     caseStudy: {
       narrative: [
         {

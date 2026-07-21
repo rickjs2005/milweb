@@ -3,11 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Vídeo do Lab (preview mudo): autoplay garantido — `autoPlay` +
- * muted/playsInline (o combo que todo browser mobile aceita) e um
- * IntersectionObserver que pausa fora da viewport e RE-tenta o play ao
- * entrar (alguns browsers bloqueiam o primeiro play antes do load).
- * Em prefers-reduced-motion fica no poster, parado.
+ * Vídeo do Lab (preview mudo): NADA é baixado até o card se aproximar da
+ * viewport — `preload="none"` + poster, sem atributo `autoPlay` (que faz o
+ * browser baixar o arquivo inteiro já no load da página, mesmo fora da
+ * tela; era isso que colocava ~4MB de vídeo no first load da home). O
+ * IntersectionObserver dá o play ao entrar (o play() dispara o download) e
+ * pausa ao sair. Em prefers-reduced-motion fica no poster, parado.
  */
 export function LabVideo({ src, poster, label }: { src: string; poster: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -16,7 +17,6 @@ export function LabVideo({ src, poster, label }: { src: string; poster: string; 
     const video = ref.current;
     if (!video) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      video.autoplay = false;
       video.pause();
       return;
     }
@@ -34,7 +34,9 @@ export function LabVideo({ src, poster, label }: { src: string; poster: string; 
         if (entry.isIntersecting) tryPlay();
         else video.pause();
       },
-      { threshold: 0.25 },
+      // rootMargin: começa a baixar um pouco antes de aparecer, pra não
+      // entrar na tela ainda no poster.
+      { threshold: 0.1, rootMargin: "25% 0px" },
     );
     io.observe(video);
     return () => io.disconnect();
@@ -45,11 +47,10 @@ export function LabVideo({ src, poster, label }: { src: string; poster: string; 
       ref={ref}
       src={src}
       poster={poster}
-      autoPlay
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
       aria-label={label}
       className="block h-full w-full object-cover"
     />

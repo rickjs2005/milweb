@@ -22,7 +22,9 @@ const WAYPOINTS: Record<string, Waypoint> = {
   google: { x: 89, y: 34, pose: "idle" },
   projects: { x: 4, y: 68, pose: "shocked", scale: 1.15 },
   lab: { x: 89, y: 18, pose: "happy" },
-  process: { x: 4, y: 32, pose: "idle" },
+  // y baixo: no Processo o título/label ficam no terço superior esquerdo —
+  // em y:32 o Milo parava exatamente em cima do "07 / COMO FUNCIONA".
+  process: { x: 4, y: 16, pose: "idle" },
   tech: { x: 89, y: 58, pose: "think" },
   faq: { x: 4, y: 58, pose: "happy" },
   about: { x: 89, y: 36, pose: "idle" },
@@ -40,20 +42,92 @@ const WAYPOINTS: Record<string, Waypoint> = {
  * botão verde (sem mascote duplicado) — um Milo só em cena. Desktop lg+
  * com ponteiro fino; mobile/reduced continuam com o FAB de sempre.
  */
+/** Elementos que um balão de fala nunca pode cobrir. */
+const CONTENT_SELECTOR =
+  "h1, h2, h3, h4, p, a, button, li, img, video, svg, input, textarea, select, label, figure, blockquote, code, table";
+
+/** "topLeft"/"topRight": acima do Milo, alinhado à borda que não estoura a tela. */
+type BubblePlacement = "left" | "right" | "topLeft" | "topRight";
+
 export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
   const pathname = usePathname();
   const wrapRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const bubbleRef = useRef<HTMLSpanElement>(null);
   const [pose, setPose] = useState<MiloPose>("idle");
   const [bubble, setBubble] = useState<string | null>(null);
-  const [bubbleSide, setBubbleSide] = useState<"left" | "right">("right");
+  const [bubbleSide, setBubbleSide] = useState<BubblePlacement>("right");
   const bubbleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const say = (text: string, p?: MiloPose, ttl = 4500) => {
+  /**
+   * O balão cobre algum conteúdo de verdade nessa posição? Amostra os
+   * cantos + centro do retângulo projetado com elementsFromPoint (barato,
+   * só roda ao abrir um balão) e procura texto/mídia dentro do <main> —
+   * fundos de seção e camadas fixas (nav, FAB, a própria lula) ficam fora.
+   */
+  const rectCollides = (r: { left: number; top: number; w: number; h: number }) => {
+    const pts: Array<[number, number]> = [
+      [r.left + 6, r.top + 6],
+      [r.left + r.w - 6, r.top + 6],
+      [r.left + 6, r.top + r.h - 6],
+      [r.left + r.w - 6, r.top + r.h - 6],
+      [r.left + r.w / 2, r.top + r.h / 2],
+    ];
+    return pts.some(([x, y]) => {
+      if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return true;
+      return document
+        .elementsFromPoint(x, y)
+        .some((n) => n instanceof Element && n.closest("main") && n.matches(CONTENT_SELECTOR));
+    });
+  };
+
+  /**
+   * Escolhe onde abrir o balão sem cobrir conteúdo: lado preferido (voltado
+   * pro centro da tela) → lado oposto → em cima do Milo. Se tudo colidir,
+   * fica em cima mesmo — é o que menos briga com texto nas margens.
+   */
+  const placeBubble = (preferred: "left" | "right") => {
+    const wrap = wrapRef.current;
+    const span = bubbleRef.current;
+    if (!wrap || !span) return;
+    const m = wrap.getBoundingClientRect();
+    const w = Math.min(260, span.offsetWidth || 220);
+    const h = span.offsetHeight || 44;
+    // Acima do Milo, alinhado à borda que aponta pro centro da tela
+    // (na margem direita o balão cresce pra esquerda, e vice-versa).
+    const onRightHalf = m.left + m.width / 2 > window.innerWidth / 2;
+    const top: [BubblePlacement, { left: number; top: number; w: number; h: number }] = onRightHalf
+      ? ["topRight", { left: m.right - w, top: m.top - 12 - h, w, h }]
+      : ["topLeft", { left: m.left, top: m.top - 12 - h, w, h }];
+    const candidates: Array<[BubblePlacement, { left: number; top: number; w: number; h: number }]> = [
+      ["right", { left: m.right + 12, top: m.top + 4, w, h }],
+      ["left", { left: m.left - 12 - w, top: m.top + 4, w, h }],
+      top,
+    ];
+    if (preferred === "left") [candidates[0], candidates[1]] = [candidates[1], candidates[0]];
+    for (const [placement, rect] of candidates) {
+      if (!rectCollides(rect)) {
+        setBubbleSide(placement);
+        return;
+      }
+    }
+    setBubbleSide(top[0]);
+  };
+
+  const say = (text: string, p?: MiloPose, ttl = 4500, preferred?: "left" | "right") => {
     setBubble(text);
     if (p) setPose(p);
     clearTimeout(bubbleTimer.current);
     bubbleTimer.current = setTimeout(() => setBubble(null), ttl);
+    // Mede depois que o texto renderizou (2 rAFs: commit + layout).
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        const wrap = wrapRef.current;
+        const fallback: "left" | "right" =
+          wrap && wrap.getBoundingClientRect().left > window.innerWidth / 2 ? "left" : "right";
+        placeBubble(preferred ?? fallback);
+      }),
+    );
   };
 
   useEffect(() => {
@@ -79,7 +153,6 @@ export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
       const wp = WAYPOINTS[id];
       if (!wp) return;
       setPose(wp.pose);
-      setBubbleSide(wp.x > 50 ? "left" : "right");
       const goingRight = wp.x > currentX;
       // encara o conteúdo: na margem direita, espelha pra olhar pra esquerda
       gsap.to(inner, { scaleX: wp.x > 50 ? -1 : 1, duration: 0.35 });
@@ -104,14 +177,16 @@ export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
         scale: wp.scale ?? 1,
         duration: 1.5,
         ease: "power2.inOut",
+        // A fala do tour só abre quando ele CHEGA (uma vez por seção por
+        // visita) — falar andando media a colisão do balão no lugar errado.
+        onComplete: () => {
+          if (saidTour.has(id)) return;
+          saidTour.add(id);
+          const step = MILO_TOUR.find((t) => t.id === id);
+          if (step) say(step.text[locale], step.pose, 4500, wp.x > 50 ? "left" : "right");
+        },
       });
       currentX = wp.x;
-      // fala do tour: uma vez por seção por visita
-      if (!saidTour.has(id)) {
-        saidTour.add(id);
-        const step = MILO_TOUR.find((t) => t.id === id);
-        if (step) say(step.text[locale], step.pose);
-      }
     };
 
     const io = new IntersectionObserver(
@@ -171,16 +246,23 @@ export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
           />
         </div>
 
-        {/* balão de fala (tour + reações + despedida) */}
+        {/* balão de fala (tour + reações + despedida) — posição decidida
+            por colisão real com o conteúdo (placeBubble) */}
         <span
+          ref={bubbleRef}
           className={[
-            "pointer-events-none absolute top-1 w-max max-w-[260px]",
-            bubbleSide === "left" ? "right-full mr-3" : "left-full ml-3",
-            "rounded-2xl border border-line/15 bg-surface-2/95 px-4 py-2.5",
-            bubbleSide === "left" ? "rounded-br-md" : "rounded-bl-md",
+            "pointer-events-none absolute w-max max-w-[260px]",
+            bubbleSide === "topLeft"
+              ? "bottom-full left-0 mb-3 rounded-2xl rounded-bl-md"
+              : bubbleSide === "topRight"
+                ? "bottom-full right-0 mb-3 rounded-2xl rounded-br-md"
+                : bubbleSide === "left"
+                  ? "right-full top-1 mr-3 rounded-2xl rounded-br-md"
+                  : "left-full top-1 ml-3 rounded-2xl rounded-bl-md",
+            "border border-line/15 bg-surface-2/95 px-4 py-2.5",
             "text-sm font-medium leading-snug text-fg shadow-lg",
-            "transition-all duration-300",
-            bubble ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
+            "transition-opacity duration-300",
+            bubble ? "opacity-100" : "opacity-0",
           ].join(" ")}
         >
           {bubble}
