@@ -250,6 +250,8 @@ export const PROJECTS: Project[] = [
       gallery: [
         { src: "/shots/millead/kanban.webp", alt: { pt: "Pipeline kanban com valores por estágio — dados de demonstração", en: "Kanban pipeline with per-stage totals — demo data" } },
         { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status — dados de demonstração", en: "Dashboard with finance, funnel and leads by status — demo data" } },
+        { src: "/shots/millead/contracts.webp", alt: { pt: "Contratos com PDF e assinatura eletrônica — dados de demonstração", en: "Contracts with PDF and e-signature — demo data" } },
+        { src: "/shots/millead/briefings.webp", alt: { pt: "Briefings de onboarding com progresso do preenchimento — dados de demonstração", en: "Onboarding briefings with fill-out progress — demo data" } },
       ],
     },
   },
