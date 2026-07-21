@@ -17,8 +17,10 @@ import type { HeadState, SquidConfig, SquidFollowerProps } from "./types";
  * clique, scroll e idle. Nada ATRÁS do conteúdo (z-index negativo).
  *
  * Física 100% manual (physics.ts); GSAP só para estados especiais
- * (pulso de clique e transição de idle). Desativa-se sozinha em ponteiros
- * sem hover (touch) e com prefers-reduced-motion.
+ * (pulso de clique e transição de idle). Em ponteiros sem hover (touch)
+ * entra em modo AUTÔNOMO: nada por deriva de ruído, sente o scroll e foge
+ * de toques — versão mais leve (menos segmentos/partículas, DPR menor).
+ * Com prefers-reduced-motion, desativa-se por completo.
  */
 export function SquidFollower(props: SquidFollowerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,21 +30,32 @@ export function SquidFollower(props: SquidFollowerProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const canHover = window.matchMedia("(hover: hover)").matches;
-    if (reduce || !canHover) return;
+    if (reduce) return;
+    // Sem hover (touch) a lula não some: entra em MODO AUTÔNOMO — nada
+    // sozinha por pontos de deriva (ruído), sente a correnteza do scroll
+    // e foge de toques. Versão mais leve (menos segmentos/partículas).
+    const autonomous = !window.matchMedia("(hover: hover)").matches;
+    const ecfg: SquidConfig = autonomous
+      ? {
+          ...cfg,
+          size: Math.round(cfg.size * 0.78),
+          segments: Math.min(cfg.segments, 16),
+          particleCount: Math.min(cfg.particleCount, 10),
+        }
+      : cfg;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     /* Montagem do engine ------------------------------------------- */
-    const renderer = new Renderer(ctx, cfg);
-    const pointer = new PointerTracker(cfg.interactive);
-    const particles = new ParticleSystem(cfg);
-    const head = new Spring2D(window.innerWidth / 2, window.innerHeight + cfg.size * 4);
+    const renderer = new Renderer(ctx, ecfg);
+    const pointer = new PointerTracker(ecfg.interactive);
+    const particles = new ParticleSystem(ecfg);
+    const head = new Spring2D(window.innerWidth / 2, window.innerHeight + ecfg.size * 4);
     // Os 2 tentáculos longos de caça ficam em posições simétricas do feixe.
-    const longIdx = cfg.tentacles >= 5 ? new Set([1, cfg.tentacles - 2]) : new Set<number>();
+    const longIdx = ecfg.tentacles >= 5 ? new Set([1, ecfg.tentacles - 2]) : new Set<number>();
     const tentacles = Array.from(
-      { length: cfg.tentacles },
-      (_, i) => new Tentacle(i, cfg.tentacles, cfg, longIdx.has(i)),
+      { length: ecfg.tentacles },
+      (_, i) => new Tentacle(i, ecfg.tentacles, ecfg, longIdx.has(i)),
     );
     for (const t of tentacles) t.reset(head.x, head.y);
 
@@ -55,9 +68,9 @@ export function SquidFollower(props: SquidFollowerProps) {
     let blinkTimer = PHYSICS.blinkMin + Math.random() * (PHYSICS.blinkMax - PHYSICS.blinkMin);
     let blinkPhase = -1; // <0 = olho aberto; 0..1 = progresso da piscada
 
-    pointer.onClick = (cx, cy) => {
-      if (!cfg.interactive) return;
-      // Recuo elástico: impulso na direção oposta ao clique.
+    // Reflexo de fuga: recuo elástico na direção oposta ao clique/toque.
+    const flee = (cx: number, cy: number) => {
+      if (!ecfg.interactive) return;
       const dx = head.x - cx;
       const dy = head.y - cy;
       const d = Math.hypot(dx, dy) || 1;
@@ -65,6 +78,11 @@ export function SquidFollower(props: SquidFollowerProps) {
       particles.burst(head.x, head.y);
       gsap.fromTo(pulse, { t: 0 }, { t: 1, duration: 0.55, ease: "power2.out", overwrite: true });
     };
+    pointer.onClick = flee;
+    // No touch o PointerTracker filtra tudo que não é mouse — o toque vira
+    // um listener próprio (a lula foge do dedo).
+    const onTap = (e: PointerEvent) => flee(e.clientX, e.clientY);
+    if (autonomous) window.addEventListener("pointerdown", onTap);
 
     /* Loop ---------------------------------------------------------- */
     let raf = 0;
@@ -81,20 +99,34 @@ export function SquidFollower(props: SquidFollowerProps) {
 
       pointer.update(dt);
 
-      const isIdle = cfg.idleAnimation && pointer.idleTime > PHYSICS.idleDelay;
+      // Autônoma (touch): sem cursor, a "velocidade da mão" vira a da própria
+      // lula — o esticamento dos tentáculos acompanha o nado dela.
+      const headSpeed = Math.hypot(head.vx, head.vy);
+      const speedNorm = autonomous ? clamp(headSpeed / 700, 0, 1) : pointer.speedNorm;
+      const isIdle =
+        ecfg.idleAnimation && (autonomous ? headSpeed < 40 : pointer.idleTime > PHYSICS.idleDelay);
       if (isIdle !== wasIdle) {
         wasIdle = isIdle;
         gsap.to(idle, { amp: isIdle ? 1 : 0, duration: 1.2, ease: "sine.inOut", overwrite: true });
       }
 
       // Alvo da cabeça: cursor + offset (nunca colado) + flutuação em idle.
-      const hover = cfg.interactive ? pointer.hoverCenter() : null;
+      // Em modo autônomo o alvo é um ponto de deriva por ruído — ela cruza a
+      // tela devagar, sem depender de ponteiro nenhum.
+      const hover = !autonomous && ecfg.interactive ? pointer.hoverCenter() : null;
       const bobY = Math.sin(time * PHYSICS.idleBobFreq * Math.PI * 2) * PHYSICS.idleBobAmp * idle.amp;
       const bobX = noise1(time * 0.25) * 14 * idle.amp;
-      const tx = pointer.x + PHYSICS.followOffset.x + bobX;
-      const ty = pointer.y + PHYSICS.followOffset.y + bobY;
+      let tx: number;
+      let ty: number;
+      if (autonomous) {
+        tx = window.innerWidth * (0.5 + noise1(time * 0.045) * 0.42) + bobX;
+        ty = window.innerHeight * (0.42 + noise1(time * 0.045 + 77) * 0.33) + bobY;
+      } else {
+        tx = pointer.x + PHYSICS.followOffset.x + bobX;
+        ty = pointer.y + PHYSICS.followOffset.y + bobY;
+      }
       const damping = PHYSICS.headDamping + (hover ? PHYSICS.hoverDampingBoost : 0);
-      head.update(tx, ty, PHYSICS.headStiffness * cfg.speed, damping, dt);
+      head.update(tx, ty, PHYSICS.headStiffness * ecfg.speed * (autonomous ? 0.5 : 1), damping, dt);
 
       // Correnteza do scroll empurra as pontas dos tentáculos.
       const flowY = clamp(-pointer.scrollVel * PHYSICS.scrollFlow, -60, 60);
@@ -116,7 +148,7 @@ export function SquidFollower(props: SquidFollowerProps) {
       tentacles.forEach((t, i) =>
         t.update(
           head.x, head.y, head.vx, head.vy, time, dt,
-          pointer.speedNorm, flowY, idle.amp, i === pointingIndex && hover ? hover : null,
+          speedNorm, flowY, idle.amp, i === pointingIndex && hover ? hover : null,
         ),
       );
 
@@ -129,9 +161,10 @@ export function SquidFollower(props: SquidFollowerProps) {
       if (hover) {
         lookTX = hover.x;
         lookTY = hover.y;
-      } else if (isIdle) {
-        lookTX = head.x + noise1(time * 0.4) * 220;
-        lookTY = head.y + noise1(time * 0.4 + 100) * 160;
+      } else if (isIdle || autonomous) {
+        // Autônoma olha pra onde está indo (mais o vagueio do ruído).
+        lookTX = head.x + head.vx * 0.4 + noise1(time * 0.4) * 220;
+        lookTY = head.y + head.vy * 0.4 + noise1(time * 0.4 + 100) * 160;
       } else {
         lookTX = pointer.x;
         lookTY = pointer.y;
@@ -182,7 +215,8 @@ export function SquidFollower(props: SquidFollowerProps) {
 
     /* Resize / visibilidade / limpeza ------------------------------- */
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // DPR menor no touch: telas 3x custariam caro pra um efeito de fundo.
+      const dpr = Math.min(window.devicePixelRatio || 1, autonomous ? 1.75 : 2);
       renderer.resize(window.innerWidth, window.innerHeight, dpr);
     };
     resize();
@@ -204,6 +238,7 @@ export function SquidFollower(props: SquidFollowerProps) {
     return () => {
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
+      if (autonomous) window.removeEventListener("pointerdown", onTap);
       ro.disconnect();
       pointer.dispose();
       gsap.killTweensOf(pulse);
@@ -220,7 +255,7 @@ export function SquidFollower(props: SquidFollowerProps) {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none fixed inset-0 hidden [@media(hover:hover)]:block"
+      className="pointer-events-none fixed inset-0"
       style={{ zIndex: cfg.zIndex, opacity: cfg.opacity }}
     />
   );

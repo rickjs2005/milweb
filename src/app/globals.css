@@ -255,6 +255,16 @@
     background-color: rgb(var(--bg) / 0.72);
     box-shadow: inset 0 -1px 0 0 rgb(15 23 42 / 0.04);
   }
+  /* No mobile a nav precisa ser mais opaca: os títulos gigantes das seções
+     rolam por baixo dela e a 60% o texto vazava legível pelo vidro. */
+  @media (max-width: 1023px) {
+    .glass-nav {
+      background-color: rgb(var(--bg) / 0.9);
+    }
+    .light .glass-nav {
+      background-color: rgb(var(--bg) / 0.94);
+    }
+  }
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
