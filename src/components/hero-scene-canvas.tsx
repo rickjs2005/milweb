@@ -303,11 +303,13 @@ type HoloSpec = {
 };
 
 /* Cards em profundidades e ângulos DIFERENTES de propósito (nada de grade
-   PowerPoint): um perto e grande, um médio inclinado, um longe e pequeno. */
+   PowerPoint): um perto e grande, um médio inclinado, um longe e pequeno.
+   Curadoria por impacto: carro (aurex), relógio DOURADO (contrasta com o
+   azul da cena) e dashboard SaaS (prova os "sistemas" da headline). */
 const HOLOS: HoloSpec[] = [
   { url: "/shots/aurex-motors.webp", pos: [5.2, -1.25, -0.4], rot: [0.06, -0.5, 0.05], scale: 1.35, speed: 1.1, delay: 0.9 },
-  { url: "/shots/atelier-vertex.webp", pos: [1.55, 2.05, -2.6], rot: [-0.1, 0.34, -0.03], scale: 1.0, speed: 0.8, delay: 1.25 },
-  { url: "/shots/kavita.webp", pos: [5.35, 1.9, -3.6], rot: [0.05, -0.24, -0.07], scale: 0.82, speed: 1.4, delay: 1.6 },
+  { url: "/shots/millead.webp", pos: [1.55, 2.05, -2.6], rot: [-0.1, 0.34, -0.03], scale: 1.0, speed: 0.8, delay: 1.25 },
+  { url: "/shots/aurex-timepieces.webp", pos: [5.35, 1.9, -3.6], rot: [0.05, -0.24, -0.07], scale: 0.86, speed: 1.4, delay: 1.6 },
 ];
 
 function Hologram({ spec }: { spec: HoloSpec }) {
@@ -328,6 +330,8 @@ function Hologram({ spec }: { spec: HoloSpec }) {
     if (!g || !u) return;
     u.uTime.value = t;
     u.uOp.value = THREE.MathUtils.lerp(u.uOp.value, t > spec.delay ? 0.92 : 0, 0.04);
+    // glitch de holograma: blip raro de opacidade (realismo de projeção)
+    if (Math.sin(t * 7.3 + spec.delay * 23) > 0.997) u.uOp.value *= 0.5;
     g.position.y = spec.pos[1] + Math.sin(t * spec.speed + spec.delay * 7) * 0.14;
     g.rotation.y = spec.rot[1] + Math.sin(t * 0.3 + spec.delay * 3) * 0.06;
     g.rotation.x = spec.rot[0] + Math.cos(t * 0.24 + spec.delay * 5) * 0.03;
@@ -498,9 +502,13 @@ function DepthLayer({
 
 function Rig({ ndc, children }: { ndc: React.MutableRefObject<THREE.Vector2>; children: React.ReactNode }) {
   const group = useRef<THREE.Group>(null);
-  useFrame(() => {
+  useFrame((state) => {
     const g = group.current;
     if (!g) return;
+    // entrada de câmera: dolly-in dos primeiros ~2,4s (12 → 9), easing suave
+    const t = Math.min(1, state.clock.elapsedTime / 2.4);
+    const e = 1 - Math.pow(1 - t, 3);
+    state.camera.position.z = 12 - 3 * e;
     g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, ndc.current.x * 0.09, 0.045);
     g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, -ndc.current.y * 0.05, 0.045);
   });

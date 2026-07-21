@@ -73,6 +73,11 @@
     --accent-soft: 125 211 252; /* #7DD3FC */
     --accent-deep: 14 165 233;  /* #0EA5E9 */
     --accent-fg: 6 12 22;       /* texto sobre o azul */
+    /* Fundo REAL da página (nunca re-declarado pelo .hero-dark): o fade no
+       pé do hero mira esta var pra dissolver na seção seguinte do TEMA
+       ativo — sem ela, no claro o hero esmaecia pra escuro e batia seco
+       na seção branca. */
+    --page-bg: 8 10 16;
     color-scheme: dark;
   }
   .light {
@@ -87,6 +92,7 @@
     --accent-soft: 3 105 161;
     --accent-deep: 7 89 133;
     --accent-fg: 255 255 255;
+    --page-bg: 248 250 252;
     color-scheme: light;
   }
 
