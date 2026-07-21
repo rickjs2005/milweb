@@ -256,6 +256,8 @@ export const PROJECTS: Project[] = [
         { src: "/shots/millead/generator.webp", alt: { pt: "Gerador de prompt de site: dados do cliente viram um prompt pronto pra IA — dados de demonstração", en: "Website prompt generator: client data becomes an AI-ready prompt — demo data" } },
         { src: "/shots/millead/messages.webp", alt: { pt: "Mensagens: rascunhos de prospecção gerados por IA, por canal e status — dados de demonstração", en: "Messages: AI-generated outreach drafts by channel and status — demo data" } },
         { src: "/shots/millead/agenda.webp", alt: { pt: "Agenda: calendário mensal com reuniões e tarefas + painel do dia — dados de demonstração", en: "Agenda: monthly calendar with meetings and tasks + day panel — demo data" } },
+        { src: "/shots/millead/proposals.webp", alt: { pt: "Propostas com valor, validade e status do envio ao aceite — dados de demonstração", en: "Proposals with value, validity and status from sent to accepted — demo data" } },
+        { src: "/shots/millead/companies.webp", alt: { pt: "Empresas com contato, cidade e segmento — dados de demonstração", en: "Companies with contact, city and segment — demo data" } },
       ],
     },
   },
