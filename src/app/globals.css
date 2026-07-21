@@ -396,6 +396,37 @@
       background-color: rgb(var(--bg) / 0.94);
     }
   }
+  /* ===== Nav cinematográfica ===== */
+  /* Rótulo da seção atual: entra rolando de baixo (clipado pelo pai). */
+  @keyframes nav-label-in {
+    from { transform: translateY(115%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .nav-label-in {
+    animation: nav-label-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  /* Progresso "cometa": trilho em gradiente com cabeça brilhante na ponta. */
+  .nav-progress {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--accent) / 0),
+      rgb(var(--accent) / 0.65) 55%,
+      rgb(var(--accent))
+    );
+  }
+  .nav-progress::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    transform: translate(50%, -50%);
+    border-radius: 9999px;
+    background: rgb(var(--accent-soft));
+    box-shadow: 0 0 10px 2px rgb(var(--accent) / 0.8);
+  }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
