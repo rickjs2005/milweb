@@ -252,6 +252,8 @@ export const PROJECTS: Project[] = [
         { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status — dados de demonstração", en: "Dashboard with finance, funnel and leads by status — demo data" } },
         { src: "/shots/millead/contracts.webp", alt: { pt: "Contratos com PDF e assinatura eletrônica — dados de demonstração", en: "Contracts with PDF and e-signature — demo data" } },
         { src: "/shots/millead/briefings.webp", alt: { pt: "Briefings de onboarding com progresso do preenchimento — dados de demonstração", en: "Onboarding briefings with fill-out progress — demo data" } },
+        { src: "/shots/millead/audit.webp", alt: { pt: "Auditoria de sites: ~30 checagens em 6 categorias com nota explicável — dados de demonstração", en: "Website audits: ~30 checks across 6 categories with explainable scores — demo data" } },
+        { src: "/shots/millead/generator.webp", alt: { pt: "Gerador de prompt de site: dados do cliente viram um prompt pronto pra IA — dados de demonstração", en: "Website prompt generator: client data becomes an AI-ready prompt — demo data" } },
       ],
     },
   },
