@@ -181,6 +181,28 @@
       linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
     background-size: 56px 56px;
   }
+  /* No claro as mesmas linhas a 5% viram listras — fundo branco amplifica
+     o contraste; 3% mantém a textura sem gritar. */
+  .light .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--line) / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--line) / 0.03) 1px, transparent 1px);
+  }
+
+  /* Painel de produto do hero (hero-showcase): barras crescem, linha do
+     gráfico se desenha, toast de pedido entra/sai em loop. */
+  @keyframes hs-bar {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  @keyframes hs-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes hs-toast {
+    0%, 4% { opacity: 0; transform: translateY(10px); }
+    9%, 55% { opacity: 1; transform: translateY(0); }
+    63%, 100% { opacity: 0; transform: translateY(-8px); }
+  }
   /* Texto em gradiente azul→branco (ecoa o logo MilWeb). */
   .text-gradient {
     @apply bg-gradient-to-br from-fg via-accent-soft to-accent bg-clip-text text-transparent;

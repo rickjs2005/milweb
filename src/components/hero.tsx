@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
+import { HeroShowcase } from "./hero-showcase";
 import { MiloLive } from "./milo-live";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
@@ -109,15 +110,21 @@ export function Hero({ locale }: { locale: Locale }) {
             aria-hidden
             className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-accent/20 blur-[100px]"
           />
-          <Image
-            src={PROFILE.heroImage}
-            alt="MilWeb — desenvolvimento de sites e sistemas"
-            width={1600}
-            height={894}
-            priority
-            sizes="(max-width: 1024px) 92vw, 46vw"
-            data-depth="0.22"
-            className="w-full rounded-2xl border border-line/15 ring-1 ring-inset ring-accent/20 shadow-[0_0_80px_-20px_rgb(var(--accent)/0.5)]"
+          {/* Painel de produto codificado (dashboard fictício animado) no
+              lugar da antiga imagem estática — prova a tese do site na
+              primeira dobra e tira ~130KB do LCP. */}
+          <HeroShowcase
+            locale={locale}
+            copy={{
+              store: t(UI.hero.panel.store),
+              live: t(UI.hero.panel.live),
+              sales: t(UI.hero.panel.sales),
+              orders: t(UI.hero.panel.orders),
+              conversion: t(UI.hero.panel.conversion),
+              week: t(UI.hero.panel.week),
+              newOrder: t(UI.hero.panel.newOrder),
+              viaGoogle: t(UI.hero.panel.viaGoogle),
+            }}
           />
 
           {/* Milo vivo debruçado no canto da cena (pisca + flutua via CSS).
@@ -131,7 +138,8 @@ export function Hero({ locale }: { locale: Locale }) {
               aria-hidden
               className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-24 scale-110 rounded-full bg-accent/35 blur-2xl"
             />
-            <span className="animate-fade-up absolute -top-8 left-20 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
+            {/* Balão abaixo do Milo: em cima ele cobria o gráfico do painel. */}
+            <span className="animate-fade-up absolute -left-2 top-full mt-2 whitespace-nowrap rounded-2xl rounded-tl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
               {t(UI.hero.miloHi)}
             </span>
             <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />

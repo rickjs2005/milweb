@@ -31,13 +31,12 @@ export function Faq({ locale }: { locale: Locale }) {
         <p className="mt-4 max-w-2xl text-lg text-fg-subtle">{t(UI.sections.faqSub)}</p>
       </Reveal>
 
+      {/* Itens em fade uniforme (sem slide-left/right): as variantes de
+          deslize congelavam no meio com o reveal atrelado ao scroll e o
+          item parecia desalinhado dentro da lista com bordas. */}
       <div className="mx-auto mt-10 max-w-3xl divide-y divide-line/10 rounded-2xl border border-line/10 glass">
         {FAQ.map((item, i) => (
-          <Reveal
-            key={item.q.en}
-            delay={(i % 3) * 60}
-            variant={i % 2 === 0 ? "slide-left" : "slide-right"}
-          >
+          <Reveal key={item.q.en} delay={(i % 3) * 60}>
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-semibold text-fg transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
                 {t(item.q)}

@@ -1377,6 +1377,18 @@ export const UI = {
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
     miloHi: { pt: "Oi! Eu sou o Milo 👋", en: "Hi! I'm Milo 👋" },
+    // Painel de produto codificado no lugar da imagem estática do hero —
+    // um dashboard fictício de cliente, animado em CSS puro.
+    panel: {
+      store: { pt: "Painel — Loja Aurora", en: "Dashboard — Aurora Store" },
+      live: { pt: "no ar", en: "live" },
+      sales: { pt: "Vendas hoje", en: "Sales today" },
+      orders: { pt: "Pedidos", en: "Orders" },
+      conversion: { pt: "Conversão", en: "Conversion" },
+      week: { pt: "Últimos 7 dias", en: "Last 7 days" },
+      newOrder: { pt: "Novo pedido — R$ 189,90", en: "New order — $37.90" },
+      viaGoogle: { pt: "cliente veio do Google", en: "customer came from Google" },
+    },
   },
   sections: {
     deliverablesEyebrow: { pt: "O que eu faço", en: "What I do" },
