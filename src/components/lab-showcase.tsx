@@ -243,7 +243,7 @@ export function LabShowcase({
               {/* Legenda dentro do card: só no carrossel nativo (mobile) —
                   na esteira o painel central assume esse papel. */}
               {!belt && (
-                <figcaption className="flex min-h-[12rem] flex-1 flex-col gap-2 p-5">
+                <figcaption className="flex flex-1 flex-col gap-2 p-5 sm:min-h-[12rem]">
                   <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                     {item.category}
                   </p>

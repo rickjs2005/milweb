@@ -148,14 +148,17 @@ export function CaseStudy({
               <p className="font-mono text-xs uppercase tracking-wider text-fg-subtle">
                 {t(UI.labels.gallery)}
               </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Mobile: carrossel horizontal com snap — galerias grandes (o
+                  MilLead tem 14 telas) empilhadas viravam milhares de px de
+                  rolagem vertical. sm:+ volta pra grade de sempre. */}
+              <div className="no-scrollbar mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
                 {p.caseStudy.gallery.map((g, i) => (
                   <a
                     key={i}
                     href={g.src}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group block overflow-hidden rounded-xl border border-line/10 bg-surface-2/60 transition-colors hover:border-accent/40"
+                    className="group block w-[85%] shrink-0 snap-center overflow-hidden rounded-xl border border-line/10 bg-surface-2/60 transition-colors hover:border-accent/40 sm:w-auto sm:shrink sm:snap-align-none"
                   >
                     <img
                       src={g.src}

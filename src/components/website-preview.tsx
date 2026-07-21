@@ -95,6 +95,20 @@ export function WebsitePreview({
             className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-accent/15 blur-3xl"
           />
         )}
+        {fit === "scroll" && (
+          // Fundo: a MESMA imagem borrada cobrindo a moldura. Screenshot 16:9
+          // mais baixo que a moldura fixa (card estreito no mobile) deixava
+          // uma faixa vazia embaixo — branca no tema claro. O blur preenche
+          // qualquer proporção sem cortar a imagem principal nem quebrar a
+          // rolagem dos screenshots altos.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            aria-hidden
+            src={src}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-md"
+          />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
@@ -105,11 +119,7 @@ export function WebsitePreview({
               ? // Print retrato/de celular: coluna estreita centralizada, enquadrada
                 // como um mockup (sem letterbox feio numa moldura wide). Mantém proporção.
                 "relative block h-full w-auto max-w-full rounded-xl border border-line/10 object-contain shadow-[0_10px_30px_-12px_rgb(0_0_0/0.55)]"
-              : // min-h-full + cover: screenshot mais BAIXO que a moldura (16:9
-                // em card estreito no mobile) preenche em vez de deixar uma
-                // faixa vazia embaixo — no tema claro ela aparecia branca.
-                // Screenshot alto segue com altura natural e rola normalmente.
-                "block min-h-full w-full object-cover will-change-transform"
+              : "relative block w-full will-change-transform"
           }
         />
       </div>

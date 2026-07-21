@@ -86,7 +86,7 @@ export default async function LabPage() {
                     hint={t(LAB_PAGE.watchHint)}
                   />
                 </div>
-                <figcaption className="flex min-h-[11.5rem] flex-1 flex-col gap-2 p-5">
+                <figcaption className="flex flex-1 flex-col gap-2 p-5 sm:min-h-[11.5rem]">
                   <p className="text-lg font-semibold text-fg">{t(clip.title)}</p>
                   <p className="text-sm text-fg-muted">{t(clip.desc)}</p>
                   <p className="mt-auto pt-1 font-mono text-[11px] uppercase tracking-wide text-fg-subtle">
