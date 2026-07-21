@@ -8,6 +8,7 @@ import { WhatsappFab } from "@/components/whatsapp-fab";
 import { Konami } from "@/components/konami";
 import { CursorGlow } from "@/components/cursor-glow";
 import { MouseParallax } from "@/components/mouse-parallax";
+import { SquidFollower } from "@/components/SquidFollower";
 import { MiloProtagonist } from "@/components/milo-protagonist";
 import { ViewTransitions } from "@/components/view-transitions";
 import { PROFILE, SITE_URL } from "@/lib/content";
@@ -119,6 +120,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SmoothScroll />
         <TrackConversions />
         <CursorGlow />
+        <SquidFollower />
         <MouseParallax />
         <MiloProtagonist locale={locale} />
         <ViewTransitions />
