@@ -4,7 +4,6 @@ import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
 import { HeroScene } from "./hero-scene";
-import { MiloLive } from "./milo-live";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
@@ -98,17 +97,17 @@ export function Hero({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          {/* CTAs + Milo NA MESMA LINHA: o mascote deixa de ser um widget
-              solto no canto e vira parte da composição — de pé ao lado do
-              botão principal, olhando pro cursor (MiloLive) e acenando no
-              clique. O balão aponta pro CTA. */}
-          <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          {/* UM Milo só por contexto (crítica do Rick: aparecia 3x): no
+              desktop o protagonista anda pela página; no mobile o FAB é o
+              Milo — o hero não adiciona outro. CTAs premium: shine varrendo
+              o principal, borda cônica viva no secundário. */}
+          <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
                 href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cta-pulse inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto"
+                className="cta-pulse cta-shine inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto"
               >
                 <MessageCircle className="h-4 w-4" />
                 {t(UI.hero.ctaWhats)}
@@ -117,23 +116,12 @@ export function Hero({ locale }: { locale: Locale }) {
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
                 href="#projects"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/25 bg-bg/30 px-5 py-3 text-sm font-semibold text-fg backdrop-blur-sm transition-colors hover:border-accent/50 sm:w-auto"
+                className="cta-border inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/25 bg-bg/30 px-5 py-3 text-sm font-semibold text-fg backdrop-blur-sm transition-colors hover:border-accent/50 sm:w-auto"
               >
                 {t(UI.hero.ctaProjects)}
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Magnetic>
-
-            <div className="relative ml-2 hidden w-24 sm:block">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-20 scale-110 rounded-full bg-accent/30 blur-2xl"
-              />
-              <span className="animate-fade-up absolute bottom-full left-1/2 mb-2 -translate-x-1/3 whitespace-nowrap rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
-                {t(UI.hero.miloHi)}
-              </span>
-              <MiloLive className="w-24 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
-            </div>
           </div>
         </div>
       </div>

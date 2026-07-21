@@ -237,6 +237,58 @@
   .cta-pulse {
     animation: cta-pulse 2.6s ease-in-out infinite;
   }
+  /* Brilho que varre o CTA principal a cada ciclo (shine de vitrine). */
+  .cta-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-shine::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -35%;
+    width: 34%;
+    transform: skewX(-18deg) translateX(-120%);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.5), transparent);
+    animation: cta-shine 3.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes cta-shine {
+    0%, 55% { transform: skewX(-18deg) translateX(-140%); }
+    75%, 100% { transform: skewX(-18deg) translateX(520%); }
+  }
+  /* Borda viva do CTA secundário: gradiente cônico girando, pintado SÓ na
+     borda de 1px via máscara (mesma técnica do .spotlight-ring). */
+  .cta-border {
+    position: relative;
+  }
+  .cta-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--cta-angle, 0deg),
+      transparent 0deg,
+      rgb(var(--accent) / 0.9) 40deg,
+      transparent 110deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: cta-border-spin 4.5s linear infinite;
+    pointer-events: none;
+  }
+  @property --cta-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes cta-border-spin {
+    to { --cta-angle: 360deg; }
+  }
   /* Poeira em suspensão nos feixes de luz: cada mote sobe devagar com
      deriva lateral e pisca — o "ar" da cena. Valores por elemento via
      --dust-* inline (server component, fixos: nada de Math.random no RSC,
