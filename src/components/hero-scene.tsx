@@ -17,7 +17,12 @@ export function HeroScene() {
     const ok =
       window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)").matches &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (ok) setOn(true);
+    if (!ok) return;
+    // Sem WebGL (GPU desativada/antiga, headless), o R3F loga erro e o
+    // chunk three (~350KB) desceria à toa — testa antes de montar.
+    const probe = document.createElement("canvas");
+    const gl = probe.getContext("webgl2") ?? probe.getContext("webgl");
+    if (gl) setOn(true);
   }, []);
 
   if (!on) return null;

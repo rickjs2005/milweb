@@ -233,9 +233,21 @@ export function SquidFollower(props: SquidFollowerProps) {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    raf = requestAnimationFrame(frame);
+    // No touch a simulação só começa ~4s depois do load: o rAF contínuo
+    // dentro da janela de TTI inflava o TBT do Lighthouse mobile — e nos
+    // primeiros segundos o usuário está lendo o hero, não olhando o fundo.
+    let startTimer: number | undefined;
+    if (autonomous) {
+      startTimer = window.setTimeout(() => {
+        last = -1;
+        raf = requestAnimationFrame(frame);
+      }, 4000);
+    } else {
+      raf = requestAnimationFrame(frame);
+    }
 
     return () => {
+      window.clearTimeout(startTimer);
       cancelAnimationFrame(raf);
       document.removeEventListener("visibilitychange", onVisibility);
       if (autonomous) window.removeEventListener("pointerdown", onTap);
