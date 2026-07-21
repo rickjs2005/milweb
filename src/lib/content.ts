@@ -258,6 +258,8 @@ export const PROJECTS: Project[] = [
         { src: "/shots/millead/agenda.webp", alt: { pt: "Agenda: calendário mensal com reuniões e tarefas + painel do dia — dados de demonstração", en: "Agenda: monthly calendar with meetings and tasks + day panel — demo data" } },
         { src: "/shots/millead/proposals.webp", alt: { pt: "Propostas com valor, validade e status do envio ao aceite — dados de demonstração", en: "Proposals with value, validity and status from sent to accepted — demo data" } },
         { src: "/shots/millead/companies.webp", alt: { pt: "Empresas com contato, cidade e segmento — dados de demonstração", en: "Companies with contact, city and segment — demo data" } },
+        { src: "/shots/millead/lead-detail.webp", alt: { pt: "Detalhe do lead: score de IA, contatos, etiquetas e abas de atividade — dados de demonstração", en: "Lead detail: AI score, contacts, tags and activity tabs — demo data" } },
+        { src: "/shots/millead/company-detail.webp", alt: { pt: "Detalhe da empresa: cadastro, sites, redes sociais e auditoria embutida — dados de demonstração", en: "Company detail: profile, websites, socials and embedded audit — demo data" } },
         { src: "/shots/millead/settings-pipeline.webp", alt: { pt: "Configuração do pipeline: estágios com cor e estágio de ganho — dados de demonstração", en: "Pipeline settings: colored stages and won stage — demo data" } },
         { src: "/shots/millead/settings-integrations.webp", alt: { pt: "Integrações da plataforma: e-mail, WhatsApp, assinatura eletrônica e IA — dados de demonstração", en: "Platform integrations: email, WhatsApp, e-signature and AI — demo data" } },
       ],
