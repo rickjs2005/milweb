@@ -70,18 +70,20 @@ export function HeroAnim({
         });
       }
 
-      // Desmontagem ao rolar (scrub, desktop): o título sobe e esmaece mais
-      // rápido que o resto, o glow de fundo encolhe — camadas saindo em
-      // velocidades diferentes. yPercent/scale não conflitam com o x/y do
-      // mouse-parallax (canais de transform separados no GSAP).
+      // Desmontagem ao rolar (scrub, desktop): SÓ movimento de camadas em
+      // velocidades diferentes + glow encolhendo — SEM esmaecer o texto
+      // (autoAlpha aqui apagava subtítulo/CTAs com meia rolagem e parecia
+      // conteúdo quebrado; a cena 3D já tem o próprio desmancho no scroll).
+      // yPercent/scale não conflitam com o x/y do mouse-parallax (canais
+      // de transform separados no GSAP).
       if (window.matchMedia("(pointer: fine)").matches) {
         const h1 = root.querySelector<HTMLElement>("h1");
         const glow = root.querySelector<HTMLElement>("[data-depth='0.5']");
         const tear = gsap.timeline({
           scrollTrigger: { trigger: root, start: "top top", end: "bottom 30%", scrub: 0.6 },
         });
-        if (h1) tear.to(h1, { yPercent: -22, autoAlpha: 0.25, ease: "none" }, 0);
-        tear.to(items, { yPercent: -12, autoAlpha: 0.3, ease: "none" }, 0);
+        if (h1) tear.to(h1, { yPercent: -22, ease: "none" }, 0);
+        tear.to(items, { yPercent: -12, ease: "none" }, 0);
         if (glow) tear.to(glow, { opacity: 0.1, scale: 0.8, ease: "none" }, 0);
       }
     },
