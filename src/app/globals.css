@@ -236,6 +236,30 @@
     animation: hero-kenburns 26s ease-in-out infinite alternate;
     will-change: transform;
   }
+  /* Poeira em suspensão nos feixes de luz: cada mote sobe devagar com
+     deriva lateral e pisca — o "ar" da cena. Valores por elemento via
+     --dust-* inline (server component, fixos: nada de Math.random no RSC,
+     mismatch de hidratação). reduced-motion global zera a animação. */
+  @keyframes hero-dust {
+    0% { transform: translate3d(0, 12px, 0); opacity: 0; }
+    12% { opacity: var(--dust-peak, 0.5); }
+    55% { opacity: calc(var(--dust-peak, 0.5) * 0.55); }
+    100% { transform: translate3d(var(--dust-drift, 14px), -46px, 0); opacity: 0; }
+  }
+  .hero-dust {
+    animation: hero-dust var(--dust-dur, 9s) linear infinite;
+    animation-delay: var(--dust-delay, 0s);
+  }
+  /* Indicador de scroll: pílula de mouse com o pontinho descendo. */
+  @keyframes hero-scroll-dot {
+    0% { transform: translateY(0); opacity: 0; }
+    25% { opacity: 1; }
+    75% { transform: translateY(0.85rem); opacity: 0; }
+    100% { transform: translateY(0.85rem); opacity: 0; }
+  }
+  .hero-scroll-dot {
+    animation: hero-scroll-dot 2.2s ease-in-out infinite;
+  }
 
   /* Painel de produto do hero (hero-showcase): barras crescem, linha do
      gráfico se desenha, toast de pedido entra/sai em loop. */

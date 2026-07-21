@@ -123,6 +123,19 @@ export function Hero({ locale }: { locale: Locale }) {
         </span>
         <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
       </div>
+
+      {/* Indicador de scroll (decorativo — a âncora real é a própria rolagem;
+          sem texto de propósito: dispensa i18n e o desenho é universal). */}
+      <a
+        href="#deliverables"
+        aria-hidden
+        tabIndex={-1}
+        className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 opacity-70 transition-opacity hover:opacity-100 sm:flex"
+      >
+        <span className="flex h-9 w-[1.35rem] justify-center rounded-full border border-fg-subtle/60 pt-1.5">
+          <span className="hero-scroll-dot h-1.5 w-1.5 rounded-full bg-accent" />
+        </span>
+      </a>
     </HeroAnim>
   );
 }
