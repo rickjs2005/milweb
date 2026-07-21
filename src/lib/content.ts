@@ -247,6 +247,10 @@ export const PROJECTS: Project[] = [
           detail: { pt: "organizationId em toda tabela + RLS no Postgres, JWT com rotação atômica de refresh token e RBAC.", en: "organizationId on every table + Postgres RLS, JWT with atomic refresh-token rotation, and RBAC." },
         },
       ],
+      gallery: [
+        { src: "/shots/millead/kanban.webp", alt: { pt: "Pipeline kanban com valores por estágio — dados de demonstração", en: "Kanban pipeline with per-stage totals — demo data" } },
+        { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status — dados de demonstração", en: "Dashboard with finance, funnel and leads by status — demo data" } },
+      ],
     },
   },
   {
