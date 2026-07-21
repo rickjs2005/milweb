@@ -49,6 +49,11 @@ export function Hero({ locale }: { locale: Locale }) {
               O espaço fica FORA do span animado — inline-block descarta espaço final. */}
           <h1
             data-depth="0.08"
+            aria-label={
+              [t(UI.hero.titleLead), t(UI.hero.titleHighlight), t(UI.hero.titleTail)]
+                .filter(Boolean)
+                .join(" ") + "."
+            }
             className="mt-4 text-[clamp(2.4rem,5.6vw,4.8rem)] font-bold leading-[1.02] tracking-tight text-fg"
           >
             {t(UI.hero.titleLead)

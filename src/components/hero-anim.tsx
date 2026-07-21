@@ -29,6 +29,11 @@ export function HeroAnim({
       const root = scope.current;
       if (!root) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // Mobile (pointer coarse): NENHUMA animação de entrada — o conteúdo
+      // aparece direto. Antes, o SplitText picotava o headline em ~40 spans
+      // e o texto ficava autoAlpha:0 até o JS hidratar num CPU throttled:
+      // LCP ia de ~1,6s pra 4,2s e o TBT estourava (Lighthouse mobile 52).
+      if (window.matchMedia("(pointer: coarse)").matches) return;
 
       const items = root.querySelectorAll<HTMLElement>("[data-hero]");
       // Palavras normais viram letras (SplitText, grátis desde o GSAP 3.13);
@@ -45,7 +50,9 @@ export function HeroAnim({
       tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7 }, 0.1);
       if (leadWords.length) {
         // Letras sobem de dentro de uma máscara — o reveal "de editorial".
-        const split = SplitText.create(leadWords, { type: "chars", mask: "chars" });
+        // aria:"none": o default punha aria-label em <span> (proibido pela
+        // spec ARIA, flag no Lighthouse) — o h1 já carrega o aria-label.
+        const split = SplitText.create(leadWords, { type: "chars", mask: "chars", aria: "none" });
         tl.from(
           split.chars,
           { yPercent: 118, stagger: 0.016, duration: 0.75, ease: "power4.out" },

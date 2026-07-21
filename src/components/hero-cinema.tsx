@@ -13,8 +13,10 @@ export function HeroCinema() {
       {/* Profundidade de cor: azul da marca respirando nos cantos. */}
       <div className="absolute inset-0 [background:radial-gradient(52rem_34rem_at_78%_30%,rgb(56_189_248/0.10),transparent_62%),radial-gradient(40rem_30rem_at_8%_82%,rgb(14_165_233/0.07),transparent_60%)]" />
 
-      {/* Feixes de luz volumétrica descendo da direita (cena 3D vive ali). */}
-      <div data-depth="0.12" className="absolute -inset-y-[10%] inset-x-0">
+      {/* Feixes de luz volumétrica descendo da direita (cena 3D vive ali).
+          Só em md+: blur de elementos gigantes é caro demais em celular
+          (Style & Layout era ~3,5s no trace throttled do Lighthouse). */}
+      <div data-depth="0.12" className="absolute -inset-y-[10%] inset-x-0 hidden md:block">
         <div className="absolute -top-24 right-[10%] h-[130%] w-44 rotate-[22deg] bg-gradient-to-b from-accent/12 via-accent/[0.04] to-transparent blur-2xl" />
         <div className="absolute -top-24 right-[30%] h-[130%] w-24 rotate-[22deg] bg-gradient-to-b from-accent/[0.09] via-accent/[0.03] to-transparent blur-2xl" />
         <div className="absolute -top-24 right-[48%] h-[120%] w-14 rotate-[22deg] bg-gradient-to-b from-accent/[0.06] to-transparent blur-xl" />
