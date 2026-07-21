@@ -38,11 +38,13 @@ export function HeroCinema() {
         />
       ))}
 
-      {/* Vinheta suave + fade no pé pra dissolver na próxima seção. O fade
-          usa --page-bg (fundo do TEMA, fora do escopo .hero-dark): no claro
-          o hero dissolve pro branco da seção seguinte, não pro escuro. */}
+      {/* Vinheta suave + fade no pé. O fade mira o PRÓPRIO escuro do hero
+          (--bg dentro do escopo .hero-dark): a cena assenta num rodapé
+          sólido e a seção seguinte começa num corte limpo — tentar fundir
+          dark com branco via gradiente vira névoa cinza lavada (testado e
+          rejeitado pelo Rick). */}
       <div className="absolute inset-0 [background:radial-gradient(130%_105%_at_50%_40%,transparent_55%,rgb(5_7_13/0.6)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent to-[rgb(var(--page-bg))]" />
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[rgb(var(--bg))]" />
     </div>
   );
 }
