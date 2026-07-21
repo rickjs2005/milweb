@@ -199,6 +199,44 @@
       linear-gradient(to bottom, rgb(var(--line) / 0.03) 1px, transparent 1px);
   }
 
+  /* ===== Hero cinematográfico =====
+     A seção do hero é SEMPRE dark (imagem noturna não convive com tema
+     claro): .hero-dark re-declara os tokens dark no próprio elemento, e
+     variável no elemento vence a herdada do html.light. */
+  .hero-dark {
+    --bg: 8 10 16;
+    --surface: 15 18 28;
+    --surface-2: 22 27 40;
+    --fg: 244 247 252;
+    --fg-muted: 173 182 199;
+    --fg-subtle: 137 148 166;
+    --line: 120 180 255;
+    --accent: 56 189 248;
+    --accent-soft: 125 211 252;
+    --accent-deep: 14 165 233;
+    --accent-fg: 6 12 22;
+    color-scheme: dark;
+  }
+  /* Grid do tema claro voltaria a 3% dentro do hero — restaura os 5% dark. */
+  .light .hero-dark .bg-grid,
+  .light .hero-dark.bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--line) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
+  }
+  /* Ken Burns: zoom lento contínuo na imagem de fundo. Fica num wrapper
+     PRÓPRIO, separado do wrapper [data-depth] — o parallax de mouse (GSAP)
+     escreve x/y no transform e brigaria com o scale desta animação se
+     dividissem o mesmo elemento. reduced-motion global já zera a duração. */
+  @keyframes hero-kenburns {
+    from { transform: scale(1.02); }
+    to { transform: scale(1.1); }
+  }
+  .hero-kenburns {
+    animation: hero-kenburns 26s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
   /* Painel de produto do hero (hero-showcase): barras crescem, linha do
      gráfico se desenha, toast de pedido entra/sai em loop. */
   @keyframes hs-bar {

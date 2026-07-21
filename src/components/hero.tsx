@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
-import { HeroShowcase } from "./hero-showcase";
+import { HeroCinema } from "./hero-cinema";
 import { MiloLive } from "./milo-live";
 import { UI, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
@@ -16,18 +16,22 @@ export function Hero({ locale }: { locale: Locale }) {
   return (
     <HeroAnim
       id="top"
-      className="relative isolate overflow-hidden border-b border-line/10 bg-grid"
+      className="hero-dark relative isolate overflow-hidden border-b border-line/10 bg-grid"
     >
+      {/* Fallback e base da cena: se a imagem do HeroCinema falhar, este glow
+          + o bg-grid da seção continuam segurando o fundo. */}
       <div
         aria-hidden
         data-depth="0.5"
         className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[140px]"
       />
-      <div className="container-page relative z-10 grid min-h-[88vh] items-center gap-12 py-20 sm:py-28 lg:grid-cols-[1.25fr_1fr] lg:gap-16">
-        <div>
+      <HeroCinema />
+
+      <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
+        <div className="max-w-3xl">
           <span
             data-hero
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-soft"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-soft backdrop-blur-sm"
           >
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
@@ -44,7 +48,7 @@ export function Hero({ locale }: { locale: Locale }) {
               O espaço fica FORA do span animado — inline-block descarta espaço final. */}
           <h1
             data-depth="0.08"
-            className="mt-4 text-[clamp(2.4rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-tight text-fg"
+            className="mt-4 text-[clamp(2.4rem,5.6vw,4.8rem)] font-bold leading-[1.02] tracking-tight text-fg"
           >
             {t(UI.hero.titleLead)
               .split(" ")
@@ -96,7 +100,7 @@ export function Hero({ locale }: { locale: Locale }) {
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
                 href="#projects"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/15 px-5 py-3 text-sm font-semibold text-fg transition-colors hover:border-accent/50 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/25 bg-bg/30 px-5 py-3 text-sm font-semibold text-fg backdrop-blur-sm transition-colors hover:border-accent/50 sm:w-auto"
               >
                 {t(UI.hero.ctaProjects)}
                 <ArrowRight className="h-4 w-4" />
@@ -104,47 +108,20 @@ export function Hero({ locale }: { locale: Locale }) {
             </Magnetic>
           </div>
         </div>
+      </div>
 
-        <div className="hero-visual relative w-full justify-self-center lg:justify-self-end">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-accent/20 blur-[100px]"
-          />
-          {/* Painel de produto codificado (dashboard fictício animado) no
-              lugar da antiga imagem estática — prova a tese do site na
-              primeira dobra e tira ~130KB do LCP. */}
-          <HeroShowcase
-            locale={locale}
-            copy={{
-              store: t(UI.hero.panel.store),
-              live: t(UI.hero.panel.live),
-              sales: t(UI.hero.panel.sales),
-              orders: t(UI.hero.panel.orders),
-              conversion: t(UI.hero.panel.conversion),
-              week: t(UI.hero.panel.week),
-              newOrder: t(UI.hero.panel.newOrder),
-              viaGoogle: t(UI.hero.panel.viaGoogle),
-            }}
-          />
-
-          {/* Milo vivo debruçado no canto da cena (pisca + flutua via CSS).
-              Fica quase todo SOBRE a foto (só -bottom-3, não -bottom-10) E
-              ganha um halo próprio atrás (glow-pad abaixo): sem isso, o azul
-              do hoodie é parecido demais com o canto escuro da própria foto
-              e com o bg-grid da seção, então ele "some" onde não há esse
-              contraste — dando a falsa impressão de um corpo cortado/solto. */}
-          <div className="animate-fade-up absolute -bottom-3 -left-6 z-10 hidden w-28 [animation-delay:1.2s] sm:block">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-24 scale-110 rounded-full bg-accent/35 blur-2xl"
-            />
-            {/* Balão abaixo do Milo: em cima ele cobria o gráfico do painel. */}
-            <span className="animate-fade-up absolute -left-2 top-full mt-2 whitespace-nowrap rounded-2xl rounded-tl-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
-              {t(UI.hero.miloHi)}
-            </span>
-            <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
-          </div>
-        </div>
+      {/* Milo vivo no canto direito da cena (pisca + flutua via CSS), com halo
+          próprio atrás — sem ele o hoodie azul some contra a foto escura.
+          Balão ACIMA do mascote: ancorado no rodapé do hero, embaixo vazaria. */}
+      <div className="animate-fade-up absolute bottom-8 right-8 z-10 hidden w-28 [animation-delay:1.2s] sm:block lg:right-16">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-2 bottom-0 -z-10 h-24 scale-110 rounded-full bg-accent/35 blur-2xl"
+        />
+        <span className="animate-fade-up absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-2xl rounded-br-md border border-line/15 bg-surface-2/95 px-3.5 py-2 text-xs font-medium text-fg shadow-lg [animation-delay:2s]">
+          {t(UI.hero.miloHi)}
+        </span>
+        <MiloLive className="w-28 drop-shadow-[0_8px_24px_rgb(var(--accent)/0.35)]" />
       </div>
     </HeroAnim>
   );
