@@ -20,7 +20,8 @@ const WAYPOINTS: Record<string, Waypoint> = {
   why: { x: 89, y: 60, pose: "happy" },
   "raio-x": { x: 4, y: 62, pose: "think" },
   google: { x: 89, y: 34, pose: "idle" },
-  projects: { x: 4, y: 68, pose: "shocked", scale: 1.15 },
+  // y baixo: antes ele parava em cima da esteira/seta esquerda do carrossel.
+  projects: { x: 4, y: 24, pose: "shocked", scale: 1.15 },
   lab: { x: 89, y: 18, pose: "happy" },
   // y baixo: no Processo o título/label ficam no terço superior esquerdo —
   // em y:32 o Milo parava exatamente em cima do "07 / COMO FUNCIONA".
