@@ -503,6 +503,47 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "terral",
+    category: "site",
+    title: "TERRAL",
+    tagline: { pt: "Torrefação artesanal · a torra acontece no scroll", en: "Artisanal coffee roastery · the roast happens as you scroll" },
+    problem: { pt: "Sites de café especial mostram sacas e xícaras paradas — nada explica o que diferencia uma torra artesanal e por que ela vale mais.", en: "Specialty coffee sites show static bags and cups — nothing explains what sets an artisanal roast apart or why it costs more." },
+    result: { pt: "Um grão de café 3D procedural que TORRA conforme o visitante rola: verde-cru → torra clara → média → escura, com HUD de temperatura (180→232°C), tremor no first crack, fumaça e brasas em partículas, explosão em pó na moagem e uma xícara fumegante no destino. O funil termina em três blends com notas sensoriais e pedido direto no WhatsApp.", en: "A procedural 3D coffee bean that ROASTS as the visitor scrolls: raw green → light → medium → dark, with a temperature HUD (180→232°C), a first-crack tremor, particle smoke and embers, a grind-burst of powder and a steaming cup at the destination. The funnel ends in three blends with tasting notes and direct WhatsApp ordering." },
+    stack: ["Next.js", "TypeScript", "React Three Fiber", "Three.js", "GSAP", "Lenis", "Tailwind"],
+    metric: { pt: "5 capítulos · grão 100% procedural", en: "5 chapters · 100% procedural bean" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://terral-cafe.vercel.app",
+    featured: true,
+    image: "/shots/terral.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O conceito inteiro cabe numa frase: o scroll É a torra. Um wrapper de 600vh com viewport sticky vira a linha do tempo; o ScrollTrigger só escreve um progresso-alvo e o damping acontece num único rAF dentro da cena R3F — o HUD de temperatura do DOM lê exatamente o mesmo valor amortecido, no mesmo tick. Essa disciplina de 'um relógio só' veio de um bug real de outro projeto da casa, onde scrub no DOM e cena 3D em relógios diferentes dessincronizavam visivelmente.",
+          en: "The whole concept fits in one sentence: the scroll IS the roast. A 600vh wrapper with a sticky viewport becomes the timeline; ScrollTrigger only writes a target progress and damping happens in a single rAF inside the R3F scene — the DOM temperature HUD reads the exact same damped value, on the same tick. This 'single clock' discipline came from a real bug in another in-house project where DOM scrub and 3D scene on different clocks visibly drifted apart.",
+        },
+        {
+          pt: "O grão é uma esfera esculpida no vertex shader: achatamento nos eixos, vinco central cavado por smoothstep (a fenda característica), casca irregular por ruído — e a cor da torra é um gradiente de 4 paradas (verde-cru, clara, média, escura) interpolado por um uniform. A moagem ensinou uma lição de malha conectada: deslocar vértices pela normal com amplitude alta não 'explode' uma esfera — estica os triângulos num ouriço gigante. A versão final usa deslocamento contido + fade rápido no fragment, e entrega a poeira a um sistema de partículas dedicado que cai como pó de verdade.",
+          en: "The bean is a sphere sculpted in the vertex shader: axis flattening, a center crease carved with smoothstep (the signature slit), an irregular skin via noise — and the roast color is a 4-stop gradient (raw green, light, medium, dark) interpolated by a uniform. The grind chapter taught a connected-mesh lesson: displacing vertices along normals with high amplitude doesn't 'explode' a sphere — it stretches triangles into a giant sea urchin. The final version uses contained displacement + a fast fragment fade, delegating the dust to a dedicated particle system that falls like actual grounds.",
+        },
+        {
+          pt: "Cada capítulo reposiciona o grão por âncoras interpoladas (texto à esquerda ⇒ grão à direita, e vice-versa), as brasas só existem na janela da torra e o vapor engrossa na xícara — que é uma LatheGeometry com alça de torus e pires, nada importado. No fim da jornada a cena sai de cena e o site vira funil clássico: blends com origem/altitude/notas, clube de assinatura e WhatsApp em todos os CTAs.",
+          en: "Each chapter repositions the bean via interpolated anchors (copy on the left ⇒ bean on the right, and vice versa), embers only exist inside the roast window and the steam thickens at the cup — a LatheGeometry with a torus handle and saucer, nothing imported. Past the journey the scene bows out and the site becomes a classic funnel: blends with origin/altitude/notes, a subscription club and WhatsApp on every CTA.",
+        },
+      ],
+      highlights: [
+        { label: { pt: "Um relógio só", en: "A single clock" }, detail: { pt: "ScrollTrigger escreve o alvo; um único rAF amortece e cena 3D + HUD do DOM leem o mesmo valor — zero dessincronia.", en: "ScrollTrigger writes the target; one rAF damps it and the 3D scene + DOM HUD read the same value — zero drift." } },
+        { label: { pt: "Torra em shader", en: "Roast in a shader" }, detail: { pt: "Vinco, casca e cor de torra (4 paradas) esculpidos em GLSL sobre uma esfera — nenhum modelo importado.", en: "Crease, skin and roast color (4 stops) sculpted in GLSL over a sphere — no imported model." } },
+        { label: { pt: "Lição do ouriço", en: "The sea-urchin lesson" }, detail: { pt: "Explodir malha conectada pela normal vira espinhos; a moagem certa é deslocamento contido + fade + partículas dedicadas.", en: "Exploding a connected mesh along normals makes spikes; proper grinding is contained displacement + fade + dedicated particles." } },
+      ],
+      gallery: [
+        { src: "/shots/terral/torra.webp", alt: { pt: "Capítulo da torra: grão escurecendo com HUD de temperatura a 206°C", en: "Roast chapter: bean darkening with the temperature HUD at 206°C" } },
+        { src: "/shots/terral/xicara.webp", alt: { pt: "Capítulo final: xícara procedural com vapor subindo", en: "Final chapter: procedural cup with rising steam" } },
+        { src: "/shots/terral/blends.webp", alt: { pt: "Vitrine dos três blends com notas sensoriais e pedido por WhatsApp", en: "The three blends with tasting notes and WhatsApp ordering" } },
+      ],
+    },
+  },
+  {
     slug: "as-copas",
     category: "site",
     title: "As Copas",
