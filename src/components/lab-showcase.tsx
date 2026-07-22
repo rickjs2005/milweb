@@ -237,7 +237,9 @@ export function LabShowcase({
                 <LabVideo src={item.src} poster={item.poster} label={item.title} />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg/80 to-transparent"
+                  // Sempre PRETO: o fade usa a cor do vídeo (cinematográfico,
+                  // escuro) — from-bg/80 virava um véu branco no tema claro.
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent"
                 />
               </div>
               {/* Legenda dentro do card: só no carrossel nativo (mobile) —

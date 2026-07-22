@@ -106,7 +106,7 @@ export function WebsitePreview({
             aria-hidden
             src={src}
             alt=""
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-md"
+            className="absolute inset-0 h-full w-full scale-125 object-cover opacity-90 blur-xl"
           />
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
