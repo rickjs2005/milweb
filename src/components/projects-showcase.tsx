@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, TrendingUp } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -198,6 +198,15 @@ export function ProjectsShowcase({
     { dependencies: [isBelt, center, active], scope: rootRef },
   );
 
+  /** Recentraliza a esteira no card `i` (mesma matemática do clique). */
+  const recenter = (i: number) => {
+    const s = beltState.current;
+    const d = s.dists[i] ?? 0;
+    const delta = -d * (s.width / 2);
+    s.holdUntil = performance.now() + 900;
+    gsap.to(s, { pos: s.pos + delta, duration: 0.85, ease: "power3.out" });
+  };
+
   const onCardClick = (i: number) => {
     if (!isBelt) return;
     const s = beltState.current;
@@ -215,11 +224,18 @@ export function ProjectsShowcase({
         onComplete: () => router.push(item.panel.caseHref),
       });
     } else {
-      const delta = -d * (s.width / 2);
-      s.holdUntil = performance.now() + 900;
-      gsap.to(s, { pos: s.pos + delta, duration: 0.85, ease: "power3.out" });
+      recenter(i);
       miloSay({ text: `${item.panel.title} 👀`, pose: "happy" });
     }
+  };
+
+  /** Setas prev/next: mesma esteira, um passo por vez, com wrap-around. */
+  const step = (dir: 1 | -1) => {
+    if (!isBelt || !shown.length) return;
+    const target = gsap.utils.wrap(0, shown.length, center + dir);
+    recenter(target);
+    const item = shown[target];
+    if (item) miloSay({ text: `${item.panel.title} 👀`, pose: "happy" });
   };
 
   const pill = (selected: boolean) =>
@@ -302,6 +318,24 @@ export function ProjectsShowcase({
             aria-hidden
             className="pointer-events-none absolute inset-y-0 right-0 z-[120] w-36 bg-gradient-to-l from-bg to-transparent"
           />
+
+          {/* setas prev/next — atalho rápido além do clique/scroll na esteira */}
+          <button
+            type="button"
+            aria-label="Projeto anterior"
+            onClick={() => step(-1)}
+            className="absolute left-3 top-1/2 z-[130] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-line/15 bg-surface-2/70 text-fg-muted backdrop-blur transition-colors hover:border-accent/50 hover:text-fg sm:left-6"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Próximo projeto"
+            onClick={() => step(1)}
+            className="absolute right-3 top-1/2 z-[130] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-line/15 bg-surface-2/70 text-fg-muted backdrop-blur transition-colors hover:border-accent/50 hover:text-fg sm:right-6"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </button>
         </div>
       ) : (
         <div key={active} className="mt-6 flex flex-wrap items-start justify-center gap-6">
