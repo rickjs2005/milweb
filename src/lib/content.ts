@@ -503,7 +503,7 @@ export const PROJECTS: Project[] = [
     },
   },
   {
-    slug: "dagrao",
+    slug: "dragao",
     category: "site",
     title: "DRAGÃO",
     tagline: { pt: "Museu do dragão · abertura de série + vídeo no scroll + atlas do mito", en: "A dragon museum · TV-series opening + scroll-driven film + myth atlas" },
