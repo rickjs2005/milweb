@@ -503,6 +503,42 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "dagrao",
+    category: "site",
+    title: "DAGRÃO",
+    tagline: { pt: "Lenda em vídeo · o dragão desperta no scroll", en: "A legend on video · the dragon awakens on scroll" },
+    problem: { pt: "Criadores de conteúdo no TikTok não têm um lar próprio na web — o link na bio costuma ser uma lista genérica de botões, sem nada do universo que os vídeos constroem.", en: "TikTok creators have no real home on the web — the bio link is usually a generic button list with none of the universe their videos build." },
+    result: { pt: "Um site-experiência pro canal fictício @dagrao: o vídeo do dragão de obsidiana é SCRUBADO pelo scroll (re-encodado com todos os frames como keyframe pra busca ser instantânea), com capítulos de lore por cima, título com brasa por dentro, fagulhas subindo e uma seção TikTok com o corte vertical 9:16 rodando num mockup de celular — o funil termina em 'Seguir @dagrao'.", en: "An experience site for the fictional @dagrao channel: the obsidian dragon video is SCRUBBED by scroll (re-encoded with every frame as a keyframe for instant seeking), with lore chapters overlaid, an ember-lit title, rising sparks and a TikTok section playing the vertical 9:16 cut inside a phone mockup — the funnel ends at 'Follow @dagrao'.", },
+    stack: ["Next.js", "TypeScript", "GSAP", "Lenis", "Tailwind", "FFmpeg"],
+    metric: { pt: "Vídeo scrubado frame a frame", en: "Frame-by-frame scrubbed video" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://dagrao.vercel.app",
+    featured: false,
+    image: "/shots/dagrao.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O truque que faz o scroll 'dirigir' o vídeo sem engasgo não está no JavaScript — está no encode: o mp4 foi re-exportado com -g 1 no FFmpeg, transformando TODO frame em keyframe. Seek de vídeo só é instantâneo em keyframes; no encode padrão (um keyframe a cada ~2s), o currentTime pula em degraus visíveis. Com 160 keyframes em 5 segundos, o scrub responde como uma timeline de editor — e o arquivo ainda fica em 1,6MB a 480p.",
+          en: "The trick that lets scroll 'drive' the video without stutter isn't in JavaScript — it's in the encode: the mp4 was re-exported with -g 1 in FFmpeg, turning EVERY frame into a keyframe. Video seeking is only instant at keyframes; with the default encode (one keyframe every ~2s), currentTime jumps in visible steps. With 160 keyframes across 5 seconds, scrubbing responds like an editor timeline — and the file still lands at 1.6MB in 480p.",
+        },
+        {
+          pt: "A arquitetura de relógio único vem dos projetos-irmãos (TERRAL, Kavita): o ScrollTrigger apenas escreve um progresso-alvo, e um rAF do GSAP amortece e aplica no MESMO tick tanto o currentTime do vídeo quanto a opacidade/posição dos capítulos de lore — vídeo e texto nunca dessincronizam. O corte vertical 9:16 da seção TikTok foi extraído do mesmo master por crop no FFmpeg, e roda em loop dentro de uma moldura de celular feita só com CSS (border-radius, ring e sombra de brasa).",
+          en: "The single-clock architecture comes from its sibling projects (TERRAL, Kavita): ScrollTrigger only writes a target progress, and a GSAP rAF damps and applies both the video's currentTime and the lore chapters' opacity/position on the SAME tick — video and copy never drift. The TikTok section's 9:16 vertical cut was cropped from the same master with FFmpeg, looping inside a phone frame built with pure CSS (border-radius, ring and an ember shadow).",
+        },
+      ],
+      highlights: [
+        { label: { pt: "Encode a serviço da UX", en: "Encoding in service of UX" }, detail: { pt: "-g 1 no FFmpeg (todo frame keyframe) é o que torna o scrub instantâneo — a mágica está no asset, não no código.", en: "-g 1 in FFmpeg (every frame a keyframe) is what makes scrubbing instant — the magic is in the asset, not the code." } },
+        { label: { pt: "Relógio único", en: "Single clock" }, detail: { pt: "currentTime do vídeo e overlays de lore no mesmo rAF amortecido — zero dessincronia entre filme e texto.", en: "Video currentTime and lore overlays on the same damped rAF — zero drift between film and copy." } },
+        { label: { pt: "Um master, dois formatos", en: "One master, two formats" }, detail: { pt: "O mesmo vídeo vira o filme 16:9 do scroll e o corte 9:16 do mockup de TikTok via crop no FFmpeg.", en: "The same video becomes the 16:9 scroll film and the 9:16 TikTok-mockup cut via an FFmpeg crop." } },
+      ],
+      gallery: [
+        { src: "/shots/dagrao/capitulo.webp", alt: { pt: "Capítulo de lore sobre o vídeo do dragão em pleno scroll", en: "Lore chapter over the dragon video mid-scroll" } },
+        { src: "/shots/dagrao/tiktok.webp", alt: { pt: "Seção TikTok com o corte vertical rodando no mockup de celular", en: "TikTok section with the vertical cut playing in the phone mockup" } },
+      ],
+    },
+  },
+  {
     slug: "terral",
     category: "site",
     title: "TERRAL",
