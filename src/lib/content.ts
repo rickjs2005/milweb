@@ -506,7 +506,7 @@ export const PROJECTS: Project[] = [
     slug: "dagrao",
     category: "site",
     title: "DAGRÃO",
-    tagline: { pt: "Lenda em vídeo · o dragão desperta no scroll", en: "A legend on video · the dragon awakens on scroll" },
+    tagline: { pt: "Lenda em vídeo · abertura de série + dragão no scroll", en: "A legend on video · TV-series opening + scroll-driven dragon" },
     problem: { pt: "Criadores de conteúdo no TikTok não têm um lar próprio na web — o link na bio costuma ser uma lista genérica de botões, sem nada do universo que os vídeos constroem.", en: "TikTok creators have no real home on the web — the bio link is usually a generic button list with none of the universe their videos build." },
     result: { pt: "Um site-experiência pro canal fictício @dagrao: o vídeo do dragão de obsidiana é SCRUBADO pelo scroll (re-encodado com todos os frames como keyframe pra busca ser instantânea), com capítulos de lore por cima, título com brasa por dentro, fagulhas subindo e uma seção TikTok com o corte vertical 9:16 rodando num mockup de celular — o funil termina em 'Seguir @dagrao'.", en: "An experience site for the fictional @dagrao channel: the obsidian dragon video is SCRUBBED by scroll (re-encoded with every frame as a keyframe for instant seeking), with lore chapters overlaid, an ember-lit title, rising sparks and a TikTok section playing the vertical 9:16 cut inside a phone mockup — the funnel ends at 'Follow @dagrao'.", },
     stack: ["Next.js", "TypeScript", "GSAP", "Lenis", "Tailwind", "FFmpeg"],
