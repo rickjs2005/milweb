@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
@@ -50,6 +51,7 @@ export default async function ProjectPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const idx = PROJECTS.findIndex((p) => p.slug === slug);
   if (idx === -1) notFound();
 
@@ -84,7 +86,7 @@ export default async function ProjectPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
           <Link href={withLocale(locale, "/")} aria-label="MilWeb — início">

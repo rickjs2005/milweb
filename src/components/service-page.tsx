@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -39,8 +40,9 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /** Página de serviço (SEO): hero → benefícios → processo → FAQ → contato. */
-export function ServicePage({ service, locale }: { service: Service; locale: Locale }) {
+export async function ServicePage({ service, locale }: { service: Service; locale: Locale }) {
   const t = makeT(locale);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const wa = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(t(service.ctaWhats))}`;
   const home = withLocale(locale, "/");
   const path = `${locale === "en" ? "/en" : ""}/${service.slug}`;
@@ -76,7 +78,7 @@ export function ServicePage({ service, locale }: { service: Service; locale: Loc
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
