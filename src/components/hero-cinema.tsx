@@ -10,8 +10,10 @@
 export function HeroCinema() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* Profundidade de cor: azul da marca respirando nos cantos. */}
-      <div className="absolute inset-0 [background:radial-gradient(52rem_34rem_at_78%_30%,rgb(56_189_248/0.10),transparent_62%),radial-gradient(40rem_30rem_at_8%_82%,rgb(14_165_233/0.07),transparent_60%)]" />
+      {/* Profundidade de cor: azul da marca respirando nos cantos. Via token
+          (--accent), não hex fixo: seguir a paleta é de graça e o gradiente
+          acompanha qualquer troca futura de acento. */}
+      <div className="absolute inset-0 [background:radial-gradient(52rem_34rem_at_78%_30%,rgb(var(--accent)/0.10),transparent_62%),radial-gradient(40rem_30rem_at_8%_82%,rgb(var(--accent-deep)/0.07),transparent_60%)]" />
 
       {/* Feixes de luz volumétrica descendo da direita (cena 3D vive ali).
           Só em md+: blur de elementos gigantes é caro demais em celular

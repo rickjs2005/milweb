@@ -252,7 +252,7 @@ export function Nav({
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 [background:radial-gradient(42rem_30rem_at_85%_8%,rgb(56_189_248/0.14),transparent_62%),radial-gradient(30rem_24rem_at_10%_90%,rgb(14_165_233/0.1),transparent_60%)]"
+          className="pointer-events-none absolute inset-0 [background:radial-gradient(42rem_30rem_at_85%_8%,rgb(var(--accent)/0.14),transparent_62%),radial-gradient(30rem_24rem_at_10%_90%,rgb(var(--accent-deep)/0.1),transparent_60%)]"
         />
         {MENU_DUST.map((d, i) => (
           <span
