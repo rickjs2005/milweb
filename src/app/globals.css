@@ -246,6 +246,45 @@
       linear-gradient(to right, rgb(var(--line) / 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
   }
+  /* A cena 3D do hero vive à direita, mas a nuvem de 16k partículas cresce
+     o bastante pra encostar no H1 — o elemento mais importante da página
+     acaba brigando com o fundo. Empurrar a cena (LOGO_X) resolve numa
+     largura e volta a colidir em outra; a máscara transforma a coluna do
+     texto em zona morta e vale pra QUALQUER viewport.
+
+     O canvas não some do layout: só deixa de pintar à esquerda. A base de
+     atmosfera (hero-cinema: feixes, poeira, vinheta) continua ali, então
+     o lado do texto não fica chapado.
+
+     A rampa é em PIXELS, não em %: a coluna de texto tem largura FIXA
+     (container max-w-[1400px] + px-12 + bloco max-w-3xl = 768px), então em
+     % ela ocupa uma fração maior quanto mais estreita a tela — uma máscara
+     percentual protegeria justamente menos onde a colisão é pior (80% da
+     largura em 1024px contra 58% em 1440px). A conta abaixo é a MESMA que
+     posiciona o texto, então a zona morta acompanha o H1 em qualquer
+     viewport. 100% (não 100vw) porque o elemento já exclui a scrollbar. */
+  .hero-scene-mask {
+    /* borda direita do bloco de texto: recuo do container + padding + largura */
+    --text-right: calc(max(0px, (100% - 1400px) / 2) + 48px + 768px);
+    /* A rampa começa NO fim do texto e sobe depois dele — o inverso deixaria
+       a cena quase cheia justamente na borda onde o H1 termina. Os 40px de
+       folga antes evitam corte seco encostado na última letra. */
+    --ramp-start: calc(var(--text-right) - 40px);
+    --ramp-end: calc(var(--text-right) + 150px);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent var(--ramp-start),
+      black var(--ramp-end)
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      transparent var(--ramp-start),
+      black var(--ramp-end)
+    );
+  }
+
   /* Pulso do CTA principal: anel de glow que expande e dissolve — chama o
      olho sem mexer no layout. reduced-motion global zera. */
   @keyframes cta-pulse {
