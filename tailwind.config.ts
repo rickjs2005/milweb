@@ -28,6 +28,9 @@ export default {
         // mono-hue — ver a nota sobre matiz no topo de globals.css.
         warm: {
           DEFAULT: "rgb(var(--warm) / <alpha-value>)",
+          /** Só para texto GRANDE: no tema claro é mais claro que o
+           *  DEFAULT e só alcança o mínimo de 3:1. */
+          loud: "rgb(var(--warm-loud) / <alpha-value>)",
           fg: "rgb(var(--warm-fg) / <alpha-value>)",
         },
       },

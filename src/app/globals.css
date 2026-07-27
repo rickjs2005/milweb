@@ -82,6 +82,7 @@
     --accent-deep: 51 85 230;   /* #3355E6 */
     --accent-fg: 6 12 22;       /* texto sobre o azul — 5.3:1 (AA) */
     --warm: 255 176 32;         /* #FFB020 — âmbar, contraponto quente */
+    --warm-loud: 255 190 61;    /* #FFBE3D — para texto GRANDE (ver .light) */
     --warm-fg: 26 18 0;         /* texto sobre o âmbar */
     color-scheme: dark;
   }
@@ -99,7 +100,14 @@
     --accent-soft: 39 64 184;
     --accent-deep: 30 54 168;
     --accent-fg: 255 255 255;
-    --warm: 168 84 0;           /* #A85400 — âmbar fechado, 5.3:1 em branco */
+    /* DOIS âmbares no claro, porque o mínimo de contraste depende do
+       tamanho do texto. --warm serve o eyebrow (texto pequeno: 4,5:1) e
+       por isso precisa ser escuro. Usar esse mesmo tom nos números
+       gigantes do Stats os deixava marrons, já que eles só precisam de
+       3:1 (texto grande) e estavam pagando a conta do texto pequeno.
+       --warm-loud é o âmbar de verdade, reservado a texto grande. */
+    --warm: 176 86 0;           /* #B05600 — 4,8:1 em branco (texto pequeno) */
+    --warm-loud: 201 122 5;     /* #C97A05 — 3,2:1 (só texto grande) */
     --warm-fg: 255 255 255;
     color-scheme: light;
   }
