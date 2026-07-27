@@ -149,11 +149,19 @@ export function Nav({
 
   const activeIdx = links.findIndex((l) => l.href.slice(1) === active);
 
+  /* No topo a nav usa os tokens do hero (hero-dark) e PRECISA pintar o próprio
+     fundo com bg-bg. O header é sticky, então o hero começa DEPOIS dele
+     (y=77), nunca atrás: sem fundo próprio, o que aparece atrás da nav é o
+     fundo da PÁGINA. No tema escuro isso passava batido porque a página também
+     é escura, mas no claro o texto cinza-claro do hero-dark caía sobre #FAF9F7
+     e o wordmark ficava em 1,94:1. Pintar com bg-bg (o mesmo sólido do hero)
+     resolve nos dois temas e ainda elimina a costura entre a faixa da nav e o
+     topo do hero. */
   return (
     <header
       className={
         "sticky top-0 z-50 transition-colors duration-300 " +
-        (float ? "hero-dark border-b border-transparent" : "glass-nav border-b border-line/10")
+        (float ? "hero-dark bg-bg border-b border-transparent" : "glass-nav border-b border-line/10")
       }
     >
       <div aria-hidden className="absolute inset-x-0 top-0 h-[2px]">
