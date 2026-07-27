@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+const isDev = process.env.NODE_ENV === "development";
+
 /**
  * CSP com nonce por request: 'strict-dynamic' libera os chunks que o próprio
  * Next injeta e os scripts que a Vercel Analytics/Speed Insights criam via
@@ -8,15 +10,38 @@ import { NextResponse, type NextRequest } from "next/server";
  * pelos que suportam). style-src precisa de 'unsafe-inline': nonce não cobre
  * atributo style="" inline (só <style> e <link>), e o projeto usa style={{}}
  * bastante.
+ *
+ * DESENVOLVIMENTO: o `next dev` compila os módulos com `eval()` (HMR e source
+ * maps). Sem 'unsafe-eval' o browser derruba o bundle inteiro com EvalError,
+ * a hidratação nunca completa e TODO conteúdo dentro de <Reveal> fica preso
+ * em opacity:0 — o site aparece em branco a partir do hero. O HMR também
+ * precisa de ws: no connect-src. Nada disso vaza pra produção: as duas
+ * exceções são compiladas fora quando NODE_ENV !== "development".
  */
 function buildCsp(nonce: string) {
+  const scriptSrc = [
+    `'self'`,
+    `'nonce-${nonce}'`,
+    `'strict-dynamic'`,
+    `https:`,
+    `'unsafe-inline'`,
+    ...(isDev ? [`'unsafe-eval'`] : []),
+  ].join(" ");
+
+  const connectSrc = [
+    `'self'`,
+    `https://vitals.vercel-insights.com`,
+    `https://va.vercel-scripts.com`,
+    ...(isDev ? [`ws:`] : []),
+  ].join(" ");
+
   return [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https: 'unsafe-inline'`,
+    `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
-    `connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com`,
+    `connect-src ${connectSrc}`,
     `media-src 'self'`,
     `object-src 'none'`,
     `base-uri 'self'`,
