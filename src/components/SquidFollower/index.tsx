@@ -2,12 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { DEFAULTS, PHYSICS } from "./constants";
+import { DEFAULTS, PHYSICS, STARFIELD } from "./constants";
 import { clamp, damp, noise1, Spring2D } from "./physics";
 import { PointerTracker } from "./pointer";
 import { Tentacle } from "./tentacle";
 import { ParticleSystem } from "./particles";
 import { Renderer } from "./renderer";
+import { createStarfield } from "./starfield";
 import type { HeadState, SquidConfig, SquidFollowerProps } from "./types";
 
 /**
@@ -58,6 +59,11 @@ export function SquidFollower(props: SquidFollowerProps) {
       (_, i) => new Tentacle(i, ecfg.tentacles, ecfg, longIdx.has(i)),
     );
     for (const t of tentacles) t.reset(head.x, head.y);
+    // Céu ambiente atrás dela. Menos estrelas no touch, mesma lógica de
+    // orçamento que já reduz segmentos e DPR no modo autônomo.
+    const stars = createStarfield(
+      autonomous ? STARFIELD.countAutonomous : STARFIELD.count,
+    );
 
     // Estados especiais animados via GSAP.
     const pulse = { t: 1 }; // 0 → 1 durante o flash do clique
@@ -207,6 +213,8 @@ export function SquidFollower(props: SquidFollowerProps) {
       };
 
       renderer.clear();
+      // O céu vem primeiro: tudo da Lula é pintado por cima dele.
+      renderer.drawStarfield(stars, time, window.scrollY);
       renderer.drawWebbing(tentacles);
       for (const t of tentacles) renderer.drawTentacle(t);
       renderer.drawParticles(particles);
@@ -222,6 +230,16 @@ export function SquidFollower(props: SquidFollowerProps) {
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(document.documentElement);
+
+    /* Tema: a cor do céu sai dos tokens (--accent-soft / --warm), então
+       precisa ser relida quando a classe `light` entra ou sai do <html>.
+       Observer em vez de leitura por frame: getComputedStyle é caro. */
+    renderer.refreshTheme();
+    const themeObserver = new MutationObserver(() => renderer.refreshTheme());
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     const onVisibility = () => {
       if (document.hidden) {
@@ -252,6 +270,7 @@ export function SquidFollower(props: SquidFollowerProps) {
       document.removeEventListener("visibilitychange", onVisibility);
       if (autonomous) window.removeEventListener("pointerdown", onTap);
       ro.disconnect();
+      themeObserver.disconnect();
       pointer.dispose();
       gsap.killTweensOf(pulse);
       gsap.killTweensOf(idle);

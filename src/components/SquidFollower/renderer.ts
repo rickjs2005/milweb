@@ -1,6 +1,7 @@
-import { PALETTE, PHYSICS } from "./constants";
+import { PALETTE, PHYSICS, STARFIELD } from "./constants";
 import { lerp } from "./physics";
 import { ParticleSystem } from "./particles";
+import { drawStarfield, type Star } from "./starfield";
 import type { Tentacle } from "./tentacle";
 import type { HeadState, SquidConfig } from "./types";
 
@@ -19,6 +20,9 @@ export class Renderer {
   private readonly sprite: HTMLCanvasElement;
   private w = 0;
   private h = 0;
+  /** Cor e intensidade do céu, resolvidas do tema (ver refreshTheme). */
+  private starColor: readonly number[] = [157, 183, 255];
+  private starAlpha: number = STARFIELD.alphaDark;
 
   constructor(
     private readonly ctx: CanvasRenderingContext2D,
@@ -47,6 +51,32 @@ export class Renderer {
 
   clear(): void {
     this.ctx.clearRect(0, 0, this.w, this.h);
+  }
+
+  /**
+   * Lê a cor do céu dos tokens do tema em vez de fixar hex: --accent-soft
+   * no escuro (estrela fria), --warm no claro (poeira quente). Assim o céu
+   * acompanha qualquer troca futura de paleta sozinho.
+   *
+   * Chamado na montagem e a cada troca de tema, nunca por frame:
+   * getComputedStyle é caro demais pra rodar 60x por segundo.
+   */
+  refreshTheme(): void {
+    const root = document.documentElement;
+    const light = root.classList.contains("light");
+    const raw = getComputedStyle(root)
+      .getPropertyValue(light ? "--warm" : "--accent-soft")
+      .trim();
+    const parsed = raw.split(/\s+/).map(Number);
+    this.starColor =
+      parsed.length === 3 && parsed.every((n) => Number.isFinite(n))
+        ? parsed
+        : [157, 183, 255]; // token ausente/malformado: não apaga o céu
+    this.starAlpha = light ? STARFIELD.alphaLight : STARFIELD.alphaDark;
+  }
+
+  drawStarfield(stars: readonly Star[], t: number, scrollY: number): void {
+    drawStarfield(this.ctx, stars, this.w, this.h, t, scrollY, this.starColor, this.starAlpha);
   }
 
   /**

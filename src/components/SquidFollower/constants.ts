@@ -85,16 +85,50 @@ export const PHYSICS = {
   bubbleEvery: 1.6,
 } as const;
 
-/** Paleta (RGB 0-255) — azul profundo → ciano, identidade MilWeb. */
+/** Paleta (RGB 0-255) — ultramarine profundo → claro, identidade MilWeb.
+ *  Estava em blue-400/cyan-400/sky-400 (defaults do Tailwind) mesmo depois
+ *  da troca de paleta do site: as varreduras procuravam hex e `rgb(r g b)`,
+ *  e aqui a cor mora em array com vírgula. */
 export const PALETTE = {
-  headCore: [96, 165, 250],
-  headMid: [29, 78, 216],
-  headEdge: [9, 18, 44],
-  tentacleBase: [37, 99, 235],
-  tentacleTip: [34, 211, 238],
-  glow: [56, 189, 248],
+  headCore: [157, 183, 255],
+  headMid: [91, 124, 255],
+  headEdge: [9, 14, 42],
+  tentacleBase: [51, 85, 230],
+  tentacleTip: [157, 183, 255],
+  glow: [91, 124, 255],
   eyeSclera: [235, 244, 255],
   eyePupil: [7, 12, 28],
+} as const;
+
+/**
+ * Céu ambiente desenhado atrás da Lula (ver starfield.ts).
+ *
+ * As opacidades são baixas de propósito: os cards do site são `.glass`,
+ * translúcidos a 55%, então estrela atrás de card aparece por baixo. O teto
+ * aqui é o que protege o contraste do texto, não um ajuste cosmético.
+ */
+export const STARFIELD = {
+  /** Quantidade por modo (o touch espelha o modo leve da própria Lula). */
+  count: 120,
+  countAutonomous: 60,
+  /** Campo virtual mais alto que a viewport: o wrap do parallax não aparece. */
+  fieldHeightFactor: 1.6,
+  /** Piso da cintilação: 1 = sem piscar, 0 = apaga por completo. */
+  twinkleFloor: 0.45,
+  twinkleFreqMin: 0.5,
+  twinkleFreqMax: 1.7,
+  /** Multiplicador global por tema. O claro pede MAIS, não menos: a cor do
+   *  dia (--warm, #A85400) é escura sobre fundo quase branco, então some
+   *  antes de incomodar. A 0.55 a poeira era literalmente imperceptível na
+   *  captura. O escuro é o oposto: estrela clara sobre preto rende fácil. */
+  alphaDark: 1,
+  alphaLight: 1.6,
+  /** Da mais distante (quase parada) à mais próxima (acompanha o scroll). */
+  layers: [
+    { minR: 0.6, maxR: 1.0, alpha: 0.30, parallax: 0.02 },
+    { minR: 0.9, maxR: 1.5, alpha: 0.22, parallax: 0.06 },
+    { minR: 1.3, maxR: 2.1, alpha: 0.16, parallax: 0.12 },
+  ],
 } as const;
 
 /** Elementos que disparam o estado de hover do polvo. */
