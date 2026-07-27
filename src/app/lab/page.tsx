@@ -40,7 +40,7 @@ export default async function LabPage() {
   return (
     <>
       <header className="container-page flex h-16 items-center justify-between">
-        <Link href={withLocale(locale, "/")} aria-label="MilWeb — início">
+        <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
           <Logo />
         </Link>
         <Link

@@ -65,7 +65,7 @@ function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall
       <WebsitePreview
         src={p.image}
         host={host(p.live)}
-        alt={`${p.title} — screenshot`}
+        alt={`Screenshot do projeto ${p.title}`}
         frameClass={tall ? "h-72 sm:h-80 lg:h-[26rem]" : "h-56"}
         fit={p.imageStatic ? "contain" : "scroll"}
       />
@@ -142,7 +142,7 @@ function Details({ p, locale }: { p: Project; locale: Locale }) {
             href={r.url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`${r.label} — ${p.title} (GitHub)`}
+            aria-label={`${r.label} do projeto ${p.title} (GitHub)`}
             className="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-fg-subtle transition-colors hover:text-fg"
           >
             <Github className="h-3.5 w-3.5" /> {r.label}

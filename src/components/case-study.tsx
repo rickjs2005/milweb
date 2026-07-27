@@ -28,7 +28,7 @@ function Preview({ p, locale }: { p: Project; locale: Locale }) {
       <WebsitePreview
         src={p.image}
         host={host(p.live)}
-        alt={`${p.title} — screenshot`}
+        alt={`Screenshot do projeto ${p.title}`}
         frameClass="h-72 sm:h-96 lg:h-[30rem]"
         fit={p.imageStatic ? "contain" : "scroll"}
       />

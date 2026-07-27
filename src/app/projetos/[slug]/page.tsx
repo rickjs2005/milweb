@@ -36,8 +36,8 @@ export async function generateMetadata({
         "x-default": `/projetos/${p.slug}`,
       },
     },
-    openGraph: { type: "article", title: `${p.title} — MilWeb`, description, url },
-    twitter: { card: "summary_large_image", title: `${p.title} — MilWeb`, description },
+    openGraph: { type: "article", title: `${p.title} | MilWeb`, description, url },
+    twitter: { card: "summary_large_image", title: `${p.title} | MilWeb`, description },
   };
 }
 
@@ -89,7 +89,7 @@ export default async function ProjectPage({
       <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={withLocale(locale, "/")} aria-label="MilWeb — início">
+          <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
             <Logo />
           </Link>
           <a

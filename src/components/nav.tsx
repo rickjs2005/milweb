@@ -167,7 +167,7 @@ export function Nav({
         }
       >
         <div className="flex min-w-0 items-center gap-4">
-          <a href="#top" aria-label="MilWeb — início" className="shrink-0">
+          <a href="#top" aria-label="MilWeb, início" className="shrink-0">
             <Logo animate />
           </a>
           {/* Rótulo da seção atual (capítulo do filme). Some sobre o hero. */}

@@ -91,7 +91,7 @@ export function Hero({ locale }: { locale: Locale }) {
           <div data-hero className="mt-7 flex items-center gap-3">
             <Image
               src="/avatar.png"
-              alt="Rick — MilWeb"
+              alt="Rick, fundador da MilWeb"
               width={46}
               height={46}
               className="h-[46px] w-[46px] rounded-full object-cover ring-1 ring-inset ring-accent/40"

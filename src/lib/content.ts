@@ -28,8 +28,8 @@ export const PROFILE = {
     en: "Websites and systems that make your business sell.",
   } as Localized,
   subtitle: {
-    pt: "Desenvolvo plataformas, lojas e sistemas sob medida — rápidos, bonitos e prontos pra escalar.",
-    en: "I build custom platforms, stores and systems — fast, polished and ready to scale.",
+    pt: "Desenvolvo plataformas, lojas e sistemas sob medida. Rápidos, bonitos e prontos pra escalar.",
+    en: "I build custom platforms, stores and systems. Fast, polished and ready to scale.",
   } as Localized,
   location: { pt: "Brasil · 100% remoto", en: "Brazil · fully remote" } as Localized,
   email: "rickjanuario0@gmail.com",
@@ -47,7 +47,7 @@ export const DELIVERABLES: Deliverable[] = [
   {
     icon: "Boxes",
     title: { pt: "SaaS & MVP sob medida", en: "Custom SaaS & MVP" },
-    desc: { pt: "Tiro sua ideia do papel e coloco no ar — multi-tenant, segura e pronta pra escalar.", en: "I take your idea from paper to live — multi-tenant, secure and ready to scale." },
+    desc: { pt: "Tiro sua ideia do papel e coloco no ar: multi-tenant, segura e pronta pra escalar.", en: "I take your idea from paper to live: multi-tenant, secure and ready to scale." },
   },
   {
     icon: "AppWindow",
@@ -62,7 +62,7 @@ export const DELIVERABLES: Deliverable[] = [
   {
     icon: "Zap",
     title: { pt: "Automações & IA", en: "Automations & AI" },
-    desc: { pt: "Fluxos que trabalham por você — WhatsApp, e-mail, integrações e recursos com IA.", en: "Workflows that work for you — WhatsApp, email, integrations and AI-powered features." },
+    desc: { pt: "Fluxos que trabalham por você: WhatsApp, e-mail, integrações e recursos com IA.", en: "Workflows that work for you: WhatsApp, email, integrations and AI-powered features." },
   },
   {
     icon: "Rocket",
@@ -79,14 +79,14 @@ export const DELIVERABLES: Deliverable[] = [
 /** POR QUE ME CONTRATAR — diferenciais (com prova no scroll). */
 export type Differential = { icon: string; title: Localized; desc: Localized };
 export const DIFFERENTIALS: Differential[] = [
-  { icon: "ShieldCheck", title: { pt: "Contrato de garantia", en: "Service contract" }, desc: { pt: "Todo projeto fechado com contrato e assinatura eletrônica — sua garantia de entrega, por escrito.", en: "Every project closed with a contract and e-signature — your delivery guarantee, in writing." } },
-  { icon: "Code2", title: { pt: "Código limpo", en: "Clean code" }, desc: { pt: "Organizado e documentado — fácil de manter e evoluir depois.", en: "Organized and documented — easy to maintain and grow later." } },
+  { icon: "ShieldCheck", title: { pt: "Contrato de garantia", en: "Service contract" }, desc: { pt: "Todo projeto fechado com contrato e assinatura eletrônica. Sua garantia de entrega, por escrito.", en: "Every project closed with a contract and e-signature. Your delivery guarantee, in writing." } },
+  { icon: "Code2", title: { pt: "Código limpo", en: "Clean code" }, desc: { pt: "Organizado e documentado, fácil de manter e evoluir depois.", en: "Organized and documented, easy to maintain and grow later." } },
   { icon: "Gauge", title: { pt: "Performance", en: "Performance" }, desc: { pt: "Sites rápidos que não perdem cliente no carregamento.", en: "Fast sites that don't lose customers while loading." } },
   { icon: "Search", title: { pt: "SEO técnico", en: "Technical SEO" }, desc: { pt: "Estrutura pronta pra aparecer no Google.", en: "Structure ready to rank on Google." } },
   { icon: "TrendingUp", title: { pt: "Escalabilidade", en: "Scalability" }, desc: { pt: "Arquitetura que cresce junto com o seu negócio.", en: "Architecture that grows with your business." } },
-  { icon: "Sparkles", title: { pt: "Experiência do usuário", en: "User experience" }, desc: { pt: "Interfaces bonitas e fáceis — pensadas pra quem vai usar.", en: "Beautiful, easy interfaces — designed for real users." } },
+  { icon: "Sparkles", title: { pt: "Experiência do usuário", en: "User experience" }, desc: { pt: "Interfaces bonitas e fáceis, pensadas pra quem vai usar.", en: "Beautiful, easy interfaces designed for the people who'll actually use them." } },
   { icon: "Timer", title: { pt: "Entrega rápida", en: "Fast delivery" }, desc: { pt: "Prazos realistas e comunicação direta, sem enrolação.", en: "Realistic deadlines and direct communication, no fuss." } },
-  { icon: "LifeBuoy", title: { pt: "Suporte pós-entrega", en: "Post-launch support" }, desc: { pt: "Suporte gratuito após a entrega para ajustes e correções — você não fica na mão.", en: "Free support after launch for tweaks and fixes — you're never left stranded." } },
+  { icon: "LifeBuoy", title: { pt: "Suporte pós-entrega", en: "Post-launch support" }, desc: { pt: "Suporte gratuito após a entrega para ajustes e correções. Você não fica na mão.", en: "Free support after launch for tweaks and fixes. You're never left stranded." } },
 ];
 
 /** PROJETOS — reframe pró-cliente (o que o projeto resolve). */
@@ -143,7 +143,7 @@ export const PROJECTS: Project[] = [
     title: "Milsaca",
     tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
     problem: { pt: "Um setor inteiro rodava no improviso entre planilhas e WhatsApp, sem um sistema único.", en: "A whole sector ran improvised between spreadsheets and WhatsApp, with no single system." },
-    result: { pt: "SaaS multi-tenant (web + mobile) com painéis por papel, automações e dados seguros (RLS) — prova de que entrego produto complexo de ponta a ponta.", en: "Multi-tenant SaaS (web + mobile) with role-based panels, automations and secure data (RLS) — proof I ship complex products end to end." },
+    result: { pt: "SaaS multi-tenant (web + mobile) com painéis por papel, automações e dados seguros (RLS). Prova de que entrego produto complexo de ponta a ponta.", en: "Multi-tenant SaaS (web + mobile) with role-based panels, automations and secure data (RLS). Proof I ship complex products end to end." },
     stack: ["Next.js", "Expo", "Supabase", "PostgreSQL", "TypeScript"],
     metric: { pt: "Multi-tenant · web + mobile · RLS", en: "Multi-tenant · web + mobile · RLS" },
     status: { pt: "Em desenvolvimento", en: "In development" },
@@ -156,26 +156,26 @@ export const PROJECTS: Project[] = [
     caseStudy: {
       narrative: [
         {
-          pt: "Monorepo Turborepo + pnpm com três frentes num só backend: Next.js 16 (App Router) pro web — que sozinho já cobre três painéis (produtor, corretora e admin da plataforma) — e Expo Router pro app mobile do produtor. Web e mobile falam com o mesmo Supabase através de um pacote compartilhado (@milsaca/db) com três camadas de client: uma com cookie de sessão pro server, uma sem cookie (só a chave pública) pra rotas com cache, e uma com secure-store pro mobile.",
-          en: "A Turborepo + pnpm monorepo with three fronts on one backend: Next.js 16 (App Router) for web — which alone covers three panels (producer, broker, and platform admin) — and Expo Router for the producer's mobile app. Web and mobile talk to the same Supabase through a shared package (@milsaca/db) with three client layers: one with a session cookie for the server, one cookie-less (public key only) for cached routes, and one with secure-store for mobile.",
+          pt: "Monorepo Turborepo + pnpm com três frentes num só backend: Next.js 16 (App Router) pro web, que sozinho já cobre três painéis (produtor, corretora e admin da plataforma), e Expo Router pro app mobile do produtor. Web e mobile falam com o mesmo Supabase através de um pacote compartilhado (@milsaca/db) com três camadas de client: uma com cookie de sessão pro server, uma sem cookie (só a chave pública) pra rotas com cache, e uma com secure-store pro mobile.",
+          en: "A Turborepo + pnpm monorepo with three fronts on one backend: Next.js 16 (App Router) for web, which alone covers three panels (producer, broker, and platform admin), and Expo Router for the producer's mobile app. Web and mobile talk to the same Supabase through a shared package (@milsaca/db) with three client layers: one with a session cookie for the server, one cookie-less (public key only) for cached routes, and one with secure-store for mobile.",
         },
         {
-          pt: "Multi-tenant de verdade, não só \"filtro no WHERE\": toda tabela do schema público tem Row Level Security habilitada, sem exceção, com isolamento por corretora_id garantido no banco — não na aplicação. Papéis (produtor/corretora/admin) vivem num array na tabela de perfil, permitindo o mesmo e-mail acumular mais de um papel; o admin da plataforma fica numa tabela própria, fora do enum de papéis, pra não vazar por engano num RLS mal escrito.",
-          en: "Multi-tenant for real, not just a \"WHERE filter\": every table in the public schema has Row Level Security enabled, no exceptions, with isolation by corretora_id enforced in the database — not in the application layer. Roles (producer/broker/admin) live in an array on the profile table, letting the same email hold more than one role; the platform admin sits in its own table, outside the role enum, so a sloppy RLS policy can't accidentally leak it.",
+          pt: "Multi-tenant de verdade, não só \"filtro no WHERE\": toda tabela do schema público tem Row Level Security habilitada, sem exceção, com isolamento por corretora_id garantido no banco, não na aplicação. Papéis (produtor/corretora/admin) vivem num array na tabela de perfil, permitindo o mesmo e-mail acumular mais de um papel; o admin da plataforma fica numa tabela própria, fora do enum de papéis, pra não vazar por engano num RLS mal escrito.",
+          en: "Multi-tenant for real, not just a \"WHERE filter\": every table in the public schema has Row Level Security enabled, no exceptions, with isolation by corretora_id enforced in the database, not in the application layer. Roles (producer/broker/admin) live in an array on the profile table, letting the same email hold more than one role; the platform admin sits in its own table, outside the role enum, so a sloppy RLS policy can't accidentally leak it.",
         },
         {
-          pt: "A decisão de autenticação é um bom exemplo de aprender com o próprio produto: começou com magic link e foi trocada por OTP de 6 dígitos por e-mail, porque o Gmail Safe Links faz prefetch automático do link (pra escanear por segurança) e acaba \"queimando\" o token de uso único antes do usuário clicar — um bug sutil que só aparece em produção, com e-mails reais.",
-          en: "The auth decision is a good example of learning from the product itself: it started with magic links and was switched to a 6-digit email OTP, because Gmail Safe Links auto-prefetches the link (to scan it for safety) and ends up \"burning\" the one-time token before the user even clicks — a subtle bug that only shows up in production, with real email providers.",
+          pt: "A decisão de autenticação é um bom exemplo de aprender com o próprio produto: começou com magic link e foi trocada por OTP de 6 dígitos por e-mail, porque o Gmail Safe Links faz prefetch automático do link (pra escanear por segurança) e acaba \"queimando\" o token de uso único antes do usuário clicar. É um bug sutil que só aparece em produção, com e-mails reais.",
+          en: "The auth decision is a good example of learning from the product itself: it started with magic links and was switched to a 6-digit email OTP, because Gmail Safe Links auto-prefetches the link (to scan it for safety) and ends up \"burning\" the one-time token before the user even clicks. It's a subtle bug that only shows up in production, with real email providers.",
         },
         {
-          pt: "O diferencial de domínio é a classificação COB (Instrução Normativa MAPA nº 8/2003): a lógica de tipos, defeitos, peneira e bebida do café cru foi extraída pra um pacote puro (@milsaca/cob), sem dependência de runtime, testável isoladamente — o laudo gerado tem PDF com QR code e uma página pública de verificação, dando ao produtor algo que hoje é feito no papel ou de cabeça.",
-          en: "The domain differentiator is the COB classification (Brazilian MAPA regulation IN 8/2003): the logic for coffee type, defects, screen size and cup quality was extracted into a pure package (@milsaca/cob), with no runtime dependencies, independently testable — the generated report ships as a PDF with a QR code and a public verification page, giving the producer something that today is done on paper or from memory.",
+          pt: "O diferencial de domínio é a classificação COB (Instrução Normativa MAPA nº 8/2003): a lógica de tipos, defeitos, peneira e bebida do café cru foi extraída pra um pacote puro (@milsaca/cob), sem dependência de runtime, testável isoladamente. O laudo gerado tem PDF com QR code e uma página pública de verificação, dando ao produtor algo que hoje é feito no papel ou de cabeça.",
+          en: "The domain differentiator is the COB classification (Brazilian MAPA regulation IN 8/2003): the logic for coffee type, defects, screen size and cup quality was extracted into a pure package (@milsaca/cob), with no runtime dependencies, independently testable. The generated report ships as a PDF with a QR code and a public verification page, giving the producer something that today is done on paper or from memory.",
         },
       ],
       highlights: [
         {
           label: { pt: "Multi-tenant via RLS", en: "Multi-tenant via RLS" },
-          detail: { pt: "Isolamento por corretora_id garantido no banco, não na aplicação — RLS em toda tabela.", en: "Isolation by corretora_id enforced in the database, not the app — RLS on every table." },
+          detail: { pt: "Isolamento por corretora_id garantido no banco, não na aplicação. RLS em toda tabela.", en: "Isolation by corretora_id enforced in the database, not the app. RLS on every table." },
         },
         {
           label: { pt: "Laudo COB digital", en: "Digital COB report" },
@@ -192,8 +192,8 @@ export const PROJECTS: Project[] = [
       ],
       gallery: [
         { src: "/shots/milsaca/landing.webp", alt: { pt: "Página pública do Milsaca", en: "Milsaca public landing page" } },
-        { src: "/shots/milsaca/painel-corretora.webp", alt: { pt: "Painel da corretora — dados de demonstração", en: "Broker panel — demo data" } },
-        { src: "/shots/milsaca/laudo-cob.webp", alt: { pt: "Laudo COB digital do produtor — dados de demonstração", en: "Producer's digital COB report — demo data" } },
+        { src: "/shots/milsaca/painel-corretora.webp", alt: { pt: "Painel da corretora (dados de demonstração)", en: "Broker panel (demo data)" } },
+        { src: "/shots/milsaca/laudo-cob.webp", alt: { pt: "Laudo COB digital do produtor (dados de demonstração)", en: "Producer's digital COB report (demo data)" } },
       ],
     },
   },
@@ -248,20 +248,20 @@ export const PROJECTS: Project[] = [
         },
       ],
       gallery: [
-        { src: "/shots/millead/kanban.webp", alt: { pt: "Pipeline kanban com valores por estágio — dados de demonstração", en: "Kanban pipeline with per-stage totals — demo data" } },
-        { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status — dados de demonstração", en: "Dashboard with finance, funnel and leads by status — demo data" } },
-        { src: "/shots/millead/contracts.webp", alt: { pt: "Contratos com PDF e assinatura eletrônica — dados de demonstração", en: "Contracts with PDF and e-signature — demo data" } },
-        { src: "/shots/millead/briefings.webp", alt: { pt: "Briefings de onboarding com progresso do preenchimento — dados de demonstração", en: "Onboarding briefings with fill-out progress — demo data" } },
-        { src: "/shots/millead/audit.webp", alt: { pt: "Auditoria de sites: ~30 checagens em 6 categorias com nota explicável — dados de demonstração", en: "Website audits: ~30 checks across 6 categories with explainable scores — demo data" } },
-        { src: "/shots/millead/generator.webp", alt: { pt: "Gerador de prompt de site: dados do cliente viram um prompt pronto pra IA — dados de demonstração", en: "Website prompt generator: client data becomes an AI-ready prompt — demo data" } },
-        { src: "/shots/millead/messages.webp", alt: { pt: "Mensagens: rascunhos de prospecção gerados por IA, por canal e status — dados de demonstração", en: "Messages: AI-generated outreach drafts by channel and status — demo data" } },
-        { src: "/shots/millead/agenda.webp", alt: { pt: "Agenda: calendário mensal com reuniões e tarefas + painel do dia — dados de demonstração", en: "Agenda: monthly calendar with meetings and tasks + day panel — demo data" } },
-        { src: "/shots/millead/proposals.webp", alt: { pt: "Propostas com valor, validade e status do envio ao aceite — dados de demonstração", en: "Proposals with value, validity and status from sent to accepted — demo data" } },
-        { src: "/shots/millead/companies.webp", alt: { pt: "Empresas com contato, cidade e segmento — dados de demonstração", en: "Companies with contact, city and segment — demo data" } },
-        { src: "/shots/millead/lead-detail.webp", alt: { pt: "Detalhe do lead: score de IA, contatos, etiquetas e abas de atividade — dados de demonstração", en: "Lead detail: AI score, contacts, tags and activity tabs — demo data" } },
-        { src: "/shots/millead/company-detail.webp", alt: { pt: "Detalhe da empresa: cadastro, sites, redes sociais e auditoria embutida — dados de demonstração", en: "Company detail: profile, websites, socials and embedded audit — demo data" } },
-        { src: "/shots/millead/settings-pipeline.webp", alt: { pt: "Configuração do pipeline: estágios com cor e estágio de ganho — dados de demonstração", en: "Pipeline settings: colored stages and won stage — demo data" } },
-        { src: "/shots/millead/settings-integrations.webp", alt: { pt: "Integrações da plataforma: e-mail, WhatsApp, assinatura eletrônica e IA — dados de demonstração", en: "Platform integrations: email, WhatsApp, e-signature and AI — demo data" } },
+        { src: "/shots/millead/kanban.webp", alt: { pt: "Pipeline kanban com valores por estágio (dados de demonstração)", en: "Kanban pipeline with per-stage totals (demo data)" } },
+        { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status (dados de demonstração)", en: "Dashboard with finance, funnel and leads by status (demo data)" } },
+        { src: "/shots/millead/contracts.webp", alt: { pt: "Contratos com PDF e assinatura eletrônica (dados de demonstração)", en: "Contracts with PDF and e-signature (demo data)" } },
+        { src: "/shots/millead/briefings.webp", alt: { pt: "Briefings de onboarding com progresso do preenchimento (dados de demonstração)", en: "Onboarding briefings with fill-out progress (demo data)" } },
+        { src: "/shots/millead/audit.webp", alt: { pt: "Auditoria de sites: ~30 checagens em 6 categorias com nota explicável (dados de demonstração)", en: "Website audits: ~30 checks across 6 categories with explainable scores (demo data)" } },
+        { src: "/shots/millead/generator.webp", alt: { pt: "Gerador de prompt de site: dados do cliente viram um prompt pronto pra IA (dados de demonstração)", en: "Website prompt generator: client data becomes an AI-ready prompt (demo data)" } },
+        { src: "/shots/millead/messages.webp", alt: { pt: "Mensagens: rascunhos de prospecção gerados por IA, por canal e status (dados de demonstração)", en: "Messages: AI-generated outreach drafts by channel and status (demo data)" } },
+        { src: "/shots/millead/agenda.webp", alt: { pt: "Agenda: calendário mensal com reuniões e tarefas + painel do dia (dados de demonstração)", en: "Agenda: monthly calendar with meetings and tasks + day panel (demo data)" } },
+        { src: "/shots/millead/proposals.webp", alt: { pt: "Propostas com valor, validade e status do envio ao aceite (dados de demonstração)", en: "Proposals with value, validity and status from sent to accepted (demo data)" } },
+        { src: "/shots/millead/companies.webp", alt: { pt: "Empresas com contato, cidade e segmento (dados de demonstração)", en: "Companies with contact, city and segment (demo data)" } },
+        { src: "/shots/millead/lead-detail.webp", alt: { pt: "Detalhe do lead: score de IA, contatos, etiquetas e abas de atividade (dados de demonstração)", en: "Lead detail: AI score, contacts, tags and activity tabs (demo data)" } },
+        { src: "/shots/millead/company-detail.webp", alt: { pt: "Detalhe da empresa: cadastro, sites, redes sociais e auditoria embutida (dados de demonstração)", en: "Company detail: profile, websites, socials and embedded audit (demo data)" } },
+        { src: "/shots/millead/settings-pipeline.webp", alt: { pt: "Configuração do pipeline: estágios com cor e estágio de ganho (dados de demonstração)", en: "Pipeline settings: colored stages and won stage (demo data)" } },
+        { src: "/shots/millead/settings-integrations.webp", alt: { pt: "Integrações da plataforma: e-mail, WhatsApp, assinatura eletrônica e IA (dados de demonstração)", en: "Platform integrations: email, WhatsApp, e-signature and AI (demo data)" } },
       ],
     },
   },
@@ -285,12 +285,12 @@ export const PROJECTS: Project[] = [
     caseStudy: {
       narrative: [
         {
-          pt: "Monorepo pnpm + Turborepo com Clean Architecture explícita: apps/web (Next.js 15, App Router, React 19) cobre SSR/ISR das páginas públicas e Server Actions para mutações, apps/realtime isola o Socket.IO num processo dedicado — WebSocket de longa duração não convive bem com o modelo serverless do Next — e apps/worker roda os jobs assíncronos via BullMQ. A regra de negócio nunca mora nas rotas: fica em packages/core (use cases puros, sem I/O, DTOs validados com zod) que só conhece interfaces (ports) implementadas por packages/infra (repositórios Prisma) — decisão que permitiria trocar a borda HTTP por outro framework sem tocar no domínio. Autenticação usa Better Auth em vez de Auth.js porque o plugin organization resolve membership multi-tenant nativamente (role ADMIN de plataforma e OWNER/MANAGER/ARTIST por estúdio; cliente é usuário sem membership).",
-          en: "pnpm + Turborepo monorepo with explicit Clean Architecture: apps/web (Next.js 15, App Router, React 19) covers SSR/ISR for public pages and Server Actions for mutations, apps/realtime isolates Socket.IO in its own process — long-lived WebSockets don't play well with Next's serverless model — and apps/worker runs async jobs through BullMQ. Business rules never live in routes: they sit in packages/core (pure use cases, no I/O, zod-validated DTOs) which only knows interfaces (ports) implemented by packages/infra (Prisma repositories) — a decision that would let the HTTP edge be swapped for another framework without touching the domain. Auth uses Better Auth instead of Auth.js because its organization plugin resolves multi-tenant membership natively (platform ADMIN role plus per-studio OWNER/MANAGER/ARTIST; clients are users with no membership).",
+          pt: "Monorepo pnpm + Turborepo com Clean Architecture explícita: apps/web (Next.js 15, App Router, React 19) cobre SSR/ISR das páginas públicas e Server Actions para mutações, apps/realtime isola o Socket.IO num processo dedicado (WebSocket de longa duração não convive bem com o modelo serverless do Next) e apps/worker roda os jobs assíncronos via BullMQ. A regra de negócio nunca mora nas rotas: fica em packages/core (use cases puros, sem I/O, DTOs validados com zod) que só conhece interfaces (ports) implementadas por packages/infra (repositórios Prisma). Essa decisão permitiria trocar a borda HTTP por outro framework sem tocar no domínio. Autenticação usa Better Auth em vez de Auth.js porque o plugin organization resolve membership multi-tenant nativamente (role ADMIN de plataforma e OWNER/MANAGER/ARTIST por estúdio; cliente é usuário sem membership).",
+          en: "pnpm + Turborepo monorepo with explicit Clean Architecture: apps/web (Next.js 15, App Router, React 19) covers SSR/ISR for public pages and Server Actions for mutations, apps/realtime isolates Socket.IO in its own process (long-lived WebSockets don't play well with Next's serverless model) and apps/worker runs async jobs through BullMQ. Business rules never live in routes: they sit in packages/core (pure use cases, no I/O, zod-validated DTOs) which only knows interfaces (ports) implemented by packages/infra (Prisma repositories). That decision would let the HTTP edge be swapped for another framework without touching the domain. Auth uses Better Auth instead of Auth.js because its organization plugin resolves multi-tenant membership natively (platform ADMIN role plus per-studio OWNER/MANAGER/ARTIST; clients are users with no membership).",
         },
         {
-          pt: "A simulação de tatuagem é a feature central e foi desenhada como um pipeline, não uma chamada única de IA: packages/ai expõe portas (TattooSimulationProvider, ImageGenerationProvider, SkinSegmentationProvider) e um registry que troca de provider — Fal.ai, Replicate, OpenAI, Gemini, Stable Diffusion — só com uma env var, sem nenhum caso de uso importando um provider concreto. O fluxo é segmentar a pele/parte do corpo → estimar perspectiva e curvatura → aplicar o desenho com warp na escala e posição escolhidas pelo cliente no editor (arrastar, redimensionar, rotacionar) → um passo de img2img de baixa intensidade que harmoniza sombra, textura e iluminação preservando o traço original. Como a geração leva de 10 a 60 segundos, a API só enfileira no BullMQ; o worker chama o provider e o resultado chega ao cliente por WebSocket (evento simulation:done) — nenhum request HTTP fica pendurado esperando a IA responder. Cada chamada grava um AiUsageLog (provider, operação, custo) que alimenta o dashboard admin e os limites de crédito por plano.",
-          en: "Tattoo simulation is the centerpiece feature and was designed as a pipeline, not a single AI call: packages/ai exposes ports (TattooSimulationProvider, ImageGenerationProvider, SkinSegmentationProvider) and a registry that swaps providers — Fal.ai, Replicate, OpenAI, Gemini, Stable Diffusion — with just an env var, with no use case importing a concrete provider. The flow is: segment skin/body part → estimate perspective and curvature → warp the artwork to the scale and position the client chose in the editor (drag, resize, rotate) → a low-intensity img2img pass that blends shadow, texture and lighting while preserving the original line work. Since generation takes 10 to 60 seconds, the API only enqueues a BullMQ job; the worker calls the provider and the result reaches the client over WebSocket (simulation:done event) — no HTTP request hangs waiting on the AI. Every call writes an AiUsageLog (provider, operation, cost) that feeds both the admin dashboard and per-plan credit limits.",
+          pt: "A simulação de tatuagem é a feature central e foi desenhada como um pipeline, não uma chamada única de IA: packages/ai expõe portas (TattooSimulationProvider, ImageGenerationProvider, SkinSegmentationProvider) e um registry que troca de provider (Fal.ai, Replicate, OpenAI, Gemini, Stable Diffusion) só com uma env var, sem nenhum caso de uso importando um provider concreto. O fluxo é segmentar a pele/parte do corpo, estimar perspectiva e curvatura, aplicar o desenho com warp na escala e posição escolhidas pelo cliente no editor (arrastar, redimensionar, rotacionar) e fechar com um passo de img2img de baixa intensidade que harmoniza sombra, textura e iluminação preservando o traço original. Como a geração leva de 10 a 60 segundos, a API só enfileira no BullMQ; o worker chama o provider e o resultado chega ao cliente por WebSocket (evento simulation:done), sem nenhum request HTTP pendurado esperando a IA responder. Cada chamada grava um AiUsageLog (provider, operação, custo) que alimenta o dashboard admin e os limites de crédito por plano.",
+          en: "Tattoo simulation is the centerpiece feature and was designed as a pipeline, not a single AI call: packages/ai exposes ports (TattooSimulationProvider, ImageGenerationProvider, SkinSegmentationProvider) and a registry that swaps providers (Fal.ai, Replicate, OpenAI, Gemini, Stable Diffusion) with just an env var, with no use case importing a concrete provider. The flow is to segment skin and body part, estimate perspective and curvature, warp the artwork to the scale and position the client chose in the editor (drag, resize, rotate), then finish with a low-intensity img2img pass that blends shadow, texture and lighting while preserving the original line work. Since generation takes 10 to 60 seconds, the API only enqueues a BullMQ job; the worker calls the provider and the result reaches the client over WebSocket (simulation:done event), with no HTTP request left hanging on the AI. Every call writes an AiUsageLog (provider, operation, cost) that feeds both the admin dashboard and per-plan credit limits.",
         },
         {
           pt: "O isolamento multi-tenant é banco único com studioId em três camadas de defesa, não um filtro solto em cada query: uma extensão do Prisma Client exige studioId em toda consulta de modelo tenant-scoped (lança erro em dev, bloqueia em prod), Postgres RLS (SET app.current_studio_id) atua como defesa em profundidade mesmo se a camada de aplicação falhar, e existe uma suíte de testes de isolamento que tenta acesso cross-tenant em cada rota. Essa defesa em profundidade pegou um bug real: getActor() lia a tabela StudioMember — protegida por RLS — sem abrir o contexto de tenant/admin, então a política de RLS nunca casava e a consulta voltava vazia mesmo com memberships reais, deixando o dono do estúdio com o painel idêntico ao de um cliente comum. O bug nunca apareceu em dev local porque o role do Postgres usado localmente ignora RLS por padrão; só foi achado numa auditoria visual comparando telas reais, e o fix (withAdmin(), seguro porque o filtro final continua sendo pelo próprio userId) deixa a lição clara: sem testar contra o role de produção sem bypass de RLS, esse tipo de bug fica invisível indefinidamente.",
@@ -1321,8 +1321,8 @@ export const LAB: LabClip[] = [
     poster: "/lab/explosion.jpg",
     title: { pt: "Element Explosion", en: "Element Explosion" },
     desc: {
-      pt: "Um ponto de luz explode e vira interface, dashboard e devices — física de partículas própria.",
-      en: "A point of light explodes into interface, dashboard and devices — a custom particle system.",
+      pt: "Um ponto de luz explode e vira interface, dashboard e devices, com física de partículas própria.",
+      en: "A point of light explodes into interface, dashboard and devices, running on a custom particle system.",
     },
     tags: ["Remotion", "React", "Partículas"],
   },
@@ -1332,8 +1332,8 @@ export const LAB: LabClip[] = [
     poster: "/lab/reel.jpg",
     title: { pt: "Site em 30s", en: "Website in 30s" },
     desc: {
-      pt: "Um site nascendo do zero — wireframe, componentes e dashboard, tudo animado em código.",
-      en: "A website born from scratch — wireframe, components and dashboard, all animated in code.",
+      pt: "Um site nascendo do zero: wireframe, componentes e dashboard, tudo animado em código.",
+      en: "A website born from scratch: wireframe, components and dashboard, all animated in code.",
     },
     tags: ["Remotion", "TypeScript", "60fps"],
   },
@@ -1343,8 +1343,8 @@ export const LAB: LabClip[] = [
     poster: "/lab/unveil.jpg",
     title: { pt: "Revelação de Produto", en: "Product Reveal" },
     desc: {
-      pt: "Um enxame de partículas se monta em um smartphone 3D — vidro, titânio e uma explosão de luz revelando o aparelho.",
-      en: "A swarm of particles assembles into a 3D smartphone — glass, titanium and a burst of light revealing the device.",
+      pt: "Um enxame de partículas se monta em um smartphone 3D: vidro, titânio e uma explosão de luz revelando o aparelho.",
+      en: "A swarm of particles assembles into a 3D smartphone: glass, titanium and a burst of light revealing the device.",
     },
     tags: ["React Three Fiber", "GLSL", "GSAP"],
   },
@@ -1354,8 +1354,8 @@ export const LAB: LabClip[] = [
     poster: "/lab/timescale.jpg",
     title: { pt: "Escala do Tempo", en: "Timescale" },
     desc: {
-      pt: "Do tique de um segundo à história da humanidade até a Terra vista do espaço — uma jornada sobre o valor do tempo, renderizada em shader.",
-      en: "From the tick of a second to the history of humankind to Earth seen from space — a journey about the value of time, rendered in shader.",
+      pt: "Do tique de um segundo à história da humanidade até a Terra vista do espaço. Uma jornada sobre o valor do tempo, renderizada em shader.",
+      en: "From the tick of a second to the history of humankind to Earth seen from space. A journey about the value of time, rendered in shader.",
     },
     tags: ["Three.js", "WebGL", "Shader"],
   },
@@ -1365,8 +1365,8 @@ export const LAB: LabClip[] = [
     poster: "/lab/blackhole.jpg",
     title: { pt: "Horizonte de Eventos", en: "Event Horizon" },
     desc: {
-      pt: "Uma jornada em alta velocidade por estrelas e nebulosas até um buraco negro — lente gravitacional e disco de acreção com física real, trilha sonora sintetizada em código.",
-      en: "A high-speed journey through stars and nebulae into a black hole — real gravitational lensing and accretion disk physics, with a code-synthesized score.",
+      pt: "Uma jornada em alta velocidade por estrelas e nebulosas até um buraco negro, com lente gravitacional e disco de acreção em física real e trilha sonora sintetizada em código.",
+      en: "A high-speed journey through stars and nebulae into a black hole, with real gravitational lensing, accretion disk physics and a code-synthesized score.",
     },
     tags: ["React Three Fiber", "GLSL", "Remotion"],
   },
@@ -1375,8 +1375,8 @@ export const LAB: LabClip[] = [
 /** Página /lab (destino de bio nas redes): strings próprias. */
 export const LAB_PAGE = {
   metaTitle: {
-    pt: "Lab MilWeb — animações e vídeos feitos 100% em código",
-    en: "MilWeb Lab — animations and videos made 100% in code",
+    pt: "Lab MilWeb: animações e vídeos feitos 100% em código",
+    en: "MilWeb Lab: animations and videos made 100% in code",
   },
   metaDescription: {
     pt: "Os filmes do Lab da MilWeb: universo, partículas e interfaces animados inteiramente em código com React, Remotion, Three.js e shaders. Veja como foram feitos.",
@@ -1386,8 +1386,8 @@ export const LAB_PAGE = {
   title: { pt: "Feito de código,", en: "Made of code," },
   titleHighlight: { pt: "do primeiro ao último frame", en: "from the first frame to the last" },
   sub: {
-    pt: "Nenhuma imagem de banco, nenhum editor de vídeo: cada frame destes filmes foi renderizado por código que eu escrevi — a mesma engenharia que coloco nos projetos dos clientes.",
-    en: "No stock footage, no video editor: every frame of these films was rendered by code I wrote — the same engineering I put into client projects.",
+    pt: "Nenhuma imagem de banco, nenhum editor de vídeo: cada frame destes filmes foi renderizado por código que eu escrevi. É a mesma engenharia que coloco nos projetos dos clientes.",
+    en: "No stock footage, no video editor: every frame of these films was rendered by code I wrote. It's the same engineering I put into client projects.",
   },
   madeWith: { pt: "Feito com", en: "Made with" },
   watchHint: { pt: "Toque para assistir com som", en: "Tap to watch with sound" },
@@ -1402,7 +1402,7 @@ export const LAB_PAGE = {
 
 export const PROCESS: Step[] = [
   { n: "01", title: { pt: "Descoberta", en: "Discovery" }, desc: { pt: "Entendo seu negócio, o problema e o objetivo. Sem isso, não começo.", en: "I understand your business, the problem and the goal. I don't start without it." } },
-  { n: "02", title: { pt: "Design & Protótipo", en: "Design & Prototype" }, desc: { pt: "Desenho a solução e a interface antes de codar — você aprova a direção.", en: "I design the solution and the UI before coding — you approve the direction." } },
+  { n: "02", title: { pt: "Design & Protótipo", en: "Design & Prototype" }, desc: { pt: "Desenho a solução e a interface antes de codar. Você aprova a direção.", en: "I design the solution and the UI before coding. You approve the direction." } },
   { n: "03", title: { pt: "Desenvolvimento", en: "Development" }, desc: { pt: "Construo com código limpo e atualizações frequentes do progresso.", en: "I build with clean code and frequent progress updates." } },
   { n: "04", title: { pt: "Entrega & Suporte", en: "Launch & Support" }, desc: { pt: "Coloco no ar, te explico como usar e dou suporte pós-entrega.", en: "I ship it, show you how to use it and provide post-launch support." } },
 ];
@@ -1441,7 +1441,7 @@ export const FAQ: { q: Localized; a: Localized }[] = [
   },
   {
     q: { pt: "Quais tecnologias você usa?", en: "Which technologies do you use?" },
-    a: { pt: "Stack moderna e sólida: Next.js, React, TypeScript, Tailwind, Node.js, PostgreSQL e Supabase — o que for melhor pro seu caso.", en: "A modern, solid stack: Next.js, React, TypeScript, Tailwind, Node.js, PostgreSQL and Supabase — whatever fits your case best." },
+    a: { pt: "Stack moderna e sólida: Next.js, React, TypeScript, Tailwind, Node.js, PostgreSQL e Supabase. Uso o que for melhor pro seu caso.", en: "A modern, solid stack: Next.js, React, TypeScript, Tailwind, Node.js, PostgreSQL and Supabase. I use whatever fits your case best." },
   },
   {
     q: { pt: "O código fica comigo?", en: "Do I own the code?" },
@@ -1476,26 +1476,26 @@ export const UI = {
     // Painel de produto codificado no lugar da imagem estática do hero —
     // um dashboard fictício de cliente, animado em CSS puro.
     panel: {
-      store: { pt: "Painel — Loja Aurora", en: "Dashboard — Aurora Store" },
+      store: { pt: "Painel da Loja Aurora", en: "Aurora Store dashboard" },
       live: { pt: "no ar", en: "live" },
       sales: { pt: "Vendas hoje", en: "Sales today" },
       orders: { pt: "Pedidos", en: "Orders" },
       conversion: { pt: "Conversão", en: "Conversion" },
       week: { pt: "Últimos 7 dias", en: "Last 7 days" },
-      newOrder: { pt: "Novo pedido — R$ 189,90", en: "New order — $37.90" },
+      newOrder: { pt: "Novo pedido: R$ 189,90", en: "New order: $37.90" },
       viaGoogle: { pt: "cliente veio do Google", en: "customer came from Google" },
     },
   },
   sections: {
     deliverablesEyebrow: { pt: "O que eu faço", en: "What I do" },
     deliverablesTitle: { pt: "O que eu entrego", en: "What I deliver" },
-    deliverablesSub: { pt: "Do site simples ao sistema completo — eu resolvo o problema digital do seu negócio.", en: "From a simple site to a full system — I solve your business's digital problem." },
+    deliverablesSub: { pt: "Do site simples ao sistema completo, eu resolvo o problema digital do seu negócio.", en: "From a simple site to a full system, I solve your business's digital problem." },
     whyEyebrow: { pt: "Diferenciais", en: "Why me" },
     whyTitle: { pt: "Por que me contratar", en: "Why hire me" },
     whySub: { pt: "Não basta funcionar. Entrego um produto rápido, bonito e que dá resultado de verdade.", en: "Working isn't enough. I ship a product that's fast, polished and that actually delivers." },
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
     projectsTitle: { pt: "Projetos & produtos", en: "Projects & products" },
-    projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS — uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS — a sample of what I can build." },
+    projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS. Uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS. A sample of what I can build." },
     projectsLegendProof: { pt: "Cliente real · em produção", en: "Real client · in production" },
     projectsLegendDemo: { pt: "Projeto autoral · demo/protótipo", en: "Personal project · demo/prototype" },
     projectsFilterAll: { pt: "Todos", en: "All" },
@@ -1506,13 +1506,13 @@ export const UI = {
     labEyebrow: { pt: "Lab", en: "Lab" },
     labTitle: { pt: "Animações 100% em código", en: "Animations 100% in code" },
     labSub: {
-      pt: "Não são vídeos prontos. São experiências desenvolvidas do zero — React, Three.js e shaders, o mesmo capricho técnico que vai para o seu projeto.",
-      en: "These aren't stock videos. They're experiences built from scratch — React, Three.js and shaders, the same technical care that goes into your project.",
+      pt: "Não são vídeos prontos. São experiências desenvolvidas do zero com React, Three.js e shaders, o mesmo capricho técnico que vai para o seu projeto.",
+      en: "These aren't stock videos. They're experiences built from scratch with React, Three.js and shaders, the same technical care that goes into your project.",
     },
     labCta: { pt: "Assistir com som e ver como foi feito", en: "Watch with sound and see how it was made" },
     labCardCta: { pt: "Explorar projeto", en: "Explore project" },
     labScrollHint: { pt: "Role para explorar a vitrine", en: "Scroll to explore the showcase" },
-    labMiloCenter: { pt: "Boa escolha — {title}! Clica de novo pra explorar 👀", en: "Nice pick — {title}! Click again to explore 👀" },
+    labMiloCenter: { pt: "Boa escolha, {title}! Clica de novo pra explorar 👀", en: "Nice pick, {title}! Click again to explore 👀" },
     processEyebrow: { pt: "Como funciona", en: "How it works" },
     processTitle: { pt: "Como eu trabalho", en: "How I work" },
     processSub: { pt: "Um processo claro, do primeiro contato ao suporte pós-entrega.", en: "A clear process, from first contact to post-launch support." },
@@ -1524,8 +1524,8 @@ export const UI = {
     faqSub: { pt: "O que os clientes mais perguntam antes de começar.", en: "What clients ask most before starting." },
     aboutTitle: { pt: "Sobre a MilWeb", en: "About MilWeb" },
     aboutBody: {
-      pt: "MilWeb é a marca por trás do meu trabalho como desenvolvedor freelancer. Sou o Rick — eu cuido do seu projeto de ponta a ponta, do design ao código e ao deploy, com comunicação direta e foco no resultado do seu negócio.",
-      en: "MilWeb is the brand behind my work as a freelance developer. I'm Rick — I handle your project end to end, from design to code to deploy, with direct communication and a focus on your business results.",
+      pt: "MilWeb é a marca por trás do meu trabalho como desenvolvedor freelancer. Sou o Rick e cuido do seu projeto de ponta a ponta, do design ao código e ao deploy, com comunicação direta e foco no resultado do seu negócio.",
+      en: "MilWeb is the brand behind my work as a freelance developer. I'm Rick, and I handle your project end to end, from design to code to deploy, with direct communication and a focus on your business results.",
     },
   },
   cta: {
@@ -1568,8 +1568,8 @@ export const DEPENDENCY = {
     en: "Relying only on social media gets expensive",
   },
   sub: {
-    pt: "O Instagram já ficou quase 7 horas fora do ar — levando as vendas junto. Veja o risco de operar 100% em plataformas alugadas e calcule o que um apagão custaria pra você.",
-    en: "Instagram has already gone dark for almost 7 hours — taking sales with it. See the risk of running 100% on rented platforms and calculate what an outage would cost you.",
+    pt: "O Instagram já ficou quase 7 horas fora do ar, levando as vendas junto. Veja o risco de operar 100% em plataformas alugadas e calcule o que um apagão custaria pra você.",
+    en: "Instagram has already gone dark for almost 7 hours, taking sales with it. See the risk of running 100% on rented platforms and calculate what an outage would cost you.",
   },
   calc: {
     title: { pt: "Calculadora de prejuízo", en: "Loss calculator" },
@@ -1610,12 +1610,12 @@ export const DEPENDENCY = {
     diagTitle: { pt: "Seu diagnóstico", en: "Your diagnosis" },
     riskLabel: { pt: "Nota de risco do seu negócio", en: "Your business risk score" },
     rec1a: {
-      pt: "Mais da metade das suas vendas nasce no Instagram. Prioridade nº 1: um canal de captura fora do feed — site próprio com SEO.",
-      en: "Over half of your sales are born on Instagram. Priority #1: an acquisition channel outside the feed — your own website with SEO.",
+      pt: "Mais da metade das suas vendas nasce no Instagram. Prioridade nº 1: um canal de captura fora do feed, ou seja, site próprio com SEO.",
+      en: "Over half of your sales are born on Instagram. Priority #1: an acquisition channel outside the feed, meaning your own website with SEO.",
     },
     rec1b: {
-      pt: "Sua dependência de redes ainda é moderada — é o melhor momento para construir o canal próprio antes que ela cresça.",
-      en: "Your social dependency is still moderate — it's the best moment to build your own channel before it grows.",
+      pt: "Sua dependência de redes ainda é moderada, então é o melhor momento para construir o canal próprio antes que ela cresça.",
+      en: "Your social dependency is still moderate, so this is the best moment to build your own channel before it grows.",
     },
     rec2a: {
       pt: "Fechar tudo no WhatsApp não escala: com catálogo ou agendamento no site, o pedido chega pronto e o WhatsApp vira só o fechamento.",
@@ -1626,14 +1626,14 @@ export const DEPENDENCY = {
       en: "Automate order intake on your website so support doesn't become a bottleneck as sales grow.",
     },
     rec3: {
-      pt: "Um site otimizado transforma o Google em canal de aquisição contínuo — clientes chegando sem depender de post.",
-      en: "An optimized website turns Google into a continuous acquisition channel — customers arriving without a single post.",
+      pt: "Um site otimizado transforma o Google em canal de aquisição contínuo, com clientes chegando sem depender de post.",
+      en: "An optimized website turns Google into a continuous acquisition channel, with customers arriving without a single post.",
     },
     diagWhats: { pt: "Receber um plano no WhatsApp", en: "Get a plan on WhatsApp" },
     /** Reação do Milo do FAB quando o diagnóstico é gerado ({score}). */
     miloDiag0: {
-      pt: "Nota {score} — tranquilo! Mas um site próprio garante 😉",
-      en: "Score {score} — you're fine! But your own site seals it 😉",
+      pt: "Nota {score}, tranquilo! Mas um site próprio garante 😉",
+      en: "Score {score}, you're fine! But your own site seals it 😉",
     },
     miloDiag1: {
       pt: "Nota {score} de dependência… dá pra melhorar, hein 🤔",
@@ -1694,8 +1694,8 @@ export const GOOGLE_SIM = {
     en: "This is how customers search for you right now",
   },
   sub: {
-    pt: "Digite o que você faz — ou escolha um exemplo — e veja quem aparece quando alguém pesquisa no Google.",
-    en: "Type what you do — or pick an example — and see who shows up when someone searches on Google.",
+    pt: "Digite o que você faz, ou escolha um exemplo, e veja quem aparece quando alguém pesquisa no Google.",
+    en: "Type what you do, or pick an example, and see who shows up when someone searches on Google.",
   },
   placeholder: { pt: "Ex.: dentista, doceria, personal…", en: "E.g.: dentist, bakery, trainer…" },
   search: { pt: "Buscar", en: "Search" },
@@ -1711,20 +1711,20 @@ export const GOOGLE_SIM = {
     en: "Professional {q} services with online booking, verified reviews and instant quotes. A local reference.",
   },
   r1r: { pt: "4,9 ★★★★★ (312)", en: "4.9 ★★★★★ (312)" },
-  r2t: { pt: "Top 10 melhores profissionais de {q} — ranking 2026", en: "Top 10 best {q} professionals — 2026 ranking" },
+  r2t: { pt: "Top 10 melhores profissionais de {q} em 2026", en: "Top 10 best {q} professionals in 2026" },
   r2d: {
     pt: "Comparamos preço, avaliações e tempo de resposta dos mais procurados. Veja quem lidera o ranking deste ano.",
     en: "We compared price, reviews and response time of the most searched. See who leads this year's ranking.",
   },
-  r3t: { pt: "{Q} — orçamento rápido pelo site", en: "{Q} — quick quote via website" },
+  r3t: { pt: "{Q}: orçamento rápido pelo site", en: "{Q}: quick quote via website" },
   r3d: {
     pt: "Solicite orçamento sem sair do Google. Página otimizada, resposta automática e atendimento em minutos.",
     en: "Request a quote without leaving Google. Optimized page, automatic reply, service in minutes.",
   },
   slotTitle: { pt: "Sua empresa poderia estar aqui.", en: "Your business could be right here." },
   slotSub: {
-    pt: "Com um site otimizado, essa posição trabalha para você 24h — sem depender de post, story ou sorte.",
-    en: "With an optimized website this spot works for you 24/7 — no posts, stories or luck required.",
+    pt: "Com um site otimizado, essa posição trabalha para você 24h, sem depender de post, story ou sorte.",
+    en: "With an optimized website this spot works for you 24/7, with no posts, stories or luck required.",
   },
   slotCta: { pt: "Quero aparecer no Google", en: "I want to show up on Google" },
   slotWhats: {
@@ -1763,12 +1763,12 @@ export const MILO_TOUR: {
   { id: "raio-x", pose: "think", text: { pt: "Bora medir sua dependência das redes? 🔍", en: "Shall we measure your social media dependency? 🔍" } },
   { id: "google", pose: "think", text: { pt: "Seu negócio aparece no Google? 👀", en: "Does your business show up on Google? 👀" } },
   { id: "projects", text: { pt: "Projetos reais! Use os filtros pra achar o seu tipo 🚀", en: "Real projects! Use the filters to find your kind 🚀" } },
-  { id: "lab", pose: "shocked", text: { pt: "Essa é a vitrine de animações — tudo feito em código! ✨", en: "This is the animation showcase — all made in code! ✨" } },
+  { id: "lab", pose: "shocked", text: { pt: "Essa é a vitrine de animações, tudo feito em código! ✨", en: "This is the animation showcase, all made in code! ✨" } },
   { id: "process", text: { pt: "É assim que o Rick trabalha, passo a passo 📋", en: "This is how Rick works, step by step 📋" } },
   { id: "tech", text: { pt: "As ferramentas do arsenal 🛠️", en: "The tools of the trade 🛠️" } },
   { id: "faq", text: { pt: "Dúvidas? A resposta deve estar aqui 💬", en: "Questions? The answer is probably here 💬" } },
   { id: "about", text: { pt: "Esse é o Rick, o humano da MilWeb 😄", en: "That's Rick, the human behind MilWeb 😄" } },
-  { id: "contact", text: { pt: "Fala com o Rick e faz seu orçamento — é grátis! 👋", en: "Talk to Rick and get your quote — it's free! 👋" } },
+  { id: "contact", text: { pt: "Fala com o Rick e faz seu orçamento, é grátis! 👋", en: "Talk to Rick and get your quote, it's free! 👋" } },
 ];
 
 /** APAGÕES REAIS — mini-timeline de prova histórica dentro do Raio-X. */
@@ -1783,8 +1783,8 @@ export type OutageEvent = {
 };
 export const OUTAGE_EVENTS = {
   label: {
-    pt: "Isso não é hipótese — já aconteceu:",
-    en: "This isn't hypothetical — it already happened:",
+    pt: "Isso não é hipótese. Já aconteceu:",
+    en: "This isn't hypothetical. It already happened:",
   } as Localized,
   events: [
     {
@@ -1818,8 +1818,8 @@ export const OUTAGE_EVENTS = {
       suffix: { pt: "%", en: "%" },
       statLabel: { pt: "das contas sujeitas a bloqueio", en: "of accounts subject to blocking" },
       desc: {
-        pt: "Perfis são bloqueados por engano todos os dias — e o recurso pode levar semanas. Um site não é banido por robô de moderação.",
-        en: "Profiles get blocked by mistake every day — appeals can take weeks. A website can't be banned by a moderation bot.",
+        pt: "Perfis são bloqueados por engano todos os dias, e o recurso pode levar semanas. Um site não é banido por robô de moderação.",
+        en: "Profiles get blocked by mistake every day, and appeals can take weeks. A website can't be banned by a moderation bot.",
       },
       color: "#fbbf24",
     },
@@ -1829,8 +1829,8 @@ export const OUTAGE_EVENTS = {
 /** LIGHTHOUSE — prova técnica na seção de números. */
 export const LIGHTHOUSE = {
   title: {
-    pt: "Lighthouse deste site — a auditoria do próprio Google",
-    en: "This site's Lighthouse — Google's own audit",
+    pt: "Lighthouse deste site, a auditoria do próprio Google",
+    en: "This site's Lighthouse, Google's own audit",
   } as Localized,
   note: {
     pt: "Nota máxima não é promessa: é o padrão de tudo que eu entrego.",

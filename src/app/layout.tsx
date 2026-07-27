@@ -26,12 +26,12 @@ const display = Bricolage_Grotesque({
 
 const COPY = {
   pt: {
-    title: "MilWeb — Sites e sistemas que dão resultado",
+    title: "MilWeb | Sites e sistemas que dão resultado",
     description:
       "Desenvolvedor Full Stack freelancer (Next.js, React, TypeScript, Node.js, Supabase). Crio sites, landing pages, sistemas web, catálogos para WhatsApp, dashboards e automações. Orçamento gratuito.",
   },
   en: {
-    title: "MilWeb — Websites and systems that deliver results",
+    title: "MilWeb | Websites and systems that deliver results",
     description:
       "Freelance Full Stack developer (Next.js, React, TypeScript, Node.js, Supabase). I build websites, landing pages, web systems, WhatsApp catalogs, dashboards and automations. Free quote.",
   },
@@ -50,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = locale === "en" ? "/en" : "/";
   return {
     metadataBase: new URL(SITE_URL),
-    title: { default: title, template: `%s — MilWeb` },
+    title: { default: title, template: `%s | MilWeb` },
     description,
     applicationName: "MilWeb",
     authors: [{ name: "Rick", url: PROFILE.github }],

@@ -82,7 +82,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
 
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={home} aria-label="MilWeb — início">
+          <Link href={home} aria-label="MilWeb, início">
             <Logo />
           </Link>
           <a
