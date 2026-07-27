@@ -140,15 +140,35 @@ export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!ok) return;
 
-    const targets = Object.keys(WAYPOINTS)
+    const stage = Object.keys(WAYPOINTS)
       .map((id) => document.getElementById(id))
       .filter((t): t is HTMLElement => t !== null);
-    if (!targets.length) return; // fora da home não há palco
+    if (!stage.length) return; // fora da home não há palco
+
+    // O hero entra na observação só pra TIRAR o Milo de cena. Ele não tem
+    // waypoint (não há canto livre lá: texto à esquerda, cena 3D à direita),
+    // e sem isso o Milo ficava estacionado no waypoint de `deliverables`
+    // — x:4/y:64, exatamente em cima do H1 — sempre que o visitante voltava
+    // ao topo depois de ter rolado.
+    const hero = document.getElementById("top");
+    const targets = hero ? [hero, ...stage] : stage;
 
     gsap.set(el, { left: "-14vw", top: "60vh", autoAlpha: 0 });
     let currentX = -14;
+    let currentId = "";
     let visible = false;
     const saidTour = new Set<string>();
+
+    /** Sai andando pela esquerda e some — o mesmo estado da montagem. */
+    const exit = () => {
+      setBubble(null);
+      clearTimeout(bubbleTimer.current);
+      gsap.to(inner, { scaleX: 1, rotation: 0, duration: 0.3 });
+      gsap.to(el, { autoAlpha: 0, duration: 0.45 });
+      gsap.to(el, { left: "-14vw", top: "60vh", scale: 1, duration: 0.9, ease: "power2.inOut" });
+      currentX = -14;
+      visible = false;
+    };
 
     const goTo = (id: string) => {
       const wp = WAYPOINTS[id];
@@ -190,10 +210,28 @@ export function MiloProtagonist({ locale = "pt" }: { locale?: Locale }) {
       currentX = wp.x;
     };
 
+    // Estado de interseção acumulado, não evento solto: na troca hero →
+    // deliverables as duas seções cruzam a banda central ao mesmo tempo e a
+    // ordem de `entries` não é garantida — decidir pelo último a chegar
+    // fazia o Milo piscar entrando e saindo. Aqui a seção vencedora é
+    // sempre a primeira em ordem de documento, e o hero só ganha quando
+    // nenhuma seção de palco está em vista.
+    const inView = new Set<string>();
     const io = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) goTo(entry.target.id);
+        for (const e of entries) {
+          if (e.isIntersecting) inView.add(e.target.id);
+          else inView.delete(e.target.id);
+        }
+        const active = stage.find((s) => inView.has(s.id));
+        if (active) {
+          if (active.id !== currentId) {
+            currentId = active.id;
+            goTo(active.id);
+          }
+        } else if (inView.has("top") && currentId !== "top") {
+          currentId = "top";
+          exit();
         }
       },
       { rootMargin: "-40% 0px -40% 0px", threshold: 0 },
