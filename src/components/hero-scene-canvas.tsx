@@ -7,9 +7,10 @@ import * as THREE from "three";
 
 /**
  * Cena 3D do hero (desktop): ~16k partículas vivas montam o monograma MW e,
- * em loop, se desmancham e escrevem MILWEB antes de voltar ao M — com
- * turbulência no meio do morph, pulso de energia percorrendo a forma,
- * repulsão magnética do cursor e "fugitivas" que escapam da formação.
+ * em loop, se desmancham e escrevem SITES, SISTEMAS e MILWEB, voltando ao M
+ * entre cada uma. Tem turbulência no meio do morph, pulso de energia
+ * percorrendo a forma, repulsão magnética do cursor e "fugitivas" que
+ * escapam da formação.
  * Profundidade em 6 camadas (estrelas → névoa → glow → cards → linhas →
  * partículas), cada uma com parallax próprio.
  *
@@ -98,10 +99,12 @@ const particleVertex = /* glsl */ `
   uniform float uProgress;
   uniform float uTurb;
   uniform float uScatter;
-  uniform vec2 uW; // pesos das 2 formas (one-hot no repouso, blend no morph)
+  uniform vec4 uW; // pesos das 4 formas (one-hot no repouso, blend no morph)
   uniform vec2 uMouse;
   attribute vec3 aT0;
   attribute vec3 aT1;
+  attribute vec3 aT2;
+  attribute vec3 aT3;
   attribute float aRand;
   varying float vRand;
   varying float vP;
@@ -113,7 +116,7 @@ const particleVertex = /* glsl */ `
     p = p * p * (3.0 - 2.0 * p);
     vP = p;
 
-    vec3 shape = aT0 * uW.x + aT1 * uW.y;
+    vec3 shape = aT0 * uW.x + aT1 * uW.y + aT2 * uW.z + aT3 * uW.w;
     vec3 pos = mix(position, shape, p);
     vX = shape.x;
 
@@ -167,22 +170,31 @@ const particleFragment = /* glsl */ `
   }
 `;
 
-/* Linha do tempo do morph: segura o monograma MW, escreve MILWEB, volta.
-   Antes eram três nomes de projeto (AUREX/KAVITA/VERTEX) — o visitante não
-   conhece nenhum deles, então a formação mais cara da cena não comunicava
-   nada. Com uma palavra só, o sistema de 4 alvos vira 2: dois atributos e
-   dois Float32Array(48000) a menos na GPU. */
-const SHAPES = [0, 1];
-const HOLD_M = 7;
-const HOLD_WORD = 3.6;
-const MORPH = 1.7;
+/* Linha do tempo do morph: o monograma MW volta entre cada palavra, então o
+   ciclo é MW → SITES → MW → SISTEMAS → MW → MILWEB. As palavras dizem o que
+   é entregue e fecham na marca; antes eram nomes de projeto (AUREX/KAVITA/
+   VERTEX) que o visitante não conhece, e a formação mais cara da cena não
+   comunicava nada.
+
+   Tempos curtos de propósito: com 3 palavras, o ciclo completo já dura
+   ~20s. Nos valores antigos (7 / 3.6 / 1.7) passaria de 40s, e quase
+   ninguém fica parado no hero tempo suficiente pra ver a terceira. */
+const SHAPES = [0, 1, 0, 2, 0, 3];
+const HOLD_M = 2.4;
+const HOLD_WORD = 2.0;
+const MORPH = 1.1;
 
 function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> }) {
   const mat = useRef<THREE.ShaderMaterial>(null);
   const timeline = useRef({ idx: 0, t: 0 });
 
   const { starts, targets, rands } = useMemo(() => {
-    const targets = [sampleLogo(COUNT), sampleWord("MILWEB", COUNT)];
+    const targets = [
+      sampleLogo(COUNT),
+      sampleWord("SITES", COUNT),
+      sampleWord("SISTEMAS", COUNT),
+      sampleWord("MILWEB", COUNT),
+    ];
     const starts = new Float32Array(COUNT * 3);
     const rands = new Float32Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
@@ -203,7 +215,7 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
       uProgress: { value: 0 },
       uTurb: { value: 0 },
       uScatter: { value: 0 },
-      uW: { value: new THREE.Vector2(1, 0) },
+      uW: { value: new THREE.Vector4(1, 0, 0, 0) },
       uMouse: { value: new THREE.Vector2(99, 99) },
       uColA: { value: new THREE.Color("#9db7ff") },
       uColB: { value: new THREE.Color("#3355e6") },
@@ -229,15 +241,15 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
     const cur = SHAPES[tl.idx % SHAPES.length];
     const nxt = SHAPES[(tl.idx + 1) % SHAPES.length];
     const hold = cur === 0 ? HOLD_M : HOLD_WORD;
-    const w = u.uW.value as THREE.Vector2;
+    const w = u.uW.value as THREE.Vector4;
     if (tl.t <= hold) {
-      w.set(0, 0);
+      w.set(0, 0, 0, 0);
       w.setComponent(cur, 1);
       u.uTurb.value = THREE.MathUtils.lerp(u.uTurb.value, 0, 0.06);
     } else {
       const m = Math.min(1, (tl.t - hold) / MORPH);
       const e = m * m * (3 - 2 * m);
-      w.set(0, 0);
+      w.set(0, 0, 0, 0);
       w.setComponent(cur, 1 - e);
       w.setComponent(nxt, e);
       u.uTurb.value = Math.sin(m * Math.PI) * 0.9; // explode no meio, assenta no fim
@@ -254,6 +266,8 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
         <bufferAttribute attach="attributes-position" args={[starts, 3]} />
         <bufferAttribute attach="attributes-aT0" args={[targets[0], 3]} />
         <bufferAttribute attach="attributes-aT1" args={[targets[1], 3]} />
+        <bufferAttribute attach="attributes-aT2" args={[targets[2], 3]} />
+        <bufferAttribute attach="attributes-aT3" args={[targets[3], 3]} />
         <bufferAttribute attach="attributes-aRand" args={[rands, 1]} />
       </bufferGeometry>
       <shaderMaterial
