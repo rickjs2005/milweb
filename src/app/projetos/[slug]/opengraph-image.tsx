@@ -49,7 +49,7 @@ export default async function Image({
               width: '52px',
               height: '52px',
               borderRadius: '14px',
-              backgroundColor: '#38BDF8',
+              backgroundColor: '#5B7CFF',
               color: '#06121c',
               fontSize: '32px',
               fontWeight: 800,
@@ -82,7 +82,7 @@ export default async function Image({
               display: 'flex',
               marginTop: '24px',
               fontSize: '32px',
-              color: '#7DD3FC',
+              color: '#9DB7FF',
               maxWidth: '980px',
             }}
           >

@@ -24,9 +24,9 @@ export function Logo({
       >
         <defs>
           <linearGradient id="mwGrad" x1="8" y1="12" x2="40" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#7DD3FC" />
-            <stop offset="55%" stopColor="#38BDF8" />
-            <stop offset="100%" stopColor="#0EA5E9" />
+            <stop offset="0%" stopColor="#9DB7FF" />
+            <stop offset="55%" stopColor="#5B7CFF" />
+            <stop offset="100%" stopColor="#3355E6" />
           </linearGradient>
           <linearGradient id="mwBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#0d1424" />

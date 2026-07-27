@@ -8,7 +8,7 @@ const CODE = [
   "b", "a",
 ];
 
-const COLORS = ["#38bdf8", "#7dd3fc", "#a78bfa", "#34d399", "#fbbf24", "#fb7185"];
+const COLORS = ["#5b7cff", "#9db7ff", "#a78bfa", "#34d399", "#fbbf24", "#fb7185"];
 
 /** Explosão de confete em canvas — sem dependências, remove-se sozinha. */
 function burstConfetti() {
@@ -84,9 +84,9 @@ export function Konami() {
   useEffect(() => {
     console.info(
       "%c🤖 Milo diz: oi, dev! Curioso, hein?\n%c↑ ↑ ↓ ↓ ← → ← → B A — experimenta.\n%cFeito pela MilWeb → https://milweb.com.br",
-      "color:#38bdf8;font-size:14px;font-weight:bold",
-      "color:#94a3b8",
-      "color:#64748b",
+      "color:#5b7cff;font-size:14px;font-weight:bold",
+      "color:#a8a29a",
+      "color:#78716a",
     );
 
     let i = 0;

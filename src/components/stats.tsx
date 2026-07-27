@@ -11,7 +11,7 @@ export function Stats({ locale }: { locale: Locale }) {
       <div className="grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-3">
         {STATS.map((s, i) => (
           <Reveal key={s.label.en} as="div" variant="zoom" delay={i * 100} className="glass p-8 text-center">
-            <p className="font-display text-5xl font-bold tracking-tight text-fg sm:text-6xl">
+            <p className="font-display text-5xl font-bold tracking-tight text-warm sm:text-6xl">
               <Counter value={s.value} suffix={s.suffix} delay={i * 120} />
             </p>
             <p className="mt-2 text-sm text-fg-subtle">{t(s.label)}</p>

@@ -47,7 +47,7 @@ export default async function Image() {
               width: '64px',
               height: '64px',
               borderRadius: '18px',
-              backgroundColor: '#38BDF8',
+              backgroundColor: '#5B7CFF',
               color: '#06121c',
               fontSize: '40px',
               fontWeight: 800,
@@ -65,7 +65,7 @@ export default async function Image() {
             }}
           >
             Mil
-            <span style={{ color: '#38BDF8' }}>Web</span>
+            <span style={{ color: '#5B7CFF' }}>Web</span>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default async function Image() {
             marginTop: '20px',
             fontSize: '26px',
             fontWeight: 600,
-            color: '#7DD3FC',
+            color: '#9DB7FF',
           }}
         >
           Next.js · React · TypeScript · SaaS · Landing Pages

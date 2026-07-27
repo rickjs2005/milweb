@@ -201,8 +201,8 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
       uScatter: { value: 0 },
       uW: { value: new THREE.Vector4(1, 0, 0, 0) },
       uMouse: { value: new THREE.Vector2(99, 99) },
-      uColA: { value: new THREE.Color("#7dd3fc") },
-      uColB: { value: new THREE.Color("#0ea5e9") },
+      uColA: { value: new THREE.Color("#9db7ff") },
+      uColB: { value: new THREE.Color("#3355e6") },
     }),
     [],
   );
@@ -373,7 +373,7 @@ function EnergyLinks() {
         new THREE.Line(
           new THREE.BufferGeometry().setFromPoints(c.getPoints(36)),
           new THREE.LineBasicMaterial({
-            color: "#38bdf8",
+            color: "#5b7cff",
             transparent: true,
             opacity: 0.16,
             blending: THREE.AdditiveBlending,
@@ -402,7 +402,7 @@ function EnergyLinks() {
         {curves.map((_, i) => (
           <mesh key={i}>
             <sphereGeometry args={[0.045, 8, 8]} />
-            <meshBasicMaterial color="#7dd3fc" transparent opacity={0.9} blending={THREE.AdditiveBlending} depthWrite={false} />
+            <meshBasicMaterial color="#9db7ff" transparent opacity={0.9} blending={THREE.AdditiveBlending} depthWrite={false} />
           </mesh>
         ))}
       </group>
@@ -548,7 +548,7 @@ export default function HeroSceneCanvas() {
       <Rig ndc={ndc}>
         {/* fundo → frente, cada camada com fator de parallax maior */}
         <DepthLayer ndc={ndc} factor={0.06}>
-          <Sparkles count={220} scale={[26, 13, 3]} position={[LOGO_X, 0, -6]} size={1.1} speed={0.06} opacity={0.35} color="#bae6fd" />
+          <Sparkles count={220} scale={[26, 13, 3]} position={[LOGO_X, 0, -6]} size={1.1} speed={0.06} opacity={0.35} color="#c2d0ff" />
         </DepthLayer>
         <DepthLayer ndc={ndc} factor={0.12}>
           <Mist />
@@ -564,7 +564,7 @@ export default function HeroSceneCanvas() {
         </DepthLayer>
         <DepthLayer ndc={ndc} factor={0.45}>
           <LogoParticles mouse={mouseWorld} />
-          <Sparkles count={110} scale={[15, 8, 6]} position={[LOGO_X, 0, -1]} size={2.2} speed={0.32} opacity={0.5} color="#7dd3fc" />
+          <Sparkles count={110} scale={[15, 8, 6]} position={[LOGO_X, 0, -1]} size={2.2} speed={0.32} opacity={0.5} color="#9db7ff" />
         </DepthLayer>
       </Rig>
     </Canvas>

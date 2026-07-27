@@ -67,7 +67,7 @@ export function CaseStudy({
 
       {/* Cabeçalho do case */}
       <header className="mt-8 max-w-3xl">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{t(p.tagline)}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">{t(p.tagline)}</p>
         <h1 className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">
           {p.title}
         </h1>

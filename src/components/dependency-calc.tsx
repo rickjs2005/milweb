@@ -161,7 +161,7 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   ctx.textAlign = "center";
 
   // eyebrow
-  ctx.fillStyle = "#38bdf8";
+  ctx.fillStyle = "#5b7cff";
   ctx.font = `700 30px ${sans}`;
   ctx.fillText("MILWEB · RAIO-X", size / 2, 190);
 
@@ -190,7 +190,7 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   ctx.stroke();
 
   // rodapé
-  ctx.fillStyle = "#38bdf8";
+  ctx.fillStyle = "#5b7cff";
   ctx.font = `700 40px ${sans}`;
   ctx.fillText(s.shareFooter, size / 2, 850);
 
@@ -286,7 +286,7 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
     <div className="glass grid gap-0 overflow-hidden rounded-2xl lg:grid-cols-2">
       {/* controles */}
       <div className="grid gap-6 p-6 sm:p-8">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{s.title}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">{s.title}</p>
         <Slider label={s.revenue} value={revenue} onChange={setRevenue} min={5000} max={500000} step={5000} format={money} />
         <Slider label={s.ig} value={igShare} onChange={setIgShare} min={0} max={100} step={5} format={(v) => `${v}%`} />
         <Slider label={s.wa} value={waShare} onChange={setWaShare} min={0} max={100} step={5} format={(v) => `${v}%`} />
@@ -364,7 +364,7 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
         ) : (
           <div className="animate-fade-up mt-5 rounded-xl border border-accent/25 bg-accent/5 p-5">
             <div className="flex items-center justify-between gap-4">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{s.diagTitle}</p>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">{s.diagTitle}</p>
               <p className="text-xs text-fg-subtle">{s.riskLabel}</p>
             </div>
             <p className="mt-2 font-display text-4xl font-bold text-fg tabular-nums">

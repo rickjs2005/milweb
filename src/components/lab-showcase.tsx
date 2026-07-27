@@ -281,7 +281,7 @@ export function LabShowcase({
       {/* Painel do projeto em destaque (esteira). */}
       {belt && (
         <div className="mt-10 text-center">
-          <p data-panel-el className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
+          <p data-panel-el className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
             {cur.category}
           </p>
           <h3

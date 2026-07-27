@@ -106,7 +106,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
           />
           <div className="container-page relative py-16 sm:py-28">
             <Reveal>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
                 <Link href={home} className="text-accent/60 transition-colors hover:text-accent">
                   MilWeb
                 </Link>{" "}

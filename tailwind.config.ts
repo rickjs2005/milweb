@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         // Tokens SEMÂNTICOS via CSS vars — viram dark/claro trocando a classe
-        // `.light` no <html>. Acento NEUTRO (monocromático) nos dois modos.
+        // `.light` no <html>. Acento ultramarine + contraponto quente (warm).
         bg: "rgb(var(--bg) / <alpha-value>)",
         surface: {
           DEFAULT: "rgb(var(--surface) / <alpha-value>)",
@@ -23,6 +23,12 @@ export default {
           soft: "rgb(var(--accent-soft) / <alpha-value>)",
           deep: "rgb(var(--accent-deep) / <alpha-value>)",
           fg: "rgb(var(--accent-fg) / <alpha-value>)",
+        },
+        // Contraponto quente do acento (CTA, números, destaques). Quebra o
+        // mono-hue — ver a nota sobre matiz no topo de globals.css.
+        warm: {
+          DEFAULT: "rgb(var(--warm) / <alpha-value>)",
+          fg: "rgb(var(--warm-fg) / <alpha-value>)",
         },
       },
       fontFamily: {

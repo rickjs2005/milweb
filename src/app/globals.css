@@ -60,7 +60,15 @@
 @layer base {
   /* ===== TEMA (variáveis semânticas) — MilWeb =====
      Default = DARK (:root). A classe .light no <html> troca pro claro.
-     Acento = AZUL NEON da marca MilWeb (ecoa o logo), nos dois modos. */
+
+     Acento = ULTRAMARINE ELÉTRICO da marca MilWeb (ecoa o logo), nos dois
+     modos. Deliberadamente FORA da faixa `sky` default do Tailwind: o par
+     slate+sky é o visual que todo gerador de site cospe, porque é o valor
+     que sai da caixa. Aqui o azul é autoral (~228° em vez de ~199°).
+
+     --warm é o contraponto quente (CTA, números, destaques). Existe pra
+     quebrar o mono-hue: sem ele 99,8% da cor da página caía numa única
+     faixa de matiz, e é isso que faz uma paleta parecer gerada. */
   :root {
     --bg: 8 10 16;
     --surface: 15 18 28;
@@ -68,25 +76,31 @@
     --fg: 244 247 252;
     --fg-muted: 173 182 199;
     --fg-subtle: 137 148 166; /* #8994A6 — 5.9:1 no fundo escuro (AA com folga) */
-    --line: 120 180 255;
-    --accent: 56 189 248;       /* #38BDF8 — azul MilWeb */
-    --accent-soft: 125 211 252; /* #7DD3FC */
-    --accent-deep: 14 165 233;  /* #0EA5E9 */
-    --accent-fg: 6 12 22;       /* texto sobre o azul */
+    --line: 143 163 255;
+    --accent: 91 124 255;       /* #5B7CFF — ultramarine MilWeb */
+    --accent-soft: 157 183 255; /* #9DB7FF */
+    --accent-deep: 51 85 230;   /* #3355E6 */
+    --accent-fg: 6 12 22;       /* texto sobre o azul — 5.3:1 (AA) */
+    --warm: 255 176 32;         /* #FFB020 — âmbar, contraponto quente */
+    --warm-fg: 26 18 0;         /* texto sobre o âmbar */
     color-scheme: dark;
   }
   .light {
-    --bg: 248 250 252;
+    /* Neutros levemente QUENTES (não slate): cinza azulado sob azul frio
+       faz a página inteira ler como uma cor só. */
+    --bg: 250 249 247;
     --surface: 255 255 255;
-    --surface-2: 241 245 249;
-    --fg: 15 23 42;
-    --fg-muted: 51 65 85;
-    --fg-subtle: 82 96 117; /* #526075 — 5.5:1 no fundo claro (o anterior falhava AA) */
-    --line: 14 116 180;
-    --accent: 2 132 199;        /* #0284C7 — azul fechado (AA em fundo claro) */
-    --accent-soft: 3 105 161;
-    --accent-deep: 7 89 133;
+    --surface-2: 242 240 236;
+    --fg: 26 24 21;
+    --fg-muted: 74 70 64;
+    --fg-subtle: 107 100 89; /* #6B6459 — 5.6:1 no fundo claro (AA) */
+    --line: 58 85 204;
+    --accent: 47 75 216;        /* #2F4BD8 — 6.7:1 em branco (AA) */
+    --accent-soft: 39 64 184;
+    --accent-deep: 30 54 168;
     --accent-fg: 255 255 255;
+    --warm: 168 84 0;           /* #A85400 — âmbar fechado, 5.3:1 em branco */
+    --warm-fg: 255 255 255;
     color-scheme: light;
   }
 
@@ -210,11 +224,13 @@
     --fg: 244 247 252;
     --fg-muted: 173 182 199;
     --fg-subtle: 137 148 166;
-    --line: 120 180 255;
-    --accent: 56 189 248;
-    --accent-soft: 125 211 252;
-    --accent-deep: 14 165 233;
+    --line: 143 163 255;
+    --accent: 91 124 255;
+    --accent-soft: 157 183 255;
+    --accent-deep: 51 85 230;
     --accent-fg: 6 12 22;
+    --warm: 255 176 32;
+    --warm-fg: 26 18 0;
     color-scheme: dark;
   }
   /* No claro o hero dark termina em corte limpo: um fio de acento na borda

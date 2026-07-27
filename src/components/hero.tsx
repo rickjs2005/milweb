@@ -41,7 +41,7 @@ export function Hero({ locale }: { locale: Locale }) {
             {t(UI.hero.available)}
           </span>
 
-          <p data-hero className="font-mono text-sm uppercase tracking-[0.2em] text-accent">
+          <p data-hero className="font-mono text-sm uppercase tracking-[0.2em] text-warm">
             {t(UI.hero.eyebrow)}
           </p>
 
