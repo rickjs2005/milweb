@@ -23,7 +23,7 @@ export function Hero({ locale }: { locale: Locale }) {
       <div
         aria-hidden
         data-depth="0.5"
-        className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[140px]"
+        className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]"
       />
       <HeroCinema />
       <HeroScene />

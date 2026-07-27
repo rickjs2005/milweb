@@ -456,10 +456,15 @@ function GlowBackdrop() {
           uniform float uTime;
           varying vec2 vUv;
           void main() {
+            // 0.07 e não 0.16: medindo a luminância do hero com a cena 3D
+            // escondida e depois visível, este backdrop era o que mais
+            // lavava a metade direita (3,17x contra 1,29x só do CSS).
+            // Cor em ultramarine — estava em vec3(0.14,0.5,0.85), resquício
+            // da paleta antiga numa notação que nenhuma varredura pegou.
             float d = length((vUv - 0.5) * vec2(1.45, 1.0));
             float pulse = 0.85 + 0.15 * sin(uTime * 0.4);
-            float a = smoothstep(0.55, 0.0, d) * 0.16 * pulse;
-            gl_FragColor = vec4(vec3(0.14, 0.5, 0.85), a);
+            float a = smoothstep(0.55, 0.0, d) * 0.07 * pulse;
+            gl_FragColor = vec4(vec3(0.357, 0.486, 1.0), a);
           }
         `}
       />
@@ -488,8 +493,9 @@ function Mist() {
             fragmentShader={/* glsl */ `
               varying vec2 vUv;
               void main() {
+                // São TRÊS planos empilhados: 0.045 cada virava ~0.13 somado.
                 float d = length((vUv - 0.5) * vec2(1.6, 1.0));
-                gl_FragColor = vec4(vec3(0.25, 0.45, 0.7), smoothstep(0.5, 0.05, d) * 0.045);
+                gl_FragColor = vec4(vec3(0.30, 0.40, 0.85), smoothstep(0.5, 0.05, d) * 0.026);
               }
             `}
           />
