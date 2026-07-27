@@ -214,7 +214,7 @@ export function SquidFollower(props: SquidFollowerProps) {
 
       renderer.clear();
       // O céu vem primeiro: tudo da Lula é pintado por cima dele.
-      renderer.drawStarfield(stars, time, window.scrollY);
+      renderer.drawSky(stars, time, window.scrollY);
       renderer.drawWebbing(tentacles);
       for (const t of tentacles) renderer.drawTentacle(t);
       renderer.drawParticles(particles);

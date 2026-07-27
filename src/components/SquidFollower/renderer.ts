@@ -1,7 +1,7 @@
 import { PALETTE, PHYSICS, STARFIELD } from "./constants";
 import { lerp } from "./physics";
 import { ParticleSystem } from "./particles";
-import { drawStarfield, type Star } from "./starfield";
+import { drawBodies, drawStarfield, type Star } from "./starfield";
 import type { Tentacle } from "./tentacle";
 import type { HeadState, SquidConfig } from "./types";
 
@@ -23,6 +23,8 @@ export class Renderer {
   /** Cor e intensidade do céu, resolvidas do tema (ver refreshTheme). */
   private starColor: readonly number[] = [157, 183, 255];
   private starAlpha: number = STARFIELD.alphaDark;
+  /** Sol e planetas só existem no escuro (ver BODIES). */
+  private dark = true;
 
   constructor(
     private readonly ctx: CanvasRenderingContext2D,
@@ -73,9 +75,13 @@ export class Renderer {
         ? parsed
         : [157, 183, 255]; // token ausente/malformado: não apaga o céu
     this.starAlpha = light ? STARFIELD.alphaLight : STARFIELD.alphaDark;
+    this.dark = !light;
   }
 
-  drawStarfield(stars: readonly Star[], t: number, scrollY: number): void {
+  /** Corpos primeiro, estrelas por cima: assim o planeta parece distante,
+   *  e não um disco recortado colado na frente do céu. */
+  drawSky(stars: readonly Star[], t: number, scrollY: number): void {
+    if (this.dark) drawBodies(this.ctx, this.w, this.h, scrollY);
     drawStarfield(this.ctx, stars, this.w, this.h, t, scrollY, this.starColor, this.starAlpha);
   }
 

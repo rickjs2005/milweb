@@ -1,4 +1,4 @@
-import { STARFIELD } from "./constants";
+import { BODIES, STARFIELD } from "./constants";
 
 /**
  * Céu ambiente atrás da Lula. Vive no MESMO canvas dela (fixed inset-0,
@@ -85,5 +85,88 @@ export function drawStarfield(
     ctx.beginPath();
     ctx.arc(s.nx * w, y, s.r, 0, Math.PI * 2);
     ctx.fill();
+  }
+}
+
+/** Mesmo wrap das estrelas: mantém o corpo no campo virtual infinito. */
+function wrapY(ny: number, fieldH: number, scrollY: number, parallax: number): number {
+  let y = (ny * fieldH - scrollY * parallax) % fieldH;
+  if (y < 0) y += fieldH;
+  return y;
+}
+
+/**
+ * Sol e planetas, só no tema escuro. Desenhados ANTES das estrelas para
+ * que elas fiquem por cima — corpo grande cobrindo estrela lê como um
+ * disco recortado, e não como algo distante.
+ *
+ * Cada corpo é um gradiente radial que morre na borda, sem contorno duro:
+ * o que precisa acontecer é presença, não desenho de planeta.
+ */
+export function drawBodies(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  scrollY: number,
+): void {
+  const fieldH = h * STARFIELD.fieldHeightFactor;
+  const margin = 260; // corpo grande entra em cena antes do centro cruzar a borda
+
+  const sun = BODIES.sun;
+  const sunX = sun.nx * w;
+  const sunY = wrapY(sun.ny, fieldH, scrollY, sun.parallax);
+
+  // Sol: núcleo quente que se dissolve numa corona larga.
+  if (sunY > -margin && sunY < h + margin) {
+    const g = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sun.r);
+    const c = `${sun.rgb[0]},${sun.rgb[1]},${sun.rgb[2]}`;
+    g.addColorStop(0, `rgba(${c},${sun.alpha})`);
+    g.addColorStop(0.18, `rgba(${c},${sun.alpha * 0.55})`);
+    g.addColorStop(1, `rgba(${c},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(sunX, sunY, sun.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  for (const p of BODIES.planets) {
+    const x = p.nx * w;
+    const y = wrapY(p.ny, fieldH, scrollY, p.parallax);
+    if (y < -margin || y > h + margin) continue;
+
+    // O foco do gradiente é deslocado NA DIREÇÃO DO SOL: o lado iluminado
+    // do planeta aponta pra fonte de luz, em vez de brilhar por igual.
+    const dx = sunX - x;
+    const dy = sunY - y;
+    const d = Math.hypot(dx, dy) || 1;
+    const lx = x + (dx / d) * p.r * 0.45;
+    const ly = y + (dy / d) * p.r * 0.45;
+
+    // O corpo se mantém quase cheio até perto da borda e só então cai: é o
+    // que faz ler como DISCO. Se a queda começa no centro, vira mancha de
+    // brilho, que foi o primeiro resultado aqui.
+    const c = `${p.rgb[0]},${p.rgb[1]},${p.rgb[2]}`;
+    const g = ctx.createRadialGradient(lx, ly, p.r * 0.05, x, y, p.r);
+    g.addColorStop(0, `rgba(${c},${p.alpha})`);
+    g.addColorStop(0.72, `rgba(${c},${(p.alpha * 0.78).toFixed(3)})`);
+    g.addColorStop(0.93, `rgba(${c},${(p.alpha * 0.30).toFixed(3)})`);
+    g.addColorStop(1, `rgba(${c},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (p.ring > 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(-0.42);
+      ctx.scale(1, 0.26); // elipse: o anel visto quase de perfil
+      ctx.beginPath();
+      ctx.arc(0, 0, p.r * p.ring, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${c},${(p.alpha * 0.5).toFixed(3)})`;
+      ctx.lineWidth = p.r * 0.16;
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 }

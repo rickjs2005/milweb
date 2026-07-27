@@ -109,8 +109,8 @@ export const PALETTE = {
  */
 export const STARFIELD = {
   /** Quantidade por modo (o touch espelha o modo leve da própria Lula). */
-  count: 120,
-  countAutonomous: 60,
+  count: 260,
+  countAutonomous: 110,
   /** Campo virtual mais alto que a viewport: o wrap do parallax não aparece. */
   fieldHeightFactor: 1.6,
   /** Piso da cintilação: 1 = sem piscar, 0 = apaga por completo. */
@@ -128,6 +128,29 @@ export const STARFIELD = {
     { minR: 0.6, maxR: 1.0, alpha: 0.30, parallax: 0.02 },
     { minR: 0.9, maxR: 1.5, alpha: 0.22, parallax: 0.06 },
     { minR: 1.3, maxR: 2.1, alpha: 0.16, parallax: 0.12 },
+  ],
+} as const;
+
+/**
+ * Sol e planetas — SÓ no tema escuro. No claro não fazem sentido (é dia) e
+ * seriam manchas sobre fundo branco.
+ *
+ * Posições fixas, não sorteadas: são poucos corpos e grandes, então uma
+ * composição pensada rende melhor que aleatoriedade — e o resultado é o
+ * mesmo em toda visita.
+ *
+ * `alpha` aqui é o PICO no centro do corpo, e cai a zero na borda. O teto
+ * é baixo de propósito: diferente de uma estrela de 1px, um planeta de
+ * 120px atrás de um card `.glass` (translúcido a 55%) cobre texto inteiro.
+ * Esse número é o que separa "atmosfera" de "mancha atrás da leitura".
+ */
+export const BODIES = {
+  /** Direção da luz do sol, usada pra iluminar o lado certo dos planetas. */
+  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.34, parallax: 0.015, rgb: [255, 176, 32] },
+  planets: [
+    { nx: 0.16, ny: 0.52, r: 88, alpha: 0.24, parallax: 0.05, rgb: [120, 150, 255], ring: 0 },
+    { nx: 0.68, ny: 0.78, r: 58, alpha: 0.20, parallax: 0.08, rgb: [180, 170, 235], ring: 1.9 },
+    { nx: 0.40, ny: 0.28, r: 40, alpha: 0.17, parallax: 0.11, rgb: [150, 190, 255], ring: 0 },
   ],
 } as const;
 

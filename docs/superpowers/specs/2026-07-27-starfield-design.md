@@ -107,8 +107,33 @@ está abrindo mão de um fundo decorativo, o que é aceitável.
 3. Céu visível nos respiros entre seções e discreto atrás de conteúdo,
    conferido em captura real.
 
+## Revisão: sol e planetas entraram (mesmo dia)
+
+Depois de ver o resultado, o Rick pediu mais estrelas, planetas e sol no
+tema escuro. Planetas estavam listados como fora de escopo aqui; a decisão
+foi revista com o resultado na tela.
+
+O que sustentou a mudança foi a medição: no escuro, o fundo é tão escuro
+(#080A10) que um corpo translúcido mal move a luminância. Com um planeta
+no pico de opacidade atrás de um card `.glass`, o fundo efetivo vai a
+`(23,28,46)` e o contraste do texto fica em ~15,8:1 — folga enorme sobre
+o mínimo AA de 4,5:1. O risco que justificava o "fora de escopo" não se
+materializou no tema escuro.
+
+Entraram: densidade de 120 para 260 estrelas (110 no touch), um sol com
+núcleo e corona, e três planetas — um deles com anel — iluminados na
+direção do sol. Tudo com parallax próprio e wrap no mesmo campo virtual.
+
+**Só no escuro.** No claro não fazem sentido (é dia) e seriam manchas
+sobre fundo quase branco.
+
+Uma lição de desenho ficou registrada no código: na primeira tentativa os
+corpos usavam gradiente caindo desde o centro e liam como mancha de
+brilho, não como planeta. O corpo precisa se manter quase cheio até perto
+da borda e só então cair.
+
 ## Fora de escopo
 
-Nebulosas, planetas, estrela cadente e trajetória própria da Lula pelo
-espaço. Foram considerados e descartados: virariam um segundo produto
-dentro do site, competindo com o portfólio pela atenção.
+Nebulosas, estrela cadente e trajetória própria da Lula pelo espaço.
+Continuam descartados: virariam um segundo produto dentro do site,
+competindo com o portfólio pela atenção.
