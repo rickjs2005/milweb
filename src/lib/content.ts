@@ -27,9 +27,15 @@ export const PROFILE = {
     pt: "Sites e sistemas que fazem seu negócio vender.",
     en: "Websites and systems that make your business sell.",
   } as Localized,
+  /**
+   * A linha de apoio do hero fala do resultado do cliente, não da minha
+   * stack. A versão anterior ("desenvolvo plataformas, lojas e sistemas...")
+   * descrevia o meu trabalho; quem contrata quer saber o que muda no negócio
+   * dele. A tecnologia aparece mais abaixo, na seção de stack.
+   */
   subtitle: {
-    pt: "Desenvolvo plataformas, lojas e sistemas sob medida. Rápidos, bonitos e prontos pra escalar.",
-    en: "I build custom platforms, stores and systems. Fast, polished and ready to scale.",
+    pt: "Seu cliente encontra você no Google, abre o site em menos de 2 segundos e fala com você no WhatsApp. É isso que eu construo.",
+    en: "Your customer finds you on Google, opens your site in under 2 seconds and messages you on WhatsApp. That's what I build.",
   } as Localized,
   location: { pt: "Brasil · 100% remoto", en: "Brazil · fully remote" } as Localized,
   email: "rickjanuario0@gmail.com",
@@ -43,36 +49,45 @@ export const PROFILE = {
 
 /** O QUE EU ENTREGO — a oferta concreta (resolve o problema do cliente). */
 export type Deliverable = { icon: string; title: Localized; desc: Localized };
+/**
+ * Ordem e títulos falam do ganho, não da categoria técnica.
+ *
+ * Antes a lista abria em "SaaS & MVP sob medida" e "Sistemas Web", que são as
+ * palavras mais caras e mais abstratas do site. Quem chega procurando um jeito
+ * de receber mais orçamento tinha que descer até o quinto item para se
+ * reconhecer. Agora começa pelo que a maioria vem buscar e termina no que é
+ * mais raro e mais caro.
+ */
 export const DELIVERABLES: Deliverable[] = [
   {
-    icon: "Boxes",
-    title: { pt: "SaaS & MVP sob medida", en: "Custom SaaS & MVP" },
-    desc: { pt: "Tiro sua ideia do papel e coloco no ar: multi-tenant, segura e pronta pra escalar.", en: "I take your idea from paper to live: multi-tenant, secure and ready to scale." },
-  },
-  {
-    icon: "AppWindow",
-    title: { pt: "Sistemas Web", en: "Web Systems" },
-    desc: { pt: "Aplicações sob medida pro seu negócio, do login e do fluxo ao relatório.", en: "Custom apps for your business, from login and flow to reports." },
-  },
-  {
-    icon: "LayoutDashboard",
-    title: { pt: "Painéis Administrativos", en: "Admin Dashboards" },
-    desc: { pt: "Produtos, pedidos, estoque, clientes e acessos por papel num lugar só.", en: "Products, orders, stock, customers and role-based access in one place." },
-  },
-  {
-    icon: "Zap",
-    title: { pt: "Automações & IA", en: "Automations & AI" },
-    desc: { pt: "Fluxos que trabalham por você: WhatsApp, e-mail, integrações e recursos com IA.", en: "Workflows that work for you: WhatsApp, email, integrations and AI-powered features." },
-  },
-  {
     icon: "Rocket",
-    title: { pt: "Landing Pages de Conversão", en: "High-Conversion Landing Pages" },
-    desc: { pt: "Páginas rápidas e bonitas, focadas em transformar visita em cliente.", en: "Fast, polished pages built to turn visits into customers." },
+    title: { pt: "Receba mais orçamentos", en: "Get more enquiries" },
+    desc: { pt: "Landing page rápida, feita para transformar visita em conversa no WhatsApp. Sem formulário que ninguém preenche.", en: "A fast landing page built to turn a visit into a WhatsApp conversation. No forms nobody fills in." },
   },
   {
     icon: "MessageCircle",
-    title: { pt: "Catálogos para WhatsApp", en: "WhatsApp Catalogs" },
-    desc: { pt: "Vitrine de produtos com pedido e orçamento direto no seu WhatsApp.", en: "Product showcase with orders and quotes straight to your WhatsApp." },
+    title: { pt: "Venda pelo WhatsApp", en: "Sell on WhatsApp" },
+    desc: { pt: "Catálogo com seus produtos e preços. O cliente monta o pedido sozinho e ele chega pronto no seu WhatsApp.", en: "A catalog with your products and prices. The customer builds the order and it lands ready in your WhatsApp." },
+  },
+  {
+    icon: "AppWindow",
+    title: { pt: "Apareça no Google", en: "Show up on Google" },
+    desc: { pt: "Site institucional que carrega em menos de 2 segundos e é encontrado por quem procura o que você vende.", en: "A company site that loads in under 2 seconds and gets found by people searching for what you sell." },
+  },
+  {
+    icon: "LayoutDashboard",
+    title: { pt: "Pare de controlar tudo no caderno", en: "Stop running it all on paper" },
+    desc: { pt: "Painel com produtos, pedidos, estoque e clientes num lugar só, com acesso separado para cada pessoa da equipe.", en: "A dashboard with products, orders, stock and customers in one place, with separate access for each team member." },
+  },
+  {
+    icon: "Zap",
+    title: { pt: "Automatize o atendimento", en: "Automate your customer service" },
+    desc: { pt: "Fluxos que respondem, cobram e organizam sozinhos: WhatsApp, e-mail, integrações e recursos com IA.", en: "Flows that reply, follow up and organise on their own: WhatsApp, email, integrations and AI features." },
+  },
+  {
+    icon: "Boxes",
+    title: { pt: "Tire seu produto do papel", en: "Get your product off the ground" },
+    desc: { pt: "Sistema ou SaaS sob medida quando nada pronto no mercado resolve. Multi-tenant, seguro e pronto para crescer.", en: "A custom system or SaaS when nothing off the shelf solves it. Multi-tenant, secure and ready to grow." },
   },
 ];
 
@@ -1486,10 +1501,23 @@ export const TECH: { group: Localized; items: string[] }[] = [
 ];
 
 /** ESTATÍSTICAS — só números honestos/verificáveis. */
+/**
+ * Números que ajudam quem contrata a decidir, e que eu consigo provar.
+ *
+ * A tentação aqui é contar clientela ("+15 empresas atendidas"). Eu tenho
+ * dois clientes, e inflar isso seria a única mentira do site. O que dá para
+ * afirmar sem medo é o resto: os dois projetos entregues são para a mesma
+ * empresa, que voltou; a nota do Lighthouse é auditoria do próprio Google e
+ * está publicada logo abaixo; e o tempo de casa é real.
+ *
+ * "1 cliente" parece pequeno até vir acompanhado de "2 projetos": aí a
+ * informação deixa de ser volume e vira recompra, que é o que um empresário
+ * de fato quer saber.
+ */
 export const STATS: { value: number; suffix?: string; label: Localized }[] = [
-  { value: 4, suffix: "+", label: { pt: "Produtos em produção", en: "Products in production" } },
-  { value: 100, suffix: "%", label: { pt: "Entregues e no ar", en: "Delivered and live" } },
-  { value: 3, suffix: "+", label: { pt: "Anos construindo", en: "Years building" } },
+  { value: 2, label: { pt: "Projetos entregues para o mesmo cliente", en: "Projects delivered to the same client" } },
+  { value: 100, label: { pt: "Lighthouse do Google, nas 4 notas", en: "Google Lighthouse, all 4 scores" } },
+  { value: 3, suffix: "+", label: { pt: "Anos construindo software", en: "Years building software" } },
 ];
 
 /** FAQ — perguntas reais de cliente freela. */
@@ -1535,7 +1563,18 @@ export const UI = {
     contact: { pt: "Contato", en: "Contact" },
   },
   hero: {
-    eyebrow: { pt: "Dev full-stack · SaaS e sistemas web", en: "Full-stack dev · SaaS & web systems" },
+    /* A primeira linha da página não é lugar de cargo nem de stack. Quem lê é
+       dono de negócio, e "dev full-stack · SaaS e sistemas web" só significa
+       alguma coisa para outro desenvolvedor. */
+    eyebrow: { pt: "Sites e sistemas para pequenas e médias empresas", en: "Websites and systems for small and medium businesses" },
+    /* Os quatro ganhos concretos, logo abaixo do H1. É a resposta rápida para
+       "esse cara faz o quê para a minha empresa?" antes de qualquer projeto. */
+    benefits: [
+      { pt: "Mais contatos no WhatsApp", en: "More WhatsApp enquiries" },
+      { pt: "Mais visibilidade no Google", en: "More visibility on Google" },
+      { pt: "Site abrindo em menos de 2 segundos", en: "Site loading in under 2 seconds" },
+      { pt: "Sistema sob medida para o seu negócio", en: "A system tailored to your business" },
+    ] as Localized[],
     // H1 em três partes: lead + destaque em gradiente + cauda (pode ser vazia).
     titleLead: { pt: "Seu site pode ser o melhor", en: "Your website can be your company's best" },
     titleHighlight: { pt: "vendedor", en: "salesperson" },

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
@@ -84,17 +84,32 @@ export function Hero({ locale }: { locale: Locale }) {
                 ))}
           </h1>
 
-          <p data-hero className="mt-6 max-w-2xl text-lg text-fg-muted xl:text-xl">
+          <p data-hero className="mt-5 max-w-2xl text-lg text-fg-muted xl:text-xl">
             {t(PROFILE.subtitle)}
           </p>
 
-          <div data-hero className="mt-7 flex items-center gap-3">
+          {/* Os quatro ganhos, ainda na primeira dobra. O visitante decide se
+              fica antes de rolar, e até aqui a página só tinha promessa — isto
+              é o que ele leva.
+              Os espaçamentos daqui até os CTAs foram apertados de propósito:
+              a lista custa duas linhas, e num notebook de 768px de altura ela
+              empurrava o botão do WhatsApp para fora da tela. */}
+          <ul data-hero className="mt-5 grid max-w-2xl gap-x-8 gap-y-2 sm:grid-cols-2">
+            {UI.hero.benefits.map((b) => (
+              <li key={b.pt} className="flex items-start gap-2.5 text-sm text-fg-muted sm:text-base">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
+                {t(b)}
+              </li>
+            ))}
+          </ul>
+
+          <div data-hero className="mt-5 flex items-center gap-3">
             <Image
               src="/avatar.png"
               alt="Rick, fundador da MilWeb"
-              width={46}
-              height={46}
-              className="h-[46px] w-[46px] rounded-full object-cover ring-1 ring-inset ring-accent/40"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover ring-1 ring-inset ring-accent/40"
             />
             <div className="leading-tight">
               <p className="text-sm font-semibold text-fg">Rick</p>
@@ -106,7 +121,7 @@ export function Hero({ locale }: { locale: Locale }) {
               desktop o protagonista anda pela página; no mobile o FAB é o
               Milo — o hero não adiciona outro. CTAs premium: shine varrendo
               o principal, borda cônica viva no secundário. */}
-          <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div data-hero className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
                 href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
