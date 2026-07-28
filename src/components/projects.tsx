@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical, BadgeCheck } from "lucide-react";
 import { PROJECTS, UI, type Project, type Localized, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
@@ -153,10 +153,46 @@ function Details({ p, locale }: { p: Project; locale: Locale }) {
   );
 }
 
+/**
+ * Card grande de entrega para cliente.
+ *
+ * Tratamento próprio, separado da esteira: são poucos e é o que o visitante
+ * precisa ver primeiro. O selo traz o nome do cliente, porque "cliente real"
+ * genérico não prova nada — o nome, sim.
+ */
+function ClientCard({ p, locale }: { p: Project; locale: Locale }) {
+  const t = makeT(locale);
+  return (
+    <TiltCard strength={2} className="h-full rounded-3xl">
+      <div className="relative flex h-full flex-col rounded-3xl border border-accent/30 glass p-6 sm:p-8">
+        <div style={{ viewTransitionName: `case-${p.slug}` }}>
+          <Preview p={p} locale={locale} tall />
+        </div>
+        <div className="mt-6 flex flex-1 flex-col">
+          {p.clientName && (
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+              <BadgeCheck className="h-3.5 w-3.5" /> {p.clientName}
+            </span>
+          )}
+          <h3 className="mt-3 font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl">
+            {p.title}
+          </h3>
+          <div className="mt-4 flex-1">
+            <Details p={p} locale={locale} />
+          </div>
+        </div>
+      </div>
+    </TiltCard>
+  );
+}
+
 export function Projects({ locale }: { locale: Locale }) {
   const t = makeT(locale);
-  const flagship = PROJECTS.find((p) => p.flagship);
-  const rest = PROJECTS.filter((p) => !p.flagship);
+  // A divisão principal é cliente real x autoral, não categoria técnica.
+  const clientWork = PROJECTS.filter((p) => p.clientWork);
+  const own = PROJECTS.filter((p) => !p.clientWork);
+  const flagship = own.find((p) => p.flagship);
+  const rest = own.filter((p) => !p.flagship);
 
   return (
     <section id="projects" className="container-page scroll-mt-20 py-20 sm:py-32">
@@ -185,6 +221,49 @@ export function Projects({ locale }: { locale: Locale }) {
             {t(UI.sections.projectsLegendDemo)}
           </li>
         </ul>
+      </Reveal>
+
+      {/* BLOCO 1 — entregas para cliente. Vem primeiro e sem filtro: é a
+          resposta para "esse cara trabalha para empresas ou faz projeto
+          pessoal?", e enterrá-la no meio de dezessete projetos autorais era
+          exatamente o que fazia a pergunta sobrar. */}
+      {clientWork.length > 0 && (
+        <div className="mt-16">
+          <Reveal>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <h3 className="font-display text-2xl font-bold tracking-tight text-fg sm:text-3xl">
+                {t(UI.sections.projectsClientTitle)}
+              </h3>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                <BadgeCheck className="h-3.5 w-3.5" />
+                {clientWork.length} {t(UI.sections.projectsClientCount)}
+              </span>
+            </div>
+            <p className="mt-3 max-w-2xl text-fg-subtle">
+              {t(UI.sections.projectsClientSub)}
+            </p>
+          </Reveal>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            {clientWork.map((p, i) => (
+              <Reveal key={p.slug} delay={i * 100} className="h-full">
+                <ClientCard p={p} locale={locale} />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* BLOCO 2 — projetos autorais. */}
+      <Reveal>
+        <div className="mt-24 border-t border-line/10 pt-14">
+          <h3 className="font-display text-2xl font-bold tracking-tight text-fg sm:text-3xl">
+            {t(UI.sections.projectsOwnTitle)}
+          </h3>
+          <p className="mt-3 max-w-2xl text-fg-subtle">
+            {t(UI.sections.projectsOwnSub)}
+          </p>
+        </div>
       </Reveal>
 
       {/* Carro-chefe — card grande, primeiro (tilt bem sutil: card grande

@@ -104,6 +104,20 @@ export type Project = {
   featured?: boolean;
   /** Card em destaque (carro-chefe) — renderizado grande e primeiro. */
   flagship?: boolean;
+  /**
+   * true = trabalho contratado e entregue para um cliente real.
+   *
+   * É o que separa a seção em dois blocos: entregas primeiro, projetos
+   * autorais depois. Antes tudo dividia por categoria técnica (saas,
+   * ecommerce...), o que não responde a única pergunta que um empresário faz
+   * olhando o portfólio: "quanto disso é cliente de verdade?".
+   *
+   * Só marque quem pagou pelo trabalho. Produto próprio, base white-label,
+   * ferramenta interna e estudo NÃO entram aqui, mesmo estando no ar.
+   */
+  clientWork?: boolean;
+  /** Nome do cliente, exibido no selo do card de entrega. */
+  clientName?: string;
   /** Métrica/fato de destaque do projeto (badge no card). Só fatos verdadeiros. */
   metric?: Localized;
   /**
@@ -768,6 +782,8 @@ export const PROJECTS: Project[] = [
     stack: ["HTML", "CSS", "JavaScript", "Vercel"],
     metric: { pt: "Cliente real · em produção", en: "Real client · in production" },
     metricProof: true,
+    clientWork: true,
+    clientName: "Kavita Agro",
     live: "https://kavita.com.br",
     repos: [{ label: "Código", url: `${GH}/kavita-drones-landing` }],
     featured: true,
@@ -816,6 +832,61 @@ export const PROJECTS: Project[] = [
         { src: "/shots/kavita-drones/hero.webp", alt: { pt: "Hero da Kavita Drones com CTA de orçamento pelo WhatsApp", en: "Kavita Drones hero with WhatsApp quote CTA" } },
         { src: "/shots/kavita-drones/drones.webp", alt: { pt: "Comparativo dos 3 modelos DJI Agras (T25P, T70P, T100)", en: "Comparison of the 3 DJI Agras models (T25P, T70P, T100)" } },
         { src: "/shots/kavita-drones/equipamentos.webp", alt: { pt: "Catálogo de equipamentos com filtros por categoria e compatibilidade", en: "Equipment catalog with category and compatibility filters" } },
+      ],
+    },
+  },
+  {
+    slug: "kavita-institucional",
+    category: "site",
+    title: "Kavita Institucional",
+    tagline: { pt: "Site institucional cinematográfico · cliente real, no ar", en: "Cinematic company site · real client, live" },
+    problem: { pt: "A Kavita Agro já tinha a landing de drones, mas a empresa é muito maior que isso: loja de insumos, sementes, peças, assistência técnica e uma fábrica de ração própria. Não existia nada que contasse quem a empresa é para quem chega pela primeira vez.", en: "Kavita Agro already had the drone landing page, but the company is much bigger than that: farm supplies, seeds, parts, technical assistance and its own feed factory. Nothing existed to tell a first-time visitor who the company actually is." },
+    result: { pt: "Site institucional inteiro construído em volta de uma jornada em vídeo que o visitante conduz com o scroll, saindo do café e do gado até o centro tecnológico. Segundo projeto para o mesmo cliente, entregue e aprovado.", en: "A full company site built around a video journey the visitor drives with the scroll, going from coffee and cattle all the way to the tech hub. Second project for the same client, delivered and approved." },
+    stack: ["Next.js 16", "React 19", "GSAP", "Lenis", "Framer Motion", "Tailwind"],
+    metric: { pt: "Cliente real · segundo projeto", en: "Real client · second project" },
+    metricProof: true,
+    clientWork: true,
+    clientName: "Kavita Agro",
+    live: "https://kavita-institucional.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/kavita-institucional` }],
+    featured: true,
+    // Print do site no ar. Sem `imageStatic`: aquele modo é para print de
+    // celular (retrato) e deixa um vazio embaixo com uma captura larga. O modo
+    // padrão preenche a moldura com a mesma imagem borrada e, como o print não
+    // é mais alto que a janela, ele simplesmente não rola.
+    image: "/shots/kavita-institucional.webp",
+    caseStudy: {
+      narrative: [
+        {
+          pt: "A peça central do site é uma jornada onde o scroll não rola a página, ele move o tempo de um vídeo. São 850vh de altura de rolagem mapeados sobre uma única cena contínua, sem cortes, que atravessa café, gado, milho, drone em operação, o amanhecer e o centro tecnológico. O progresso de 0 a 1 vira o currentTime do vídeo, e as legendas de cada trecho entram e saem em cima dele conforme o instante. O efeito é o visitante conduzir o filme no próprio ritmo, em vez de assistir a um player.",
+          en: "The centerpiece is a journey where scrolling doesn't move the page, it moves a video's time. 850vh of scroll height is mapped onto a single continuous shot, no cuts, going through coffee, cattle, corn, a drone at work, sunrise and the tech hub. Progress from 0 to 1 becomes the video's currentTime, and each segment's captions fade in and out on top of it according to the moment. The visitor drives the film at their own pace instead of watching a player.",
+        },
+        {
+          pt: "Todo o texto do site vive num arquivo único, e nada nele foi escrito por suposição. O cabeçalho do content.ts registra que telefone, WhatsApp, endereço, e-mail e Instagram vieram de um briefing preenchido pela própria Kavita, e os dados cadastrais estão lá com CNPJ e data de abertura. A filial Kavita Rações aparece separada, com o CNPJ dela, o ano em que abriu e o endereço próprio na rodovia, porque é uma unidade distinta da loja matriz e tratar as duas como a mesma coisa seria informação errada no site de um cliente.",
+          en: "All the site's copy lives in a single file, and none of it was written by assumption. The header of content.ts records that phone, WhatsApp, address, email and Instagram came from a briefing filled in by Kavita themselves, and the registration data is there with the company number and founding date. The Kavita Rações branch appears separately, with its own company number, opening year and its own highway address, because it's a distinct unit from the main store and treating them as one thing would put wrong information on a client's site.",
+        },
+        {
+          pt: "Em volta da jornada o site é organizado em cinco paradas: Quem Somos, Ecossistema, Estrutura, Diferenciais e Onde Estamos. A estrutura da loja é mostrada com fotos reais em parallax (fachada, loja, estoque, assistência, equipe) em vez de banco de imagens, e o ecossistema separa as seis frentes da empresa em cartões próprios. A base recebeu uma auditoria em cinco fases, com passagens dedicadas a acessibilidade, performance, menu mobile e extração de componentes repetidos.",
+          en: "Around the journey the site is organised into five stops: Who We Are, Ecosystem, Structure, Differentials and Where We Are. The store's structure is shown with real parallax photos (storefront, shop floor, stockroom, service desk, team) instead of stock imagery, and the ecosystem splits the company's six fronts into their own cards. The codebase went through a five-phase audit, with dedicated passes for accessibility, performance, the mobile menu and extracting repeated components.",
+        },
+      ],
+      highlights: [
+        {
+          label: { pt: "Scroll controla o vídeo", en: "Scroll drives the video" },
+          detail: { pt: "850vh de rolagem mapeados sobre uma cena contínua sem cortes. O visitante conduz o filme no próprio ritmo.", en: "850vh of scroll mapped onto one continuous uncut shot. The visitor drives the film at their own pace." },
+        },
+        {
+          label: { pt: "Conteúdo vindo de briefing", en: "Copy sourced from a briefing" },
+          detail: { pt: "Contato, endereço e dados cadastrais confirmados pelo cliente e registrados na fonte. Nada preenchido por suposição.", en: "Contact, address and registration data confirmed by the client and recorded at the source. Nothing filled in by assumption." },
+        },
+        {
+          label: { pt: "Duas empresas, dois cadastros", en: "Two companies, two records" },
+          detail: { pt: "A fábrica de ração é filial com CNPJ e endereço próprios, tratada como unidade separada da loja matriz.", en: "The feed factory is a branch with its own company number and address, treated as a unit separate from the main store." },
+        },
+        {
+          label: { pt: "Fotos reais, não banco de imagens", en: "Real photos, not stock" },
+          detail: { pt: "Fachada, loja, estoque, assistência e equipe fotografados no local, exibidos em parallax.", en: "Storefront, shop floor, stockroom, service desk and team shot on location, shown in parallax." },
+        },
       ],
     },
   },
@@ -1495,9 +1566,17 @@ export const UI = {
     whySub: { pt: "Não basta funcionar. Entrego um produto rápido, bonito e que dá resultado de verdade.", en: "Working isn't enough. I ship a product that's fast, polished and that actually delivers." },
     projectsEyebrow: { pt: "Trabalhos", en: "Work" },
     projectsTitle: { pt: "Projetos & produtos", en: "Projects & products" },
-    projectsSub: { pt: "Sistemas, lojas, landing pages e SaaS. Uma amostra do que eu consigo construir.", en: "Systems, stores, landing pages and SaaS. A sample of what I can build." },
+    projectsSub: { pt: "Primeiro o que já está rodando para cliente pagante. Depois os projetos autorais, que é onde eu testo o que ainda não vendi.", en: "First what's already running for a paying client. Then the personal projects, where I test what I haven't sold yet." },
     projectsLegendProof: { pt: "Cliente real · em produção", en: "Real client · in production" },
     projectsLegendDemo: { pt: "Projeto autoral · demo/protótipo", en: "Personal project · demo/prototype" },
+    /* Cabeçalhos dos dois blocos. A divisão por cliente real x autoral responde
+       a pergunta que o filtro por categoria técnica nunca respondeu: quanto
+       disso aqui é trabalho contratado de verdade. */
+    projectsClientTitle: { pt: "Entregue para cliente", en: "Delivered to a client" },
+    projectsClientSub: { pt: "Trabalho contratado, pago e no ar. Os dois são para a mesma empresa: ela voltou para o segundo projeto.", en: "Contracted, paid and live. Both are for the same company: they came back for a second project." },
+    projectsOwnTitle: { pt: "Projetos autorais", en: "Personal projects" },
+    projectsOwnSub: { pt: "Produtos meus, bases white-label e estudos. Nenhum é cliente pagante, e estão aqui para mostrar alcance técnico, não volume de clientela.", en: "My own products, white-label bases and studies. None is a paying client; they're here to show technical range, not client volume." },
+    projectsClientCount: { pt: "entregas", en: "deliveries" },
     projectsFilterAll: { pt: "Todos", en: "All" },
     projectsFilterSaas: { pt: "SaaS & Sistemas", en: "SaaS & Systems" },
     projectsFilterEcommerce: { pt: "Lojas & E-commerce", en: "Stores & E-commerce" },
