@@ -24,16 +24,23 @@ const display = Bricolage_Grotesque({
   weight: ["600", "700", "800"],
 });
 
+/**
+ * A description precisa caber em 160 caracteres: acima disso o Google corta a
+ * frase no meio do resultado de busca. A versão anterior tinha 195 e gastava
+ * os primeiros 80 listando stack (Next.js, React, TypeScript, Node.js,
+ * Supabase) — a mesma linguagem que saiu do hero, e que não diz nada para o
+ * dono de negócio que está lendo o resultado da busca.
+ */
 const COPY = {
   pt: {
     title: "MilWeb | Sites e sistemas que dão resultado",
     description:
-      "Desenvolvedor Full Stack freelancer (Next.js, React, TypeScript, Node.js, Supabase). Crio sites, landing pages, sistemas web, catálogos para WhatsApp, dashboards e automações. Orçamento gratuito.",
+      "Sites e sistemas que fazem seu negócio vender: mais orçamentos no WhatsApp, mais visibilidade no Google e páginas que abrem em menos de 2 segundos.",
   },
   en: {
     title: "MilWeb | Websites and systems that deliver results",
     description:
-      "Freelance Full Stack developer (Next.js, React, TypeScript, Node.js, Supabase). I build websites, landing pages, web systems, WhatsApp catalogs, dashboards and automations. Free quote.",
+      "Websites and systems that make your business sell: more WhatsApp enquiries, more visibility on Google and pages that load in under 2 seconds.",
   },
 } as const;
 
