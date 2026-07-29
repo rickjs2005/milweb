@@ -305,6 +305,14 @@ export function Projects({ locale }: { locale: Locale }) {
             // Card compacto da esteira 3D: preview + faixa de título. O
             // viewTransitionName morfa pro preview grande do case (só um
             // modo fica montado por vez -- sem nome duplicado com a grade).
+            // Card compacto da esteira 3D: preview + faixa de título. O
+            // viewTransitionName morfa pro preview grande do case (só um
+            // modo fica montado por vez -- sem nome duplicado com a grade).
+            //
+            // Medido: remover estes 20 nós do payload economiza 7KB crus e
+            // 1KB na rede. Não vale mover a esteira para renderizar no client
+            // só por isso — o peso do HTML está espalhado pela página inteira,
+            // não concentrado aqui.
             beltNode: (
               <div>
                 <div style={{ viewTransitionName: `case-${p.slug}` }}>

@@ -101,12 +101,21 @@ export function WebsitePreview({
           // uma faixa vazia embaixo — branca no tema claro. O blur preenche
           // qualquer proporção sem cortar a imagem principal nem quebrar a
           // rolagem dos screenshots altos.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          //
+          // É uma `div` com background, não uma `<img>`: sendo puramente
+          // decorativa ela nunca deveria ter entrado na contagem de imagens da
+          // página. Como <img aria-hidden alt=""> ela era marcação correta,
+          // mas auditorias automáticas contavam o alternativo vazio como falha
+          // e o número de imagens dobrava sem necessidade. Em background o
+          // navegador reaproveita o mesmo arquivo já baixado.
+          <div
             aria-hidden
-            src={src}
-            alt=""
-            className="absolute inset-0 h-full w-full scale-125 object-cover opacity-90 blur-xl"
+            className="absolute inset-0 scale-125 opacity-90 blur-xl"
+            style={{
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
           />
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
