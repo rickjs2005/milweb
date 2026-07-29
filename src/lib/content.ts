@@ -802,10 +802,11 @@ export const PROJECTS: Project[] = [
     live: "https://kavita.com.br",
     repos: [{ label: "Código", url: `${GH}/kavita-drones-landing` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/drones-desktop.mp4", poster: "/shots/drones-desktop.jpg", kind: "desktop" },
-      { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/drones-mobile.mp4", poster: "/shots/drones-mobile.jpg", kind: "mobile" },
-    ],
+    // Print do site no ar, no mesmo enquadramento do Kavita Institucional: os
+    // dois cards do bloco de entregas ficam lado a lado e precisam ter a mesma
+    // linguagem. Antes este aqui tinha vídeo do app em uso e o outro um print,
+    // o que fazia os dois parecerem coisas de naturezas diferentes.
+    image: "/shots/kavita-drones.webp",
     caseStudy: {
       narrative: [
         {
