@@ -191,8 +191,13 @@ export function Projects({ locale }: { locale: Locale }) {
   // A divisão principal é cliente real x autoral, não categoria técnica.
   const clientWork = PROJECTS.filter((p) => p.clientWork);
   const own = PROJECTS.filter((p) => !p.clientWork);
-  const flagship = own.find((p) => p.flagship);
-  const rest = own.filter((p) => !p.flagship);
+  // Na home entram só os autorais marcados. Os demais vivem em /projetos —
+  // ver a nota em `homeFeatured` (content.ts) para os números que motivaram
+  // o corte.
+  const ownOnHome = own.filter((p) => p.homeFeatured);
+  const flagship = ownOnHome.find((p) => p.flagship);
+  const rest = ownOnHome.filter((p) => !p.flagship);
+  const hiddenCount = own.length - ownOnHome.length;
 
   return (
     <section id="projects" className="container-page scroll-mt-20 py-20 sm:py-32">
@@ -263,6 +268,21 @@ export function Projects({ locale }: { locale: Locale }) {
           <p className="mt-3 max-w-2xl text-fg-subtle">
             {t(UI.sections.projectsOwnSub)}
           </p>
+          {/* O acervo inteiro continua a um clique — e continua no sitemap.
+              Nenhum projeto foi escondido, só tirado do caminho de quem está
+              decidindo se contrata. */}
+          {hiddenCount > 0 && (
+            <Link
+              href={withLocale(locale, "/projetos")}
+              className="mt-5 inline-flex items-center gap-1.5 rounded-lg border border-line/20 px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:border-accent/50 hover:text-fg"
+            >
+              {t(UI.sections.projectsSeeAll)}
+              <span className="font-mono text-[11px] opacity-60">
+                +{hiddenCount}
+              </span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
       </Reveal>
 

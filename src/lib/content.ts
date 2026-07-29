@@ -133,6 +133,19 @@ export type Project = {
   clientWork?: boolean;
   /** Nome do cliente, exibido no selo do card de entrega. */
   clientName?: string;
+  /**
+   * true = este projeto autoral aparece na home. Os demais vivem só em
+   * /projetos e nas próprias páginas de case.
+   *
+   * A home renderizava os 20 autorais no servidor. Medido, o corte para 7
+   * derruba o render de 878ms para 545ms e o HTML de 536KB para 348KB — é a
+   * maior alavanca de performance do site, e de quebra resolve a diluição:
+   * vinte demos ao lado de dois clientes reais faziam o visitante perguntar
+   * se aqui se atende empresa ou se fazem experimentos.
+   *
+   * Nenhum projeto some: /projetos lista todos e continua no sitemap.
+   */
+  homeFeatured?: boolean;
   /** Métrica/fato de destaque do projeto (badge no card). Só fatos verdadeiros. */
   metric?: Localized;
   /**
@@ -168,6 +181,7 @@ const GH = "https://github.com/rickjs2005";
 export const PROJECTS: Project[] = [
   {
     slug: "milsaca",
+    homeFeatured: true,
     category: "saas",
     title: "Milsaca",
     tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
@@ -228,6 +242,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "millead",
+    homeFeatured: true,
     category: "saas",
     title: "MilLead",
     tagline: { pt: "CRM com IA · prospecção de clientes", en: "AI-powered CRM · client prospecting" },
@@ -296,6 +311,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "inkvision",
+    homeFeatured: true,
     category: "saas",
     title: "InkVision",
     tagline: { pt: "SaaS de tatuagem · simulação de tattoo com IA", en: "Tattoo SaaS · AI tattoo simulation" },
@@ -669,6 +685,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecoa",
+    homeFeatured: true,
     category: "saas",
     title: "ECOA",
     tagline: { pt: "Rede social anônima · produto completo com IA", en: "Anonymous social network · full product with AI" },
@@ -908,6 +925,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecommerce-do-agro",
+    homeFeatured: true,
     category: "ecommerce",
     title: "E-commerce do Agro",
     tagline: { pt: "Sistema web completo · e-commerce + painéis", en: "Full web system · e-commerce + dashboards" },
@@ -1147,6 +1165,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "lumen-architecture",
+    homeFeatured: true,
     category: "site",
     title: "Lumen",
     tagline: { pt: "Site cinematográfico 3D para arquitetura · React Three Fiber", en: "Cinematic 3D site for architecture · React Three Fiber" },
@@ -1207,6 +1226,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjjstore",
+    homeFeatured: true,
     category: "ecommerce",
     title: "RJjstore",
     tagline: { pt: "Moda premium editorial · checkout no WhatsApp", en: "Editorial premium fashion · WhatsApp checkout" },
@@ -1617,6 +1637,11 @@ export const UI = {
     projectsOwnTitle: { pt: "Projetos autorais", en: "Personal projects" },
     projectsOwnSub: { pt: "Produtos meus, bases white-label e estudos. Nenhum é cliente pagante, e estão aqui para mostrar alcance técnico, não volume de clientela.", en: "My own products, white-label bases and studies. None is a paying client; they're here to show technical range, not client volume." },
     projectsClientCount: { pt: "entregas", en: "deliveries" },
+    projectsSeeAll: { pt: "Ver todos os projetos", en: "See all projects" },
+    /* Página /projetos — o acervo completo, fora da home. */
+    projectsAllTitle: { pt: "Todos os projetos", en: "All projects" },
+    projectsAllSub: { pt: "O acervo completo: as entregas para cliente e todos os projetos autorais, dos produtos às experiências em 3D.", en: "The full archive: client deliveries and every personal project, from products to 3D experiences." },
+    projectsBackHome: { pt: "Voltar para a home", en: "Back to home" },
     projectsFilterAll: { pt: "Todos", en: "All" },
     projectsFilterSaas: { pt: "SaaS & Sistemas", en: "SaaS & Systems" },
     projectsFilterEcommerce: { pt: "Lojas & E-commerce", en: "Stores & E-commerce" },

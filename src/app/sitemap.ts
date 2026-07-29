@@ -40,6 +40,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...entry("/", 1),
     ...SERVICES.flatMap((s) => entry(`/${s.slug}`, 0.9)),
     ...entry("/lab", 0.8),
+    // O índice de projetos existe desde que a home passou a mostrar só uma
+    // seleção: é por ele que o acervo completo continua alcançável.
+    ...entry("/projetos", 0.8),
     ...PROJECTS.flatMap((p) => entry(`/projetos/${p.slug}`, 0.8)),
   ];
 }
