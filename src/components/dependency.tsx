@@ -70,7 +70,7 @@ export function Dependency({ locale }: { locale: Locale }) {
   const wa = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(t(DEPENDENCY.ctaWhats))}`;
 
   return (
-    <section id="raio-x" className="container-page scroll-mt-20 py-20 sm:py-32">
+    <section id="dependencia" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
           <span className="text-warm/50">01 / </span>

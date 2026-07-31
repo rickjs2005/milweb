@@ -22,7 +22,7 @@ export function FairPrice({ locale }: { locale: Locale }) {
   const t = makeT(locale);
 
   return (
-    <section id="preco-justo" className="container-page scroll-mt-20 py-20 sm:py-32">
+    <section id="preco" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
           <span className="text-warm/50">03 / </span>

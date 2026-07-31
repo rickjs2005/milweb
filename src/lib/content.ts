@@ -1609,11 +1609,11 @@ export const FAQ: { q: Localized; a: Localized }[] = [
  * com o argumento leve (transparência de preço) e o argumento denso
  * (dependência de redes) foi pra página dedicada. */
 export const FAIR_PRICE = {
-  eyebrow: { pt: "Preço justo", en: "Fair pricing" },
-  title: { pt: "Você vê de onde vem o preço", en: "You see where the price comes from" },
+  eyebrow: { pt: "Como calculo seu orçamento", en: "How I price your project" },
+  title: { pt: "Como o valor do projeto é calculado", en: "How the project price is calculated" },
   sub: {
-    pt: "Antes de te passar um valor, eu calculo o projeto por dentro: as horas de cada etapa, a hospedagem que o site vai usar, o domínio pelo tempo que você escolher. O número que chega até você tem conta por trás.",
-    en: "Before I quote you, I price the project from the inside: the hours of each stage, the hosting the site will need, the domain for however long you choose. The number that reaches you has real math behind it.",
+    pt: "Antes de enviar qualquer proposta, eu calculo horas, infraestrutura e escopo. Você sabe exatamente pra onde vai cada real.",
+    en: "Before any proposal goes out, I price hours, infrastructure and scope. You know exactly where every dollar goes.",
   },
   bullets: [
     {
@@ -1639,11 +1639,43 @@ export const FAIR_PRICE = {
     en: "Hi Rick! I want a properly calculated quote for my project.",
   },
   caseLink: { pt: "Conhecer o MilLead por dentro", en: "See MilLead from the inside" },
-  teaser: {
-    pt: "Seu negócio vende só pelo Instagram? Fiz uma calculadora que mostra quanto um apagão das redes custaria pra você.",
-    en: "Does your business sell only on Instagram? I built a calculator that shows what a social media blackout would cost you.",
+} as const;
+
+/** DIAGNÓSTICO — conteúdo das seções 04 (o que está incluso) e 05 (CTA) da
+ * página /diagnostico. As seções 01-03 reusam Dependency, Google e
+ * FairPrice. */
+export const DIAGNOSTICO = {
+  included: {
+    eyebrow: { pt: "O que está incluso", en: "What's included" },
+    title: { pt: "Tudo isso faz parte do projeto", en: "All of this comes with the project" },
+    sub: {
+      pt: "Nada de item surpresa depois do contrato. O que segura um site de pé já entra no pacote.",
+      en: "No surprise line items after the contract. Everything a site needs to stand is in the package.",
+    },
+    items: [
+      { icon: "Palette", title: { pt: "Design", en: "Design" }, desc: { pt: "Visual próprio, pensado pro seu público. Nada de template genérico.", en: "A look of your own, made for your audience. No generic template." } },
+      { icon: "Code2", title: { pt: "Desenvolvimento", en: "Development" }, desc: { pt: "Código feito à mão, rápido e fácil de evoluir depois.", en: "Hand-written code, fast and easy to grow later." } },
+      { icon: "Search", title: { pt: "SEO", en: "SEO" }, desc: { pt: "Estrutura pronta pra ser encontrada no Google.", en: "Structure built to be found on Google." } },
+      { icon: "Gauge", title: { pt: "Performance", en: "Performance" }, desc: { pt: "Site abrindo em menos de 2 segundos, até no celular.", en: "Site loading in under 2 seconds, even on a phone." } },
+      { icon: "Server", title: { pt: "Hospedagem", en: "Hosting" }, desc: { pt: "Configurada e no ar, sem você precisar entender de servidor.", en: "Set up and live, no server knowledge needed on your side." } },
+      { icon: "Globe", title: { pt: "Domínio", en: "Domain" }, desc: { pt: "Registro e configuração do seu endereço na internet.", en: "Registration and setup of your own web address." } },
+      { icon: "CheckCircle2", title: { pt: "Testes", en: "Testing" }, desc: { pt: "Tudo conferido em celular, tablet e computador antes de entregar.", en: "Everything checked on phone, tablet and desktop before delivery." } },
+      { icon: "BarChart3", title: { pt: "Analytics", en: "Analytics" }, desc: { pt: "Você enxerga quantas pessoas visitam e de onde elas vêm.", en: "You see how many people visit and where they come from." } },
+    ],
   },
-  teaserCta: { pt: "Fazer o raio-X gratuito", en: "Run the free X-ray" },
+  cta: {
+    eyebrow: { pt: "Próximo passo", en: "Next step" },
+    title: { pt: "Vamos analisar seu negócio?", en: "Shall we analyze your business?" },
+    sub: {
+      pt: "Me chama no WhatsApp e receba um diagnóstico gratuito, sem compromisso. Você sai da conversa sabendo o que precisa, quanto custa e por quê.",
+      en: "Message me on WhatsApp for a free audit, no strings attached. You leave the conversation knowing what you need, what it costs and why.",
+    },
+    button: { pt: "Receber diagnóstico gratuito", en: "Get my free audit" },
+    whats: {
+      pt: "Olá Rick! Quero um diagnóstico gratuito do meu negócio.",
+      en: "Hi Rick! I'd like a free audit of my business.",
+    },
+  },
 } as const;
 
 /** Depoimentos — VAZIO de propósito. Só conteúdo real (a seção some sem itens). */
@@ -1654,8 +1686,7 @@ export const TESTIMONIALS: Testimonial[] = [];
 export const UI = {
   nav: {
     deliverables: { pt: "Serviços", en: "Services" },
-    pricing: { pt: "Orçamento", en: "Pricing" },
-    risk: { pt: "Raio-X", en: "X-Ray" },
+    diagnosis: { pt: "Diagnóstico", en: "Audit" },
     projects: { pt: "Projetos", en: "Projects" },
     process: { pt: "Processo", en: "Process" },
     faq: { pt: "FAQ", en: "FAQ" },

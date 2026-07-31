@@ -8,6 +8,16 @@ const nextConfig = {
   // start) monta uma vez só, então isto não muda o comportamento publicado.
   reactStrictMode: false,
 
+  // /raio-x foi a primeira casa do funil de diagnóstico (viveu algumas horas
+  // no ar em 31/07/2026) antes de virar /diagnostico com o funil completo.
+  // Redirect permanente preserva qualquer link já compartilhado.
+  async redirects() {
+    return [
+      { source: "/raio-x", destination: "/diagnostico", permanent: true },
+      { source: "/en/raio-x", destination: "/en/diagnostico", permanent: true },
+    ];
+  },
+
   // Content-Security-Policy é dinâmico (nonce por request) — fica no
   // middleware. Estes aqui são estáticos e cobrem o resto do checklist de
   // segurança do relatório de auditoria.

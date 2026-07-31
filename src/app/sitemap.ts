@@ -39,9 +39,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...entry("/", 1),
     ...SERVICES.flatMap((s) => entry(`/${s.slug}`, 0.9)),
-    // Raio-X saiu da home (feedback de designer: informação demais) e virou
-    // página própria com a calculadora de dependência + teste do Google.
-    ...entry("/raio-x", 0.9),
+    // O funil inteiro fora da home: Raio-X + Google + cálculo do orçamento
+    // + o que está incluso + CTA, numa página só (/raio-x redireciona).
+    ...entry("/diagnostico", 0.9),
     ...entry("/lab", 0.8),
     // O índice de projetos existe desde que a home passou a mostrar só uma
     // seleção: é por ele que o acervo completo continua alcançável.

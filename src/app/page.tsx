@@ -19,12 +19,11 @@ export default async function Home() {
 
   const navLinks = [
     { href: "#deliverables", label: t(UI.nav.deliverables) },
-    // Pedido do Rick: Orçamento e Raio-X moram JUNTOS na página /raio-x,
-    // fora da home (feedback de designer: home com informação demais).
-    // Href de rota funciona no Nav: o scroll-spy filtra ids inexistentes
-    // e o <a> navega normalmente.
-    { href: "/raio-x#preco-justo", label: t(UI.nav.pricing) },
-    { href: "/raio-x", label: t(UI.nav.risk) },
+    // Um item só pro funil: /diagnostico reúne Raio-X, Google, cálculo do
+    // orçamento, o que está incluso e CTA (raciocínio do designer: dois
+    // caminhos no menu eram o mesmo funil partido em dois). Href de rota
+    // funciona no Nav: o scroll-spy filtra ids inexistentes.
+    { href: "/diagnostico", label: t(UI.nav.diagnosis) },
     { href: "#projects", label: t(UI.nav.projects) },
     { href: "#process", label: t(UI.nav.process) },
     { href: "#faq", label: t(UI.nav.faq) },

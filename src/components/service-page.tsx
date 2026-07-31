@@ -245,7 +245,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
                 })}
               </p>
               <Link
-                href={withLocale(locale, "/raio-x")}
+                href={withLocale(locale, "/diagnostico")}
                 className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-accent/40 px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
               >
                 {t({ pt: "Fazer o raio-X gratuito", en: "Run the free X-ray" })}
