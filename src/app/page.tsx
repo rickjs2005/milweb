@@ -20,9 +20,11 @@ export default async function Home() {
 
   const navLinks = [
     { href: "#deliverables", label: t(UI.nav.deliverables) },
-    // Página própria (feedback de designer: a home carregava informação
-    // demais). Href de rota funciona no Nav: o scroll-spy filtra ids
-    // inexistentes e o <a> navega normalmente.
+    // Pedido do Rick: a seção Preço Justo tem item próprio no menu
+    // ("Orçamento"), lado a lado com o Raio-X, que virou página própria.
+    // Href de rota funciona no Nav: o scroll-spy filtra ids inexistentes
+    // e o <a> navega normalmente.
+    { href: "#preco-justo", label: t(UI.nav.pricing) },
     { href: "/raio-x", label: t(UI.nav.risk) },
     { href: "#projects", label: t(UI.nav.projects) },
     { href: "#process", label: t(UI.nav.process) },

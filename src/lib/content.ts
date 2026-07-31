@@ -1654,6 +1654,7 @@ export const TESTIMONIALS: Testimonial[] = [];
 export const UI = {
   nav: {
     deliverables: { pt: "Serviços", en: "Services" },
+    pricing: { pt: "Orçamento", en: "Pricing" },
     risk: { pt: "Raio-X", en: "X-Ray" },
     projects: { pt: "Projetos", en: "Projects" },
     process: { pt: "Processo", en: "Process" },
