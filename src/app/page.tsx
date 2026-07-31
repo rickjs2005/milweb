@@ -1,7 +1,6 @@
 import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
 import { Deliverables } from "@/components/deliverables";
-import { FairPrice } from "@/components/fair-price";
 import { Why } from "@/components/why";
 import { Stats } from "@/components/stats";
 import { Projects } from "@/components/projects";
@@ -20,11 +19,11 @@ export default async function Home() {
 
   const navLinks = [
     { href: "#deliverables", label: t(UI.nav.deliverables) },
-    // Pedido do Rick: a seção Preço Justo tem item próprio no menu
-    // ("Orçamento"), lado a lado com o Raio-X, que virou página própria.
+    // Pedido do Rick: Orçamento e Raio-X moram JUNTOS na página /raio-x,
+    // fora da home (feedback de designer: home com informação demais).
     // Href de rota funciona no Nav: o scroll-spy filtra ids inexistentes
     // e o <a> navega normalmente.
-    { href: "#preco-justo", label: t(UI.nav.pricing) },
+    { href: "/raio-x#preco-justo", label: t(UI.nav.pricing) },
     { href: "/raio-x", label: t(UI.nav.risk) },
     { href: "#projects", label: t(UI.nav.projects) },
     { href: "#process", label: t(UI.nav.process) },
@@ -45,7 +44,6 @@ export default async function Home() {
         <Deliverables locale={locale} />
         <Why locale={locale} />
         <Stats locale={locale} />
-        <FairPrice locale={locale} />
         <Projects locale={locale} />
         <Lab locale={locale} />
         <Process locale={locale} />

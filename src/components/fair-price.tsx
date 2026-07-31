@@ -14,9 +14,9 @@ const BULLET_ICONS: LucideIcon[] = [Clock3, Layers, SlidersHorizontal];
 /**
  * 03 / PREÇO JUSTO — a prova de transparência comercial: dois prints reais da
  * calculadora de orçamento do MilLead (dados de demonstração) ao lado do
- * argumento. Entrou no lugar do Raio-X quando ele virou página própria; o
- * banner no rodapé da seção é a ponte pra /raio-x, então o argumento denso
- * continua a um clique sem pesar a home.
+ * argumento. Mora na página /raio-x junto do Raio-X da dependência e do
+ * teste do Google (decisão do Rick: nada disso pesa na home; o menu tem
+ * "Orçamento" apontando direto pra esta seção via /raio-x#preco-justo).
  */
 export function FairPrice({ locale }: { locale: Locale }) {
   const t = makeT(locale);
@@ -111,20 +111,6 @@ export function FairPrice({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {/* Ponte pro Raio-X: o argumento da dependência ganhou página própria
-          e a home ficou só com este convite. */}
-      <Reveal delay={120}>
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 rounded-2xl border border-line/10 glass p-8 sm:flex-row sm:items-center">
-          <p className="max-w-xl text-fg-muted">{t(FAIR_PRICE.teaser)}</p>
-          <Link
-            href={withLocale(locale, "/raio-x")}
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-accent/40 px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
-          >
-            {t(FAIR_PRICE.teaserCta)}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </Reveal>
     </section>
   );
 }

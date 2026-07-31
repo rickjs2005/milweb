@@ -1982,7 +1982,6 @@ export const MILO_TOUR: {
 }[] = [
   { id: "deliverables", text: { pt: "Tudo isso o Rick faz pra você 👆", en: "Rick builds all of this for you 👆" } },
   { id: "why", text: { pt: "Por que ele? Já te mostro 😉", en: "Why him? Let me show you 😉" } },
-  { id: "preco-justo", pose: "think", text: { pt: "Aqui o preço vem com a conta na frente 🧮", en: "Here the price comes with the math up front 🧮" } },
   { id: "projects", text: { pt: "Projetos reais! Use os filtros pra achar o seu tipo 🚀", en: "Real projects! Use the filters to find your kind 🚀" } },
   { id: "lab", pose: "shocked", text: { pt: "Essa é a vitrine de animações, tudo feito em código! ✨", en: "This is the animation showcase, all made in code! ✨" } },
   { id: "process", text: { pt: "É assim que o Rick trabalha, passo a passo 📋", en: "This is how Rick works, step by step 📋" } },

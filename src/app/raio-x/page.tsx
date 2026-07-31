@@ -6,6 +6,7 @@ import { getLocale, makeT, withLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Dependency } from "@/components/dependency";
 import { Google } from "@/components/google";
+import { FairPrice } from "@/components/fair-price";
 import { Contact, Footer } from "@/components/contact";
 
 /**
@@ -87,14 +88,15 @@ export default async function RaioXPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-fg-subtle">
             {t({
-              pt: "Duas verificações rápidas e honestas: quanto você perderia se as redes caíssem hoje, e o que aparece quando alguém procura seu tipo de serviço no Google.",
-              en: "Two quick, honest checks: how much you'd lose if social media went down today, and what shows up when someone searches for your kind of service on Google.",
+              pt: "Três verificações rápidas e honestas: quanto você perderia se as redes caíssem hoje, o que aparece quando alguém procura seu tipo de serviço no Google, e como eu calculo um orçamento justo pro seu projeto.",
+              en: "Three quick, honest checks: how much you'd lose if social media went down today, what shows up when someone searches for your kind of service on Google, and how I price your project fairly.",
             })}
           </p>
         </div>
 
         <Dependency locale={locale} />
         <Google locale={locale} />
+        <FairPrice locale={locale} />
         <Contact locale={locale} />
       </main>
       <Footer locale={locale} />

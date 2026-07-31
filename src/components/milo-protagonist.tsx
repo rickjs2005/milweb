@@ -18,8 +18,6 @@ type Waypoint = { x: number; y: number; pose: MiloPose; scale?: number };
 const WAYPOINTS: Record<string, Waypoint> = {
   deliverables: { x: 4, y: 64, pose: "idle" },
   why: { x: 89, y: 60, pose: "happy" },
-  // Preço Justo entrou no lugar do Raio-X (que virou a página /raio-x).
-  "preco-justo": { x: 4, y: 62, pose: "think" },
   // y baixo: antes ele parava em cima da esteira/seta esquerda do carrossel.
   projects: { x: 4, y: 24, pose: "shocked", scale: 1.15 },
   lab: { x: 89, y: 18, pose: "happy" },
