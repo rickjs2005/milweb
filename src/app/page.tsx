@@ -1,8 +1,7 @@
 import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
 import { Deliverables } from "@/components/deliverables";
-import { Dependency } from "@/components/dependency";
-import { Google } from "@/components/google";
+import { FairPrice } from "@/components/fair-price";
 import { Why } from "@/components/why";
 import { Stats } from "@/components/stats";
 import { Projects } from "@/components/projects";
@@ -21,7 +20,10 @@ export default async function Home() {
 
   const navLinks = [
     { href: "#deliverables", label: t(UI.nav.deliverables) },
-    { href: "#raio-x", label: t(UI.nav.risk) },
+    // Página própria (feedback de designer: a home carregava informação
+    // demais). Href de rota funciona no Nav: o scroll-spy filtra ids
+    // inexistentes e o <a> navega normalmente.
+    { href: "/raio-x", label: t(UI.nav.risk) },
     { href: "#projects", label: t(UI.nav.projects) },
     { href: "#process", label: t(UI.nav.process) },
     { href: "#faq", label: t(UI.nav.faq) },
@@ -33,14 +35,15 @@ export default async function Home() {
       <Nav locale={locale} links={navLinks} contactLabel={t(UI.nav.contact)} />
       <main>
         {/* Página de venda freelancer: oferta (Hero) → o que entrego →
-            por que me contratar → prova (números) → projetos → como trabalho →
-            stack → dúvidas (FAQ) → MilWeb (discreto) → CTA. */}
+            por que me contratar → prova (números) → preço justo → projetos →
+            como trabalho → stack → dúvidas (FAQ) → MilWeb (discreto) → CTA.
+            Raio-X + teste do Google moraram aqui até 07/2026; hoje são a
+            página /raio-x, linkada no menu e no banner do Preço Justo. */}
         <Hero locale={locale} />
         <Deliverables locale={locale} />
         <Why locale={locale} />
         <Stats locale={locale} />
-        <Dependency locale={locale} />
-        <Google locale={locale} />
+        <FairPrice locale={locale} />
         <Projects locale={locale} />
         <Lab locale={locale} />
         <Process locale={locale} />

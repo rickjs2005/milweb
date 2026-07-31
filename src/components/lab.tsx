@@ -45,7 +45,7 @@ export function Lab({ locale }: { locale: Locale }) {
       <div className="container-page">
         <Reveal>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
-            <span className="text-warm/50">06 / </span>
+            <span className="text-warm/50">05 / </span>
             {t(UI.sections.labEyebrow)}
           </p>
           <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">

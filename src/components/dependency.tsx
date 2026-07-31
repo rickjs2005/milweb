@@ -73,7 +73,7 @@ export function Dependency({ locale }: { locale: Locale }) {
     <section id="raio-x" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-warm">
-          <span className="text-warm/50">03 / </span>
+          <span className="text-warm/50">01 / </span>
           {t(DEPENDENCY.eyebrow)}
         </p>
         <h2 data-depth="0.07" className="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl lg:text-6xl">

@@ -292,6 +292,8 @@ export const PROJECTS: Project[] = [
         },
       ],
       gallery: [
+        { src: "/shots/millead/estimates.webp", alt: { pt: "Calculadora de orçamento: horas por etapa, infraestrutura e preço em tempo real (dados de demonstração)", en: "Quote calculator: hours per stage, infrastructure and price in real time (demo data)" } },
+        { src: "/shots/millead/estimates-calc.webp", alt: { pt: "Painel do cálculo: custo real, preço mínimo, recomendado e premium (dados de demonstração)", en: "Calculation panel: real cost plus minimum, recommended and premium price (demo data)" } },
         { src: "/shots/millead/kanban.webp", alt: { pt: "Pipeline kanban com valores por estágio (dados de demonstração)", en: "Kanban pipeline with per-stage totals (demo data)" } },
         { src: "/shots/millead/dashboard.webp", alt: { pt: "Dashboard com financeiro, funil e leads por status (dados de demonstração)", en: "Dashboard with finance, funnel and leads by status (demo data)" } },
         { src: "/shots/millead/contracts.webp", alt: { pt: "Contratos com PDF e assinatura eletrônica (dados de demonstração)", en: "Contracts with PDF and e-signature (demo data)" } },
@@ -597,6 +599,7 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
     live: "https://terral-cafe.vercel.app",
     featured: true,
+    homeFeatured: true,
     image: "/shots/terral.webp",
     imageStatic: true,
     caseStudy: {
@@ -623,6 +626,37 @@ export const PROJECTS: Project[] = [
         { src: "/shots/terral/torra.webp", alt: { pt: "Capítulo da torra: grão escurecendo com HUD de temperatura a 206°C", en: "Roast chapter: bean darkening with the temperature HUD at 206°C" } },
         { src: "/shots/terral/xicara.webp", alt: { pt: "Capítulo final: xícara procedural com vapor subindo", en: "Final chapter: procedural cup with rising steam" } },
         { src: "/shots/terral/blends.webp", alt: { pt: "Vitrine dos três blends com notas sensoriais e pedido por WhatsApp", en: "The three blends with tasting notes and WhatsApp ordering" } },
+      ],
+    },
+  },
+  {
+    slug: "one-piece",
+    category: "site",
+    title: "ONE PIECE",
+    tagline: { pt: "Site cinematográfico · a saga contada no scroll", en: "Cinematic site · the saga told through scroll" },
+    problem: { pt: "Conteúdo de anime na web quase sempre vira lista de wiki: muita informação e nenhuma emoção. Ninguém sente a jornada que fez a obra ser o que é.", en: "Anime content on the web almost always turns into a wiki list: lots of information and zero emotion. Nobody feels the journey that made the work what it is." },
+    result: { pt: "Uma página única que conta a história de One Piece: a cena de abertura obedece ao scroll e dali o site atravessa a Era dos Piratas, apresenta os Chapéus de Palha, desenha a rota até o fim do mapa e guarda as falas que marcaram. Tudo animado em código, sem vídeo pesado.", en: "A single page that tells the One Piece story: the opening scene follows the scroll, and from there the site crosses the Age of Pirates, introduces the Straw Hats, draws the route to the end of the map and keeps the lines every fan knows. All animated in code, no heavy video." },
+    stack: ["Next.js", "TypeScript", "Tailwind", "GSAP", "Lenis"],
+    metric: { pt: "Página única · animação 100% em código", en: "Single page · animation 100% in code" },
+    status: { pt: "Projeto autoral · em breve no ar", en: "Personal project · live soon" },
+    note: { pt: "Projeto de fã, sem vínculo com os detentores dos direitos da obra.", en: "Fan project, unaffiliated with the rights holders." },
+    homeFeatured: true,
+    image: "/shots/one-piece.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O site abre numa cena controlada pelo scroll: nada acontece sozinho, é o dedo do visitante que puxa a história. Essa escolha define o resto da página, porque transforma leitura em travessia. GSAP com ScrollTrigger cuida das transições e o Lenis suaviza a rolagem pra animação nunca engasgar.",
+          en: "The site opens on a scroll-controlled scene: nothing plays on its own, the visitor's finger pulls the story forward. That choice defines the rest of the page, because it turns reading into a crossing. GSAP with ScrollTrigger drives the transitions and Lenis smooths the scroll so the animation never stutters.",
+        },
+        {
+          pt: "O conteúdo segue a lógica da obra: a execução de Roger acende a Era dos Piratas, cada Chapéu de Palha entra com o próprio peso, a rota desenha o caminho até o fim do mapa e as falas que todo fã conhece ganham espaço de respiro. É um projeto de fã, feito pra mostrar o quanto uma página só carrega quando o código faz o papel de um trailer.",
+          en: "The content follows the logic of the source: Roger's execution ignites the Age of Pirates, each Straw Hat lands with their own weight, the route draws the path to the end of the map, and the lines every fan knows get room to breathe. It's a fan project, built to show how much a single page can carry when code plays the role of a trailer.",
+        },
+      ],
+      gallery: [
+        { src: "/shots/one-piece/cena-1.webp", alt: { pt: "Bandeira dos Chapéus de Palha ao pôr do sol: \"Uma bandeira não é uma ameaça. É uma promessa.\"", en: "The Straw Hat flag at sunset: \"A flag is not a threat. It's a promise.\"" } },
+        { src: "/shots/one-piece/cena-2.webp", alt: { pt: "Capítulo da Jornada: o arco de Alabasta com a cidade dourada no deserto", en: "Journey chapter: the Alabasta arc with the golden desert city" } },
       ],
     },
   },
@@ -1569,6 +1603,49 @@ export const FAQ: { q: Localized; a: Localized }[] = [
   },
 ];
 
+/** PREÇO JUSTO — seção da home que mostra a calculadora de orçamento do
+ * MilLead como prova de como o preço é montado. Substituiu o Raio-X no
+ * fluxo da home quando ele ganhou página própria (/raio-x): a home ficou
+ * com o argumento leve (transparência de preço) e o argumento denso
+ * (dependência de redes) foi pra página dedicada. */
+export const FAIR_PRICE = {
+  eyebrow: { pt: "Preço justo", en: "Fair pricing" },
+  title: { pt: "Você vê de onde vem o preço", en: "You see where the price comes from" },
+  sub: {
+    pt: "Antes de te passar um valor, eu calculo o projeto por dentro: as horas de cada etapa, a hospedagem que o site vai usar, o domínio pelo tempo que você escolher. O número que chega até você tem conta por trás.",
+    en: "Before I quote you, I price the project from the inside: the hours of each stage, the hosting the site will need, the domain for however long you choose. The number that reaches you has real math behind it.",
+  },
+  bullets: [
+    {
+      title: { pt: "Horas por etapa", en: "Hours per stage" },
+      desc: { pt: "Design, código, SEO e testes entram na conta separados. Dá pra ver o tamanho real do trabalho.", en: "Design, code, SEO and testing are counted separately. You can see the real size of the work." },
+    },
+    {
+      title: { pt: "Infraestrutura sem surpresa", en: "No-surprise infrastructure" },
+      desc: { pt: "Hospedagem, banco e domínio aparecem no orçamento antes de virar cobrança. Nenhum custo escondido aparece depois.", en: "Hosting, database and domain show up in the quote before they ever become a bill. No hidden cost shows up later." },
+    },
+    {
+      title: { pt: "Três faixas de preço", en: "Three price bands" },
+      desc: { pt: "O sistema me mostra o mínimo, o recomendado e o premium. Eu decido o valor final e te explico o porquê dele.", en: "The system shows me the minimum, the recommended and the premium. I set the final value and explain why." },
+    },
+  ],
+  shotCaption: {
+    pt: "Tela real do MilLead, o sistema que construí pra gerenciar a MilWeb (dados de demonstração).",
+    en: "Real screen from MilLead, the system I built to run MilWeb (demo data).",
+  },
+  cta: { pt: "Pedir meu orçamento", en: "Ask for my quote" },
+  ctaWhats: {
+    pt: "Olá Rick! Quero um orçamento calculado pro meu projeto.",
+    en: "Hi Rick! I want a properly calculated quote for my project.",
+  },
+  caseLink: { pt: "Conhecer o MilLead por dentro", en: "See MilLead from the inside" },
+  teaser: {
+    pt: "Seu negócio vende só pelo Instagram? Fiz uma calculadora que mostra quanto um apagão das redes custaria pra você.",
+    en: "Does your business sell only on Instagram? I built a calculator that shows what a social media blackout would cost you.",
+  },
+  teaserCta: { pt: "Fazer o raio-X gratuito", en: "Run the free X-ray" },
+} as const;
+
 /** Depoimentos — VAZIO de propósito. Só conteúdo real (a seção some sem itens). */
 export type Testimonial = { quote: Localized; author: string; role: Localized };
 export const TESTIMONIALS: Testimonial[] = [];
@@ -1904,8 +1981,7 @@ export const MILO_TOUR: {
 }[] = [
   { id: "deliverables", text: { pt: "Tudo isso o Rick faz pra você 👆", en: "Rick builds all of this for you 👆" } },
   { id: "why", text: { pt: "Por que ele? Já te mostro 😉", en: "Why him? Let me show you 😉" } },
-  { id: "raio-x", pose: "think", text: { pt: "Bora medir sua dependência das redes? 🔍", en: "Shall we measure your social media dependency? 🔍" } },
-  { id: "google", pose: "think", text: { pt: "Seu negócio aparece no Google? 👀", en: "Does your business show up on Google? 👀" } },
+  { id: "preco-justo", pose: "think", text: { pt: "Aqui o preço vem com a conta na frente 🧮", en: "Here the price comes with the math up front 🧮" } },
   { id: "projects", text: { pt: "Projetos reais! Use os filtros pra achar o seu tipo 🚀", en: "Real projects! Use the filters to find your kind 🚀" } },
   { id: "lab", pose: "shocked", text: { pt: "Essa é a vitrine de animações, tudo feito em código! ✨", en: "This is the animation showcase, all made in code! ✨" } },
   { id: "process", text: { pt: "É assim que o Rick trabalha, passo a passo 📋", en: "This is how Rick works, step by step 📋" } },
