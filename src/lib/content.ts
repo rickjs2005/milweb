@@ -1645,6 +1645,17 @@ export const FAIR_PRICE = {
  * página /diagnostico. As seções 01-03 reusam Dependency, Google e
  * FairPrice. */
 export const DIAGNOSTICO = {
+  /** Card-ponte na home, logo abaixo dos projetos (opção 3 do designer):
+   * o diagnóstico apresentado como PRODUTO, entre "gostei do trabalho" e
+   * "quero falar com você". */
+  banner: {
+    title: { pt: "Conheça o Diagnóstico MilWeb", en: "Meet the MilWeb Audit" },
+    text: {
+      pt: "Uma análise rápida pra mostrar como sua empresa aparece na internet e quanto custa depender só das redes sociais.",
+      en: "A quick analysis of how your company shows up online and what depending only on social media really costs.",
+    },
+    cta: { pt: "Explorar Diagnóstico", en: "Explore the audit" },
+  },
   included: {
     eyebrow: { pt: "O que está incluso", en: "What's included" },
     title: { pt: "Tudo isso faz parte do projeto", en: "All of this comes with the project" },
@@ -1710,6 +1721,9 @@ export const UI = {
     titleHighlight: { pt: "vendedor", en: "salesperson" },
     titleTail: { pt: "da sua empresa", en: "" },
     ctaProjects: { pt: "Ver projetos", en: "View projects" },
+    // CTA secundário do hero (opção 4 do designer): quem ainda não está
+    // pronto pra pedir orçamento entra primeiro no diagnóstico.
+    ctaDiagnosis: { pt: "Ver diagnóstico", en: "See the audit" },
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
     miloHi: { pt: "Oi! Eu sou o Milo 👋", en: "Hi! I'm Milo 👋" },

@@ -1,6 +1,7 @@
 import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
 import { Deliverables } from "@/components/deliverables";
+import { DiagnosticBanner } from "@/components/diagnostic-banner";
 import { Why } from "@/components/why";
 import { Stats } from "@/components/stats";
 import { Projects } from "@/components/projects";
@@ -44,6 +45,10 @@ export default async function Home() {
         <Why locale={locale} />
         <Stats locale={locale} />
         <Projects locale={locale} />
+        {/* Card-ponte pro /diagnostico (opção 3 do designer): depois de ver
+            os projetos, o visitante que gostou mas não está pronto pro
+            orçamento tem um próximo passo mais leve. */}
+        <DiagnosticBanner locale={locale} />
         <Lab locale={locale} />
         <Process locale={locale} />
         <Tech locale={locale} />

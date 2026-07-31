@@ -5,7 +5,7 @@ import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
 import { HeroScene } from "./hero-scene";
 import { UI, PROFILE, type Locale } from "@/lib/content";
-import { makeT } from "@/lib/i18n";
+import { makeT, withLocale } from "@/lib/i18n";
 
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
@@ -134,11 +134,15 @@ export function Hero({ locale }: { locale: Locale }) {
               </a>
             </Magnetic>
             <Magnetic strength={0.5} className="w-full sm:w-auto">
+              {/* Secundário aponta pro diagnóstico (opção 4 do designer):
+                  projetos já têm item no menu e são a próxima seção do
+                  scroll; o diagnóstico é a ponte de quem ainda não está
+                  pronto pra pedir orçamento. */}
               <a
-                href="#projects"
+                href={withLocale(locale, "/diagnostico")}
                 className="cta-border inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/25 bg-bg/30 px-5 py-3 text-sm font-semibold text-fg backdrop-blur-sm transition-colors hover:border-accent/50 sm:w-auto"
               >
-                {t(UI.hero.ctaProjects)}
+                {t(UI.hero.ctaDiagnosis)}
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Magnetic>
