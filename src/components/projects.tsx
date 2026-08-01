@@ -10,13 +10,25 @@ import { TiltCard } from "./tilt-card";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsShowcase, type ProjectShowcaseItem } from "./projects-showcase";
 
-/** Ordem e rótulos das categorias do filtro. */
-const FILTER_CATEGORIES = ["saas", "ecommerce", "site", "mobile"] as const;
-const FILTER_LABELS: Record<Project["category"], Localized> = {
+/** Ordem e rótulos das categorias do filtro (taxonomia vendável — pedido do
+ * Rick, 01/08). Exportados porque o acervo /projetos usa o mesmo filtro. */
+export const FILTER_CATEGORIES = [
+  "saas",
+  "ecommerce",
+  "institucional",
+  "landing",
+  "landing-premium",
+  "site-premium",
+  "app",
+] as const;
+export const FILTER_LABELS: Record<Project["category"], Localized> = {
   saas: UI.sections.projectsFilterSaas,
   ecommerce: UI.sections.projectsFilterEcommerce,
-  site: UI.sections.projectsFilterSite,
-  mobile: UI.sections.projectsFilterMobile,
+  institucional: UI.sections.projectsFilterInstitucional,
+  landing: UI.sections.projectsFilterLanding,
+  "landing-premium": UI.sections.projectsFilterLandingPremium,
+  "site-premium": UI.sections.projectsFilterSitePremium,
+  app: UI.sections.projectsFilterApp,
 };
 
 /** Acento por categoria -- SÓ no mobile (grade fallback; a esteira 3D do
@@ -26,8 +38,11 @@ const FILTER_LABELS: Record<Project["category"], Localized> = {
 const CATEGORY_ACCENT: Record<Project["category"], string> = {
   saas: "border-l-accent/70",
   ecommerce: "border-l-emerald-400/70",
-  site: "border-l-violet-400/70",
-  mobile: "border-l-amber-400/70",
+  institucional: "border-l-sky-400/70",
+  landing: "border-l-amber-400/70",
+  "landing-premium": "border-l-rose-400/70",
+  "site-premium": "border-l-violet-400/70",
+  app: "border-l-teal-400/70",
 };
 
 function host(url?: string) {

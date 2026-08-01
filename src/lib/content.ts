@@ -108,8 +108,21 @@ export const DIFFERENTIALS: Differential[] = [
 export type Project = {
   slug: string;
   title: string;
-  /** Categoria do filtro na seção Projetos. */
-  category: "saas" | "ecommerce" | "site" | "mobile";
+  /**
+   * Categoria do filtro na seção Projetos e no acervo /projetos.
+   *
+   * Taxonomia vendável (pedido do Rick, 01/08): o visitante filtra pelo TIPO
+   * de projeto que quer comprar, não pela stack. "premium" = experiência
+   * cinematográfica (scroll-driven/3D); sem o sufixo = entrega convencional.
+   */
+  category:
+    | "saas"
+    | "ecommerce"
+    | "institucional"
+    | "landing"
+    | "landing-premium"
+    | "site-premium"
+    | "app";
   tagline: Localized;
   problem: Localized;
   result: Localized;
@@ -374,7 +387,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rockverse",
-    category: "site",
+    category: "site-premium",
     title: "ROCKVERSE",
     tagline: { pt: "Site-experiência sobre Rock · motion design de ponta a ponta", en: "Rock experience site · end-to-end motion design" },
     problem: { pt: "Marcas de música e cultura disputam atenção em segundos, e sites institucionais comuns não geram desejo, memória nem compartilhamento.", en: "Music and culture brands fight for attention in seconds, and ordinary websites create no desire, memory or shares." },
@@ -432,7 +445,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "aurex-motors",
-    category: "site",
+    category: "site-premium",
     title: "AUREX MOTORS",
     tagline: { pt: "Experiência cinematográfica · carro 3D em tempo real", en: "Cinematic experience · real-time 3D car" },
     problem: { pt: "Site de produto premium quase sempre vira catálogo estático: não transmite a sensação da marca nem dá vontade de explorar.", en: "Premium product sites almost always end up as static catalogs: they carry none of the brand's feeling and give no reason to explore." },
@@ -474,7 +487,7 @@ export const PROJECTS: Project[] = [
   {
     slug: "atelier-vertex",
     homeFeatured: true,
-    category: "site",
+    category: "site-premium",
     title: "ATELIER VERTEX",
     tagline: { pt: "Scrollytelling arquitetônico · vídeo real controlado pelo scroll", en: "Architectural scrollytelling · real footage driven by scroll" },
     problem: { pt: "Site de escritório de arquitetura quase sempre é catálogo de fotos estáticas. Mostra só o resultado, nunca o processo, e não convence quem valoriza execução.", en: "Architecture firm sites are almost always static photo catalogs. They show the result, never the process, and don't convince clients who value execution." },
@@ -515,7 +528,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "aurex-timepieces",
-    category: "site",
+    category: "site-premium",
     title: "AUREX TIMEPIECES",
     tagline: { pt: "Experiência cinematográfica · relógio 3D que desmonta no scroll", en: "Cinematic experience · a 3D watch that disassembles on scroll" },
     problem: { pt: "Relojoaria de luxo na web quase sempre é foto de produto parada, que não transmite a complexidade mecânica capaz de justificar o preço.", en: "Luxury watches on the web are almost always static product photos, which never convey the mechanical complexity that justifies the price." },
@@ -556,7 +569,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "age-of-dragons",
-    category: "site",
+    category: "site-premium",
     title: "THE AGE OF DRAGONS",
     tagline: { pt: "Biblioteca proibida dos dragões · documentário interativo em 8 capítulos", en: "The dragons' forbidden library · an 8-chapter interactive documentary" },
     problem: { pt: "Sites sobre mitologia e cultura pop viram enciclopédia: texto corrido, imagem estática, zero imersão. Nada do peso cinematográfico que o tema pede.", en: "Mythology and pop-culture sites default to encyclopedia mode: running text, static images, zero immersion. None of the cinematic weight the subject deserves." },
@@ -594,7 +607,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "terral",
-    category: "site",
+    category: "site-premium",
     title: "TERRAL",
     tagline: { pt: "Torrefação artesanal · do grão à xícara em cinco capítulos", en: "Artisanal coffee roastery · bean to cup in five chapters" },
     problem: { pt: "Sites de café especial mostram sacas e xícaras paradas. Nada explica o caminho que o grão percorre nem por que uma torra artesanal vale mais.", en: "Specialty coffee sites show static bags and cups. Nothing explains the path the bean travels or why an artisanal roast costs more." },
@@ -636,7 +649,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "one-piece",
-    category: "site",
+    category: "site-premium",
     title: "ONE PIECE",
     tagline: { pt: "Site cinematográfico · a saga contada no scroll", en: "Cinematic site · the saga told through scroll" },
     problem: { pt: "Conteúdo de anime na web quase sempre vira lista de wiki: muita informação e nenhuma emoção. Ninguém sente a jornada que fez a obra ser o que é.", en: "Anime content on the web almost always turns into a wiki list: lots of information and zero emotion. Nobody feels the journey that made the work what it is." },
@@ -667,7 +680,7 @@ export const PROJECTS: Project[] = [
   {
     slug: "alva-odontologia",
     homeFeatured: true,
-    category: "site",
+    category: "landing-premium",
     title: "ALVA Odontologia",
     tagline: { pt: "Clínica odontológica premium · um filme aberto pelo scroll", en: "Premium dental clinic · a film driven by scroll" },
     problem: { pt: "Site de dentista costuma ser igual em todo lugar: lista de tratamentos, foto de banco de imagem e nenhum motivo pra escolher aquela clínica.", en: "Dental clinic sites look the same everywhere: a list of treatments, stock photos and no reason to choose that clinic." },
@@ -699,7 +712,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "as-copas",
-    category: "site",
+    category: "site-premium",
     title: "As Copas",
     tagline: { pt: "Site imersivo · estádios históricos em 3D (WebGL)", en: "Immersive site · historic stadiums in 3D (WebGL)" },
     problem: { pt: "Conteúdo esportivo na web é tudo igual: listas de texto sem identidade, nada que alguém queira compartilhar.", en: "Sports content on the web all looks the same: identity-less text lists, nothing anyone wants to share." },
@@ -756,7 +769,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecoa",
-    category: "saas",
+    category: "app",
     title: "ECOA",
     tagline: { pt: "Rede social anônima · produto completo com IA", en: "Anonymous social network · full product with AI" },
     problem: { pt: "Pessoas querem desabafar e ser ouvidas sem expor o rosto, e as redes tradicionais punem a vulnerabilidade.", en: "People want to vent and be heard without showing their face, and traditional networks punish vulnerability." },
@@ -876,7 +889,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "kavita-drones",
-    category: "site",
+    category: "landing",
     title: "Kavita Drones",
     tagline: { pt: "Landing de alta conversão · cliente real, no ar", en: "High-conversion landing · real client, live" },
     problem: { pt: "Uma revenda de drones agrícolas precisava apresentar produtos e captar orçamento sem depender de rede social.", en: "An agricultural-drone reseller needed to showcase products and capture quotes without relying on social media." },
@@ -940,7 +953,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "kavita-institucional",
-    category: "site",
+    category: "institucional",
     title: "Kavita Institucional",
     tagline: { pt: "Site institucional cinematográfico · cliente real, no ar", en: "Cinematic company site · real client, live" },
     problem: { pt: "A Kavita Agro já tinha a landing de drones, mas a empresa é muito maior que isso: loja de insumos, sementes, peças, assistência técnica e uma fábrica de ração própria. Não existia nada que contasse quem a empresa é para quem chega pela primeira vez.", en: "Kavita Agro already had the drone landing page, but the company is much bigger than that: farm supplies, seeds, parts, technical assistance and its own feed factory. Nothing existed to tell a first-time visitor who the company actually is." },
@@ -1181,7 +1194,7 @@ export const PROJECTS: Project[] = [
     slug: "nexus-geek",
     image: "/shots/nexus-geek.webp",
     imageStatic: true,
-    category: "site",
+    category: "landing-premium",
     title: "NEXUS Loja Geek",
     tagline: { pt: "Hero buraco negro 3D (R3F) · pós-processamento de cinema", en: "3D black-hole hero (R3F) · cinematic postprocessing" },
     problem: { pt: "Marcas geek e gamer precisam de uma vitrine com cara de produto premium, com impacto visual que diferencia da concorrência.", en: "Geek and gamer brands need a storefront that feels premium, with visual impact that stands out from competitors." },
@@ -1244,7 +1257,7 @@ export const PROJECTS: Project[] = [
     homeFeatured: true,
     image: "/shots/lumen-architecture.webp",
     imageStatic: true,
-    category: "site",
+    category: "institucional",
     title: "Lumen",
     tagline: { pt: "Site cinematográfico 3D para arquitetura · React Three Fiber", en: "Cinematic 3D site for architecture · React Three Fiber" },
     problem: { pt: "Escritórios de arquitetura precisam transmitir sofisticação e domínio do espaço, e um site comum não passa a sensação do trabalho deles.", en: "Architecture studios need to convey sophistication and spatial mastery, and a plain website doesn't capture the feel of their work." },
@@ -1425,7 +1438,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "imperio-cafe",
-    category: "mobile",
+    category: "app",
     title: "Império do Café",
     tagline: { pt: "Jogo mobile de simulação · React Native/Expo", en: "Mobile simulation game · React Native/Expo" },
     problem: { pt: "Mostrar domínio de mobile e de lógica complexa exige mais que um CRUD. Pede um produto com profundidade real.", en: "Showing mobile and complex-logic mastery takes more than a CRUD. It calls for a product with real depth." },
@@ -1812,10 +1825,13 @@ export const UI = {
     projectsAllSub: { pt: "O acervo completo: as entregas para cliente e todos os projetos autorais, dos produtos às experiências em 3D.", en: "The full archive: client deliveries and every personal project, from products to 3D experiences." },
     projectsBackHome: { pt: "Voltar para a home", en: "Back to home" },
     projectsFilterAll: { pt: "Todos", en: "All" },
-    projectsFilterSaas: { pt: "SaaS & Sistemas", en: "SaaS & Systems" },
-    projectsFilterEcommerce: { pt: "Lojas & E-commerce", en: "Stores & E-commerce" },
-    projectsFilterSite: { pt: "Sites & Landings", en: "Sites & Landing pages" },
-    projectsFilterMobile: { pt: "Apps Mobile", en: "Mobile apps" },
+    projectsFilterSaas: { pt: "SaaS", en: "SaaS" },
+    projectsFilterEcommerce: { pt: "E-commerce", en: "E-commerce" },
+    projectsFilterInstitucional: { pt: "Site institucional", en: "Company site" },
+    projectsFilterLanding: { pt: "Landing page", en: "Landing page" },
+    projectsFilterLandingPremium: { pt: "Landing page premium", en: "Premium landing page" },
+    projectsFilterSitePremium: { pt: "Site premium", en: "Premium site" },
+    projectsFilterApp: { pt: "App", en: "App" },
     labEyebrow: { pt: "Lab", en: "Lab" },
     labTitle: { pt: "Animações 100% em código", en: "Animations 100% in code" },
     labSub: {

@@ -6,6 +6,8 @@ import { PROJECTS, PROFILE, SITE_URL, UI, type Project, type Locale } from "@/li
 import { getLocale, makeT, withLocale } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Contact, Footer } from "@/components/contact";
+import { ArchiveFilter } from "@/components/archive-filter";
+import { FILTER_CATEGORIES, FILTER_LABELS } from "@/components/projects";
 
 /**
  * O acervo completo, fora da home.
@@ -173,30 +175,51 @@ export default async function ProjectsIndexPage() {
           {t(UI.sections.projectsAllSub)}
         </p>
 
-        <section className="mt-16">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-fg">
-            {t(UI.sections.projectsClientTitle)}
-          </h2>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
-            {clientWork.map((p) => (
-              <Card key={p.slug} p={p} locale={locale} />
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-20">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-fg">
-            {t(UI.sections.projectsOwnTitle)}{" "}
-            <span className="font-mono text-base text-fg-subtle">
-              {own.length}
-            </span>
-          </h2>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {own.map((p) => (
-              <Card key={p.slug} p={p} locale={locale} />
-            ))}
-          </div>
-        </section>
+        {/* Filtro único cobrindo entregas + autorais: categorias como
+            "Landing page" só existem nas entregas, então o filtro não pode
+            viver só na seção autoral. Chips computados do acervo inteiro. */}
+        <ArchiveFilter
+          allLabel={t(UI.sections.projectsFilterAll)}
+          filters={FILTER_CATEGORIES.filter((c) =>
+            PROJECTS.some((p) => !p.hideFromLists && p.category === c),
+          ).map((c) => ({
+            key: c,
+            label: t(FILTER_LABELS[c]),
+            count: PROJECTS.filter((p) => !p.hideFromLists && p.category === c).length,
+          }))}
+          sections={[
+            {
+              key: "client",
+              heading: (
+                <h2 className="font-display text-2xl font-bold tracking-tight text-fg">
+                  {t(UI.sections.projectsClientTitle)}
+                </h2>
+              ),
+              gridClass: "mt-6 grid gap-6 sm:grid-cols-2",
+              items: clientWork.map((p) => ({
+                key: p.slug,
+                category: p.category,
+                node: <Card p={p} locale={locale} />,
+              })),
+            },
+            {
+              key: "own",
+              // Sem contador no título: com o filtro ativo o "21" ao lado de
+              // 2 cards visíveis parecia bug; o chip "Todos" já traz o total.
+              heading: (
+                <h2 className="font-display text-2xl font-bold tracking-tight text-fg">
+                  {t(UI.sections.projectsOwnTitle)}
+                </h2>
+              ),
+              gridClass: "mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3",
+              items: own.map((p) => ({
+                key: p.slug,
+                category: p.category,
+                node: <Card p={p} locale={locale} />,
+              })),
+            },
+          ]}
+        />
       </main>
 
       <Contact locale={locale} />
