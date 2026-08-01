@@ -116,7 +116,9 @@ function Card({ p, locale }: { p: Project; locale: Locale }) {
         >
           {t(UI.labels.caseStudy)}
         </Link>
-        {p.live && (
+        {/* "Ver ao vivo" no card só em entrega a cliente; nos autorais o
+            link vive na página de case. */}
+        {p.live && p.clientWork && (
           <a
             href={p.live}
             target="_blank"
@@ -135,7 +137,7 @@ export default async function ProjectsIndexPage() {
   const locale = await getLocale();
   const t = makeT(locale);
   const clientWork = PROJECTS.filter((p) => p.clientWork);
-  const own = PROJECTS.filter((p) => !p.clientWork);
+  const own = PROJECTS.filter((p) => !p.clientWork && !p.hideFromLists);
 
   return (
     <>

@@ -134,6 +134,12 @@ export type Project = {
   /** Nome do cliente, exibido no selo do card de entrega. */
   clientName?: string;
   /**
+   * true = sem card nas listagens (home e /projetos), mas a página de case
+   * continua no ar. Uso: MilLead, que já se apresenta na seção de
+   * diagnóstico/preço justo e é ferramenta interna — card duplicado só diluía.
+   */
+  hideFromLists?: boolean;
+  /**
    * true = este projeto autoral aparece na home. Os demais vivem só em
    * /projetos e nas próprias páginas de case.
    *
@@ -250,6 +256,7 @@ export const PROJECTS: Project[] = [
     metric: { pt: "Auditoria de sites · IA · landing pages", en: "Website audits · AI · landing pages" },
     repos: [{ label: "Código", url: `${GH}/millead` }],
     status: { pt: "Ferramenta interna da MilWeb", en: "MilWeb internal tool" },
+    hideFromLists: true,
     image: "/shots/millead.webp",
     note: {
       pt: "CRM interno usado na prospecção da própria MilWeb.",

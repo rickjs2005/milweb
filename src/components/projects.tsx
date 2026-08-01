@@ -130,7 +130,9 @@ function Details({ p, locale }: { p: Project; locale: Locale }) {
         >
           {t(UI.labels.caseStudy)} <ArrowRight className="h-4 w-4" />
         </Link>
-        {p.live && (
+        {/* Pedido do Rick (01/08): "Ver ao vivo" no card só em projeto
+            entregue a cliente. Autorais mantêm o link na página de case. */}
+        {p.live && p.clientWork && (
           <a
             href={p.live}
             target="_blank"
@@ -194,7 +196,7 @@ export function Projects({ locale }: { locale: Locale }) {
   const t = makeT(locale);
   // A divisão principal é cliente real x autoral, não categoria técnica.
   const clientWork = PROJECTS.filter((p) => p.clientWork);
-  const own = PROJECTS.filter((p) => !p.clientWork);
+  const own = PROJECTS.filter((p) => !p.clientWork && !p.hideFromLists);
   // Na home entram só os autorais marcados. Os demais vivem em /projetos —
   // ver a nota em `homeFeatured` (content.ts) para os números que motivaram
   // o corte.
@@ -355,7 +357,9 @@ export function Projects({ locale }: { locale: Locale }) {
               metric: p.metric ? t(p.metric) : undefined,
               metricProof: p.metricProof,
               caseHref: withLocale(locale, `/projetos/${p.slug}`),
-              live: p.live,
+              // Esteira só tem autorais — "Ver ao vivo" ficou restrito a
+              // entregas de cliente (pedido do Rick, 01/08).
+              live: undefined,
               caseLabel: t(UI.labels.caseStudy),
               liveLabel: t(UI.labels.viewLive),
             },
