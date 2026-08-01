@@ -1047,6 +1047,8 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "akatsuki",
+    image: "/shots/akatsuki.webp",
+    imageStatic: true,
     category: "ecommerce",
     title: "Akatsuki",
     tagline: { pt: "Loja de animes cinematográfica em 3D · checkout no WhatsApp", en: "Cinematic 3D anime store · WhatsApp checkout" },
@@ -1170,6 +1172,8 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "nexus-geek",
+    image: "/shots/nexus-geek.webp",
+    imageStatic: true,
     category: "site",
     title: "NEXUS Loja Geek",
     tagline: { pt: "Hero buraco negro 3D (R3F) · pós-processamento de cinema", en: "3D black-hole hero (R3F) · cinematic postprocessing" },
@@ -1352,6 +1356,8 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjs-laticinios",
+    image: "/shots/rjs-laticinios.webp",
+    imageStatic: true,
     category: "ecommerce",
     title: "RJS Laticínios",
     tagline: { pt: "Vitrine de laticínios artesanais · pedido no WhatsApp", en: "Artisanal dairy showcase · WhatsApp ordering" },

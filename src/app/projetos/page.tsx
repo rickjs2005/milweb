@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, TrendingUp } from "lucide-react";
 import { PROJECTS, PROFILE, SITE_URL, UI, type Project, type Locale } from "@/lib/content";
@@ -46,7 +47,24 @@ const waHref = (text: string) =>
 function Card({ p, locale }: { p: Project; locale: Locale }) {
   const t = makeT(locale);
   return (
-    <article className="relative flex h-full flex-col rounded-2xl border border-line/10 glass p-6 transition-colors duration-300 hover:border-accent/40">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-line/10 glass p-6 transition-colors duration-300 hover:border-accent/40">
+      {/* Capa: o hero do site no topo do card (pedido do Rick — o acervo
+          era texto puro; agora cada projeto se apresenta pela própria
+          tela). Margens negativas sangram a imagem até as bordas do card;
+          projetos sem screenshot (sem deploy) seguem só com texto. */}
+      {p.image && (
+        <div className="-mx-6 -mt-6 mb-5 border-b border-line/10 bg-surface-2/40">
+          <Image
+            src={p.image}
+            alt={`Tela do projeto ${p.title}`}
+            width={800}
+            height={500}
+            loading="lazy"
+            className="aspect-[16/10] w-full object-cover object-top"
+            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
+          />
+        </div>
+      )}
       {p.clientWork && p.clientName && (
         <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
           <BadgeCheck className="h-3.5 w-3.5" /> {p.clientName}
