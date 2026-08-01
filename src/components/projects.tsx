@@ -10,25 +10,22 @@ import { TiltCard } from "./tilt-card";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsShowcase, type ProjectShowcaseItem } from "./projects-showcase";
 
-/** Ordem e rótulos das categorias do filtro (taxonomia vendável — pedido do
- * Rick, 01/08). Exportados porque o acervo /projetos usa o mesmo filtro. */
+/** Ordem e rótulos das categorias do filtro — mesma ordem do catálogo de
+ * produtos do MilLead (pedido do Rick, 01/08). Exportados porque o acervo
+ * /projetos usa o mesmo filtro. */
 export const FILTER_CATEGORIES = [
-  "saas",
-  "ecommerce",
-  "institucional",
-  "landing",
+  "landing-essencial",
   "landing-premium",
-  "site-premium",
-  "app",
+  "institucional",
+  "institucional-premium",
+  "sistema-saas",
 ] as const;
 export const FILTER_LABELS: Record<Project["category"], Localized> = {
-  saas: UI.sections.projectsFilterSaas,
-  ecommerce: UI.sections.projectsFilterEcommerce,
-  institucional: UI.sections.projectsFilterInstitucional,
-  landing: UI.sections.projectsFilterLanding,
+  "landing-essencial": UI.sections.projectsFilterLandingEssencial,
   "landing-premium": UI.sections.projectsFilterLandingPremium,
-  "site-premium": UI.sections.projectsFilterSitePremium,
-  app: UI.sections.projectsFilterApp,
+  institucional: UI.sections.projectsFilterInstitucional,
+  "institucional-premium": UI.sections.projectsFilterInstitucionalPremium,
+  "sistema-saas": UI.sections.projectsFilterSistemaSaas,
 };
 
 /** Acento por categoria -- SÓ no mobile (grade fallback; a esteira 3D do
@@ -36,13 +33,11 @@ export const FILTER_LABELS: Record<Project["category"], Localized> = {
  * visual de qual card é qual sem ler o texto -- a faixa lateral colorida
  * resolve isso num piscar de olhos, na mesma linguagem do card do Tech. */
 const CATEGORY_ACCENT: Record<Project["category"], string> = {
-  saas: "border-l-accent/70",
-  ecommerce: "border-l-emerald-400/70",
+  "landing-essencial": "border-l-amber-400/70",
+  "landing-premium": "border-l-violet-400/70",
   institucional: "border-l-sky-400/70",
-  landing: "border-l-amber-400/70",
-  "landing-premium": "border-l-rose-400/70",
-  "site-premium": "border-l-violet-400/70",
-  app: "border-l-teal-400/70",
+  "institucional-premium": "border-l-emerald-400/70",
+  "sistema-saas": "border-l-accent/70",
 };
 
 function host(url?: string) {
