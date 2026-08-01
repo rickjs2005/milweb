@@ -1108,6 +1108,8 @@ export const PROJECTS: Project[] = [
   {
     slug: "loja-joias",
     homeFeatured: true,
+    image: "/shots/loja-joias.webp",
+    imageStatic: true,
     category: "ecommerce",
     title: "AURÉA Joalheria",
     tagline: { pt: "Vitrine premium · Espelho Virtual (try-on) · WhatsApp", en: "Premium showcase · Virtual Mirror (try-on) · WhatsApp" },
@@ -1229,6 +1231,8 @@ export const PROJECTS: Project[] = [
   {
     slug: "lumen-architecture",
     homeFeatured: true,
+    image: "/shots/lumen-architecture.webp",
+    imageStatic: true,
     category: "site",
     title: "Lumen",
     tagline: { pt: "Site cinematográfico 3D para arquitetura · React Three Fiber", en: "Cinematic 3D site for architecture · React Three Fiber" },

@@ -57,9 +57,9 @@ function FauxPreview({ p, tall = false }: { p: Project; tall?: boolean }) {
 }
 
 function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall?: boolean }) {
-  if (p.media?.length) {
-    return <AppPreview media={p.media} big={tall} locale={locale} />;
-  }
+  // Pedido do Rick (31/07): cards da vitrine SEM vídeo — imagem do hero
+  // sempre que existir. Vídeos continuam nas páginas de case, onde há
+  // contexto (e botão de play consciente) pra assistir.
   if (p.image) {
     return (
       <WebsitePreview
@@ -70,6 +70,10 @@ function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall
         fit={p.imageStatic ? "contain" : "scroll"}
       />
     );
+  }
+  // Fallback raro: projeto sem screenshot mas com mídia gravada.
+  if (p.media?.length) {
+    return <AppPreview media={p.media} big={tall} locale={locale} />;
   }
   return <FauxPreview p={p} tall={tall} />;
 }
