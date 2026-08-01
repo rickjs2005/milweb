@@ -1289,6 +1289,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjjstore",
+    homeFeatured: true,
     category: "ecommerce",
     title: "RJjstore",
     tagline: { pt: "Moda premium editorial · checkout no WhatsApp", en: "Editorial premium fashion · WhatsApp checkout" },
