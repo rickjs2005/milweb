@@ -181,7 +181,6 @@ const GH = "https://github.com/rickjs2005";
 export const PROJECTS: Project[] = [
   {
     slug: "milsaca",
-    homeFeatured: true,
     category: "saas",
     title: "Milsaca",
     tagline: { pt: "SaaS sob medida · plataforma multi-tenant", en: "Custom SaaS · multi-tenant platform" },
@@ -242,7 +241,6 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "millead",
-    homeFeatured: true,
     category: "saas",
     title: "MilLead",
     tagline: { pt: "CRM com IA · prospecção de clientes", en: "AI-powered CRM · client prospecting" },
@@ -313,7 +311,6 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "inkvision",
-    homeFeatured: true,
     category: "saas",
     title: "InkVision",
     tagline: { pt: "SaaS de tatuagem · simulação de tattoo com IA", en: "Tattoo SaaS · AI tattoo simulation" },
@@ -469,6 +466,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "atelier-vertex",
+    homeFeatured: true,
     category: "site",
     title: "ATELIER VERTEX",
     tagline: { pt: "Scrollytelling arquitetônico · vídeo real controlado pelo scroll", en: "Architectural scrollytelling · real footage driven by scroll" },
@@ -591,11 +589,11 @@ export const PROJECTS: Project[] = [
     slug: "terral",
     category: "site",
     title: "TERRAL",
-    tagline: { pt: "Torrefação artesanal · a torra acontece no scroll", en: "Artisanal coffee roastery · the roast happens as you scroll" },
-    problem: { pt: "Sites de café especial mostram sacas e xícaras paradas. Nada explica o que diferencia uma torra artesanal e por que ela vale mais.", en: "Specialty coffee sites show static bags and cups. Nothing explains what sets an artisanal roast apart or why it costs more." },
-    result: { pt: "Um grão de café 3D procedural que TORRA conforme o visitante rola: verde-cru → torra clara → média → escura, com HUD de temperatura (180→232°C), tremor no first crack, fumaça e brasas em partículas, explosão em pó na moagem e uma xícara fumegante no destino. O funil termina em três blends com notas sensoriais e pedido direto no WhatsApp.", en: "A procedural 3D coffee bean that ROASTS as the visitor scrolls: raw green → light → medium → dark, with a temperature HUD (180→232°C), a first-crack tremor, particle smoke and embers, a grind-burst of powder and a steaming cup at the destination. The funnel ends in three blends with tasting notes and direct WhatsApp ordering." },
-    stack: ["Next.js", "TypeScript", "React Three Fiber", "Three.js", "GSAP", "Lenis", "Tailwind"],
-    metric: { pt: "5 capítulos · grão 100% procedural", en: "5 chapters · 100% procedural bean" },
+    tagline: { pt: "Torrefação artesanal · do grão à xícara em cinco capítulos", en: "Artisanal coffee roastery · bean to cup in five chapters" },
+    problem: { pt: "Sites de café especial mostram sacas e xícaras paradas. Nada explica o caminho que o grão percorre nem por que uma torra artesanal vale mais.", en: "Specialty coffee sites show static bags and cups. Nothing explains the path the bean travels or why an artisanal roast costs more." },
+    result: { pt: "Uma jornada editorial guiada pelo scroll: Caparaó, o terreiro ao sol, o fogo do tambor, a moenda e a xícara, cada capítulo com vídeo e fotografia reais ao lado de tipografia gigante. O funil fecha na vitrine de blends com notas sensoriais e pedido pelo WhatsApp. E tem um segredo: quem segura o botão certo por seis segundos descobre a casa do torrador.", en: "An editorial journey driven by scroll: Caparaó, the sun-drying yard, the drum's fire, the grind and the cup, each chapter pairing real video and photography with giant typography. The funnel closes on a blend showcase with tasting notes and WhatsApp ordering. And there's a secret: hold the right button for six seconds and you find the roaster's house." },
+    stack: ["Next.js", "TypeScript", "GSAP", "Lenis", "Tailwind"],
+    metric: { pt: "5 capítulos · vídeo e foto reais", en: "5 chapters · real video and photography" },
     status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
     live: "https://terral-cafe.vercel.app",
     featured: true,
@@ -605,27 +603,27 @@ export const PROJECTS: Project[] = [
     caseStudy: {
       narrative: [
         {
-          pt: "O conceito inteiro cabe numa frase: o scroll É a torra. Um wrapper de 600vh com viewport sticky vira a linha do tempo. O ScrollTrigger só escreve um progresso-alvo e o damping acontece num único rAF dentro da cena R3F, então o HUD de temperatura do DOM lê exatamente o mesmo valor amortecido, no mesmo tick. Essa disciplina de 'um relógio só' veio de um bug real de outro projeto da casa, onde scrub no DOM e cena 3D em relógios diferentes dessincronizavam visivelmente.",
-          en: "The whole concept fits in one sentence: the scroll IS the roast. A 600vh wrapper with a sticky viewport becomes the timeline. ScrollTrigger only writes a target progress and damping happens in a single rAF inside the R3F scene, so the DOM temperature HUD reads the exact same damped value, on the same tick. This 'single clock' discipline came from a real bug in another in-house project where DOM scrub and 3D scene on different clocks visibly drifted apart.",
+          pt: "O site conta o caminho do café em cinco capítulos guiados pelo scroll: Caparaó, Terreiro, Tambor, Moenda e Xícara. Cada capítulo divide a tela entre imagem viva (vídeo e fotografia reais de lavoura, secagem e torra) e tipografia editorial gigante, com grãos flutuando em parallax costurando as transições. Os títulos são personagens: XÍCARA entra em camadas sobrepostas, VERTENTE abre a vitrine dos blends.",
+          en: "The site tells coffee's path in five scroll-driven chapters: Caparaó, the drying yard, the drum, the grind and the cup. Each chapter splits the screen between living imagery (real footage of farm, drying and roasting) and giant editorial typography, with beans floating in parallax to stitch the transitions. The titles are characters: XÍCARA arrives in stacked layers, VERTENTE opens the blend showcase.",
         },
         {
-          pt: "O grão é uma esfera esculpida no vertex shader: achatamento nos eixos, vinco central cavado por smoothstep (a fenda característica) e casca irregular por ruído. A cor da torra é um gradiente de 4 paradas (verde-cru, clara, média, escura) interpolado por um uniform. A moagem ensinou uma lição de malha conectada: deslocar vértices pela normal com amplitude alta não 'explode' uma esfera, estica os triângulos num ouriço gigante. A versão final usa deslocamento contido mais fade rápido no fragment, e entrega a poeira a um sistema de partículas dedicado que cai como pó de verdade.",
-          en: "The bean is a sphere sculpted in the vertex shader: axis flattening, a center crease carved with smoothstep (the signature slit) and an irregular skin via noise. The roast color is a 4-stop gradient (raw green, light, medium, dark) interpolated by a uniform. The grind chapter taught a connected-mesh lesson: displacing vertices along normals with high amplitude doesn't 'explode' a sphere, it stretches triangles into a giant sea urchin. The final version uses contained displacement plus a fast fragment fade, delegating the dust to a dedicated particle system that falls like actual grounds.",
+          pt: "Depois da jornada o site vira loja de verdade: três blends com origem, altitude, nota SCA e perfil sensorial, cada um com pedido direto pelo WhatsApp. O rodapé fecha com hierarquia de jornal, um letreiro TERRAL de ponta a ponta e um marquee com as palavras da casa: silêncio, tempo, paciência, origem, altitude, fogo.",
+          en: "Past the journey the site becomes a real shop: three blends with origin, altitude, SCA score and tasting profile, each with direct WhatsApp ordering. The footer closes with newspaper hierarchy, an edge-to-edge TERRAL letterpress and a marquee of the house words: silence, time, patience, origin, altitude, fire.",
         },
         {
-          pt: "Cada capítulo reposiciona o grão por âncoras interpoladas (texto à esquerda, grão à direita, e vice-versa), as brasas só existem na janela da torra e o vapor engrossa na xícara, que é uma LatheGeometry com alça de torus e pires, nada importado. No fim da jornada a cena sai e o site vira funil clássico: blends com origem, altitude e notas, clube de assinatura e WhatsApp em todos os CTAs.",
-          en: "Each chapter repositions the bean via interpolated anchors (copy on the left, bean on the right, and vice versa), embers only exist inside the roast window and the steam thickens at the cup, which is a LatheGeometry with a torus handle and saucer, nothing imported. Past the journey the scene bows out and the site becomes a classic funnel: blends with origin, altitude and notes, a subscription club and WhatsApp on every CTA.",
+          pt: "E tem a recompensa escondida: um botão discreto pede que o visitante SEGURE por seis segundos, sem prometer nada. Quem espera ganha a casa do torrador, uma página com foto viva do tambor, um texto sobre paciência e um código que dá o dobro de café no primeiro pacote. É a tese do site inteira num gesto: café é sobre esperar o tempo certo.",
+          en: "And there's the hidden reward: a discreet button asks the visitor to HOLD for six seconds, promising nothing. Whoever waits earns the roaster's house, a page with living footage of the drum, a text about patience and a code that doubles the coffee in the first bag. It's the site's whole thesis in one gesture: coffee is about waiting the right amount of time.",
         },
       ],
       highlights: [
-        { label: { pt: "Um relógio só", en: "A single clock" }, detail: { pt: "ScrollTrigger escreve o alvo, um único rAF amortece, e cena 3D e HUD do DOM leem o mesmo valor. Zero dessincronia.", en: "ScrollTrigger writes the target, one rAF damps it, and the 3D scene and DOM HUD read the same value. Zero drift." } },
-        { label: { pt: "Torra em shader", en: "Roast in a shader" }, detail: { pt: "Vinco, casca e cor de torra (4 paradas) esculpidos em GLSL sobre uma esfera, sem nenhum modelo importado.", en: "Crease, skin and roast color (4 stops) sculpted in GLSL over a sphere, with no imported model." } },
-        { label: { pt: "Lição do ouriço", en: "The sea-urchin lesson" }, detail: { pt: "Explodir malha conectada pela normal vira espinhos; a moagem certa é deslocamento contido + fade + partículas dedicadas.", en: "Exploding a connected mesh along normals makes spikes; proper grinding is contained displacement + fade + dedicated particles." } },
+        { label: { pt: "Capítulos no scroll", en: "Chapters on scroll" }, detail: { pt: "Caparaó, Terreiro, Tambor, Moenda e Xícara: meia tela de história, meia de vídeo e foto reais.", en: "Caparaó, drying yard, drum, grind and cup: half a screen of story, half of real video and photo." } },
+        { label: { pt: "Tipografia como cena", en: "Typography as scene" }, detail: { pt: "Títulos gigantes fazem o papel de imagem: entram em camadas, ancoram capítulos e abrem a vitrine.", en: "Giant titles do an image's job: they layer in, anchor chapters and open the showcase." } },
+        { label: { pt: "O segredo da casa", en: "The house secret" }, detail: { pt: "Segurar um botão por seis segundos revela a casa do torrador e um código de dobro de café.", en: "Holding a button for six seconds reveals the roaster's house and a double-coffee code." } },
       ],
       gallery: [
-        { src: "/shots/terral/torra.webp", alt: { pt: "Capítulo da torra: grão escurecendo com HUD de temperatura a 206°C", en: "Roast chapter: bean darkening with the temperature HUD at 206°C" } },
-        { src: "/shots/terral/xicara.webp", alt: { pt: "Capítulo final: xícara procedural com vapor subindo", en: "Final chapter: procedural cup with rising steam" } },
-        { src: "/shots/terral/blends.webp", alt: { pt: "Vitrine dos três blends com notas sensoriais e pedido por WhatsApp", en: "The three blends with tasting notes and WhatsApp ordering" } },
+        { src: "/shots/terral/sol.webp", alt: { pt: "Capítulo do Terreiro: o sol faz metade do trabalho, com os terreiros de secagem e a pá revolvendo os grãos", en: "Drying-yard chapter: the sun does half the work, with drying beds and a paddle turning the beans" } },
+        { src: "/shots/terral/vertente.webp", alt: { pt: "Vitrine dos blends: VERTENTE em tipografia gigante com pacote, fogo e notas sensoriais", en: "Blend showcase: VERTENTE in giant type with the bag, fire and tasting notes" } },
+        { src: "/shots/terral/casa-do-torrador.webp", alt: { pt: "A casa do torrador: a página-recompensa de quem segurou o botão por seis segundos", en: "The roaster's house: the reward page for holding the button six seconds" } },
       ],
     },
   },
@@ -640,7 +638,6 @@ export const PROJECTS: Project[] = [
     metric: { pt: "Página única · animação 100% em código", en: "Single page · animation 100% in code" },
     status: { pt: "Projeto autoral · em breve no ar", en: "Personal project · live soon" },
     note: { pt: "Projeto de fã, sem vínculo com os detentores dos direitos da obra.", en: "Fan project, unaffiliated with the rights holders." },
-    homeFeatured: true,
     image: "/shots/one-piece.webp",
     imageStatic: true,
     caseStudy: {
@@ -657,6 +654,39 @@ export const PROJECTS: Project[] = [
       gallery: [
         { src: "/shots/one-piece/cena-1.webp", alt: { pt: "Bandeira dos Chapéus de Palha ao pôr do sol: \"Uma bandeira não é uma ameaça. É uma promessa.\"", en: "The Straw Hat flag at sunset: \"A flag is not a threat. It's a promise.\"" } },
         { src: "/shots/one-piece/cena-2.webp", alt: { pt: "Capítulo da Jornada: o arco de Alabasta com a cidade dourada no deserto", en: "Journey chapter: the Alabasta arc with the golden desert city" } },
+      ],
+    },
+  },
+  {
+    slug: "alva-odontologia",
+    homeFeatured: true,
+    category: "site",
+    title: "ALVA Odontologia",
+    tagline: { pt: "Clínica odontológica premium · um filme aberto pelo scroll", en: "Premium dental clinic · a film driven by scroll" },
+    problem: { pt: "Site de dentista costuma ser igual em todo lugar: lista de tratamentos, foto de banco de imagem e nenhum motivo pra escolher aquela clínica.", en: "Dental clinic sites look the same everywhere: a list of treatments, stock photos and no reason to choose that clinic." },
+    result: { pt: "Um filme em 7 planos amarrado ao scroll abre o site: rolar atravessa a clínica enquanto a manhã nasce. O conceito da alvorada guia a identidade inteira, do nome à luz das cenas, e o arco da marca volta em três usos diferentes. Depois do filme, o site apresenta a clínica e leva o agendamento direto pro WhatsApp.", en: "A 7-shot film tied to the scroll opens the site: scrolling moves through the clinic as the morning rises. The daybreak concept drives the whole identity, from the name to the light of every scene, and the brand's arch returns in three different uses. Past the film, the site presents the clinic and sends booking straight to WhatsApp." },
+    stack: ["Next.js", "TypeScript", "GSAP", "Lenis", "Tailwind"],
+    metric: { pt: "Filme de 7 planos · scrub no scroll", en: "7-shot film · scroll scrub" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://alva-odontologia.vercel.app",
+    featured: true,
+    image: "/shots/alva-odontologia.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O hero é um vídeo de verdade cujo tempo pertence ao scroll: nada de autoplay, cada rolada avança a câmera pela clínica. Pra esse scrub ficar liso, o vídeo é codificado com todo frame como keyframe, porque buscar um tempo específico num vídeo comum engasga. E teve uma lição de produção aqui: a versão que rodava perfeita no ambiente local quebrou na CDN, então o corte final foi validado contra a URL pública, não contra o localhost.",
+          en: "The hero is a real video whose time belongs to the scroll: no autoplay, every scroll advances the camera through the clinic. For that scrub to stay smooth the video is encoded with every frame as a keyframe, because seeking into a regular video stutters. And there was a production lesson here: the version that ran perfectly locally broke on the CDN, so the final cut was validated against the public URL, not localhost.",
+        },
+        {
+          pt: "A marca sustenta o resto: ALVA vem de alvorada, e a luz de manhã cedo atravessa as cenas, os textos e as cores. O arco que desenha o logotipo reaparece em três papéis diferentes ao longo da página, costurando filme e conteúdo numa identidade só. O funil termina simples, como clínica precisa: conhecer, confiar e agendar pelo WhatsApp.",
+          en: "The brand carries the rest: ALVA comes from the Portuguese word for daybreak, and early morning light runs through the scenes, the copy and the colors. The arch that draws the logo returns in three different roles along the page, stitching film and content into a single identity. The funnel ends the way a clinic needs it to: know, trust, and book via WhatsApp.",
+        },
+      ],
+      gallery: [
+        { src: "/shots/alva-odontologia/plano.webp", alt: { pt: "Plano 03 do filme, O Encontro: a dentista recebe a paciente na sala de espera", en: "Film shot 03, The Welcome: the dentist greets a patient in the waiting room" } },
+        { src: "/shots/alva-odontologia/marca.webp", alt: { pt: "Rodapé com o wordmark ALVA e o arco dourado da identidade", en: "Footer with the ALVA wordmark and the golden identity arch" } },
+        { src: "/shots/alva-odontologia/contato.webp", alt: { pt: "Fecho de conversão: pronto para transformar seu sorriso, com agendamento", en: "Conversion closing: ready to transform your smile, with booking" } },
       ],
     },
   },
@@ -719,7 +749,6 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecoa",
-    homeFeatured: true,
     category: "saas",
     title: "ECOA",
     tagline: { pt: "Rede social anônima · produto completo com IA", en: "Anonymous social network · full product with AI" },
@@ -959,7 +988,6 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "ecommerce-do-agro",
-    homeFeatured: true,
     category: "ecommerce",
     title: "E-commerce do Agro",
     tagline: { pt: "Sistema web completo · e-commerce + painéis", en: "Full web system · e-commerce + dashboards" },
@@ -1079,6 +1107,7 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "loja-joias",
+    homeFeatured: true,
     category: "ecommerce",
     title: "AURÉA Joalheria",
     tagline: { pt: "Vitrine premium · Espelho Virtual (try-on) · WhatsApp", en: "Premium showcase · Virtual Mirror (try-on) · WhatsApp" },
@@ -1260,7 +1289,6 @@ export const PROJECTS: Project[] = [
   },
   {
     slug: "rjjstore",
-    homeFeatured: true,
     category: "ecommerce",
     title: "RJjstore",
     tagline: { pt: "Moda premium editorial · checkout no WhatsApp", en: "Editorial premium fashion · WhatsApp checkout" },
