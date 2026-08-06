@@ -5,7 +5,6 @@ import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { REVEAL_VARIANT_ROTATION } from "./reveal-variants";
 import { WebsitePreview } from "./website-preview";
-import { AppPreview } from "./app-preview";
 import { TiltCard } from "./tilt-card";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsShowcase, type ProjectShowcaseItem } from "./projects-showcase";
@@ -66,10 +65,10 @@ function FauxPreview({ p, tall = false }: { p: Project; tall?: boolean }) {
   );
 }
 
-function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall?: boolean }) {
-  // Pedido do Rick (31/07): cards da vitrine SEM vídeo — imagem do hero
-  // sempre que existir. Vídeos continuam nas páginas de case, onde há
-  // contexto (e botão de play consciente) pra assistir.
+function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
+  // Sem vídeo em lugar nenhum: a vitrine perdeu os vídeos em 31/07 e as
+  // páginas de case em 05/08 (pedido do Rick). Todo projeto se apresenta
+  // pelo screenshot; sem screenshot, cai no preview estilizado.
   if (p.image) {
     return (
       <WebsitePreview
@@ -80,10 +79,6 @@ function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall
         fit={p.imageStatic ? "contain" : "scroll"}
       />
     );
-  }
-  // Fallback raro: projeto sem screenshot mas com mídia gravada.
-  if (p.media?.length) {
-    return <AppPreview media={p.media} big={tall} locale={locale} />;
   }
   return <FauxPreview p={p} tall={tall} />;
 }
@@ -182,7 +177,7 @@ function ClientCard({ p, locale }: { p: Project; locale: Locale }) {
     <TiltCard strength={2} className="h-full rounded-3xl">
       <div className="relative flex h-full flex-col rounded-3xl border border-accent/30 glass p-6 sm:p-8">
         <div style={{ viewTransitionName: `case-${p.slug}` }}>
-          <Preview p={p} locale={locale} tall />
+          <Preview p={p} tall />
         </div>
         <div className="mt-6 flex flex-1 flex-col">
           {p.clientName && (
@@ -309,7 +304,7 @@ export function Projects({ locale }: { locale: Locale }) {
           <TiltCard strength={2} className="mt-10 rounded-3xl">
             <div className="relative grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
               <div style={{ viewTransitionName: `case-${flagship.slug}` }}>
-                <Preview p={flagship} locale={locale} tall />
+                <Preview p={flagship} tall />
               </div>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
@@ -352,7 +347,7 @@ export function Projects({ locale }: { locale: Locale }) {
             beltNode: (
               <div>
                 <div style={{ viewTransitionName: `case-${p.slug}` }}>
-                  <Preview p={p} locale={locale} />
+                  <Preview p={p} />
                 </div>
                 <p className="border-t border-line/10 px-4 py-3 font-display text-base font-bold tracking-tight text-fg">
                   {p.title}
@@ -403,7 +398,7 @@ export function Projects({ locale }: { locale: Locale }) {
                       {/* Elemento compartilhado da View Transition: morfa para o
                           preview grande do case (mesmo nome em case-study.tsx). */}
                       <div style={{ viewTransitionName: `case-${p.slug}` }}>
-                        <Preview p={p} locale={locale} />
+                        <Preview p={p} />
                       </div>
                       <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
                       <div className="mt-3 flex-1">

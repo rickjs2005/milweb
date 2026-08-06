@@ -182,8 +182,6 @@ export type Project = {
   image?: string;
   /** true = imagem estática inteira no card (sem rolagem), ex.: print de celular. */
   imageStatic?: boolean;
-  /** Vídeos do app em uso. 2+ = toggle (ex.: Desktop | Mobile | Admin). */
-  media?: { label: Localized; src: string; poster: string; kind: "desktop" | "mobile" }[];
   /**
    * Aprofundamento técnico do case: arquitetura/decisões + destaques + galeria
    * de telas adicionais. Opcional — só nos projetos com repositório documentado.
@@ -398,9 +396,7 @@ export const PROJECTS: Project[] = [
     status: { pt: "Projeto autoral · demo", en: "Personal project · demo" },
     repos: [{ label: "Código", url: `${GH}/rockverse` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/rockverse-desktop.mp4", poster: "/shots/rockverse-desktop.jpg", kind: "desktop" },
-    ],
+    image: "/shots/rockverse.jpg",
     caseStudy: {
       narrative: [
         {
@@ -836,14 +832,10 @@ export const PROJECTS: Project[] = [
     stack: ["Next.js", "TypeScript", "Tailwind", "Supabase", "Zustand"],
     metric: { pt: "1 base white-label → várias lojas", en: "1 white-label base → many stores" },
     // live removido: o deploy de demonstração tem um 500 conhecido em
-    // /produtos/[id] — sem link até o fix (os vídeos do card cobrem a demo)
+    // /produtos/[id] — sem link até o fix (o screenshot cobre a demo)
     repos: [{ label: "Código", url: `${GH}/loja-iphone` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/iphone-desktop.mp4", poster: "/shots/iphone-desktop.jpg", kind: "desktop" },
-      { label: { pt: "Mobile", en: "Mobile" }, src: "/shots/iphone-cliente.mp4", poster: "/shots/iphone-cliente.jpg", kind: "mobile" },
-      { label: { pt: "Admin", en: "Admin" }, src: "/shots/iphone-admin.mp4", poster: "/shots/iphone-admin.jpg", kind: "mobile" },
-    ],
+    image: "/shots/loja-iphone.jpg",
     caseStudy: {
       narrative: [
         {
@@ -1081,9 +1073,6 @@ export const PROJECTS: Project[] = [
     live: "https://akatsuki-loja-animes.vercel.app",
     repos: [{ label: "Código", url: `${GH}/akatsuki-loja-animes` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/akatsuki-desktop.mp4", poster: "/shots/akatsuki-desktop.jpg", kind: "desktop" },
-    ],
     caseStudy: {
       narrative: [
         {
@@ -1144,9 +1133,6 @@ export const PROJECTS: Project[] = [
     live: "https://loja-joias-two.vercel.app",
     repos: [{ label: "Código", url: `${GH}/loja-joias` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/joias-desktop.mp4", poster: "/shots/joias-desktop.jpg", kind: "desktop" },
-    ],
     caseStudy: {
       narrative: [
         {
@@ -1206,9 +1192,6 @@ export const PROJECTS: Project[] = [
     live: "https://nexus-geek-store.vercel.app",
     repos: [{ label: "Código", url: `${GH}/nexus-geek-store` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/geek-desktop.mp4", poster: "/shots/geek-desktop.jpg", kind: "desktop" },
-    ],
     caseStudy: {
       narrative: [
         {
@@ -1269,9 +1252,6 @@ export const PROJECTS: Project[] = [
     live: "https://lumen-architecture-drab.vercel.app",
     repos: [{ label: "Código", url: `${GH}/lumen-architecture` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/lumen-desktop.mp4", poster: "/shots/lumen-desktop.jpg", kind: "desktop" },
-    ],
     caseStudy: {
       narrative: [
         {
@@ -1390,9 +1370,6 @@ export const PROJECTS: Project[] = [
     live: "https://rjs-laticinios.vercel.app",
     repos: [{ label: "Código", url: `${GH}/rjs-laticinios` }],
     featured: true,
-    media: [
-      { label: { pt: "Desktop", en: "Desktop" }, src: "/shots/rjs-laticinios-desktop.mp4", poster: "/shots/rjs-laticinios-desktop.jpg", kind: "desktop" },
-    ],
     caseStudy: {
       narrative: [
         {

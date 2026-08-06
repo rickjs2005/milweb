@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { UI, PROFILE, type Project, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
-import { AppPreview } from "./app-preview";
 import { WebsitePreview } from "./website-preview";
 
 const waHref = (text: string) =>
@@ -20,9 +19,8 @@ function host(url?: string) {
   return url ? url.replace(/^https?:\/\//, "").replace(/\/$/, "") : "preview";
 }
 
-/** Preview grande do projeto (vídeo, screenshot rolante ou print estático). */
-function Preview({ p, locale }: { p: Project; locale: Locale }) {
-  if (p.media?.length) return <AppPreview media={p.media} big locale={locale} />;
+/** Preview grande do projeto (screenshot rolante ou print estático). */
+function Preview({ p }: { p: Project }) {
   if (p.image)
     return (
       <WebsitePreview
@@ -92,7 +90,7 @@ export function CaseStudy({
       {/* Preview grande — mesmo view-transition-name do card na home:
           o navegador morfa o card para cá ao navegar (view-transitions.tsx). */}
       <div className="mt-10" style={{ viewTransitionName: `case-${p.slug}` }}>
-        <Preview p={p} locale={locale} />
+        <Preview p={p} />
       </div>
 
       {/* Problema → Solução */}
