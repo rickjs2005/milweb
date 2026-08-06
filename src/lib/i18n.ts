@@ -1,18 +1,31 @@
 /**
- * i18n server-side (cookie). O locale é resolvido NO SERVIDOR a partir do
- * cookie `lang`; as Server Components renderizam só o idioma escolhido — assim
- * o content.ts fica fora do bundle do client e o HTML sai com 1 idioma só.
- * A troca de idioma (client) grava o cookie e faz router.refresh().
+ * i18n server-side pelo SEGMENTO da rota (app/[lang]/...).
+ *
+ * O locale vinha de um cookie lido com `cookies()`. Funcionava, mas cookie é
+ * API dinâmica: bastava lê-lo para a página inteira deixar de ser
+ * pré-renderizável, e o site todo virava SSR por request (os números estão
+ * na nota longa em src/lib/csp.ts). Como parâmetro de rota, o mesmo conteúdo
+ * sai pronto do build nos dois idiomas.
+ *
+ * As Server Components continuam renderizando um idioma só — o content.ts
+ * fica fora do bundle do client e o HTML sai monolíngue.
  */
-import { cookies } from "next/headers";
 import type { Locale, Localized } from "./content";
 
-export const LOCALE_COOKIE = "lang";
+/** Os dois idiomas viram os dois valores possíveis de [lang]. */
+export const LOCALES = ["pt", "en"] as const;
 
-/** Lê o locale do cookie (default = pt). Usar só em Server Components. */
-export async function getLocale(): Promise<Locale> {
-  const store = await cookies();
-  return store.get(LOCALE_COOKIE)?.value === "en" ? "en" : "pt";
+/** Params de todas as rotas sob app/[lang]. */
+export type LangParams = { lang: string };
+
+/** Converte o parâmetro cru da rota em Locale (qualquer coisa != "en" = pt). */
+export function normalizeLocale(lang: string | undefined): Locale {
+  return lang === "en" ? "en" : "pt";
+}
+
+/** Lê o locale dos params da rota. Usar em page/layout sob app/[lang]. */
+export async function localeFrom(params: Promise<LangParams>): Promise<Locale> {
+  return normalizeLocale((await params).lang);
 }
 
 /** `<html lang>` correspondente ao locale. */

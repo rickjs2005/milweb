@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, TrendingUp } from "lucide-react";
 import { PROJECTS, PROFILE, SITE_URL, UI, type Project, type Locale } from "@/lib/content";
-import { getLocale, makeT, withLocale } from "@/lib/i18n";
+import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Contact, Footer } from "@/components/contact";
 import { ArchiveFilter } from "@/components/archive-filter";
@@ -21,8 +21,12 @@ import { FILTER_CATEGORIES, FILTER_LABELS } from "@/components/projects";
  * justamente para tirar peso de render da home.
  */
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<LangParams>;
+}): Promise<Metadata> {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
   const canonical = `${locale === "en" ? "/en" : ""}/projetos`;
   const title = t(UI.sections.projectsAllTitle);
@@ -135,8 +139,8 @@ function Card({ p, locale }: { p: Project; locale: Locale }) {
   );
 }
 
-export default async function ProjectsIndexPage() {
-  const locale = await getLocale();
+export default async function ProjectsIndexPage({ params }: { params: Promise<LangParams> }) {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
   const clientWork = PROJECTS.filter((p) => p.clientWork);
   const own = PROJECTS.filter((p) => !p.clientWork && !p.hideFromLists);

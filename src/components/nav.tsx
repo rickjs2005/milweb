@@ -344,8 +344,11 @@ const MENU_DUST = [
  */
 function LangToggle({ locale }: { locale: Locale }) {
   const pathname = usePathname() ?? "/";
-  // path equivalente sem o prefixo /en
-  const base = pathname.replace(/^\/en(?=\/|$)/, "") || "/";
+  // Path sem prefixo de idioma. Precisa tirar /pt também, não só /en: as
+  // páginas moram em app/[lang] e a raiz é servida por um rewrite pra /pt,
+  // então em PT o usePathname devolve o caminho INTERNO (/pt, /pt/projetos).
+  // Sem isso o link de EN virava /en/pt e caía no 404.
+  const base = pathname.replace(/^\/(pt|en)(?=\/|$)/, "") || "/";
   const ptHref = base;
   const enHref = base === "/" ? "/en" : `/en${base}`;
 

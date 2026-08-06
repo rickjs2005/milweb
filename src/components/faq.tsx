@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { Plus } from "lucide-react";
 import { FAQ, UI, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
@@ -6,7 +5,6 @@ import { Reveal } from "./reveal";
 
 export async function Faq({ locale }: { locale: Locale }) {
   const t = makeT(locale);
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -19,7 +17,6 @@ export async function Faq({ locale }: { locale: Locale }) {
   return (
     <section id="faq" className="container-page scroll-mt-20 py-20 sm:py-32">
       <script
-        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />

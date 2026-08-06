@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -13,8 +12,10 @@ import { SquidFollower } from "@/components/SquidFollower";
 import { MiloProtagonist } from "@/components/milo-protagonist";
 import { ViewTransitions } from "@/components/view-transitions";
 import { PROFILE, SITE_URL } from "@/lib/content";
-import { getLocale, htmlLang } from "@/lib/i18n";
-import "./globals.css";
+import { htmlLang, localeFrom, LOCALES, type LangParams } from "@/lib/i18n";
+import { SITE_COPY, SITE_JSON_LD } from "@/lib/inline-scripts";
+import { THEME_SCRIPT } from "@/lib/theme-script";
+import "../globals.css";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -24,26 +25,6 @@ const display = Bricolage_Grotesque({
   weight: ["600", "700", "800"],
 });
 
-/**
- * A description precisa caber em 160 caracteres: acima disso o Google corta a
- * frase no meio do resultado de busca. A versão anterior tinha 195 e gastava
- * os primeiros 80 listando stack (Next.js, React, TypeScript, Node.js,
- * Supabase) — a mesma linguagem que saiu do hero, e que não diz nada para o
- * dono de negócio que está lendo o resultado da busca.
- */
-const COPY = {
-  pt: {
-    title: "MilWeb | Sites e sistemas que dão resultado",
-    description:
-      "Sites e sistemas que fazem seu negócio vender: mais orçamentos no WhatsApp, mais visibilidade no Google e páginas que abrem em menos de 2 segundos.",
-  },
-  en: {
-    title: "MilWeb | Websites and systems that deliver results",
-    description:
-      "Websites and systems that make your business sell: more WhatsApp enquiries, more visibility on Google and pages that load in under 2 seconds.",
-  },
-} as const;
-
 /** hreflang do site inteiro: PT na raiz, EN em /en (x-default = PT). */
 export const LANGUAGE_ALTERNATES = {
   "pt-BR": "/",
@@ -51,9 +32,23 @@ export const LANGUAGE_ALTERNATES = {
   "x-default": "/",
 };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
-  const { title, description } = COPY[locale];
+/**
+ * As duas versões do site saem prontas do build. Como é o segmento mais
+ * externo, este generateStaticParams vale para toda a árvore abaixo — as
+ * páginas filhas só precisam declarar os params que elas mesmas abrem
+ * (ex.: o slug do case).
+ */
+export function generateStaticParams() {
+  return LOCALES.map((lang) => ({ lang }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<LangParams>;
+}): Promise<Metadata> {
+  const locale = await localeFrom(params);
+  const { title, description } = SITE_COPY[locale];
   const canonical = locale === "en" ? "/en" : "/";
   return {
     metadataBase: new URL(SITE_URL),
@@ -97,40 +92,22 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: "MilWeb",
-  url: SITE_URL,
-  email: `mailto:${PROFILE.email}`,
-  image: `${SITE_URL}/opengraph-image`,
-  description: COPY.pt.description,
-  areaServed: "BR",
-  founder: { "@type": "Person", name: "Rick", sameAs: [PROFILE.github, PROFILE.linkedin].filter(Boolean) },
-  knowsAbout: ["Next.js", "React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "SEO"],
-};
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export default async function RootLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<LangParams>;
+}) {
+  const locale = await localeFrom(params);
   return (
     <html lang={htmlLang(locale)} className={`${sans.variable} ${mono.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
         {/* Anti-flash: aplica o tema salvo antes do paint (default = dark). */}
-        <script
-          nonce={nonce}
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light');}catch(e){}})();",
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <script
-          nonce={nonce}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_JSON_LD }} />
         <SmoothScroll />
         <TrackConversions />
         <CursorGlow />

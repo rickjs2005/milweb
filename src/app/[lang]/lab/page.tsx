@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { LAB, LAB_PAGE, PROFILE } from "@/lib/content";
-import { getLocale, makeT, withLocale } from "@/lib/i18n";
+import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Reveal } from "@/components/reveal";
 import { Footer } from "@/components/contact";
 import { LabPlayer } from "@/components/lab-player";
 import { LabCarousel } from "@/components/lab-carousel";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<LangParams>;
+}): Promise<Metadata> {
+  const locale = await localeFrom(params);
   const canonical = `${locale === "en" ? "/en" : ""}/lab`;
   return {
     title: LAB_PAGE.metaTitle[locale],
@@ -32,8 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
  * com som e controles, + o convite comercial. Vídeos só carregam quando o
  * visitante dá play (preload="none" + poster).
  */
-export default async function LabPage() {
-  const locale = await getLocale();
+export default async function LabPage({ params }: { params: Promise<LangParams> }) {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
   const waHref = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(t(LAB_PAGE.ctaWhats))}`;
 

@@ -1,94 +1,66 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { buildCsp } from "@/lib/csp";
 
-const isDev = process.env.NODE_ENV === "development";
+const CSP = buildCsp({ dev: process.env.NODE_ENV === "development" });
 
 /**
- * CSP com nonce por request: 'strict-dynamic' libera os chunks que o próprio
- * Next injeta e os scripts que a Vercel Analytics/Speed Insights criam via
- * JS, sem precisar allowlist de domínio. https:/'unsafe-inline' ficam só de
- * fallback pra navegadores sem suporte a nonce/strict-dynamic (ignorados
- * pelos que suportam). style-src precisa de 'unsafe-inline': nonce não cobre
- * atributo style="" inline (só <style> e <link>), e o projeto usa style={{}}
- * bastante.
+ * i18n por URL, com o locale vivendo no SEGMENTO da rota (app/[lang]/...).
  *
- * DESENVOLVIMENTO: o `next dev` compila os módulos com `eval()` (HMR e source
- * maps). Sem 'unsafe-eval' o browser derruba o bundle inteiro com EvalError,
- * a hidratação nunca completa e TODO conteúdo dentro de <Reveal> fica preso
- * em opacity:0 — o site aparece em branco a partir do hero. O HMR também
- * precisa de ws: no connect-src. Nada disso vaza pra produção: as duas
- * exceções são compiladas fora quando NODE_ENV !== "development".
+ * As URLs públicas não mudaram: PT na raiz (`/`, `/projetos`) e EN em `/en`.
+ * O que mudou é como o servidor descobre o idioma. Antes era um cookie lido
+ * com `cookies()` dentro das Server Components — e ler cookie opta a rota
+ * por render dinâmico, o que impedia qualquer página de ser pré-renderizada
+ * (ver a nota longa em src/lib/csp.ts). Agora o idioma é parâmetro de rota,
+ * então as duas versões saem prontas do build e são servidas da CDN.
+ *
+ *   /            → reescreve para /pt          (invisível pro visitante)
+ *   /projetos    → reescreve para /pt/projetos
+ *   /en, /en/... → passa direto (já casa com [lang])
+ *   /pt, /pt/... → REDIRECIONA para a URL sem prefixo
+ *
+ * O último caso existe pra não criar conteúdo duplicado: o prefixo `/pt` é
+ * detalhe interno, e sem o redirect toda página teria dois endereços
+ * públicos idênticos.
  */
-function buildCsp(nonce: string) {
-  const scriptSrc = [
-    `'self'`,
-    `'nonce-${nonce}'`,
-    `'strict-dynamic'`,
-    `https:`,
-    `'unsafe-inline'`,
-    ...(isDev ? [`'unsafe-eval'`] : []),
-  ].join(" ");
+/**
+ * Imagens de metadados (og/twitter) são geradas pelo Next a partir do
+ * segmento, então saem no HTML como /pt/... — e essas URLs vão pra fora, em
+ * preview de link do WhatsApp, LinkedIn e afins. Ficam de fora do redirect
+ * abaixo pra que o crawler pegue a imagem direto, sem depender de seguir
+ * redirect.
+ */
+const METADATA_IMAGE = /\/(opengraph-image|twitter-image)$/;
 
-  const connectSrc = [
-    `'self'`,
-    `https://vitals.vercel-insights.com`,
-    `https://va.vercel-scripts.com`,
-    ...(isDev ? [`ws:`] : []),
-  ].join(" ");
-
-  return [
-    `default-src 'self'`,
-    `script-src ${scriptSrc}`,
-    `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' data: blob:`,
-    `font-src 'self'`,
-    `connect-src ${connectSrc}`,
-    `media-src 'self'`,
-    `object-src 'none'`,
-    `base-uri 'self'`,
-    `form-action 'self'`,
-    `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
-  ].join("; ");
+function withCsp(res: NextResponse) {
+  res.headers.set("Content-Security-Policy", CSP);
+  return res;
 }
 
-/**
- * i18n por URL: /en/* é reescrito para as rotas existentes com o cookie de
- * idioma normalizado pelo path (a URL é a fonte da verdade — o cookie vira
- * só o meio de transporte até o getLocale() do servidor).
- *
- * Resultado: / indexa em PT e /en indexa em EN como URLs distintas (hreflang
- * nos metadados), sem duplicar a árvore de rotas.
- */
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isEn = pathname === "/en" || pathname.startsWith("/en/");
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp(nonce);
+  const segment = pathname.split("/")[1];
 
-  // Substitui qualquer cookie `lang` do cliente pelo idioma do path.
-  const headers = new Headers(req.headers);
-  const rest = (headers.get("cookie") ?? "")
-    .split("; ")
-    .filter((c) => c && !c.startsWith("lang="))
-    .join("; ");
-  headers.set("cookie", rest ? `${rest}; lang=${isEn ? "en" : "pt"}` : `lang=${isEn ? "en" : "pt"}`);
-  headers.set("x-nonce", nonce);
-  headers.set("Content-Security-Policy", csp);
+  // Já vem com idioma no path: entrega direto, sem reescrever de novo
+  // (reescrever aqui produziria /pt/pt/... e 404).
+  if (segment === "en") return withCsp(NextResponse.next());
 
-  const res = isEn
-    ? (() => {
-        const url = req.nextUrl.clone();
-        url.pathname = pathname === "/en" ? "/" : pathname.slice("/en".length);
-        return NextResponse.rewrite(url, { request: { headers } });
-      })()
-    : NextResponse.next({ request: { headers } });
+  if (segment === "pt") {
+    // Imagem de metadado: é a URL que sai no og:image e vai pra fora.
+    if (METADATA_IMAGE.test(pathname)) return withCsp(NextResponse.next());
+    // Página: /pt é endereço interno, volta pra URL pública.
+    const url = req.nextUrl.clone();
+    url.pathname = pathname.slice("/pt".length) || "/";
+    return withCsp(NextResponse.redirect(url, 308));
+  }
 
-  res.headers.set("Content-Security-Policy", csp);
-  return res;
+  // Sem prefixo = português: ganha o /pt invisível.
+  const url = req.nextUrl.clone();
+  url.pathname = pathname === "/" ? "/pt" : `/pt${pathname}`;
+  return withCsp(NextResponse.rewrite(url));
 }
 
 export const config = {
   // Ignora assets estáticos (_next, arquivos com extensão) — o resto passa
-  // pelo middleware pra normalizar o idioma.
+  // pelo middleware pra ganhar o prefixo de idioma e o CSP.
   matcher: ["/((?!_next/|.*\\..*).*)"],
 };

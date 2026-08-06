@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { DIAGNOSTICO, PROFILE, SITE_URL } from "@/lib/content";
-import { getLocale, makeT, withLocale } from "@/lib/i18n";
+import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Dependency } from "@/components/dependency";
 import { Google } from "@/components/google";
@@ -23,8 +23,12 @@ import { Footer } from "@/components/contact";
  * A rota antiga /raio-x redireciona pra cá (next.config).
  */
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<LangParams>;
+}): Promise<Metadata> {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
   const canonical = `${locale === "en" ? "/en" : ""}/diagnostico`;
   const title = t({ pt: "Diagnóstico do seu negócio", en: "Your business audit" });
@@ -51,8 +55,8 @@ export async function generateMetadata(): Promise<Metadata> {
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
-export default async function DiagnosticoPage() {
-  const locale = await getLocale();
+export default async function DiagnosticoPage({ params }: { params: Promise<LangParams> }) {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
 
   return (

@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { SERVICES } from "./services";
-import { getLocale } from "./i18n";
+import { localeFrom, type LangParams } from "./i18n";
 import { ServicePage } from "@/components/service-page";
 
 /**
- * Fábrica das rotas de serviço: cada app/<slug>/page.tsx só reexporta o que
- * sai daqui — metadata localizada (canonical + hreflang) e a página em si.
+ * Fábrica das rotas de serviço: cada app/[lang]/<slug>/page.tsx só reexporta
+ * o que sai daqui — metadata localizada (canonical + hreflang) e a página.
  */
 export function serviceRoute(slug: string) {
   const service = SERVICES.find((s) => s.slug === slug);
   if (!service) throw new Error(`Serviço desconhecido: ${slug}`);
 
-  async function generateMetadata(): Promise<Metadata> {
-    const locale = await getLocale();
+  async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
+    const locale = await localeFrom(params);
     const canonical = `${locale === "en" ? "/en" : ""}/${service!.slug}`;
     return {
       title: service!.metaTitle[locale],
@@ -33,8 +33,8 @@ export function serviceRoute(slug: string) {
     };
   }
 
-  async function Page() {
-    const locale = await getLocale();
+  async function Page({ params }: { params: Promise<LangParams> }) {
+    const locale = await localeFrom(params);
     return <ServicePage service={service!} locale={locale} />;
   }
 

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { PROJECTS, PROFILE, SITE_URL } from "@/lib/content";
-import { getLocale, withLocale } from "@/lib/i18n";
+import { localeFrom, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { CaseStudy } from "@/components/case-study";
 import { Contact, Footer } from "@/components/contact";
 
+/** Um case por projeto — o segmento [lang] pai já enumera os dois idiomas. */
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ slug: p.slug }));
 }
@@ -16,12 +16,12 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<LangParams & { slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
   const p = PROJECTS.find((x) => x.slug === slug);
   if (!p) return {};
-  const locale = await getLocale();
+  const locale = await localeFrom(params);
   const description = p.result[locale];
   const canonical = `${locale === "en" ? "/en" : ""}/projetos/${p.slug}`;
   const url = `${SITE_URL}${canonical}`;
@@ -47,11 +47,10 @@ const waHref = (text: string) =>
 export default async function ProjectPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<LangParams & { slug: string }>;
 }) {
   const { slug } = await params;
-  const locale = await getLocale();
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const locale = await localeFrom(params);
   const idx = PROJECTS.findIndex((p) => p.slug === slug);
   if (idx === -1) notFound();
 
@@ -86,7 +85,7 @@ export default async function ProjectPage({
 
   return (
     <>
-      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
           <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">

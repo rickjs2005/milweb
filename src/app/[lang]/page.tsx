@@ -12,10 +12,10 @@ import { Faq } from "@/components/faq";
 import { About } from "@/components/about";
 import { Contact, Footer } from "@/components/contact";
 import { UI } from "@/lib/content";
-import { getLocale, makeT } from "@/lib/i18n";
+import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 
-export default async function Home() {
-  const locale = await getLocale();
+export default async function Home({ params }: { params: Promise<LangParams> }) {
+  const locale = await localeFrom(params);
   const t = makeT(locale);
 
   const navLinks = [
