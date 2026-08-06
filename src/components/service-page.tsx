@@ -253,7 +253,10 @@ export async function ServicePage({ service, locale }: { service: Service; local
           </Reveal>
         </section>
 
-        <Contact locale={locale} />
+        {/* Quem chegou em /loja-virtual já disse o que quer: o seletor abre
+            com o chip desse serviço marcado (as chaves de QUOTE.types são
+            os slugs de SERVICES). */}
+        <Contact locale={locale} preselectedType={service.slug} />
       </main>
       <Footer locale={locale} />
     </>

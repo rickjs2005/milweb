@@ -1,16 +1,27 @@
-import { MessageCircle, Mail, Github, Linkedin, ShieldCheck, LifeBuoy, Code2, BadgeCheck } from "lucide-react";
-import { Magnetic } from "./magnetic";
+import { Mail, Github, Linkedin, ShieldCheck, LifeBuoy, Code2, BadgeCheck } from "lucide-react";
 import { Reveal } from "./reveal";
 import { CtaGlow } from "./cta-glow";
 import { Logo } from "./logo";
-import { UI, PROFILE, type Locale } from "@/lib/content";
+import { QuotePicker } from "./quote-picker";
+import { UI, QUOTE, PROFILE, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
-const waHref = (text: string) =>
-  `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
-
-export function Contact({ locale }: { locale: Locale }) {
+export function Contact({
+  locale,
+  /** Slug de SERVICES: a página do serviço já entrega o chip dela marcado. */
+  preselectedType,
+}: {
+  locale: Locale;
+  preselectedType?: string;
+}) {
   const t = makeT(locale);
+  // Textos resolvidos AQUI (Server Component) e passados prontos: é o que
+  // mantém content.ts fora do bundle do browser.
+  const option = (o: { key: string; label: typeof UI.cta.title; phrase: typeof UI.cta.title }) => ({
+    key: o.key,
+    label: t(o.label),
+    phrase: t(o.phrase),
+  });
   return (
     <section id="contact" className="container-page scroll-mt-20 py-20 sm:py-32">
       <Reveal variant="depth">
@@ -21,23 +32,30 @@ export function Contact({ locale }: { locale: Locale }) {
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-lg text-fg-muted">{t(UI.cta.sub)}</p>
 
-          <div className="relative mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Magnetic strength={0.5} className="w-full sm:w-auto">
-              <a
-                href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3.5 text-base font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto glow-accent"
-              >
-                <MessageCircle className="h-5 w-5" />
-                {t(UI.cta.whats)}
-              </a>
-            </Magnetic>
+          {/* Duas escolhas montam a mensagem do WhatsApp. Escolher é
+              opcional: sem clique nenhum, o botão leva a mesma mensagem de
+              sempre (QUOTE.fallback). */}
+          <QuotePicker
+            typeQuestion={t(QUOTE.typeQuestion)}
+            statusQuestion={t(QUOTE.statusQuestion)}
+            types={QUOTE.types.map(option)}
+            statuses={QUOTE.statuses.map(option)}
+            greeting={t(QUOTE.greeting)}
+            closing={t(QUOTE.closing)}
+            joiner={t(QUOTE.joiner)}
+            fallbackMessage={t(QUOTE.fallback)}
+            previewLabel={t(QUOTE.previewLabel)}
+            ctaLabel={t(UI.cta.whats)}
+            whatsapp={PROFILE.whatsapp}
+            preselectedType={preselectedType}
+          />
+
+          <div className="relative mt-4 flex justify-center">
             <a
               href={`mailto:${PROFILE.email}`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line/15 px-6 py-3.5 text-base font-semibold text-fg transition-colors hover:border-accent/50 sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-fg-subtle transition-colors hover:text-fg"
             >
-              <Mail className="h-5 w-5" />
+              <Mail className="h-4 w-4" />
               {t(UI.cta.email)}
             </a>
           </div>

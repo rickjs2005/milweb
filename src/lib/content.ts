@@ -1727,6 +1727,82 @@ export const DIAGNOSTICO = {
 } as const;
 
 /** Textos de UI (rótulos, títulos de seção, nav). */
+/**
+ * SELETOR DE ORÇAMENTO — as duas perguntas da seção de contato.
+ *
+ * O visitante escolhe o que precisa e como está hoje, e essas escolhas
+ * montam a mensagem que abre no WhatsApp. Não é formulário: nada é enviado
+ * nem gravado, e escolher é opcional — sem nenhum clique o botão continua
+ * levando a mensagem genérica de sempre (`fallback`).
+ *
+ * `phrase` existe porque o rótulo do chip não cabe na frase: o chip diz
+ * "Loja virtual", a mensagem precisa dizer "Quero uma loja virtual".
+ *
+ * As chaves de `types` são os slugs de SERVICES (lib/services.ts) — assim a
+ * página de cada serviço consegue já vir com o chip dela marcado.
+ */
+export const QUOTE = {
+  typeQuestion: { pt: "O que você precisa?", en: "What do you need?" } as Localized,
+  statusQuestion: { pt: "E hoje, o que você já tem?", en: "And what do you have today?" } as Localized,
+  types: [
+    {
+      key: "criacao-de-sites",
+      label: { pt: "Site institucional", en: "Company site" } as Localized,
+      phrase: { pt: "Quero um site institucional", en: "I want a company site" } as Localized,
+    },
+    {
+      key: "loja-virtual",
+      label: { pt: "Loja virtual", en: "Online store" } as Localized,
+      phrase: { pt: "Quero uma loja virtual", en: "I want an online store" } as Localized,
+    },
+    {
+      key: "catalogo-whatsapp",
+      label: { pt: "Catálogo no WhatsApp", en: "WhatsApp catalog" } as Localized,
+      phrase: { pt: "Quero um catálogo pra vender no WhatsApp", en: "I want a catalog to sell on WhatsApp" } as Localized,
+    },
+    {
+      key: "landing-pages",
+      label: { pt: "Landing page", en: "Landing page" } as Localized,
+      phrase: { pt: "Quero uma landing page", en: "I want a landing page" } as Localized,
+    },
+    {
+      key: "sistemas-sob-medida",
+      label: { pt: "Sistema sob medida", en: "Custom system" } as Localized,
+      phrase: { pt: "Quero um sistema sob medida", en: "I want a custom system" } as Localized,
+    },
+  ],
+  statuses: [
+    {
+      key: "nada",
+      label: { pt: "Nada ainda", en: "Nothing yet" } as Localized,
+      phrase: { pt: "ainda não tenho nada no ar", en: "I have nothing online yet" } as Localized,
+    },
+    {
+      key: "redes",
+      label: { pt: "Só redes sociais", en: "Only social media" } as Localized,
+      phrase: { pt: "hoje só tenho redes sociais", en: "today I only have social media" } as Localized,
+    },
+    {
+      key: "site-antigo",
+      label: { pt: "Um site antigo", en: "An old site" } as Localized,
+      phrase: { pt: "tenho um site antigo pra refazer", en: "I have an old site to rebuild" } as Localized,
+    },
+  ],
+  /** Abertura e fecho que emolduram as frases escolhidas. */
+  greeting: { pt: "Olá Rick! Vim pelo site da MilWeb.", en: "Hi Rick! I came from the MilWeb site." } as Localized,
+  closing: { pt: "Pode me passar um orçamento?", en: "Could you send me a quote?" } as Localized,
+  /** Emenda das duas frases. Precisa ser bilíngue: com "e" fixo o inglês
+   *  saía "I want an online store e today I only have social media". */
+  joiner: { pt: " e ", en: " and " } as Localized,
+  /** Mensagem de quem não escolheu nada — a mesma de antes do seletor existir. */
+  fallback: {
+    pt: "Olá Rick! Vim pelo site da MilWeb e quero um orçamento.",
+    en: "Hi Rick! I came from the MilWeb site and I'd like a quote.",
+  } as Localized,
+  /** Rótulo do preview da mensagem, pra ninguém clicar sem saber o que envia. */
+  previewLabel: { pt: "Sua mensagem", en: "Your message" } as Localized,
+} as const;
+
 export const UI = {
   nav: {
     deliverables: { pt: "Serviços", en: "Services" },
