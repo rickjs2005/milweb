@@ -20,6 +20,19 @@
  */
 export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
 
+/**
+ * Cor da plumagem (asas, pés, penas do peito, bico) — cravada de propósito,
+ * NÃO vinda de --accent-soft.
+ *
+ * No tema escuro --accent-soft é #9DB7FF, mais claro que o corpo, e tudo
+ * contrasta. No tema claro ele é #2740B8, calibrado pra contrastar com fundo
+ * branco — ou seja, mais ESCURO que o --accent e bem no meio do gradiente do
+ * corpo (#2F4BD8 → #1E36A8). Resultado: asas, pés e penas sumiam contra o
+ * corpo no tema claro. O robô que veio antes cravava as cores pelo mesmo
+ * motivo.
+ */
+const PLUMA = "#9db7ff";
+
 /** Deslocamento do olhar, aplicado só nas pupilas. */
 const GAZE = { transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" };
 
@@ -45,7 +58,7 @@ export function Milo({
         <linearGradient id="milo-edge" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="rgb(var(--accent-deep))" />
           <stop offset="0.55" stopColor="rgb(var(--accent))" />
-          <stop offset="1" stopColor="rgb(var(--accent-soft))" />
+          <stop offset="1" stopColor={PLUMA} />
         </linearGradient>
         <linearGradient id="milo-body" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="rgb(var(--accent))" />
@@ -61,7 +74,7 @@ export function Milo({
       <ellipse cx="110" cy="256" rx="58" ry="8" fill="url(#milo-base)" />
 
       {/* pés */}
-      <g stroke="rgb(var(--accent-soft))" strokeWidth="5" strokeLinecap="round" opacity="0.9">
+      <g stroke={PLUMA} strokeWidth="5" strokeLinecap="round" opacity="0.9">
         <path d="M92 236v12M92 248h-8M92 248h8" />
         <path d="M128 236v12M128 248h-8M128 248h8" />
       </g>
@@ -70,7 +83,7 @@ export function Milo({
       <path d="M110 84c40 0 62 44 62 92 0 40-27 62-62 62s-62-22-62-62c0-48 22-92 62-92z" fill="url(#milo-body)" />
 
       {/* peito emplumado */}
-      <g fill="none" stroke="rgb(var(--accent-soft))" strokeWidth="2.2" strokeLinecap="round" opacity="0.45">
+      <g fill="none" stroke={PLUMA} strokeWidth="2.2" strokeLinecap="round" opacity="0.45">
         <path d="M96 186q14 12 28 0" />
         <path d="M92 204q18 14 36 0" />
         <path d="M96 222q14 12 28 0" />
@@ -80,7 +93,7 @@ export function Milo({
       <path
         d="M62 172c-13 12-15 40-4 60"
         fill="none"
-        stroke="rgb(var(--accent-soft))"
+        stroke={PLUMA}
         strokeWidth="11"
         strokeLinecap="round"
         opacity="0.9"
@@ -90,7 +103,7 @@ export function Milo({
         <path
           d="M158 172c13 12 15 40 4 60"
           fill="none"
-          stroke="rgb(var(--accent-soft))"
+          stroke={PLUMA}
           strokeWidth="11"
           strokeLinecap="round"
         />
@@ -162,9 +175,9 @@ export function Milo({
 
       {/* bico — abre no susto */}
       {pose === "shocked" ? (
-        <path d="M110 148l-11 16 11 10 11-10z" fill="rgb(var(--accent-soft))" />
+        <path d="M110 148l-11 16 11 10 11-10z" fill={PLUMA} />
       ) : (
-        <path d="M110 146l-9 13 9 6 9-6z" fill="rgb(var(--accent-soft))" />
+        <path d="M110 146l-9 13 9 6 9-6z" fill={PLUMA} />
       )}
 
       {/* zZ do cochilo */}
