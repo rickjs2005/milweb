@@ -1,14 +1,32 @@
 /**
  * Milo — o mascote da MilWeb como SVG vetorial leve (sem lib de animação).
- * Flutuação e piscada via CSS (globals: .milo-float / .milo-blink); a "pose"
- * troca só o rosto (olhos/boca), o suficiente pra ele reagir na calculadora.
+ *
+ * Era um robô de moletom; virou coruja em 06/08 (pedido do Rick). O nome
+ * continua Milo, então nada fora deste arquivo mudou: mesma assinatura,
+ * mesmas 5 poses, mesmas classes de animação do globals.css.
+ *
+ * Duas restrições do CSS que o desenho tem de respeitar:
+ *  - `.milo-arm-wave` gira em `transform-origin: 158px 172px`, em coordenadas
+ *    do viewBox. A asa direita nasce exatamente nesse ponto, que é o ombro
+ *    dela — por isso o aceno gira certo sem tocar no CSS.
+ *  - `.milo-blink` é `scaleY(0.1)`, ou seja, o que pisca vira uma linha. Fica
+ *    no grupo do olho inteiro (disco + pupila): a coruja fecha o olho todo,
+ *    não só a pupila.
+ *
+ * O olhar segue o cursor movendo só as PUPILAS dentro dos discos
+ * (--milo-lx/--milo-ly, setadas pelo MiloLive). No robô o rosto inteiro se
+ * deslocava; com olho grande de coruja, mover a pupila lê muito melhor — e é
+ * o mesmo mecanismo, só aplicado num grupo menor.
  */
 export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
+
+/** Deslocamento do olhar, aplicado só nas pupilas. */
+const GAZE = { transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" };
 
 export function Milo({
   pose = "idle",
   className = "",
-  title = "Milo, o mascote da MilWeb",
+  title = "Milo, a coruja mascote da MilWeb",
   waving = false,
 }: {
   pose?: MiloPose;
@@ -29,9 +47,9 @@ export function Milo({
           <stop offset="0.55" stopColor="rgb(var(--accent))" />
           <stop offset="1" stopColor="rgb(var(--accent-soft))" />
         </linearGradient>
-        <linearGradient id="milo-hoodie" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2f56d8" />
-          <stop offset="1" stopColor="#1b2f80" />
+        <linearGradient id="milo-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="rgb(var(--accent))" />
+          <stop offset="1" stopColor="rgb(var(--accent-deep))" />
         </linearGradient>
         <radialGradient id="milo-base" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="rgb(var(--accent))" stopOpacity="0.45" />
@@ -40,72 +58,120 @@ export function Milo({
       </defs>
 
       {/* base de holograma */}
-      <ellipse cx="110" cy="256" rx="62" ry="9" fill="url(#milo-base)" />
+      <ellipse cx="110" cy="256" rx="58" ry="8" fill="url(#milo-base)" />
 
-      {/* corpo (moletom) */}
-      <path d="M62 150c0-27 21-42 48-42s48 15 48 42v10H62v-10z" fill="url(#milo-hoodie)" opacity="0.9" />
-      <path d="M64 246c-3-46 6-88 46-88s49 42 46 88H64z" fill="url(#milo-hoodie)" />
-      <path d="M98 168v22M122 168v22" stroke="#9db7ff" strokeWidth="2.4" strokeLinecap="round" opacity="0.7" />
-      <path d="M85 216h50v18a8 8 0 0 1-8 8H93a8 8 0 0 1-8-8v-18z" fill="#16266b" opacity="0.85" />
+      {/* pés */}
+      <g stroke="rgb(var(--accent-soft))" strokeWidth="5" strokeLinecap="round" opacity="0.9">
+        <path d="M92 236v12M92 248h-8M92 248h8" />
+        <path d="M128 236v12M128 248h-8M128 248h8" />
+      </g>
 
-      {/* braços wireframe */}
-      <path d="M62 170c-14 8-20 26-18 46" fill="none" stroke="#6ea6ff" strokeWidth="7" strokeLinecap="round" opacity="0.85" />
-      <circle cx="44" cy="218" r="8" fill="#0d1330" stroke="rgb(var(--accent))" strokeWidth="2.4" />
+      {/* corpo em ovo */}
+      <path d="M110 84c40 0 62 44 62 92 0 40-27 62-62 62s-62-22-62-62c0-48 22-92 62-92z" fill="url(#milo-body)" />
+
+      {/* peito emplumado */}
+      <g fill="none" stroke="rgb(var(--accent-soft))" strokeWidth="2.2" strokeLinecap="round" opacity="0.45">
+        <path d="M96 186q14 12 28 0" />
+        <path d="M92 204q18 14 36 0" />
+        <path d="M96 222q14 12 28 0" />
+      </g>
+
+      {/* asa esquerda (parada) */}
+      <path
+        d="M62 172c-13 12-15 40-4 60"
+        fill="none"
+        stroke="rgb(var(--accent-soft))"
+        strokeWidth="11"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+      {/* asa direita — o ombro dela é o pivô do aceno (158,172 no CSS) */}
       <g className={waving ? "milo-arm-wave" : undefined}>
-        <path d="M158 170c14 8 20 26 18 46" fill="none" stroke="#6ea6ff" strokeWidth="7" strokeLinecap="round" opacity="0.85" />
-        <circle cx="176" cy="218" r="8" fill="#0d1330" stroke="rgb(var(--accent))" strokeWidth="2.4" />
+        <path
+          d="M158 172c13 12 15 40 4 60"
+          fill="none"
+          stroke="rgb(var(--accent-soft))"
+          strokeWidth="11"
+          strokeLinecap="round"
+        />
       </g>
 
-      {/* cabeça */}
-      <rect x="45" y="30" width="130" height="102" rx="30" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" />
-      <rect x="54" y="39" width="112" height="84" rx="23" fill="#04060f" />
-      <g stroke="rgb(var(--accent))" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity="0.85">
-        <path d="M64 52v-5a4 4 0 0 1 4-4h5" />
-        <path d="M156 52v-5a4 4 0 0 0-4-4h-5" />
-        <path d="M64 110v5a4 4 0 0 0 4 4h5" />
-        <path d="M156 110v5a4 4 0 0 1-4 4h-5" />
-      </g>
+      {/* disco facial + tufos de orelha */}
+      <path
+        d="M110 72c34 0 55 23 55 51 0 30-24 49-55 49s-55-19-55-49c0-28 21-51 55-51z"
+        fill="#0d1126"
+        stroke="url(#milo-edge)"
+        strokeWidth="2.5"
+      />
+      <path d="M67 82 57 46l31 17z" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M153 82l10-36-31 17z" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
 
-      {/* rosto por pose — o grupo inteiro "olha" na direção de
-          --milo-lx/--milo-ly (setadas pela ilha MiloLive; 0 por padrão) */}
-      <g style={{ transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" }}>
+      {/* olhos por pose */}
       {pose === "shocked" ? (
-        <g>
-          <circle cx="89" cy="80" r="13" fill="none" stroke="rgb(var(--accent))" strokeWidth="6" />
-          <circle cx="131" cy="80" r="13" fill="none" stroke="rgb(var(--accent))" strokeWidth="6" />
-          <ellipse cx="110" cy="107" rx="7" ry="9" fill="rgb(var(--accent))" opacity="0.9" />
-        </g>
+        <>
+          <g>
+            <circle cx="86" cy="118" r="25" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="3" />
+            <circle cx="86" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
+          </g>
+          <g>
+            <circle cx="134" cy="118" r="25" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="3" />
+            <circle cx="134" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
+          </g>
+        </>
       ) : pose === "happy" ? (
-        <g fill="none" stroke="rgb(var(--accent))" strokeLinecap="round">
-          <path d="M81 86q7.5 -11 15 0" strokeWidth="5.5" />
-          <path d="M124 86q7.5 -11 15 0" strokeWidth="5.5" />
-          <path d="M94 102c6 10 26 10 32 0" strokeWidth="5" />
+        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="6.5" strokeLinecap="round">
+          <path d="M70 124q16 -22 32 0" />
+          <path d="M118 124q16 -22 32 0" />
         </g>
       ) : pose === "sleepy" ? (
-        <g fill="none" stroke="rgb(var(--accent))" strokeLinecap="round">
-          <path d="M81 84q7.5 7 15 0" strokeWidth="5" />
-          <path d="M124 84q7.5 7 15 0" strokeWidth="5" />
-          <path d="M104 106h12" strokeWidth="4.5" opacity="0.8" />
+        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="6" strokeLinecap="round">
+          <path d="M70 116q16 18 32 0" />
+          <path d="M118 116q16 18 32 0" />
         </g>
       ) : pose === "think" ? (
-        <g fill="rgb(var(--accent))">
-          <rect x="81" y="66" width="15" height="30" rx="7.5" />
-          <rect x="123" y="72" width="15" height="18" rx="7.5" />
-        </g>
+        // olhando pra cima: as pupilas ficam altas e não seguem o cursor —
+        // quem está pensando não está olhando pra você.
+        <>
+          <g>
+            <circle cx="86" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="80" cy="111" r="10" fill="rgb(var(--accent))" />
+          </g>
+          <g>
+            <circle cx="134" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="128" cy="111" r="10" fill="rgb(var(--accent))" />
+          </g>
+        </>
       ) : (
-        <g fill="rgb(var(--accent))">
-          <rect className="milo-blink" x="81" y="62" width="15" height="38" rx="7.5" />
-          <rect className="milo-blink" x="124" y="62" width="15" height="38" rx="7.5" />
-          <path d="M98 106c4 5 20 5 24 0" fill="none" stroke="rgb(var(--accent))" strokeWidth="4.5" strokeLinecap="round" />
-        </g>
+        <>
+          <g className="milo-blink">
+            <circle cx="86" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <g style={GAZE}>
+              <circle cx="86" cy="118" r="10" fill="rgb(var(--accent))" />
+              <circle cx="81" cy="113" r="3.2" fill="#fff" opacity="0.85" />
+            </g>
+          </g>
+          <g className="milo-blink">
+            <circle cx="134" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <g style={GAZE}>
+              <circle cx="134" cy="118" r="10" fill="rgb(var(--accent))" />
+              <circle cx="129" cy="113" r="3.2" fill="#fff" opacity="0.85" />
+            </g>
+          </g>
+        </>
       )}
-      </g>
 
-      {/* zZ do cochilo — fora do grupo do rosto pra não seguir o cursor */}
+      {/* bico — abre no susto */}
+      {pose === "shocked" ? (
+        <path d="M110 148l-11 16 11 10 11-10z" fill="rgb(var(--accent-soft))" />
+      ) : (
+        <path d="M110 146l-9 13 9 6 9-6z" fill="rgb(var(--accent-soft))" />
+      )}
+
+      {/* zZ do cochilo */}
       {pose === "sleepy" && (
         <g fill="none" stroke="rgb(var(--accent))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <path className="milo-zzz" d="M152 22h9l-9 9h9" />
-          <path className="milo-zzz [animation-delay:0.9s]" d="M170 8h12l-12 12h12" />
+          <path className="milo-zzz" d="M172 40h9l-9 9h9" />
+          <path className="milo-zzz [animation-delay:0.9s]" d="M188 24h12l-12 12h12" />
         </g>
       )}
     </svg>
