@@ -44,7 +44,6 @@ export const PROFILE = {
   github: "https://github.com/rickjs2005",
   linkedin: "https://www.linkedin.com/in/rick-januario-41211b238",
   logo: "/icon.svg",
-  heroImage: "/milo2.webp",
 };
 
 /** O QUE EU ENTREGO — a oferta concreta (resolve o problema do cliente). */
@@ -1749,10 +1748,6 @@ export const DIAGNOSTICO = {
     },
   },
 } as const;
-
-/** Depoimentos — VAZIO de propósito. Só conteúdo real (a seção some sem itens). */
-export type Testimonial = { quote: Localized; author: string; role: Localized };
-export const TESTIMONIALS: Testimonial[] = [];
 
 /** Textos de UI (rótulos, títulos de seção, nav). */
 export const UI = {

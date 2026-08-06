@@ -19,7 +19,7 @@ export const LOCALES = ["pt", "en"] as const;
 export type LangParams = { lang: string };
 
 /** Converte o parâmetro cru da rota em Locale (qualquer coisa != "en" = pt). */
-export function normalizeLocale(lang: string | undefined): Locale {
+function normalizeLocale(lang: string | undefined): Locale {
   return lang === "en" ? "en" : "pt";
 }
 

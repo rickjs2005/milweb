@@ -26,7 +26,7 @@ const display = Bricolage_Grotesque({
 });
 
 /** hreflang do site inteiro: PT na raiz, EN em /en (x-default = PT). */
-export const LANGUAGE_ALTERNATES = {
+const LANGUAGE_ALTERNATES = {
   "pt-BR": "/",
   en: "/en",
   "x-default": "/",
