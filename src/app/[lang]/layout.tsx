@@ -13,7 +13,7 @@ import { MiloProtagonist } from "@/components/milo-protagonist";
 import { ViewTransitions } from "@/components/view-transitions";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { htmlLang, localeFrom, LOCALES, type LangParams } from "@/lib/i18n";
-import { SITE_COPY, SITE_JSON_LD } from "@/lib/inline-scripts";
+import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 import "../globals.css";
 
@@ -111,7 +111,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SITE_JSON_LD }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
         <SmoothScroll />
         <TrackConversions />
         <CursorGlow />

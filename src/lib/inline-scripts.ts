@@ -27,20 +27,38 @@ export const SITE_COPY = {
   },
 } as const;
 
-/** Dados estruturados do site (schema.org), injetados no <body> do layout. */
-export const SITE_JSON_LD = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: "MilWeb",
-  url: SITE_URL,
-  email: `mailto:${PROFILE.email}`,
-  image: `${SITE_URL}/opengraph-image`,
-  description: SITE_COPY.pt.description,
-  areaServed: "BR",
-  founder: {
-    "@type": "Person",
-    name: "Rick",
-    sameAs: [PROFILE.github, PROFILE.linkedin].filter(Boolean),
-  },
-  knowsAbout: ["Next.js", "React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "SEO"],
-});
+/**
+ * @id estável da MilWeb. Serve de âncora: as menções espalhadas pelo site
+ * (o `provider` de cada página de serviço, o primeiro degrau dos
+ * breadcrumbs) referenciam este mesmo nó em vez de descreverem uma
+ * organização parecida cada uma por conta própria.
+ */
+export const ORG_ID = `${SITE_URL}/#milweb`;
+
+/**
+ * Dados estruturados do site (schema.org), injetados no <body> do layout.
+ *
+ * Recebe o locale: a descrição saía sempre em português, inclusive nas
+ * páginas /en, e descrevia a entidade num idioma que não era o da página.
+ */
+export const siteJsonLd = (locale: "pt" | "en") =>
+  JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "@id": ORG_ID,
+    name: "MilWeb",
+    url: SITE_URL,
+    email: PROFILE.email,
+    // Mesmo numero dos botoes de WhatsApp do site — o canal de contato real.
+    telephone: `+${PROFILE.whatsapp}`,
+    image: `${SITE_URL}/opengraph-image`,
+    description: SITE_COPY[locale].description,
+    inLanguage: locale === "en" ? "en" : "pt-BR",
+    areaServed: "BR",
+    founder: {
+      "@type": "Person",
+      name: "Rick",
+      sameAs: [PROFILE.github, PROFILE.linkedin].filter(Boolean),
+    },
+    knowsAbout: ["Next.js", "React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "SEO"],
+  });

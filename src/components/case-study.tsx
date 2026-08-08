@@ -30,6 +30,9 @@ function Preview({ p, locale }: { p: Project; locale: Locale }) {
           pt: `Tela inicial do site ${p.title}`,
           en: `Home screen of the ${p.title} website`,
         })}
+        // Preview principal do case: é o maior elemento da página e o
+        // candidato natural a LCP, então não entra em lazy.
+        loading="eager"
         frameClass="h-72 sm:h-96 lg:h-[30rem]"
         fit={p.imageStatic ? "contain" : "scroll"}
       />

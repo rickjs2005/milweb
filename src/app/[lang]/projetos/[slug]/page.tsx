@@ -25,8 +25,11 @@ export async function generateMetadata({
   const description = p.result[locale];
   const canonical = `${locale === "en" ? "/en" : ""}/projetos/${p.slug}`;
   const url = `${SITE_URL}${canonical}`;
+  // "MilLead | MilWeb" nao dizia o que o projeto e. A tagline ja resume em
+  // uma linha e o layout ainda acrescenta o sufixo da marca.
+  const title = `${p.title} — ${p.tagline[locale]}`;
   return {
-    title: p.title,
+    title,
     description,
     alternates: {
       canonical,
@@ -59,16 +62,20 @@ export default async function ProjectPage({
   const prev = idx > 0 ? PROJECTS[idx - 1] : undefined;
   const next = idx < PROJECTS.length - 1 ? PROJECTS[idx + 1] : undefined;
 
-  const url = `${SITE_URL}/projetos/${project.slug}`;
+  // O grafo tem de falar da MESMA página que o canonical aponta. Enquanto a
+  // url era montada sem o locale, a versão /en declarava a URL pt e os dois
+  // sinais se contradiziam.
+  const url = `${SITE_URL}${withLocale(locale, `/projetos/${project.slug}`)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "CreativeWork",
         name: project.title,
-        headline: project.tagline.pt,
-        description: project.result.pt,
+        headline: t(project.tagline),
+        description: t(project.result),
         url,
+        inLanguage: locale === "en" ? "en" : "pt-BR",
         keywords: project.stack.join(", "),
         creator: { "@type": "Person", name: "Rick", url: PROFILE.github },
         ...(project.live ? { sameAs: project.live } : {}),
@@ -76,8 +83,15 @@ export default async function ProjectPage({
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "MilWeb", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: "Projetos", item: `${SITE_URL}/#projects` },
+          { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${withLocale(locale, "/")}` },
+          // O acervo é uma página de verdade (/projetos). Apontar pro
+          // fragmento /#projects dava ao degrau um endereço que não existe.
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: t(UI.nav.projects),
+            item: `${SITE_URL}${withLocale(locale, "/projetos")}`,
+          },
           { "@type": "ListItem", position: 3, name: project.title, item: url },
         ],
       },

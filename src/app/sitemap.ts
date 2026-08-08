@@ -2,17 +2,21 @@ import type { MetadataRoute } from "next";
 import { PROJECTS, SITE_URL } from "@/lib/content";
 import { SERVICES } from "@/lib/services";
 
-/** Sitemap bilíngue: cada URL PT declara sua alternativa EN (e vice-versa). */
+/**
+ * Sitemap bilíngue: cada URL PT declara sua alternativa EN (e vice-versa).
+ *
+ * Sem `lastModified`: era `new Date()` do build, então as 66 URLs juravam ter
+ * mudado toda vez que qualquer coisa subia. lastmod só vale quando aponta
+ * mudança real da página — declarado errado, é sinal que o buscador aprende
+ * a ignorar. Melhor omitir do que mentir.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
   const entry = (
     path: string,
     priority: number,
   ): MetadataRoute.Sitemap[number][] => [
     {
       url: `${SITE_URL}${path === "/" ? "/" : path}`,
-      lastModified: now,
       changeFrequency: "monthly",
       priority,
       alternates: {
@@ -24,7 +28,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
-      lastModified: now,
       changeFrequency: "monthly",
       priority: priority - 0.1,
       alternates: {

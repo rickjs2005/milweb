@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PROFILE, SITE_URL, UI, type Locale } from "@/lib/content";
+import { ORG_ID } from "@/lib/inline-scripts";
 import type { Service } from "@/lib/services";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Logo } from "./logo";
@@ -53,8 +54,11 @@ export async function ServicePage({ service, locale }: { service: Service; local
         name: t(service.label),
         description: t(service.metaDescription),
         url: `${SITE_URL}${path}`,
+        inLanguage: locale === "en" ? "en" : "pt-BR",
         areaServed: "BR",
-        provider: { "@type": "ProfessionalService", name: "MilWeb", url: SITE_URL },
+        // Referencia a entidade declarada no layout em vez de redescrever
+        // uma organizacao solta a cada pagina de servico.
+        provider: { "@id": ORG_ID },
       },
       {
         "@type": "FAQPage",
@@ -67,7 +71,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "MilWeb", item: SITE_URL },
+          { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${home}` },
           { "@type": "ListItem", position: 2, name: t(service.label), item: `${SITE_URL}${path}` },
         ],
       },

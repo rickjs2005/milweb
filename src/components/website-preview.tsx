@@ -16,6 +16,7 @@ export function WebsitePreview({
   alt,
   frameClass = "h-60 sm:h-72",
   fit = "scroll",
+  loading = "lazy",
 }: {
   src: string;
   /**
@@ -27,6 +28,14 @@ export function WebsitePreview({
   frameClass?: string;
   /** "scroll" = screenshot alto rolando em loop; "contain" = imagem estática inteira (ex.: print de celular). */
   fit?: "scroll" | "contain";
+  /**
+   * Default lazy porque quase todo uso é grade ou esteira DEPOIS do hero: a
+   * home carregava os 8 screenshots (430KB) junto com o resto, e o React
+   * ainda emitia <link rel=preload> pra cada um, disputando banda com o LCP.
+   * `eager` fica para o preview grande do case, que é o candidato a LCP da
+   * própria página.
+   */
+  loading?: "lazy" | "eager";
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -123,6 +132,8 @@ export function WebsitePreview({
           ref={imgRef}
           src={src}
           alt={alt}
+          loading={loading}
+          decoding="async"
           className={
             fit === "contain"
               ? // Print retrato/de celular: coluna estreita centralizada, enquadrada
