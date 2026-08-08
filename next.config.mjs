@@ -15,6 +15,19 @@ const nextConfig = {
     return [
       { source: "/raio-x", destination: "/diagnostico", permanent: true },
       { source: "/en/raio-x", destination: "/en/diagnostico", permanent: true },
+
+      // www servia o site inteiro com 200, ou seja, cada página tinha dois
+      // endereços públicos. O canonical já apontava pro apex e segurava a
+      // duplicata, mas o crawler ainda gastava rastreamento nas duas versões
+      // — e era pelo www que o PageSpeed estava medindo o site.
+      // `has: host` deixa a regra valer só pro www; o destino é o apex, que
+      // não casa mais com ela, então não há laço.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.milweb.com.br" }],
+        destination: "https://milweb.com.br/:path*",
+        permanent: true,
+      },
     ];
   },
 
