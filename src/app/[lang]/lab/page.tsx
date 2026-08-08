@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { LAB, LAB_PAGE, PROFILE } from "@/lib/content";
+import { LAB, LAB_PAGE, PROFILE, UI } from "@/lib/content";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Reveal } from "@/components/reveal";
@@ -44,7 +44,7 @@ export default async function LabPage({ params }: { params: Promise<LangParams> 
   return (
     <>
       <header className="container-page flex h-16 items-center justify-between">
-        <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
+        <Link href={withLocale(locale, "/")} aria-label={t(UI.labels.home)}>
           <Logo />
         </Link>
         <Link
@@ -73,7 +73,7 @@ export default async function LabPage({ params }: { params: Promise<LangParams> 
             bastava pra alinhar; com altura mínima no bloco inteiro + a
             linha de tags empurrada pro fim, tudo alinha na mesma linha
             independente de quantas linhas a descrição ocupe. */}
-        <LabCarousel className="mt-14">
+        <LabCarousel className="mt-14" prevLabel={t(UI.labels.prev)} nextLabel={t(UI.labels.next)}>
           {LAB.map((clip, i) => (
             <Reveal
               key={clip.full}

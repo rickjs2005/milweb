@@ -24,7 +24,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { PROFILE, SITE_URL, type Locale } from "@/lib/content";
+import { PROFILE, SITE_URL, UI, type Locale } from "@/lib/content";
 import type { Service } from "@/lib/services";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Logo } from "./logo";
@@ -80,7 +80,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
 
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={home} aria-label="MilWeb, início">
+          <Link href={home} aria-label={t(UI.labels.home)}>
             <Logo />
           </Link>
           <a

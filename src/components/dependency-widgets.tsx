@@ -7,11 +7,12 @@ import { useInViewOnce } from "@/lib/use-in-view-once";
 export type WidgetStrings = {
   risk: string;
   riskHigh: string;
-  live: string;
+  sample: string;
   channels: string;
   ownSite: string;
   channelsNote: string;
   salesOrigin: string;
+  salesNote: string;
   referral: string;
   googleSite: string;
   outage: string;
@@ -25,14 +26,13 @@ const OK = "#34d399";
 
 function Panel({
   title,
-  live,
-  liveLabel,
+  sampleLabel,
   children,
   className = "",
 }: {
   title: string;
-  live?: boolean;
-  liveLabel?: string;
+  /** Presente = painel ganha o selo que o marca como ilustração. */
+  sampleLabel?: string;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -40,10 +40,9 @@ function Panel({
     <div className={`glass rounded-2xl p-6 ${className}`}>
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className="font-mono text-xs uppercase tracking-[0.18em] text-fg-subtle">{title}</h3>
-        {live && (
-          <span className="flex items-center gap-1.5 rounded-full border border-rose-400/30 bg-rose-400/10 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-rose-400">
-            <span className="size-1.5 animate-pulse rounded-full bg-rose-400" />
-            {liveLabel}
+        {sampleLabel && (
+          <span className="shrink-0 rounded-full border border-line/20 bg-surface-2/70 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-fg-subtle">
+            {sampleLabel}
           </span>
         )}
       </div>
@@ -52,10 +51,12 @@ function Panel({
   );
 }
 
+/** Nota do exemplo. O ponteiro, o arco e o número saem todos daqui. */
+const SAMPLE_RISK_SCORE = 87;
+
 function RiskGauge({ riskHigh }: { riskHigh: string }) {
   const [ref, shown] = useInViewOnce<HTMLDivElement>();
-  const value = 87;
-  const angle = -90 + (value / 100) * 180;
+  const angle = -90 + (SAMPLE_RISK_SCORE / 100) * 180;
 
   return (
     <div ref={ref} className="flex flex-col items-center">
@@ -83,7 +84,7 @@ function RiskGauge({ riskHigh }: { riskHigh: string }) {
           pathLength={1}
           style={{
             strokeDasharray: 1,
-            strokeDashoffset: shown ? 1 - value / 100 : 1,
+            strokeDashoffset: shown ? 1 - SAMPLE_RISK_SCORE / 100 : 1,
             transition: "stroke-dashoffset 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s",
           }}
         />
@@ -101,7 +102,7 @@ function RiskGauge({ riskHigh }: { riskHigh: string }) {
       </svg>
       <div className="-mt-3 text-center">
         <p className="font-display text-3xl font-bold text-fg tabular-nums">
-          <Counter value={87} />
+          <Counter value={SAMPLE_RISK_SCORE} />
           <span className="text-base text-fg-subtle">/100</span>
         </p>
         <span
@@ -150,7 +151,15 @@ function DependencyBars({ ownSite, note }: { ownSite: string; note: string }) {
   );
 }
 
-function SalesDonut({ referral, googleSite }: { referral: string; googleSite: string }) {
+function SalesDonut({
+  referral,
+  googleSite,
+  note,
+}: {
+  referral: string;
+  googleSite: string;
+  note: string;
+}) {
   const [ref, shown] = useInViewOnce<HTMLDivElement>();
   const parts = [
     { label: "Instagram", value: 52, color: DANGER },
@@ -194,6 +203,7 @@ function SalesDonut({ referral, googleSite }: { referral: string; googleSite: st
           </li>
         ))}
       </ul>
+      <p className="w-full text-xs text-fg-subtle/80">{note}</p>
     </div>
   );
 }
@@ -259,16 +269,16 @@ function OutageChart({ axis, windowLabel }: { axis: string; windowLabel: string 
 export function DependencyWidgets({ s }: { s: WidgetStrings }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
-      <Panel title={s.risk} live liveLabel={s.live} className="lg:col-span-4">
+      <Panel title={s.risk} sampleLabel={s.sample} className="lg:col-span-4">
         <RiskGauge riskHigh={s.riskHigh} />
       </Panel>
       <Panel title={s.channels} className="lg:col-span-4">
         <DependencyBars ownSite={s.ownSite} note={s.channelsNote} />
       </Panel>
       <Panel title={s.salesOrigin} className="lg:col-span-4">
-        <SalesDonut referral={s.referral} googleSite={s.googleSite} />
+        <SalesDonut referral={s.referral} googleSite={s.googleSite} note={s.salesNote} />
       </Panel>
-      <Panel title={s.outage} live liveLabel={s.live} className="md:col-span-2 lg:col-span-12">
+      <Panel title={s.outage} sampleLabel={s.sample} className="md:col-span-2 lg:col-span-12">
         <OutageChart axis={s.outageAxis} windowLabel={s.outageWindow} />
       </Panel>
     </div>

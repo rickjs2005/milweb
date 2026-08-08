@@ -20,13 +20,16 @@ function host(url?: string) {
 }
 
 /** Preview grande do projeto (screenshot rolante ou print estático). */
-function Preview({ p }: { p: Project }) {
+function Preview({ p, locale }: { p: Project; locale: Locale }) {
   if (p.image)
     return (
       <WebsitePreview
         src={p.image}
         host={host(p.live)}
-        alt={`Screenshot do projeto ${p.title}`}
+        alt={makeT(locale)({
+          pt: `Tela inicial do site ${p.title}`,
+          en: `Home screen of the ${p.title} website`,
+        })}
         frameClass="h-72 sm:h-96 lg:h-[30rem]"
         fit={p.imageStatic ? "contain" : "scroll"}
       />
@@ -90,7 +93,7 @@ export function CaseStudy({
       {/* Preview grande — mesmo view-transition-name do card na home:
           o navegador morfa o card para cá ao navegar (view-transitions.tsx). */}
       <div className="mt-10" style={{ viewTransitionName: `case-${p.slug}` }}>
-        <Preview p={p} />
+        <Preview p={p} locale={locale} />
       </div>
 
       {/* Problema → Solução */}

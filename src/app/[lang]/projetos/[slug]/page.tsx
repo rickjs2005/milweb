@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { PROJECTS, PROFILE, SITE_URL } from "@/lib/content";
-import { localeFrom, withLocale, type LangParams } from "@/lib/i18n";
+import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI } from "@/lib/content";
+import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { CaseStudy } from "@/components/case-study";
 import { Contact, Footer } from "@/components/contact";
@@ -51,6 +51,7 @@ export default async function ProjectPage({
 }) {
   const { slug } = await params;
   const locale = await localeFrom(params);
+  const t = makeT(locale);
   const idx = PROJECTS.findIndex((p) => p.slug === slug);
   if (idx === -1) notFound();
 
@@ -88,11 +89,11 @@ export default async function ProjectPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
+          <Link href={withLocale(locale, "/")} aria-label={t(UI.labels.home)}>
             <Logo />
           </Link>
           <a
-            href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
+            href={waHref(t(QUOTE.fallback))}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"

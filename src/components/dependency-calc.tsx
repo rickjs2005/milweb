@@ -197,6 +197,15 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   return canvas;
 }
 
+/*
+ * Premissas fixas por pedido perdido, usadas só para dar dimensão ao
+ * prejuízo — não saem de medição de cliente. A UI já marca o resultado como
+ * "estimativa ilustrativa" (DEPENDENCY.calc.note); ficam nomeadas aqui para
+ * a conta não carregar 2.6 e 7 soltos no meio dela.
+ */
+const LEADS_PER_ORDER = 2.6;
+const MESSAGES_PER_ORDER = 7;
+
 export function DependencyCalc({ s }: { s: CalcStrings }) {
   const [revenue, setRevenue] = useState(60000);
   const [igShare, setIgShare] = useState(65);
@@ -228,8 +237,8 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
     return {
       lostRevenue,
       lostOrders,
-      lostLeads: lostOrders * 2.6,
-      lostMessages: lostOrders * 7,
+      lostLeads: lostOrders * LEADS_PER_ORDER,
+      lostMessages: lostOrders * MESSAGES_PER_ORDER,
       lostHours: 24 * days * (share / 100),
       tier: lostRevenue >= 20000 ? 2 : lostRevenue >= 4000 ? 1 : 0,
     };

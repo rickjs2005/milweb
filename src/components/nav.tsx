@@ -10,6 +10,16 @@ import { PROFILE, type Locale } from "@/lib/content";
 
 type NavLink = { href: string; label: string };
 
+/** Strings já localizadas do Nav (client component: não lê content.ts). */
+export type NavStrings = {
+  contact: string;
+  home: string;
+  openMenu: string;
+  closeMenu: string;
+  /** Texto que vai pro WhatsApp — precisa seguir o idioma da página. */
+  quoteMessage: string;
+};
+
 const waHref = (text: string) =>
   `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
@@ -26,11 +36,11 @@ const waHref = (text: string) =>
 export function Nav({
   locale,
   links,
-  contactLabel,
+  strings,
 }: {
   locale: Locale;
   links: NavLink[];
-  contactLabel: string;
+  strings: NavStrings;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("");
@@ -175,7 +185,7 @@ export function Nav({
         }
       >
         <div className="flex min-w-0 items-center gap-4">
-          <a href="#top" aria-label="MilWeb, início" className="shrink-0">
+          <a href="#top" aria-label={strings.home} className="shrink-0">
             <Logo animate />
           </a>
           {/* Rótulo da seção atual (capítulo do filme). Some sobre o hero. */}
@@ -222,13 +232,13 @@ export function Nav({
           <ThemeToggle />
           <LangToggle locale={locale} />
           <a
-            href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
+            href={waHref(strings.quoteMessage)}
             target="_blank"
             rel="noopener noreferrer"
             className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"
           >
             <MessageCircle className="h-4 w-4" />
-            {contactLabel}
+            {strings.contact}
           </a>
         </div>
 
@@ -238,7 +248,7 @@ export function Nav({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Abrir menu"
+            aria-label={strings.openMenu}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line/15 text-fg-muted transition-colors hover:border-accent/40 hover:text-fg"
           >
             <Menu className="h-5 w-5" />
@@ -285,7 +295,7 @@ export function Nav({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Fechar menu"
+            aria-label={strings.closeMenu}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line/15 text-fg-muted transition-colors hover:border-accent/40 hover:text-fg"
           >
             <X className="h-5 w-5" />
@@ -310,7 +320,7 @@ export function Nav({
             </a>
           ))}
           <a
-            href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
+            href={waHref(strings.quoteMessage)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}

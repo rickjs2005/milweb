@@ -5,9 +5,12 @@ import { DependencyCalc, type CalcStrings } from "./dependency-calc";
 import { DependencyWidgets, type WidgetStrings } from "./dependency-widgets";
 
 /**
- * 03 / RAIO-X DA DEPENDÊNCIA — bloco interativo de conversão: calculadora de
+ * 01 / RAIO-X DA DEPENDÊNCIA — primeiro ato da /diagnostico: calculadora de
  * prejuízo + mini-dashboard. Constrói a dor ("depender de rede social é
  * risco") e aponta pra solução que eu vendo (site próprio) com CTA direto.
+ *
+ * Os quatro painéis do dashboard são ilustrações de números fixos, não
+ * medição do visitante — só a calculadora acima reage ao que ele informa.
  */
 export function Dependency({ locale }: { locale: Locale }) {
   const t = makeT(locale);
@@ -55,11 +58,12 @@ export function Dependency({ locale }: { locale: Locale }) {
   const widgetStrings: WidgetStrings = {
     risk: t(w.risk),
     riskHigh: t(w.riskHigh),
-    live: t(w.live),
+    sample: t(w.sample),
     channels: t(w.channels),
     ownSite: t(w.ownSite),
     channelsNote: t(w.channelsNote),
     salesOrigin: t(w.salesOrigin),
+    salesNote: t(w.salesNote),
     referral: t(w.referral),
     googleSite: t(w.googleSite),
     outage: t(w.outage),

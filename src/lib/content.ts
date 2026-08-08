@@ -1925,6 +1925,15 @@ export const UI = {
     backToProjects: { pt: "Voltar aos projetos", en: "Back to projects" },
     prev: { pt: "Anterior", en: "Previous" },
     next: { pt: "Próximo", en: "Next" },
+    /* Rótulos que só um leitor de tela lê. Ficam aqui, e não soltos no JSX,
+       porque as duas versões do site saem prontas do build: string fixa em
+       português era anunciada também em /en. */
+    home: { pt: "MilWeb, início", en: "MilWeb, home" },
+    openMenu: { pt: "Abrir menu", en: "Open menu" },
+    closeMenu: { pt: "Fechar menu", en: "Close menu" },
+    prevProject: { pt: "Projeto anterior", en: "Previous project" },
+    nextProject: { pt: "Próximo projeto", en: "Next project" },
+    founder: { pt: "Fundador da MilWeb", en: "Founder of MilWeb" },
     viewLive: { pt: "Ver ao vivo", en: "Live demo" },
     code: { pt: "Código", en: "Code" },
     problem: { pt: "Problema", en: "Problem" },
@@ -2038,7 +2047,10 @@ export const DEPENDENCY = {
   widgets: {
     risk: { pt: "Risco do negócio", en: "Business risk" },
     riskHigh: { pt: "Risco alto", en: "High risk" },
-    live: { pt: "ao vivo", en: "live" },
+    /* Os quatro painéis são ilustrações com números fixos, não medição do
+       visitante. O selo dizia "ao vivo" e o pulso vermelho reforçava —
+       parecia telemetria real. */
+    sample: { pt: "exemplo", en: "example" },
     channels: { pt: "Dependência por canal", en: "Dependency by channel" },
     ownSite: { pt: "Site próprio", en: "Own website" },
     channelsNote: {
@@ -2046,6 +2058,10 @@ export const DEPENDENCY = {
       en: "Typical profile of a DM-driven business.",
     },
     salesOrigin: { pt: "Origem das vendas", en: "Where sales come from" },
+    salesNote: {
+      pt: "Divisão típica de quem ainda não tem site próprio.",
+      en: "Typical split for a business with no site of its own.",
+    },
     referral: { pt: "Indicação", en: "Referrals" },
     googleSite: { pt: "Google / site", en: "Google / website" },
     outage: { pt: "Simulação de apagão · 24h", en: "Outage simulation · 24h" },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { DIAGNOSTICO, PROFILE, SITE_URL } from "@/lib/content";
+import { DIAGNOSTICO, PROFILE, SITE_URL, UI } from "@/lib/content";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Dependency } from "@/components/dependency";
@@ -63,7 +63,7 @@ export default async function DiagnosticoPage({ params }: { params: Promise<Lang
     <>
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
+          <Link href={withLocale(locale, "/")} aria-label={t(UI.labels.home)}>
             <Logo />
           </Link>
           <a

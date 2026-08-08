@@ -14,7 +14,17 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
  * alguns pixels e volta) para deixar óbvio que dá pra rolar, sem precisar de
  * indicador estático.
  */
-export function LabCarousel({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function LabCarousel({
+  children,
+  prevLabel,
+  nextLabel,
+  className = "",
+}: {
+  children: ReactNode;
+  prevLabel: string;
+  nextLabel: string;
+  className?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -120,7 +130,7 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
       <button
         type="button"
         onClick={() => scrollByCard(-1)}
-        aria-label="Anterior"
+        aria-label={prevLabel}
         tabIndex={canScrollLeft ? 0 : -1}
         className={`absolute left-1 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line/15 bg-bg/85 text-fg backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-bg sm:flex ${
           canScrollLeft ? "opacity-100" : "pointer-events-none opacity-0"
@@ -131,7 +141,7 @@ export function LabCarousel({ children, className = "" }: { children: ReactNode;
       <button
         type="button"
         onClick={() => scrollByCard(1)}
-        aria-label="Próximo"
+        aria-label={nextLabel}
         tabIndex={canScrollRight ? 0 : -1}
         className={`absolute right-1 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line/15 bg-bg/85 text-fg backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-bg sm:flex ${
           canScrollRight ? "opacity-100" : "pointer-events-none opacity-0"

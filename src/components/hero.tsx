@@ -4,7 +4,7 @@ import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
 import { HeroScene } from "./hero-scene";
-import { UI, PROFILE, type Locale } from "@/lib/content";
+import { UI, PROFILE, QUOTE, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 
 const waHref = (text: string) =>
@@ -106,14 +106,14 @@ export function Hero({ locale }: { locale: Locale }) {
           <div data-hero className="mt-5 flex items-center gap-3">
             <Image
               src="/avatar.png"
-              alt="Rick, fundador da MilWeb"
+              alt={t({ pt: "Rick, fundador da MilWeb", en: "Rick, founder of MilWeb" })}
               width={40}
               height={40}
               className="h-10 w-10 rounded-full object-cover ring-1 ring-inset ring-accent/40"
             />
             <div className="leading-tight">
               <p className="text-sm font-semibold text-fg">Rick</p>
-              <p className="text-xs text-fg-subtle">Fundador da MilWeb</p>
+              <p className="text-xs text-fg-subtle">{t(UI.labels.founder)}</p>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ export function Hero({ locale }: { locale: Locale }) {
           <div data-hero className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Magnetic strength={0.5} className="w-full sm:w-auto">
               <a
-                href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
+                href={waHref(t(QUOTE.fallback))}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cta-pulse cta-shine inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto"

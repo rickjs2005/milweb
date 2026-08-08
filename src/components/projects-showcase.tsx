@@ -62,11 +62,15 @@ export function ProjectsShowcase({
   items,
   filters,
   allLabel,
+  prevLabel,
+  nextLabel,
   fallback,
 }: {
   items: ProjectShowcaseItem[];
   filters: ProjectFilterDef[];
   allLabel: string;
+  prevLabel: string;
+  nextLabel: string;
   fallback: ReactNode;
 }) {
   const router = useRouter();
@@ -322,7 +326,7 @@ export function ProjectsShowcase({
           {/* setas prev/next — atalho rápido além do clique/scroll na esteira */}
           <button
             type="button"
-            aria-label="Projeto anterior"
+            aria-label={prevLabel}
             onClick={() => step(-1)}
             className="absolute left-3 top-1/2 z-[130] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-line/15 bg-surface-2/70 text-fg-muted backdrop-blur transition-colors hover:border-accent/50 hover:text-fg sm:left-6"
           >
@@ -330,7 +334,7 @@ export function ProjectsShowcase({
           </button>
           <button
             type="button"
-            aria-label="Próximo projeto"
+            aria-label={nextLabel}
             onClick={() => step(1)}
             className="absolute right-3 top-1/2 z-[130] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-line/15 bg-surface-2/70 text-fg-muted backdrop-blur transition-colors hover:border-accent/50 hover:text-fg sm:right-6"
           >

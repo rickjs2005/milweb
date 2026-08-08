@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, TrendingUp } from "lucide-react";
-import { PROJECTS, PROFILE, SITE_URL, UI, type Project, type Locale } from "@/lib/content";
+import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI, type Project, type Locale } from "@/lib/content";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Contact, Footer } from "@/components/contact";
@@ -62,7 +62,10 @@ function Card({ p, locale }: { p: Project; locale: Locale }) {
         <div className="-mx-6 -mt-6 mb-5 border-b border-line/10 bg-surface-2/40">
           <Image
             src={p.image}
-            alt={`Tela do projeto ${p.title}`}
+            alt={t({
+              pt: `Tela inicial do site ${p.title}`,
+              en: `Home screen of the ${p.title} website`,
+            })}
             width={800}
             height={500}
             loading="lazy"
@@ -149,11 +152,11 @@ export default async function ProjectsIndexPage({ params }: { params: Promise<La
     <>
       <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link href={withLocale(locale, "/")} aria-label="MilWeb, início">
+          <Link href={withLocale(locale, "/")} aria-label={t(UI.labels.home)}>
             <Logo />
           </Link>
           <a
-            href={waHref("Olá Rick! Vim pelo site da MilWeb e quero um orçamento.")}
+            href={waHref(t(QUOTE.fallback))}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"

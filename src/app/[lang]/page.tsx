@@ -11,7 +11,7 @@ import { Tech } from "@/components/tech";
 import { Faq } from "@/components/faq";
 import { About } from "@/components/about";
 import { Contact, Footer } from "@/components/contact";
-import { UI } from "@/lib/content";
+import { QUOTE, UI } from "@/lib/content";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 
 export default async function Home({ params }: { params: Promise<LangParams> }) {
@@ -33,13 +33,24 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
 
   return (
     <>
-      <Nav locale={locale} links={navLinks} contactLabel={t(UI.nav.contact)} />
+      <Nav
+        locale={locale}
+        links={navLinks}
+        strings={{
+          contact: t(UI.nav.contact),
+          home: t(UI.labels.home),
+          openMenu: t(UI.labels.openMenu),
+          closeMenu: t(UI.labels.closeMenu),
+          quoteMessage: t(QUOTE.fallback),
+        }}
+      />
       <main>
         {/* Página de venda freelancer: oferta (Hero) → o que entrego →
             por que me contratar → prova (números) → preço justo → projetos →
             como trabalho → stack → dúvidas (FAQ) → MilWeb (discreto) → CTA.
-            Raio-X + teste do Google moraram aqui até 07/2026; hoje são a
-            página /raio-x, linkada no menu e no banner do Preço Justo. */}
+            Raio-X + teste do Google moraram aqui até 07/2026; hoje abrem a
+            página /diagnostico, linkada no menu e no DiagnosticBanner abaixo
+            (/raio-x virou redirect, ver next.config). */}
         <Hero locale={locale} />
         <Deliverables locale={locale} />
         <Why locale={locale} />

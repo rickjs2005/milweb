@@ -89,7 +89,11 @@ export async function generateMetadata({
 
 export const viewport: Viewport = {
   themeColor: "#080a10",
-  colorScheme: "dark",
+  // "dark light" (dark primeiro = padrão do site). Só "dark" fazia o
+  // navegador pintar os controles nativos — os sliders da calculadora, o
+  // campo do teste do Google, as scrollbars — em escuro mesmo com o tema
+  // claro ligado pelo toggle.
+  colorScheme: "dark light",
 };
 
 export default async function RootLayout({

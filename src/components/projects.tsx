@@ -65,7 +65,8 @@ function FauxPreview({ p, tall = false }: { p: Project; tall?: boolean }) {
   );
 }
 
-function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
+function Preview({ p, locale, tall = false }: { p: Project; locale: Locale; tall?: boolean }) {
+  const t = makeT(locale);
   // Sem vídeo em lugar nenhum: a vitrine perdeu os vídeos em 31/07 e as
   // páginas de case em 05/08 (pedido do Rick). Todo projeto se apresenta
   // pelo screenshot; sem screenshot, cai no preview estilizado.
@@ -74,7 +75,10 @@ function Preview({ p, tall = false }: { p: Project; tall?: boolean }) {
       <WebsitePreview
         src={p.image}
         host={host(p.live)}
-        alt={`Screenshot do projeto ${p.title}`}
+        alt={t({
+          pt: `Tela inicial do site ${p.title}`,
+          en: `Home screen of the ${p.title} website`,
+        })}
         frameClass={tall ? "h-72 sm:h-80 lg:h-[26rem]" : "h-56"}
         fit={p.imageStatic ? "contain" : "scroll"}
       />
@@ -153,7 +157,10 @@ function Details({ p, locale }: { p: Project; locale: Locale }) {
             href={r.url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`${r.label} do projeto ${p.title} (GitHub)`}
+            aria-label={t({
+              pt: `${r.label} do projeto ${p.title} no GitHub`,
+              en: `${r.label} for ${p.title} on GitHub`,
+            })}
             className="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-fg-subtle transition-colors hover:text-fg"
           >
             <Github className="h-3.5 w-3.5" /> {r.label}
@@ -177,7 +184,7 @@ function ClientCard({ p, locale }: { p: Project; locale: Locale }) {
     <TiltCard strength={2} className="h-full rounded-3xl">
       <div className="relative flex h-full flex-col rounded-3xl border border-accent/30 glass p-6 sm:p-8">
         <div style={{ viewTransitionName: `case-${p.slug}` }}>
-          <Preview p={p} tall />
+          <Preview p={p} locale={locale} tall />
         </div>
         <div className="mt-6 flex flex-1 flex-col">
           {p.clientName && (
@@ -304,7 +311,7 @@ export function Projects({ locale }: { locale: Locale }) {
           <TiltCard strength={2} className="mt-10 rounded-3xl">
             <div className="relative grid items-center gap-8 rounded-3xl border border-accent/30 glass p-6 sm:p-8 lg:grid-cols-2 lg:gap-12">
               <div style={{ viewTransitionName: `case-${flagship.slug}` }}>
-                <Preview p={flagship} tall />
+                <Preview p={flagship} locale={locale} tall />
               </div>
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
@@ -324,6 +331,8 @@ export function Projects({ locale }: { locale: Locale }) {
 
       <ProjectsShowcase
         allLabel={t(UI.sections.projectsFilterAll)}
+        prevLabel={t(UI.labels.prevProject)}
+        nextLabel={t(UI.labels.nextProject)}
         filters={FILTER_CATEGORIES.filter((c) => rest.some((p) => p.category === c)).map((c) => ({
           key: c,
           label: t(FILTER_LABELS[c]),
@@ -336,9 +345,6 @@ export function Projects({ locale }: { locale: Locale }) {
             // Card compacto da esteira 3D: preview + faixa de título. O
             // viewTransitionName morfa pro preview grande do case (só um
             // modo fica montado por vez -- sem nome duplicado com a grade).
-            // Card compacto da esteira 3D: preview + faixa de título. O
-            // viewTransitionName morfa pro preview grande do case (só um
-            // modo fica montado por vez -- sem nome duplicado com a grade).
             //
             // Medido: remover estes 20 nós do payload economiza 7KB crus e
             // 1KB na rede. Não vale mover a esteira para renderizar no client
@@ -347,7 +353,7 @@ export function Projects({ locale }: { locale: Locale }) {
             beltNode: (
               <div>
                 <div style={{ viewTransitionName: `case-${p.slug}` }}>
-                  <Preview p={p} />
+                  <Preview p={p} locale={locale} />
                 </div>
                 <p className="border-t border-line/10 px-4 py-3 font-display text-base font-bold tracking-tight text-fg">
                   {p.title}
@@ -398,7 +404,7 @@ export function Projects({ locale }: { locale: Locale }) {
                       {/* Elemento compartilhado da View Transition: morfa para o
                           preview grande do case (mesmo nome em case-study.tsx). */}
                       <div style={{ viewTransitionName: `case-${p.slug}` }}>
-                        <Preview p={p} />
+                        <Preview p={p} locale={locale} />
                       </div>
                       <h3 className="mt-5 font-display text-2xl font-bold tracking-tight text-fg">{p.title}</h3>
                       <div className="mt-3 flex-1">
