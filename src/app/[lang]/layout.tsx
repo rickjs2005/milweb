@@ -42,6 +42,19 @@ export function generateStaticParams() {
   return LOCALES.map((lang) => ({ lang }));
 }
 
+/**
+ * Só `pt` e `en` são [lang] válidos; o resto é 404.
+ *
+ * O middleware não toca em path com ponto (o matcher exclui `.*\..*`, senão
+ * /sitemap.xml viraria /pt/sitemap.xml). Sem ninguém barrando, /llms.txt
+ * caía direto aqui como lang="llms.txt", e como normalizeLocale devolve pt
+ * para qualquer coisa que não seja "en", o Next respondia a HOME INTEIRA
+ * com status 200 — 329KB. Valia para qualquer extensão: /ads.txt, /foo.xml,
+ * /teste.pdf. Um soft 404 sem fim, e a razão de o PageSpeed acusar timeout
+ * ao buscar llms.txt: ele pedia um texto e recebia a home.
+ */
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: {
