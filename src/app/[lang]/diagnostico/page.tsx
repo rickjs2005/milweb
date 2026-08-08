@@ -33,7 +33,7 @@ export async function generateMetadata({
   const canonical = `${locale === "en" ? "/en" : ""}/diagnostico`;
   const title = t({ pt: "Diagnóstico do seu negócio", en: "Your business audit" });
   const description = t({
-    pt: "Quanto custa depender só de rede social, como sua empresa aparece no Google e como eu calculo um orçamento justo. Tudo numa página, com diagnóstico gratuito no final.",
+    pt: "Quanto custa depender só de rede social, como sua empresa aparece no Google e como eu calculo o orçamento. Tudo numa página, com diagnóstico gratuito.",
     en: "What depending on social media really costs, how your company shows up on Google and how I price projects fairly. One page, with a free audit at the end.",
   });
   return {

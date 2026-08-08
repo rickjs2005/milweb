@@ -7,6 +7,33 @@
 export type Locale = "pt" | "en";
 export type Localized = { pt: string; en: string };
 
+/**
+ * Encurta um texto para a meta description (o Google corta perto de 160
+ * caracteres e a frase aparece truncada no meio no resultado da busca).
+ *
+ * Fecha na última frase INTEIRA que couber; só quando nem a primeira frase
+ * cabe é que corta na palavra e reticencia.
+ *
+ * Existe por causa dos cases: a description deles sai de `result`, que é
+ * escrito para ser lido dentro da página (o maior tem 639 caracteres).
+ * Encurtar o próprio `result` tiraria conteúdo de quem está lendo o case,
+ * então o corte acontece só na saída para o buscador.
+ */
+export function searchDescription(text: string, limit = 160): string {
+  if (text.length <= limit) return text;
+  const head = text.slice(0, limit);
+  const sentenceEnd = Math.max(
+    head.lastIndexOf(". "),
+    head.lastIndexOf("! "),
+    head.lastIndexOf("? "),
+  );
+  // Um corte de frase muito no começo devolveria uma description curta
+  // demais para descrever a página; nesse caso vale mais o corte por palavra.
+  if (sentenceEnd >= 80) return text.slice(0, sentenceEnd + 1);
+  const lastSpace = head.lastIndexOf(" ");
+  return `${text.slice(0, lastSpace > 0 ? lastSpace : limit).trimEnd()}…`;
+}
+
 /** URL pública (sem barra final). Definir NEXT_PUBLIC_SITE_URL no Vercel.
  *  Blindado: env ausente, vazia ou malformada cai no domínio canônico —
  *  `new URL(SITE_URL)` roda a cada request no generateMetadata, e um valor

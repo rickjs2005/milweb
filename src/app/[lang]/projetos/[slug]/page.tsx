@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI } from "@/lib/content";
+import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI, searchDescription } from "@/lib/content";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { CaseStudy } from "@/components/case-study";
@@ -22,7 +22,9 @@ export async function generateMetadata({
   const p = PROJECTS.find((x) => x.slug === slug);
   if (!p) return {};
   const locale = await localeFrom(params);
-  const description = p.result[locale];
+  // `result` é escrito para ser lido na página; para o resultado de busca
+  // vale a versão que cabe sem truncar no meio da frase.
+  const description = searchDescription(p.result[locale]);
   const canonical = `${locale === "en" ? "/en" : ""}/projetos/${p.slug}`;
   const url = `${SITE_URL}${canonical}`;
   // "MilLead | MilWeb" nao dizia o que o projeto e. A tagline ja resume em

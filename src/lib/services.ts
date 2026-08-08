@@ -30,7 +30,7 @@ export const SERVICES: Service[] = [
       en: "Professional Website Development: fast and Google-optimized",
     },
     metaDescription: {
-      pt: "Criação de sites profissionais sob medida: design próprio, performance Lighthouse 100, SEO técnico completo e suporte pós-entrega. Orçamento gratuito pelo WhatsApp.",
+      pt: "Criação de sites sob medida: design próprio, performance Lighthouse 100, SEO técnico e suporte pós-entrega. Orçamento gratuito pelo WhatsApp.",
       en: "Custom professional website development: unique design, Lighthouse 100 performance, full technical SEO and post-launch support. Free quote via WhatsApp.",
     },
     eyebrow: { pt: "Criação de sites", en: "Website development" },
@@ -73,7 +73,7 @@ export const SERVICES: Service[] = [
       en: "Online WhatsApp Catalog: orders straight to your number",
     },
     metaDescription: {
-      pt: "Catálogo online profissional com carrinho: o cliente escolhe os produtos e o pedido chega pronto no seu WhatsApp. Sem taxa por venda, sem marketplace. Orçamento gratuito.",
+      pt: "Catálogo online com carrinho: o cliente escolhe os produtos e o pedido chega pronto no seu WhatsApp. Sem taxa por venda, sem marketplace. Orçamento gratuito.",
       en: "Professional online catalog with cart: customers pick products and the order lands ready in your WhatsApp. No sales fees, no marketplace. Free quote.",
     },
     eyebrow: { pt: "Catálogo para WhatsApp", en: "WhatsApp catalog" },
@@ -116,7 +116,7 @@ export const SERVICES: Service[] = [
       en: "High-Conversion Landing Pages: ready for paid traffic",
     },
     metaDescription: {
-      pt: "Landing pages rápidas e persuasivas, feitas pra converter: copy orientada a venda, carregamento instantâneo, integração com WhatsApp e pixel/analytics prontos pra anúncios.",
+      pt: "Landing pages feitas pra converter: copy orientada a venda, carregamento instantâneo, integração com WhatsApp e pixel/analytics prontos pra anúncios.",
       en: "Fast, persuasive landing pages built to convert: sales-driven copy, instant loading, WhatsApp integration and pixel/analytics ready for ads.",
     },
     eyebrow: { pt: "Landing pages", en: "Landing pages" },
@@ -159,7 +159,7 @@ export const SERVICES: Service[] = [
       en: "Custom Online Store: sell online without per-order fees",
     },
     metaDescription: {
-      pt: "Loja virtual completa e sob medida: Pix e cartão integrados, gestão de pedidos e estoque, produtos indexados no Google e zero taxa por venda. Orçamento gratuito pelo WhatsApp.",
+      pt: "Loja virtual sob medida: Pix e cartão integrados, gestão de pedidos e estoque, produtos indexados no Google e zero taxa por venda. Orçamento gratuito.",
       en: "A complete custom online store: integrated payments, order and stock management, Google-indexed products and zero per-sale fees. Free quote via WhatsApp.",
     },
     eyebrow: { pt: "Loja virtual", en: "Online store" },
@@ -202,7 +202,7 @@ export const SERVICES: Service[] = [
       en: "Custom Web Systems & SaaS: automate your business operations",
     },
     metaDescription: {
-      pt: "Desenvolvimento de sistemas web sob medida: automatize processos, organize dados e tenha relatórios em tempo real. Do controle interno ao SaaS completo. Orçamento gratuito.",
+      pt: "Sistemas web sob medida: automatize processos, organize dados e tenha relatórios em tempo real. Do controle interno ao SaaS completo. Orçamento gratuito.",
       en: "Custom web system development: automate processes, organize data and get real-time reports. From internal tools to a full SaaS. Free quote.",
     },
     eyebrow: { pt: "Sistemas sob medida", en: "Custom systems" },
