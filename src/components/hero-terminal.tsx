@@ -150,7 +150,7 @@ export function HeroTerminal({ locale }: { locale: Locale }) {
       <span className="mr-2 select-none text-accent" aria-hidden>
         {t(UI.hero.terminal.prompt)}
       </span>
-      <span>{shown}</span>
+      <span aria-hidden>{shown}</span>
       <span className="ml-0.5 inline-block h-[1.05em] w-[0.55ch] translate-y-[0.15em] animate-pulse bg-accent-soft/80" aria-hidden />
       <span className="sr-only">{lines[lineIdx]}</span>
     </div>

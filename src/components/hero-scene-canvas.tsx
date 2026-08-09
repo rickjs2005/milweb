@@ -24,10 +24,10 @@ import { on, emit } from "./hero-bus";
 
 /* Posição/tamanho da formação. Deslocada à direita e menor do que era
    (2.9 / 5.6): a máscara .hero-scene-mask apaga a coluna do texto, que é
-   uma faixa de largura FIXA à esquerda, e com os valores antigos o "M" de
-   MILWEB caía dentro dessa zona morta — a marca aparecia cortada. A palavra
-   é bem mais larga que o monograma MW, então quem manda no enquadramento
-   agora é ela. */
+   uma faixa de largura FIXA à esquerda, e com os valores antigos o "M" do
+   monograma caía dentro dessa zona morta — a marca aparecia cortada. Quem
+   manda no enquadramento hoje são as palavras do ciclo (SITES/APPS/WEB,
+   ver CYCLE mais abaixo) — bem mais largas que o monograma MW sozinho. */
 const LOGO_X = 3.8;
 const LOGO_Y = 0.2;
 const LOGO_SIZE = 4.2;
