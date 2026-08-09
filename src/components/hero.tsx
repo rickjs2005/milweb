@@ -4,6 +4,7 @@ import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
 import { HeroScene } from "./hero-scene";
+import { HeroTerminal } from "./hero-terminal";
 import { UI, PROFILE, QUOTE, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 
@@ -27,6 +28,10 @@ export function Hero({ locale }: { locale: Locale }) {
       />
       <HeroCinema />
       <HeroScene />
+      {/* Posicionado em xl como irmão absoluto da seção (referência pra
+          "ao lado" da cena); abaixo de xl entra no fluxo normal, então
+          mora dentro do container-page, depois dos CTAs. */}
+      <HeroTerminal locale={locale} />
 
       <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
         <div className="max-w-3xl">
