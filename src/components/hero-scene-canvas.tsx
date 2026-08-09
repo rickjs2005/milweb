@@ -110,12 +110,15 @@ const particleVertex = /* glsl */ `
   attribute vec3 aT3;
   attribute vec3 aT4;
   attribute float aRand;
+  attribute float aGlyph;
   varying float vRand;
   varying float vP;
   varying float vX;
+  varying float vGlyph;
 
   void main() {
     vRand = aRand;
+    vGlyph = aGlyph;
     float p = clamp(uProgress * 1.35 - aRand * 0.35, 0.0, 1.0);
     p = p * p * (3.0 - 2.0 * p);
     vP = p;
@@ -150,7 +153,8 @@ const particleVertex = /* glsl */ `
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = (30.0 * (0.45 + aRand)) / -mv.z;
+    // glifo é mais fino que um disco — ponto ~30% maior compensa a massa
+    gl_PointSize = (39.0 * (0.45 + aRand)) / -mv.z;
   }
 `;
 
@@ -158,13 +162,17 @@ const particleFragment = /* glsl */ `
   uniform float uTime;
   uniform vec3 uColA;
   uniform vec3 uColB;
+  uniform sampler2D uAtlas;
   varying float vRand;
   varying float vP;
   varying float vX;
+  varying float vGlyph;
 
   void main() {
-    float d = length(gl_PointCoord - 0.5);
-    float a = smoothstep(0.5, 0.06, d);
+    // célula do glifo no atlas 5x4; clamp evita sangrar na célula vizinha
+    vec2 cell = vec2(mod(vGlyph, 5.0), floor(vGlyph / 5.0));
+    vec2 pc = clamp(gl_PointCoord, 0.03, 0.97);
+    float a = texture2D(uAtlas, (cell + pc) / vec2(5.0, 4.0)).a;
     vec3 c = mix(uColA, uColB, vRand);
     // pulso de energia varrendo a forma da esquerda pra direita
     float wave = mod(uTime * 1.6, 9.0) - 1.5;
@@ -190,11 +198,39 @@ const HOLD_M = 1.8;
 const HOLD_WORD = 2.0;
 const MORPH = 1.1;
 
+/* Atlas de glifos: os caracteres viram UMA textura desenhada em runtime
+   (nada novo no bundle). Grade 5x4 = 20 células; cada partícula sorteia uma
+   célula fixa no nascimento. Glifos de sintaxe e não letras: de longe a
+   forma continua lendo como massa de luz, de perto revela código. */
+const GLYPHS = ["{", "}", "<", ">", "/", "(", ")", ";", "=", "+", "*", "#", "&", "$", "%", "?", "!", ":", "~", "."];
+const ATLAS_COLS = 5;
+const ATLAS_ROWS = 4;
+
+function makeGlyphAtlas(): THREE.CanvasTexture {
+  const cell = 64;
+  const c = document.createElement("canvas");
+  c.width = ATLAS_COLS * cell;
+  c.height = ATLAS_ROWS * cell;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#fff";
+  ctx.font = `bold ${Math.round(cell * 0.78)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  GLYPHS.forEach((g, i) => {
+    ctx.fillText(g, (i % ATLAS_COLS) * cell + cell / 2, Math.floor(i / ATLAS_COLS) * cell + cell / 2);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.flipY = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
 function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> }) {
   const mat = useRef<THREE.ShaderMaterial>(null);
   const timeline = useRef({ idx: 0, t: 0 });
 
-  const { starts, targets, rands } = useMemo(() => {
+  const { starts, targets, rands, glyphs } = useMemo(() => {
     const targets = [
       sampleLogo(COUNT),
       sampleWord("SITES", COUNT),
@@ -204,6 +240,7 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
     ];
     const starts = new Float32Array(COUNT * 3);
     const rands = new Float32Array(COUNT);
+    const glyphs = new Float32Array(COUNT);
     for (let i = 0; i < COUNT; i++) {
       const r = 7 + Math.random() * 6;
       const theta = Math.random() * Math.PI * 2;
@@ -212,8 +249,9 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
       starts[i * 3 + 1] = LOGO_Y + r * Math.sin(phi) * Math.sin(theta) * 0.6;
       starts[i * 3 + 2] = -2 + r * Math.cos(phi) * 0.5;
       rands[i] = Math.random();
+      glyphs[i] = (Math.random() * GLYPHS.length) | 0;
     }
-    return { starts, targets, rands };
+    return { starts, targets, rands, glyphs };
   }, []);
 
   const uniforms = useMemo(
@@ -226,6 +264,7 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
       uMouse: { value: new THREE.Vector2(99, 99) },
       uColA: { value: new THREE.Color("#9db7ff") },
       uColB: { value: new THREE.Color("#3355e6") },
+      uAtlas: { value: makeGlyphAtlas() },
     }),
     [],
   );
@@ -277,6 +316,7 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
         <bufferAttribute attach="attributes-aT3" args={[targets[3], 3]} />
         <bufferAttribute attach="attributes-aT4" args={[targets[4], 3]} />
         <bufferAttribute attach="attributes-aRand" args={[rands, 1]} />
+        <bufferAttribute attach="attributes-aGlyph" args={[glyphs, 1]} />
       </bufferGeometry>
       <shaderMaterial
         ref={mat}
