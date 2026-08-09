@@ -115,6 +115,7 @@ const particleVertex = /* glsl */ `
   varying float vP;
   varying float vX;
   varying float vGlyph;
+  varying float vAber;
 
   void main() {
     vRand = aRand;
@@ -146,13 +147,22 @@ const particleVertex = /* glsl */ `
     // scroll: a formação se desmancha de volta pra nuvem
     pos = mix(pos, position * 0.7 + vec3(0.0, 1.0, 0.0), uScatter);
 
-    // repulsão magnética do cursor (volta sozinha pela própria mistura)
+    // lente gravitacional do cursor: em vez de repelir, o ponteiro CURVA as
+    // trajetórias ao redor de si (componente tangencial + leve sucção),
+    // como luz passando perto de massa
     vec2 d = pos.xy - uMouse;
     float dist = length(d);
-    pos.xy += (d / max(dist, 0.0001)) * smoothstep(1.9, 0.0, dist) * 0.65;
+    vec2 dir = d / max(dist, 0.0001);
+    float infl = smoothstep(1.9, 0.0, dist);
+    pos.xy += vec2(-dir.y, dir.x) * infl * 0.55 - dir * infl * 0.12;
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
+
+    // aberração cromática cresce na borda do viewport e durante a turbulência
+    vec2 ndc = gl_Position.xy / gl_Position.w;
+    vAber = smoothstep(0.45, 1.15, length(ndc)) * 0.14 + uTurb * 0.05;
+
     // glifo é mais fino que um disco — ponto ~30% maior compensa a massa
     gl_PointSize = (39.0 * (0.45 + aRand)) / -mv.z;
   }
@@ -167,18 +177,28 @@ const particleFragment = /* glsl */ `
   varying float vP;
   varying float vX;
   varying float vGlyph;
+  varying float vAber;
 
   void main() {
     // célula do glifo no atlas 5x4; clamp evita sangrar na célula vizinha
     vec2 cell = vec2(mod(vGlyph, 5.0), floor(vGlyph / 5.0));
-    vec2 pc = clamp(gl_PointCoord, 0.03, 0.97);
-    float a = texture2D(uAtlas, (cell + pc) / vec2(5.0, 4.0)).a;
+    vec2 grid = vec2(5.0, 4.0);
+    // aberração cromática: cada canal amostra o glifo com um leve deslocamento
+    // horizontal, como se a luz se separasse ao passar perto da lente
+    vec2 pcG = clamp(gl_PointCoord, 0.03, 0.97);
+    vec2 pcR = clamp(gl_PointCoord + vec2(vAber, 0.0), 0.03, 0.97);
+    vec2 pcB = clamp(gl_PointCoord - vec2(vAber, 0.0), 0.03, 0.97);
+    float sR = texture2D(uAtlas, (cell + pcR) / grid).a;
+    float sG = texture2D(uAtlas, (cell + pcG) / grid).a;
+    float sB = texture2D(uAtlas, (cell + pcB) / grid).a;
     vec3 c = mix(uColA, uColB, vRand);
     // pulso de energia varrendo a forma da esquerda pra direita
     float wave = mod(uTime * 1.6, 9.0) - 1.5;
     float pulse = exp(-pow((vX - wave) * 1.8, 2.0));
     c += vec3(0.5, 0.8, 1.0) * pulse * 0.9;
-    gl_FragColor = vec4(c, a * (0.2 + 0.8 * vP) * (1.0 + pulse * 0.6));
+    vec3 rgb = vec3(c.r * sR, c.g * sG, c.b * sB);
+    float a = max(sR, max(sG, sB));
+    gl_FragColor = vec4(rgb, a * (0.2 + 0.8 * vP) * (1.0 + pulse * 0.6));
   }
 `;
 
