@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, type RootState } from "@react-three/fiber";
 import { Sparkles, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import { on, emit } from "./hero-bus";
 
 /**
  * Cena 3D do hero (desktop): ~16k partículas vivas montam o monograma MW e,
- * em loop, se desmancham e escrevem SITES, APPS, WEB e MILWEB, voltando ao M
- * entre cada uma. Tem turbulência no meio do morph, pulso de energia
- * percorrendo a forma, repulsão magnética do cursor e "fugitivas" que
- * escapam da formação.
+ * puxadas pelo terminal via hero-bus (typing → burst → hold → collapse),
+ * colapsam num redemoinho na origem da linha executada e explodem pra
+ * escrever SITES, APPS, WEB, voltando ao M entre cada uma. Tem turbulência
+ * no burst, pulso de energia percorrendo a forma, repulsão magnética do
+ * cursor e "fugitivas" que escapam da formação.
  * Profundidade em 6 camadas (estrelas → névoa → glow → cards → linhas →
  * partículas), cada uma com parallax próprio.
  *
@@ -102,13 +104,14 @@ const particleVertex = /* glsl */ `
   // Pesos das formas (one-hot no repouso, blend no morph). Array e não vec4:
   // com vec4 o teto era 4 formas, e adicionar a quinta palavra exigia mexer
   // no shader inteiro. Assim, incluir outra é só somar um alvo e um attribute.
-  uniform float uW[5];
+  uniform float uW[4];
   uniform vec2 uMouse;
+  uniform float uCollapse;
+  uniform vec2 uOrigin;
   attribute vec3 aT0;
   attribute vec3 aT1;
   attribute vec3 aT2;
   attribute vec3 aT3;
-  attribute vec3 aT4;
   attribute float aRand;
   attribute float aGlyph;
   varying float vRand;
@@ -116,6 +119,7 @@ const particleVertex = /* glsl */ `
   varying float vX;
   varying float vGlyph;
   varying float vAber;
+  varying float vCol;
 
   void main() {
     vRand = aRand;
@@ -124,7 +128,7 @@ const particleVertex = /* glsl */ `
     p = p * p * (3.0 - 2.0 * p);
     vP = p;
 
-    vec3 shape = aT0 * uW[0] + aT1 * uW[1] + aT2 * uW[2] + aT3 * uW[3] + aT4 * uW[4];
+    vec3 shape = aT0 * uW[0] + aT1 * uW[1] + aT2 * uW[2] + aT3 * uW[3];
     vec3 pos = mix(position, shape, p);
     vX = shape.x;
 
@@ -147,6 +151,16 @@ const particleVertex = /* glsl */ `
     // scroll: a formação se desmancha de volta pra nuvem
     pos = mix(pos, position * 0.7 + vec3(0.0, 1.0, 0.0), uScatter);
 
+    // colapso gravitacional: sucção em espiral pra posição da linha do
+    // terminal; cada partícula gira uma quantidade própria (aRand) pra
+    // parecer redemoinho e não zoom-out
+    vCol = uCollapse;
+    float ang = uCollapse * (5.0 + aRand * 5.0);
+    vec2 rel = pos.xy - uOrigin;
+    mat2 rot = mat2(cos(ang), -sin(ang), sin(ang), cos(ang));
+    pos.xy = uOrigin + mix(rel, rot * rel * (1.0 - uCollapse * 0.985), uCollapse);
+    pos.z *= 1.0 - uCollapse * 0.9;
+
     // lente gravitacional do cursor: em vez de repelir, o ponteiro CURVA as
     // trajetórias ao redor de si (componente tangencial + leve sucção),
     // como luz passando perto de massa
@@ -164,7 +178,7 @@ const particleVertex = /* glsl */ `
     vAber = smoothstep(0.45, 1.15, length(ndc)) * 0.14 + uTurb * 0.05;
 
     // glifo é mais fino que um disco — ponto ~30% maior compensa a massa
-    gl_PointSize = (39.0 * (0.45 + aRand)) / -mv.z;
+    gl_PointSize = (39.0 * (0.45 + aRand)) / -mv.z * (1.0 - uCollapse * 0.8);
   }
 `;
 
@@ -178,6 +192,7 @@ const particleFragment = /* glsl */ `
   varying float vX;
   varying float vGlyph;
   varying float vAber;
+  varying float vCol;
 
   void main() {
     // célula do glifo no atlas 5x4; clamp evita sangrar na célula vizinha
@@ -198,25 +213,18 @@ const particleFragment = /* glsl */ `
     c += vec3(0.5, 0.8, 1.0) * pulse * 0.9;
     vec3 rgb = vec3(c.r * sR, c.g * sG, c.b * sB);
     float a = max(sR, max(sG, sB));
-    gl_FragColor = vec4(rgb, a * (0.2 + 0.8 * vP) * (1.0 + pulse * 0.6));
+    gl_FragColor = vec4(rgb, a * (0.2 + 0.8 * vP) * (1.0 + pulse * 0.6) * (1.0 - vCol * 0.55));
   }
 `;
 
-/* Linha do tempo do morph: o monograma MW volta entre cada palavra, então o
-   ciclo é MW → SITES → MW → APPS → MW → WEB → MW → MILWEB. Palavras curtas
-   de propósito: a contagem de partículas é fixa, então quanto mais glifos,
-   mais fino o traço de cada letra (SISTEMAS, com 8 caracteres, saía
-   visivelmente mais fraco que SITES). As palavras dizem o que é entregue e
-   fecham na marca; antes eram nomes de projeto (AUREX/KAVITA/VERTEX) que o
-   visitante não conhece, e a formação mais cara da cena não comunicava nada.
-
-   HOLD_M é o mais curto dos três porque o monograma reaparece a cada troca,
-   4x por volta: é o estado que menos informa e o que mais custaria em tempo
-   de ciclo. Mesmo assim, com 4 palavras a volta completa leva ~24s. */
-const SHAPES = [0, 1, 0, 2, 0, 3, 0, 4];
-const HOLD_M = 1.8;
-const HOLD_WORD = 2.0;
-const MORPH = 1.1;
+/* Ciclo narrativo: cada linha do terminal compila uma forma. Índices das
+   formas nos attributes: 0 = monograma MW, 1 = SITES, 2 = APPS, 3 = WEB.
+   (O alvo 4, a palavra MILWEB, saiu do ciclo: a marca agora fecha no
+   monograma — manter a palavra deixaria o ciclo com 5 estados e ~30s.) */
+const CYCLE = [1, 2, 3, 0];
+const HOLD = 3.4; // formação parada (com vida própria) antes de colapsar
+const BURST_T = 1.0; // colapso→forma (explosão)
+const COLLAPSE_T = 0.85;
 
 /* Atlas de glifos: os caracteres viram UMA textura desenhada em runtime
    (nada novo no bundle). Grade 5x4 = 20 células; cada partícula sorteia uma
@@ -246,18 +254,22 @@ function makeGlyphAtlas(): THREE.CanvasTexture {
   return tex;
 }
 
-function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> }) {
+function LogoParticles({
+  mouse,
+  viewportRef,
+}: {
+  mouse: React.MutableRefObject<THREE.Vector2>;
+  viewportRef: React.MutableRefObject<{ w: number; h: number }>;
+}) {
   const mat = useRef<THREE.ShaderMaterial>(null);
-  const timeline = useRef({ idx: 0, t: 0 });
+  const phase = useRef<{ name: "boot" | "typing" | "burst" | "hold" | "collapse"; line: number; t: number }>({
+    name: "boot",
+    line: 0,
+    t: 0,
+  });
 
   const { starts, targets, rands, glyphs } = useMemo(() => {
-    const targets = [
-      sampleLogo(COUNT),
-      sampleWord("SITES", COUNT),
-      sampleWord("APPS", COUNT),
-      sampleWord("WEB", COUNT),
-      sampleWord("MILWEB", COUNT),
-    ];
+    const targets = [sampleLogo(COUNT), sampleWord("SITES", COUNT), sampleWord("APPS", COUNT), sampleWord("WEB", COUNT)];
     const starts = new Float32Array(COUNT * 3);
     const rands = new Float32Array(COUNT);
     const glyphs = new Float32Array(COUNT);
@@ -280,14 +292,36 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
       uProgress: { value: 0 },
       uTurb: { value: 0 },
       uScatter: { value: 0 },
-      uW: { value: [1, 0, 0, 0, 0] },
+      uW: { value: [1, 0, 0, 0] },
       uMouse: { value: new THREE.Vector2(99, 99) },
+      uCollapse: { value: 1 }, // nasce colapsada: a 1ª linha digita antes do 1º burst
+      uOrigin: { value: new THREE.Vector2(LOGO_X, LOGO_Y) },
       uColA: { value: new THREE.Color("#9db7ff") },
       uColB: { value: new THREE.Color("#3355e6") },
       uAtlas: { value: makeGlyphAtlas() },
     }),
     [],
   );
+
+  useEffect(() => {
+    const offExec = on("line-executed", ({ index, origin }) => {
+      const u = mat.current?.uniforms;
+      if (!u) return;
+      // origem NDC → mundo (mesma conversão do mouseWorld do canvas raiz)
+      u.uOrigin.value.set(origin.x * (viewportRef.current.w / 2), origin.y * (viewportRef.current.h / 2));
+      const w = u.uW.value as number[];
+      w.fill(0);
+      w[CYCLE[index % CYCLE.length]] = 1;
+      phase.current = { name: "burst", line: index, t: 0 };
+    });
+    const offClick = on("collapse-request", () => {
+      if (phase.current.name === "hold") phase.current = { ...phase.current, name: "collapse", t: 0 };
+    });
+    return () => {
+      offExec();
+      offClick();
+    };
+  }, [viewportRef]);
 
   useFrame((_, dt) => {
     const u = mat.current?.uniforms;
@@ -297,31 +331,47 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
     u.uMouse.value.lerp(mouse.current, 0.08);
     u.uScatter.value = THREE.MathUtils.clamp(window.scrollY / 700, 0, 1);
 
-    // Morph em loop (só depois da montagem inicial e fora do scatter)
+    // scroll desmancha tudo como hoje — só não zerar o uTurb duas vezes
     if (u.uProgress.value < 1 || u.uScatter.value > 0.15) {
       u.uTurb.value = THREE.MathUtils.lerp(u.uTurb.value, 0, 0.05);
       return;
     }
-    const tl = timeline.current;
-    tl.t += dt;
-    const cur = SHAPES[tl.idx % SHAPES.length];
-    const nxt = SHAPES[(tl.idx + 1) % SHAPES.length];
-    const hold = cur === 0 ? HOLD_M : HOLD_WORD;
-    const w = u.uW.value as number[];
-    if (tl.t <= hold) {
-      w.fill(0);
-      w[cur] = 1;
-      u.uTurb.value = THREE.MathUtils.lerp(u.uTurb.value, 0, 0.06);
-    } else {
-      const m = Math.min(1, (tl.t - hold) / MORPH);
-      const e = m * m * (3 - 2 * m);
-      w.fill(0);
-      w[cur] = 1 - e;
-      w[nxt] = e;
-      u.uTurb.value = Math.sin(m * Math.PI) * 0.9; // explode no meio, assenta no fim
-      if (m >= 1) {
-        tl.idx = (tl.idx + 1) % SHAPES.length;
-        tl.t = 0;
+
+    const ph = phase.current;
+    ph.t += dt;
+    switch (ph.name) {
+      case "boot":
+        // espera a montagem (uProgress) terminar com tudo colapsado
+        u.uCollapse.value = 1;
+        if (u.uProgress.value >= 1) {
+          emit("scene-ready", { index: 0 });
+          phase.current = { name: "typing", line: 0, t: 0 };
+        }
+        break;
+      case "typing":
+        u.uCollapse.value = 1; // massa quieta na origem enquanto o DOM digita
+        break;
+      case "burst": {
+        const m = Math.min(1, ph.t / BURST_T);
+        const e = 1 - Math.pow(1 - m, 3);
+        u.uCollapse.value = 1 - e;
+        u.uTurb.value = Math.sin(m * Math.PI) * 0.9;
+        if (m >= 1) phase.current = { name: "hold", line: ph.line, t: 0 };
+        break;
+      }
+      case "hold":
+        u.uTurb.value = THREE.MathUtils.lerp(u.uTurb.value, 0, 0.06);
+        if (ph.t >= HOLD) phase.current = { name: "collapse", line: ph.line, t: 0 };
+        break;
+      case "collapse": {
+        const m = Math.min(1, ph.t / COLLAPSE_T);
+        u.uCollapse.value = m * m * (3 - 2 * m);
+        if (m >= 1) {
+          const next = (ph.line + 1) % CYCLE.length;
+          emit("collapse-done", { index: next });
+          phase.current = { name: "typing", line: next, t: 0 };
+        }
+        break;
       }
     }
   });
@@ -334,7 +384,6 @@ function LogoParticles({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2>
         <bufferAttribute attach="attributes-aT1" args={[targets[1], 3]} />
         <bufferAttribute attach="attributes-aT2" args={[targets[2], 3]} />
         <bufferAttribute attach="attributes-aT3" args={[targets[3], 3]} />
-        <bufferAttribute attach="attributes-aT4" args={[targets[4], 3]} />
         <bufferAttribute attach="attributes-aRand" args={[rands, 1]} />
         <bufferAttribute attach="attributes-aGlyph" args={[glyphs, 1]} />
       </bufferGeometry>
@@ -653,7 +702,7 @@ export default function HeroSceneCanvas() {
           <EnergyLinks />
         </DepthLayer>
         <DepthLayer ndc={ndc} factor={0.45}>
-          <LogoParticles mouse={mouseWorld} />
+          <LogoParticles mouse={mouseWorld} viewportRef={viewport} />
           <Sparkles count={110} scale={[15, 8, 6]} position={[LOGO_X, 0, -1]} size={2.2} speed={0.32} opacity={0.5} color="#9db7ff" />
         </DepthLayer>
       </Rig>
