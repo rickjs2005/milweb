@@ -4,6 +4,7 @@ import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
 import { HeroScene } from "./hero-scene";
+import { HeroTerminal } from "./hero-terminal";
 import { UI, PROFILE, QUOTE, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 
@@ -148,6 +149,20 @@ export function Hero({ locale }: { locale: Locale }) {
             </Magnetic>
           </div>
         </div>
+      </div>
+
+      {/* Abaixo de xl o terminal mora aqui: irmão do container-page (não
+          filho — container-page já é `relative` pra vencer o HeroCinema/
+          HeroScene absolutos, e virar filho dele faria o terminal herdar
+          esse ancestral posicionado, quebrando as coordenadas de xl abaixo,
+          tunadas contra a SEÇÃO inteira e não contra essa coluna). Reusa a
+          própria classe `.container-page` só pra alinhar com os CTAs acima.
+          Em xl o wrapper vira `display: contents` (some da árvore de caixas,
+          então deixa de contar como ancestral posicionado) e o terminal,
+          xl:absolute, pula direto pra seção — voltando a ser o overlay ao
+          lado da cena. */}
+      <div className="container-page relative z-10 xl:contents">
+        <HeroTerminal locale={locale} />
       </div>
 
       {/* Indicador de scroll (decorativo — a âncora real é a própria rolagem;

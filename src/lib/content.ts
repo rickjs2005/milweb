@@ -1863,6 +1863,19 @@ export const UI = {
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
     miloHi: { pt: "Oi! Eu sou o Milo 👋", en: "Hi! I'm Milo 👋" },
+    /* Linhas do terminal do hero ("uma linha vira um sistema"). A ORDEM
+       importa: cada linha compila a forma correspondente do ciclo da cena
+       (SITES → APPS → WEB → monograma MW). Linha e forma vivem juntas aqui
+       pra tradução nunca dessincronizar da coreografia. */
+    terminal: {
+      prompt: { pt: "❯", en: "❯" },
+      lines: [
+        { pt: 'milweb.criar("um site que vende")', en: 'milweb.create("a website that sells")' },
+        { pt: 'milweb.criar("um app sob medida")', en: 'milweb.create("a custom-built app")' },
+        { pt: 'milweb.criar("sua presença na web")', en: 'milweb.create("your presence on the web")' },
+        { pt: "milweb.assinar()", en: "milweb.sign()" },
+      ] as Localized[],
+    },
     // Painel de produto codificado no lugar da imagem estática do hero —
     // um dashboard fictício de cliente, animado em CSS puro.
     panel: {
