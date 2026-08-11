@@ -908,6 +908,34 @@ export const PROJECTS: Project[] = [
     },
   },
   {
+    slug: "loja-de-iphone",
+    category: "sistema-saas",
+    title: "Loja de iPhone Premium",
+    tagline: { pt: "Vitrine Apple-style · vídeo do unboxing controlado pelo scroll", en: "Apple-style storefront · scroll-driven unboxing video" },
+    problem: { pt: "Revendedor de iPhone costuma ter só o Instagram como vitrine, ou um template genérico que não passa a sensação de loja premium — e não converte visita em lead qualificado.", en: "iPhone resellers usually have only Instagram as a storefront, or a generic template that doesn't feel premium — and doesn't convert visits into qualified leads." },
+    result: { pt: "Loja de demonstração comercial no estilo Apple Store: hero com vídeo real do unboxing dirigido pelo scroll (a caixa abre conforme o visitante rola), catálogo com parcelamento e ficha de bateria por aparelho, e checkout de lead que monta sozinho a mensagem do WhatsApp — com campo condicional pra quem quer repassar o iPhone antigo. Identidade (nome, produtos, fotos, vídeo) troca num único arquivo de config, então a mesma base vira a loja de qualquer cliente.", en: "Commercial demo store in an Apple Store style: hero with a real unboxing video driven by scroll (the box opens as the visitor scrolls), a catalog with installment pricing and per-device battery health, and a lead checkout that builds its own WhatsApp message — with a conditional field for trading in an old iPhone. Identity (name, products, photos, video) swaps through a single config file, so the same base becomes any client's store." },
+    stack: ["Next.js", "TypeScript", "Tailwind CSS", "Playwright"],
+    metric: { pt: "Vídeo real controlado pelo scroll", en: "Real video driven by scroll" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live" },
+    live: "https://loja-de-iphone-demo.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/loja-de-iphone` }],
+    featured: true,
+    image: "/shots/loja-de-iphone.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O hero não usa autoplay no desktop: um rAF lê a posição do scroll e persegue o currentTime do vídeo com um amortecimento (lerp), então rolar a página é literalmente abrir a caixa. O arquivo é reencodado com GOP 1 — todo frame vira keyframe — sem o que o seek engasga em produção mesmo rodando liso em localhost. No mobile o mesmo vídeo roda em autoplay puro em loop: aparelho real não decodifica frame de vídeo pausado sem dar play(), então dirigir por scroll deixaria o hero em branco no celular — o pin de altura dupla também só existe no desktop.",
+          en: "The hero doesn't autoplay on desktop: a rAF loop reads scroll position and chases the video's currentTime with damping (lerp), so scrolling the page literally opens the box. The file is re-encoded with GOP 1 — every frame becomes a keyframe — without which seeking stutters in production even when it runs smoothly on localhost. On mobile the same video runs on plain autoplay loop instead: a real device won't decode a frame of a paused video without calling play(), so driving it by scroll would leave the hero blank on the phone — the double-height scroll pin only exists on desktop too.",
+        },
+        {
+          pt: "Carrinho e checkout são só frontend (localStorage), sem gateway: o botão final monta a mensagem do WhatsApp com produtos, subtotal e os dados do lead, revelando com uma animação de altura o campo de repasse (modelo + saúde da bateria) só quando o checkbox é marcado. Verificação visual roda com Playwright direto contra a URL de produção — scrub do hero em 5 posições, desktop e mobile — porque o mesmo scrub que passa liso local pode quebrar servido pela CDN.",
+          en: "Cart and checkout are frontend-only (localStorage), no payment gateway: the final button builds the WhatsApp message with products, subtotal and lead details, revealing the trade-in field (model + battery health) with a height animation only when the checkbox is checked. Visual verification runs with Playwright straight against the production URL — the hero scrub at 5 positions, desktop and mobile — because a scrub that runs smoothly locally can still break once served from the CDN.",
+        },
+      ],
+    },
+  },
+  {
     slug: "kavita-drones",
     category: "landing-essencial",
     title: "Kavita Drones",
