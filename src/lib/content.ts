@@ -70,7 +70,7 @@ export const PROFILE = {
   whatsapp: "5533998779375",
   github: "https://github.com/rickjs2005",
   linkedin: "https://www.linkedin.com/in/rick-januario-41211b238",
-  logo: "/icon.svg",
+  logo: "/logo-mw.png",
 };
 
 /** O QUE EU ENTREGO — a oferta concreta (resolve o problema do cliente). */

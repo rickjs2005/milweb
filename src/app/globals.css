@@ -543,22 +543,24 @@
     from { filter: hue-rotate(0deg); }
     to { filter: hue-rotate(360deg); }
   }
-  /* Assinatura da marca: o monograma "MW" se desenha uma vez ao montar.
-     pathLength=1 nos paths normaliza o comprimento, então dasharray/offset
-     funcionam independentemente do tamanho real do traço. */
-  .mw-draw path {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: mw-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+  /* Assinatura da marca: a logo entra uma vez ao montar (fade + leve zoom).
+     Substitui o stroke-draw do monograma SVG antigo — a marca agora é
+     raster (public/logo-mw.png) e não tem traço pra desenhar. */
+  .mw-logo-in {
+    animation: mw-logo-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-  @keyframes mw-draw {
+  @keyframes mw-logo-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
     to {
-      stroke-dashoffset: 0;
+      opacity: 1;
+      transform: scale(1);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mw-draw path {
-      stroke-dashoffset: 0;
+    .mw-logo-in {
       animation: none;
     }
   }

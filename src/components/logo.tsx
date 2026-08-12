@@ -1,5 +1,10 @@
-/** Logo MilWeb (badge do monograma "MW" em SVG inline) + wordmark opcional.
- *  `animate`: desenha os traços do "MW" uma vez ao montar (assinatura da marca). */
+import Image from "next/image";
+
+/** Logo MilWeb (marca "MW" em PNG com fundo transparente, public/logo-mw.png)
+ *  + wordmark opcional. A arte é 512x320 (proporção 1.6) — `size` controla a
+ *  ALTURA e a largura acompanha, então trocar a arte não mexe em quem usa.
+ *  `animate`: entrada única ao montar (fade + leve zoom — a assinatura de
+ *  desenhar traços era do SVG antigo e não existe em raster). */
 export function Logo({
   withWordmark = true,
   size = 36,
@@ -13,45 +18,14 @@ export function Logo({
 }) {
   return (
     <span className={"flex items-center gap-2.5 " + className}>
-      <svg
-        width={size}
+      <Image
+        src="/logo-mw.png"
+        alt="MilWeb"
+        width={Math.round(size * 1.6)}
         height={size}
-        viewBox="0 0 48 48"
-        fill="none"
-        role="img"
-        aria-label="MilWeb"
-        className="rounded-lg ring-1 ring-inset ring-accent/30 text-accent"
-      >
-        <defs>
-          <linearGradient id="mwGrad" x1="8" y1="12" x2="40" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#9DB7FF" />
-            <stop offset="55%" stopColor="#5B7CFF" />
-            <stop offset="100%" stopColor="#3355E6" />
-          </linearGradient>
-          <linearGradient id="mwBg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#0d1424" />
-            <stop offset="100%" stopColor="#070a12" />
-          </linearGradient>
-        </defs>
-
-        {/* dark badge background */}
-        <rect width="48" height="48" rx="11" fill="url(#mwBg)" />
-
-        {/* "MW" monogram: M (left), W (right), sharing a center stem */}
-        <g
-          stroke="url(#mwGrad)"
-          strokeWidth="3.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          className={animate ? "mw-draw" : undefined}
-        >
-          {/* M — left half: up-stroke, down to inner valley, back up to shared center peak */}
-          <path pathLength={1} d="M7 34 V15 L16 26 L24 14" />
-          {/* W — right half: down from shared center peak, up to inner peak, down */}
-          <path pathLength={1} d="M24 14 L32 26 L41 15 V34" />
-        </g>
-      </svg>
+        priority
+        className={animate ? "mw-logo-in" : undefined}
+      />
       {withWordmark && (
         <span className="font-display text-lg font-bold tracking-tight text-fg">MilWeb</span>
       )}
