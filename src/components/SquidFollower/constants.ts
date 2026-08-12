@@ -85,17 +85,19 @@ export const PHYSICS = {
   bubbleEvery: 1.6,
 } as const;
 
-/** Paleta (RGB 0-255) — prata profunda → gelo nas pontas, identidade
- *  MilWeb (escuridão+fogo+prata, 12/08). Atenção de manutenção:
- *  varreduras de cor por hex/`rgb(r g b)` NÃO acham este arquivo — a cor
- *  mora em array com vírgula (já passou batido em trocas anteriores). */
+/** Paleta (RGB 0-255) — Lula PEGANDO FOGO (pedido do Rick, 12/08): núcleo
+ *  brasa clara → manto fogo → borda carvão, pontas dos tentáculos como
+ *  chama viva (mais claras que a base, fogo real esfria da ponta pro
+ *  corpo é ao contrário — labareda). Olhos gelo pra silhueta ler.
+ *  Atenção de manutenção: varreduras de cor por hex/`rgb(r g b)` NÃO
+ *  acham este arquivo — a cor mora em array com vírgula. */
 export const PALETTE = {
-  headCore: [217, 217, 222],
-  headMid: [188, 188, 196],
-  headEdge: [24, 24, 28],
-  tentacleBase: [150, 150, 160],
-  tentacleTip: [239, 239, 244],
-  glow: [188, 188, 196],
+  headCore: [246, 138, 70],
+  headMid: [232, 80, 31],
+  headEdge: [42, 12, 5],
+  tentacleBase: [168, 46, 18],
+  tentacleTip: [255, 176, 96],
+  glow: [240, 90, 40],
   eyeSclera: [244, 244, 248],
   eyePupil: [0, 0, 0],
 } as const;

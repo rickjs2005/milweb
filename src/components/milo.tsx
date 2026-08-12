@@ -21,13 +21,13 @@
 export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
 
 /**
- * Cor da plumagem (asas, pés, penas do peito, bico) — cravada de propósito,
- * NÃO vinda de --accent-soft: o hover do claro é mais ESCURO que o accent
- * (cai no meio do gradiente do corpo) e as asas sumiam contra o corpo.
- * Bone levemente tostado: contrasta com o corpo no acento da marca nos dois
- * temas (paleta graphite+bone — Milo trocou o azul junto com o site).
+ * Milo PEGANDO FOGO (pedido do Rick, 12/08): corpo e olhos cravados na
+ * família do fogo (#F0602A/#A93415 — hex fixos, NÃO tokens: o accent do
+ * site virou prata e o mascote deixaria de arder). A plumagem (asas, pés,
+ * penas, bico) vai pro GELO — sobre corpo de fogo, detalhe frio é o que
+ * mantém a silhueta legível nos dois temas.
  */
-const PLUMA = "#e06438";
+const PLUMA = "#dfe0e6";
 
 /** Deslocamento do olhar, aplicado só nas pupilas. */
 const GAZE = { transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" };
@@ -52,17 +52,17 @@ export function Milo({
     >
       <defs>
         <linearGradient id="milo-edge" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="rgb(var(--accent-deep))" />
-          <stop offset="0.55" stopColor="rgb(var(--accent))" />
+          <stop offset="0" stopColor="#A93415" />
+          <stop offset="0.55" stopColor="#F0602A" />
           <stop offset="1" stopColor={PLUMA} />
         </linearGradient>
         <linearGradient id="milo-body" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="rgb(var(--accent))" />
-          <stop offset="1" stopColor="rgb(var(--accent-deep))" />
+          <stop offset="0" stopColor="#F0602A" />
+          <stop offset="1" stopColor="#A93415" />
         </linearGradient>
         <radialGradient id="milo-base" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="rgb(var(--accent))" stopOpacity="0.45" />
-          <stop offset="1" stopColor="rgb(var(--accent))" stopOpacity="0" />
+          <stop offset="0" stopColor="#F0602A" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#F0602A" stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -119,21 +119,21 @@ export function Milo({
       {pose === "shocked" ? (
         <>
           <g>
-            <circle cx="86" cy="118" r="25" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="3" />
-            <circle cx="86" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
+            <circle cx="86" cy="118" r="25" fill="#0c0c0a" stroke="#F0602A" strokeWidth="3" />
+            <circle cx="86" cy="118" r="5.5" fill="#F0602A" style={GAZE} />
           </g>
           <g>
-            <circle cx="134" cy="118" r="25" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="3" />
-            <circle cx="134" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
+            <circle cx="134" cy="118" r="25" fill="#0c0c0a" stroke="#F0602A" strokeWidth="3" />
+            <circle cx="134" cy="118" r="5.5" fill="#F0602A" style={GAZE} />
           </g>
         </>
       ) : pose === "happy" ? (
-        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="6.5" strokeLinecap="round">
+        <g fill="none" stroke="#F0602A" strokeWidth="6.5" strokeLinecap="round">
           <path d="M70 124q16 -22 32 0" />
           <path d="M118 124q16 -22 32 0" />
         </g>
       ) : pose === "sleepy" ? (
-        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="6" strokeLinecap="round">
+        <g fill="none" stroke="#F0602A" strokeWidth="6" strokeLinecap="round">
           <path d="M70 116q16 18 32 0" />
           <path d="M118 116q16 18 32 0" />
         </g>
@@ -142,27 +142,27 @@ export function Milo({
         // quem está pensando não está olhando pra você.
         <>
           <g>
-            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
-            <circle cx="80" cy="111" r="10" fill="rgb(var(--accent))" />
+            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="#F0602A" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="80" cy="111" r="10" fill="#F0602A" />
           </g>
           <g>
-            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
-            <circle cx="128" cy="111" r="10" fill="rgb(var(--accent))" />
+            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="#F0602A" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="128" cy="111" r="10" fill="#F0602A" />
           </g>
         </>
       ) : (
         <>
           <g className="milo-blink">
-            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="#F0602A" strokeWidth="2" strokeOpacity="0.35" />
             <g style={GAZE}>
-              <circle cx="86" cy="118" r="10" fill="rgb(var(--accent))" />
+              <circle cx="86" cy="118" r="10" fill="#F0602A" />
               <circle cx="81" cy="113" r="3.2" fill="#fff" opacity="0.85" />
             </g>
           </g>
           <g className="milo-blink">
-            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="#F0602A" strokeWidth="2" strokeOpacity="0.35" />
             <g style={GAZE}>
-              <circle cx="134" cy="118" r="10" fill="rgb(var(--accent))" />
+              <circle cx="134" cy="118" r="10" fill="#F0602A" />
               <circle cx="129" cy="113" r="3.2" fill="#fff" opacity="0.85" />
             </g>
           </g>
@@ -178,7 +178,7 @@ export function Milo({
 
       {/* zZ do cochilo */}
       {pose === "sleepy" && (
-        <g fill="none" stroke="rgb(var(--accent))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <g fill="none" stroke="#F0602A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <path className="milo-zzz" d="M172 40h9l-9 9h9" />
           <path className="milo-zzz [animation-delay:0.9s]" d="M188 24h12l-12 12h12" />
         </g>
