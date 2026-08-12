@@ -60,36 +60,47 @@ export function Deliverables({ locale }: { locale: Locale }) {
           const Icon = ICONS[d.icon] ?? Rocket;
           const accent = CARD_ACCENT[i % CARD_ACCENT.length]!;
           return (
-            <Reveal
-              key={d.title.en}
-              delay={(i % 3) * 80}
-              variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
-            >
-              {/* Mobile: linha compacta (ícone à esquerda) — os cards em coluna
-                  davam ~450px cada e a seção virava uma rolagem enorme.
-                  Desktop (sm:+) mantém o card em coluna de sempre. */}
-              <div
-                className={
-                  "group flex h-full items-start gap-4 rounded-2xl border glass p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)] active:-translate-y-1 sm:block sm:p-6 " +
-                  accent.border +
-                  " sm:border-line/10"
-                }
+            /* data-depth no WRAPPER, não no card: mouse-parallax.tsx é
+               site-wide e escreve translateY no elemento marcado — pôr no
+               mesmo nó que o Reveal anima (entrada IO/scrub) faria dois
+               escritores brigarem pelo transform (aviso no próprio
+               mouse-parallax.tsx). Como wrapper, o parallax do pai soma
+               com a entrada do filho sem conflito. Depth alterna em ciclo
+               de 3 pra cada card correr numa velocidade um pouco diferente
+               — é isso que lê como profundidade e não "tudo grudado". No
+               mobile ele reage ao SCROLL (pedido do Rick, 12/08); no
+               desktop reage ao mouse (mesmo mecanismo, outro gatilho). */
+            <div key={d.title.en} data-depth={(0.16 + (i % 3) * 0.09).toFixed(2)}>
+              <Reveal
+                delay={(i % 3) * 80}
+                variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
               >
+                {/* Mobile: linha compacta (ícone à esquerda) — os cards em coluna
+                    davam ~450px cada e a seção virava uma rolagem enorme.
+                    Desktop (sm:+) mantém o card em coluna de sempre. */}
                 <div
                   className={
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors group-hover:bg-accent/20 sm:h-11 sm:w-11 " +
-                    accent.bg + " " + accent.icon + " " + accent.ring +
-                    " sm:bg-accent/10 sm:text-accent sm:ring-accent/20"
+                    "group flex h-full items-start gap-4 rounded-2xl border glass p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)] active:-translate-y-1 sm:block sm:p-6 " +
+                    accent.border +
+                    " sm:border-line/10"
                   }
                 >
-                  <Icon className="h-5 w-5" />
+                  <div
+                    className={
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors group-hover:bg-accent/20 sm:h-11 sm:w-11 " +
+                      accent.bg + " " + accent.icon + " " + accent.ring +
+                      " sm:bg-accent/10 sm:text-accent sm:ring-accent/20"
+                    }
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold text-fg sm:mt-4">{t(d.title)}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-fg-muted sm:mt-2">{t(d.desc)}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-lg font-semibold text-fg sm:mt-4">{t(d.title)}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-fg-muted sm:mt-2">{t(d.desc)}</p>
-                </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            </div>
           );
         })}
       </div>
