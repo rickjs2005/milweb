@@ -85,19 +85,19 @@ export const PHYSICS = {
   bubbleEvery: 1.6,
 } as const;
 
-/** Paleta (RGB 0-255) — champagne profundo → dourado claro nas pontas,
- *  identidade MilWeb (preto+champagne, 12/08). Atenção de manutenção:
+/** Paleta (RGB 0-255) — prata profunda → gelo nas pontas, identidade
+ *  MilWeb (escuridão+fogo+prata, 12/08). Atenção de manutenção:
  *  varreduras de cor por hex/`rgb(r g b)` NÃO acham este arquivo — a cor
  *  mora em array com vírgula (já passou batido em trocas anteriores). */
 export const PALETTE = {
-  headCore: [221, 186, 116],
-  headMid: [201, 164, 92],
-  headEdge: [32, 26, 14],
-  tentacleBase: [168, 134, 70],
-  tentacleTip: [232, 202, 140],
-  glow: [201, 164, 92],
-  eyeSclera: [242, 237, 226],
-  eyePupil: [14, 13, 11],
+  headCore: [217, 217, 222],
+  headMid: [188, 188, 196],
+  headEdge: [24, 24, 28],
+  tentacleBase: [150, 150, 160],
+  tentacleTip: [239, 239, 244],
+  glow: [188, 188, 196],
+  eyeSclera: [244, 244, 248],
+  eyePupil: [0, 0, 0],
 } as const;
 
 /**

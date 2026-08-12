@@ -146,34 +146,34 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
 
   // fundo preto-quente sólido (os glows radiais azul/rosa saíram com a paleta
   // nova: a imagem de share segue a mesma linguagem editorial do site)
-  ctx.fillStyle = "#0e0d0b";
+  ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, size, size);
 
   ctx.textAlign = "center";
 
   // eyebrow
-  ctx.fillStyle = "#c9a45c";
+  ctx.fillStyle = "#d9d9de";
   ctx.font = `700 30px ${sans}`;
   ctx.fillText("MILWEB · RAIO-X", size / 2, 190);
 
   // título
-  ctx.fillStyle = "#f2ede2";
+  ctx.fillStyle = "#f46a34";
   ctx.font = `700 58px ${sans}`;
   ctx.fillText(s.shareTitle1, size / 2, 330);
   ctx.fillText(s.shareTitle2, size / 2, 405);
 
   // valor
-  ctx.fillStyle = "#e8ca8c";
+  ctx.fillStyle = "#c4c4cc";
   ctx.font = `800 132px ${sans}`;
   ctx.fillText(loss, size / 2, 580);
 
   // sub
-  ctx.fillStyle = "#9c968a";
+  ctx.fillStyle = "#cd6942";
   ctx.font = `400 36px ${sans}`;
   ctx.fillText(fill(s.shareSub, { duration: durationLabel, share }), size / 2, 665);
 
   // divisor
-  ctx.strokeStyle = "rgba(242,237,226,0.22)";
+  ctx.strokeStyle = "rgba(217,217,222,0.22)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(size / 2 - 180, 760);
@@ -181,7 +181,7 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   ctx.stroke();
 
   // rodapé
-  ctx.fillStyle = "#c9a45c";
+  ctx.fillStyle = "#d9d9de";
   ctx.font = `700 40px ${sans}`;
   ctx.fillText(s.shareFooter, size / 2, 850);
 

@@ -27,7 +27,7 @@ export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
  * Bone levemente tostado: contrasta com o corpo no acento da marca nos dois
  * temas (paleta graphite+bone — Milo trocou o azul junto com o site).
  */
-const PLUMA = "#ece5d2";
+const PLUMA = "#e06438";
 
 /** Deslocamento do olhar, aplicado só nas pupilas. */
 const GAZE = { transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" };

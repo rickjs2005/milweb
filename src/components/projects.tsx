@@ -31,7 +31,7 @@ export const FILTER_LABELS: Record<Project["category"], Localized> = {
  * no sistema/SaaS (o tipo de projeto que a MilWeb mais quer vender). Era
  * uma cor por categoria (amber/violet/sky/emerald) — arco-íris de card é a
  * estética que a paleta graphite+bone aposentou; o indicador pontual em
- * champagne é a nova linguagem. */
+ * prata é a nova linguagem. */
 const CATEGORY_ACCENT: Record<Project["category"], string> = {
   "landing-essencial": "border-l-line",
   "landing-premium": "border-l-line",

@@ -32,7 +32,7 @@ export default async function Image({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          backgroundColor: '#0E0D0B',
+          backgroundColor: '#000000',
           backgroundImage:
             'none',
           padding: '72px 88px',
@@ -49,15 +49,15 @@ export default async function Image({
               width: '52px',
               height: '52px',
               borderRadius: '14px',
-              backgroundColor: '#C9A45C',
-              color: '#1E180C',
+              backgroundColor: '#D9D9DE',
+              color: '#101014',
               fontSize: '32px',
               fontWeight: 800,
             }}
           >
             M
           </div>
-          <div style={{ display: 'flex', fontSize: '34px', fontWeight: 800, color: '#F2EDE2' }}>
+          <div style={{ display: 'flex', fontSize: '34px', fontWeight: 800, color: '#F46A34' }}>
             MilWeb
           </div>
         </div>
@@ -71,7 +71,7 @@ export default async function Image({
               lineHeight: 1.02,
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#F2EDE2',
+              color: '#F46A34',
               maxWidth: '1000px',
             }}
           >
@@ -82,7 +82,7 @@ export default async function Image({
               display: 'flex',
               marginTop: '24px',
               fontSize: '32px',
-              color: '#DDBA74',
+              color: '#EFEFF4',
               maxWidth: '980px',
             }}
           >
@@ -91,7 +91,7 @@ export default async function Image({
         </div>
 
         {/* Footer line */}
-        <div style={{ display: 'flex', fontSize: '24px', fontWeight: 600, color: '#9C968A' }}>
+        <div style={{ display: 'flex', fontSize: '24px', fontWeight: 600, color: '#CD6942' }}>
           Case · MilWeb
         </div>
       </div>
