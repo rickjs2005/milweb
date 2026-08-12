@@ -35,47 +35,74 @@ export function HeroAnim({
       // LCP ia de ~1,6s pra 4,2s e o TBT estourava (Lighthouse mobile 52).
       if (window.matchMedia("(pointer: coarse)").matches) return;
 
-      const items = root.querySelectorAll<HTMLElement>("[data-hero]");
+      /* ===== Coreografia de BOOT + FORJA (12/08, "hero mais impactante"):
+         blackout → o terminal LIGA primeiro (flicker de CRT) → as letras
+         do headline sobem da máscara JÁ EM BRASA e esfriam pro marfim →
+         o "vendedor" acende por último com pulso de calor → o resto do
+         conteúdo entra. Quem chega sente que ligou uma máquina. */
+      const builder = root.querySelector<HTMLElement>("[data-hero-builder]");
+      const items = root.querySelectorAll<HTMLElement>("[data-hero]:not([data-hero-builder])");
       // Palavras normais viram letras (SplitText, grátis desde o GSAP 3.13);
       // a palavra em gradiente anima inteira — split quebraria o bg-clip.
       const leadWords = root.querySelectorAll<HTMLElement>(
         "[data-hero-word]:not(.text-gradient)",
       );
       const gradWord = root.querySelector<HTMLElement>("[data-hero-word].text-gradient");
-      const visual = root.querySelector<HTMLElement>(".hero-visual");
       gsap.set(items, { autoAlpha: 0, y: 26 });
-      if (visual) gsap.set(visual, { autoAlpha: 0, scale: 0.9 });
+      if (builder) gsap.set(builder, { autoAlpha: 0 });
+      if (gradWord) gsap.set(gradWord, { autoAlpha: 0 });
 
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.7 }, 0.1);
+
+      // 1) boot: ~0,35s de escuridão e o terminal liga em flicker.
+      if (builder) {
+        tl.to(
+          builder,
+          {
+            keyframes: [
+              { autoAlpha: 0.5, duration: 0.06 },
+              { autoAlpha: 0.08, duration: 0.05 },
+              { autoAlpha: 0.85, duration: 0.07 },
+              { autoAlpha: 0.3, duration: 0.05 },
+              { autoAlpha: 1, duration: 0.14 },
+            ],
+          },
+          0.35,
+        );
+      }
+
+      // 2) forja: letras nascem cor de brasa (com calor no entorno) e
+      //    esfriam pra cor final do tema enquanto assentam.
       if (leadWords.length) {
-        // Letras sobem de dentro de uma máscara — o reveal "de editorial".
         // aria:"none": o default punha aria-label em <span> (proibido pela
         // spec ARIA, flag no Lighthouse) — o h1 já carrega o aria-label.
         const split = SplitText.create(leadWords, { type: "chars", mask: "chars", aria: "none" });
-        tl.from(
-          split.chars,
-          { yPercent: 118, stagger: 0.016, duration: 0.75, ease: "power4.out" },
-          0.18,
-        );
-      }
-      if (gradWord) {
-        tl.from(
-          gradWord,
-          { yPercent: 55, autoAlpha: 0, filter: "blur(12px)", duration: 0.8 },
-          "-=0.45",
-        );
-      }
-      if (visual) {
-        tl.to(visual, { autoAlpha: 1, scale: 1, duration: 1, ease: "power4.out" }, 0.2);
-        // Float contínuo + parallax sutil ao rolar.
-        gsap.to(visual, { y: -14, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1 });
-        gsap.to(visual, {
-          yPercent: -10,
-          ease: "none",
-          scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: true },
+        const cool = getComputedStyle(leadWords[0]!).color;
+        gsap.set(split.chars, {
+          yPercent: 118,
+          color: "#e8722c",
+          textShadow: "0 0 22px rgba(232,80,20,0.55)",
         });
+        tl.to(split.chars, { yPercent: 0, stagger: 0.016, duration: 0.75, ease: "power4.out" }, 0.8);
+        tl.to(
+          split.chars,
+          { color: cool, textShadow: "0 0 0px rgba(232,80,20,0)", duration: 1.0, stagger: 0.014, ease: "power2.out" },
+          1.05,
+        );
       }
+
+      // 3) "vendedor" acende por último: sobe + clarão que esfria.
+      if (gradWord) {
+        tl.fromTo(
+          gradWord,
+          { yPercent: 55, autoAlpha: 0, filter: "brightness(2.1) blur(8px)" },
+          { yPercent: 0, autoAlpha: 1, filter: "brightness(1) blur(0px)", duration: 0.85, ease: "power2.out" },
+          1.55,
+        );
+      }
+
+      // 4) o resto do conteúdo (badge, subtítulo, lista, CTAs).
+      tl.to(items, { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.6 }, 1.75);
 
       // Desmontagem ao rolar (scrub, desktop): SÓ movimento de camadas em
       // velocidades diferentes + glow encolhendo — SEM esmaecer o texto

@@ -109,7 +109,10 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
   return (
     <div
       data-hero
-      /* z-20 e não z-[2]: o container do texto (irmão) é `relative z-10` e
+      data-hero-builder
+      /* data-hero-builder: o hero-anim coreografa este bloco à parte (boot
+         com flicker de CRT ANTES do texto — ver hero-anim.tsx).
+         z-20 e não z-[2]: o container do texto (irmão) é `relative z-10` e
          ocupa a seção inteira — abaixo disso, a div transparente dele engole
          o clique do "reexecutar" mesmo com pointer-events-auto no botão.
          top-[12%] fixo (não centrado): centrar pela altura TOTAL (terminal +

@@ -3,6 +3,7 @@ import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
+import { HeroEmbers } from "./hero-embers";
 import { HeroBuilder } from "./hero-builder";
 import { UI, PROFILE, QUOTE, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
@@ -22,9 +23,10 @@ export function Hero({ locale }: { locale: Locale }) {
           mancha difusa era a maior "cara de IA" do hero, principalmente no
           tema claro. O fundo agora é só grid + a atmosfera do HeroCinema.) */}
       <HeroCinema />
+      <HeroEmbers />
 
       <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
-        <div className="max-w-3xl">
+        <div className="max-w-[50rem]">
           <span
             data-hero
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-soft backdrop-blur-sm"
@@ -49,7 +51,12 @@ export function Hero({ locale }: { locale: Locale }) {
                 .filter(Boolean)
                 .join(" ") + "."
             }
-            className="mt-4 text-[clamp(2.4rem,5.6vw,4.8rem)] font-bold leading-[1.02] tracking-tight text-fg"
+            /* Escala de PÔSTER (12/08, "hero mais impactante"): subiu de
+               clamp(2.4rem,5.6vw,4.8rem). O teto anda junto com a largura
+               da coluna (max-w-[50rem] no pai) pra segurar as MESMAS 3
+               linhas — 6.6rem estourava pra 4 e empurrava os CTAs pra
+               fora da dobra. */
+            className="mt-4 text-[clamp(2.5rem,6vw,5.3rem)] font-bold leading-[1.02] tracking-tight text-fg"
           >
             {t(UI.hero.titleLead)
               .split(" ")
