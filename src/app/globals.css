@@ -78,10 +78,10 @@
                                    estão e brilham contra o vácuo) */
     --surface: 14 13 12;        /* #0E0D0C */
     --surface-2: 24 22 20;      /* #181614 */
-    --fg: 244 106 52;           /* #F46A34 — FOGO, só em títulos e texto
-                                   forte (text-fg). Corpo é neutro: 100%
-                                   do texto em cor quente cansava a
-                                   leitura nas seções longas (12/08) */
+    --fg: 224 138 60;           /* #E08A3C — BRONZE PEGANDO FOGO (pedido
+                                   do Rick 12/08: era o laranja #F46A34;
+                                   este é bronze aquecido). Só títulos e
+                                   texto forte — corpo segue neutro. */
     --fg-muted: 200 200 206;    /* #C8C8CE — corpo NEUTRO, prata-clara */
     --fg-subtle: 152 152 160;   /* #9898A0 — 6.5:1 no preto (AA) */
     --line: 42 35 30;           /* #2A231E — borda neutra, quase invisível */
@@ -102,9 +102,9 @@
     --bg: 242 237 226;          /* #F2EDE2 — marfim paper */
     --surface: 248 245 238;     /* #F8F5EE */
     --surface-2: 231 225 211;   /* #E7E1D3 */
-    --fg: 185 62 30;            /* #B93E1E — fogo ESCURECIDO pros títulos
-                                   (o fogo puro dá 2.9:1 no marfim; este
-                                   passa AA até em texto pequeno) */
+    --fg: 143 90 30;            /* #8F5A1E — bronze ESCURECIDO pros títulos
+                                   (o bronze-fogo puro não passa contraste
+                                   no marfim; este dá 4.5:1, AA) */
     --fg-muted: 84 82 78;       /* #54524E — corpo neutro */
     --fg-subtle: 110 108 102;   /* #6E6C66 — 4.7:1 no marfim (AA) */
     --line: 208 201 186;        /* #D0C9BA */
@@ -229,6 +229,35 @@
     position: relative;
     overflow: hidden;
   }
+  /* Prata BRILHANDO (pedido do Rick, 12/08): os botões de prata deixam de
+     ser chapa lisa e ganham corpo de metal — gradiente de cromo (luz em
+     cima, sombra no meio, rebate embaixo) + o glint do ::after varrendo.
+     Classe própria (não no bg-accent): metal é pros CTAs, não pra todo
+     retângulo com fundo de acento. */
+  .btn-metal {
+    background-image: linear-gradient(
+      175deg,
+      #f7f7fb 0%,
+      #d9d9de 38%,
+      #a9aab4 52%,
+      #c4c4cc 68%,
+      #eeeef4 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.85),
+      inset 0 -1px 0 rgb(0 0 0 / 0.25),
+      0 2px 10px -4px rgb(0 0 0 / 0.6);
+  }
+  .btn-metal:hover {
+    background-image: linear-gradient(
+      175deg,
+      #ffffff 0%,
+      #e8e8ee 40%,
+      #bcbdc7 54%,
+      #d4d4dc 70%,
+      #f6f6fa 100%
+    );
+  }
   .cta-shine::after {
     content: "";
     position: absolute;
@@ -301,12 +330,13 @@
     animation: hero-scroll-dot 2.2s ease-in-out infinite;
   }
 
-  /* Palavra-destaque do headline: laranja queimado SÓLIDO. Era um
-     gradiente azul→branco — gradiente em texto saiu da linguagem junto com
-     o resto (paleta graphite+bone: a cor é assinatura, não efeito). A
-     classe mantém o nome pra não tocar os usos espalhados. */
+  /* Palavra-destaque do headline: BRONZE PEGANDO FOGO (pedido do Rick,
+     12/08) — degradê de metal em brasa, do bronze claro no topo ao fogo
+     vivo na base, como barra aquecendo na forja. Único gradiente de
+     texto do site, de propósito: é assinatura, não efeito espalhado. */
   .text-gradient {
-    @apply text-accent;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(180deg, #f2b04a 0%, #e8722c 55%, #e03818 100%);
   }
   /* View Transitions: cross-fade rápido no root; os elementos nomeados
      (case-<slug>) morfam com o timing padrão do navegador. */

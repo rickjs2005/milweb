@@ -233,7 +233,7 @@ export function Nav({
             href={waHref(strings.quoteMessage)}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"
+            className="btn-metal ml-1 inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors"
           >
             <MessageCircle className="h-4 w-4" />
             {strings.contact}
@@ -324,7 +324,7 @@ export function Nav({
             onClick={() => setOpen(false)}
             style={{ transitionDelay: open ? `${80 + links.length * 60}ms` : "0ms" }}
             className={
-              "cta-shine mt-8 inline-flex items-center justify-center gap-2 rounded-lg bg-accent py-4 text-center text-2xl font-semibold tracking-tight text-accent-fg transition-all duration-300 hover:bg-accent-soft " +
+              "cta-shine btn-metal mt-8 inline-flex items-center justify-center gap-2 rounded-lg bg-accent py-4 text-center text-2xl font-semibold tracking-tight text-accent-fg transition-all duration-300 " +
               (open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0")
             }
           >

@@ -122,7 +122,7 @@ export function Hero({ locale }: { locale: Locale }) {
                 href={waHref(t(QUOTE.fallback))}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cta-pulse cta-shine inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft sm:w-auto"
+                className="cta-pulse cta-shine btn-metal inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-accent-fg transition-colors sm:w-auto"
               >
                 <MessageCircle className="h-4 w-4" />
                 {t(UI.hero.ctaWhats)}
