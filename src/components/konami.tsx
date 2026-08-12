@@ -10,7 +10,7 @@ const CODE = [
 
 // Confete na família da paleta graphite+bone (vermelhos, bone e bronze) —
 // o easter egg continua festivo sem reintroduzir o azul/roxo aposentado.
-const COLORS = ["#b8a06a", "#c8b27e", "#ede8dc", "#b8a06a", "#8b9469", "#a9a596"];
+const COLORS = ["#c9a45c", "#e8ca8c", "#f2ede2", "#c9a45c", "#ddba74", "#9c968a"];
 
 /** Explosão de confete em canvas — sem dependências, remove-se sozinha. */
 function burstConfetti() {
@@ -86,7 +86,7 @@ export function Konami() {
   useEffect(() => {
     console.info(
       "%c🤖 Milo diz: oi, dev! Curioso, hein?\n%c↑ ↑ ↓ ↓ ← → ← → B A — experimenta.\n%cFeito pela MilWeb → https://milweb.com.br",
-      "color:#b8a06a;font-size:14px;font-weight:bold",
+      "color:#c9a45c;font-size:14px;font-weight:bold",
       "color:#a8a29a",
       "color:#78716a",
     );

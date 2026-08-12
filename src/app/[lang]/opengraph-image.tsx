@@ -24,7 +24,7 @@ export default async function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          backgroundColor: '#11120f',
+          backgroundColor: '#0E0D0B',
           backgroundImage:
             'none',
           padding: '80px 96px',
@@ -47,8 +47,8 @@ export default async function Image() {
               width: '64px',
               height: '64px',
               borderRadius: '18px',
-              backgroundColor: '#78815B',
-              color: '#14160C',
+              backgroundColor: '#C9A45C',
+              color: '#1E180C',
               fontSize: '40px',
               fontWeight: 800,
             }}
@@ -61,11 +61,11 @@ export default async function Image() {
               fontSize: '60px',
               fontWeight: 800,
               letterSpacing: '-0.02em',
-              color: '#EDE8DC',
+              color: '#F2EDE2',
             }}
           >
             Mil
-            <span style={{ color: '#78815B' }}>Web</span>
+            <span style={{ color: '#C9A45C' }}>Web</span>
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default async function Image() {
             lineHeight: 1.08,
             fontWeight: 800,
             letterSpacing: '-0.025em',
-            color: '#EDE8DC',
+            color: '#F2EDE2',
             maxWidth: '1000px',
           }}
         >
@@ -91,7 +91,7 @@ export default async function Image() {
             display: 'flex',
             marginTop: '32px',
             fontSize: '30px',
-            color: '#A9A596',
+            color: '#9C968A',
           }}
         >
           Sites, sistemas e SaaS sob medida
@@ -104,7 +104,7 @@ export default async function Image() {
             marginTop: '20px',
             fontSize: '26px',
             fontWeight: 600,
-            color: '#B8A06A',
+            color: '#DDBA74',
           }}
         >
           Next.js · React · TypeScript · SaaS · Landing Pages

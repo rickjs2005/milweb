@@ -32,7 +32,7 @@ const ICONS: Record<string, LucideIcon> = {
 /** Tratamento único e neutro pra TODOS os cards (era um arco-íris de
  * emerald/amber/violet/rose/cyan por índice no mobile — exatamente a
  * estética "SaaS genérico" que a paleta graphite+bone eliminou; na nova
- * linguagem a cor é assinatura da oliva, não diferenciador de card). */
+ * linguagem a cor é assinatura do champagne, não diferenciador de card). */
 const CARD_ACCENT = [
   { icon: "text-fg-muted", bg: "bg-surface-2", ring: "ring-line/40", border: "border-line/60" },
 ];

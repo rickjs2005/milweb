@@ -61,53 +61,53 @@
   /* ===== TEMA (variáveis semânticas) — MilWeb =====
      Default = DARK (:root). A classe .light no <html> troca pro claro.
 
-     Paleta PRETO OLIVA + AREIA + BRONZE (decisão do Rick, 12/08 — 3ª da
-     noite: vermelho e laranja vetados ao vivo): saímos de vez do preto +
-     azul elétrico + glow — a linguagem que grita "AI startup / SaaS
-     genérico". A mais autoral/design studio das opções dele: verde-preto,
-     areia e DOIS acentos irmãos — oliva nas ações, bronze nos detalhes
-     (--warm). Nada de gradiente, glow ou borda colorida ambiente.
+     Paleta PRETO + CHAMPAGNE DOURADO (decisão do Rick, 12/08 — 4ª da
+     noite: vermelho, laranja e oliva vetados ao vivo): saímos de vez do
+     preto + azul elétrico + glow — a linguagem que grita "AI startup /
+     SaaS genérico". Luxo sóbrio de relojoaria/alto padrão: preto quente,
+     marfim e o dourado champagne como assinatura discreta em ações e
+     indicadores. Nada de gradiente, glow ou borda colorida ambiente.
 
-     --warm existia como contraponto quente do azul; agora é o BRONZE
-     (eyebrows, números, destaques) — mais claro que a oliva, segura texto
-     pequeno no escuro sem esforço. */
+     --warm existia como contraponto quente do azul; agora é a própria
+     família do champagne (eyebrows, números, destaques) — um metal só,
+     de propósito. */
   :root {
-    --bg: 17 18 15;             /* #11120F — preto oliva */
-    --surface: 28 33 27;        /* #1C211B */
-    --surface-2: 37 42 35;      /* #252A23 */
-    --fg: 237 232 220;          /* #EDE8DC — areia */
-    --fg-muted: 169 165 150;    /* #A9A596 */
-    --fg-subtle: 141 138 125;   /* #8D8A7D — 4.8:1 no preto oliva (AA) */
-    --line: 44 48 40;           /* #2C3028 — borda neutra, quase invisível */
-    --accent: 120 129 91;       /* #78815B — oliva */
-    --accent-soft: 139 148 105; /* #8B9469 — hover */
-    --accent-deep: 95 103 74;   /* #5F674A */
-    --accent-fg: 20 22 12;      /* texto ESCURO sobre a oliva — 5:1
-                                   (branco dava ~4.2:1, reprova AA) */
-    --warm: 184 160 106;        /* #B8A06A — bronze (texto pequeno ok) */
-    --warm-loud: 200 178 126;   /* #C8B27E — texto grande */
-    --warm-fg: 26 22 10;
+    --bg: 14 13 11;             /* #0E0D0B — preto quente */
+    --surface: 24 22 19;        /* #181613 */
+    --surface-2: 32 30 26;      /* #201E1A */
+    --fg: 242 237 226;          /* #F2EDE2 — marfim */
+    --fg-muted: 156 150 138;    /* #9C968A */
+    --fg-subtle: 138 132 120;   /* #8A8478 — 4.9:1 no preto quente (AA) */
+    --line: 43 40 34;           /* #2B2822 — borda neutra, quase invisível */
+    --accent: 201 164 92;       /* #C9A45C — champagne */
+    --accent-soft: 221 186 116; /* #DDBA74 — hover */
+    --accent-deep: 168 134 70;  /* #A88646 */
+    --accent-fg: 30 24 12;      /* texto ESCURO sobre o champagne — ~9:1
+                                   (dourado é claro; branco nem chega perto) */
+    --warm: 221 186 116;        /* champagne claro p/ texto pequeno no escuro */
+    --warm-loud: 232 202 140;   /* #E8CA8C — texto grande */
+    --warm-fg: 30 24 12;
     color-scheme: dark;
   }
   .light {
-    /* O claro não é branco de UI: é PAPEL areia, tinta verde-preta, oliva
-       e bronze escurecidos pra AA como assinatura. */
-    --bg: 237 232 220;          /* #EDE8DC — areia paper */
-    --surface: 245 241 232;     /* #F5F1E8 */
-    --surface-2: 226 220 205;   /* #E2DCCD */
-    --fg: 25 27 22;             /* #191B16 — tinta */
-    --fg-muted: 82 84 72;       /* #525448 */
-    --fg-subtle: 106 108 95;    /* #6A6C5F — 4.7:1 na areia (AA) */
-    --line: 203 197 181;        /* #CBC5B5 */
-    --accent: 86 96 68;         /* #566044 — 5.5:1 na areia (AA) */
-    --accent-soft: 70 78 55;    /* hover no claro escurece, não clareia */
-    --accent-deep: 58 65 45;
-    --accent-fg: 248 246 238;
+    /* O claro não é branco de UI: é PAPEL marfim, tinta preta-quente, o
+       dourado ESCURECIDO pra AA (champagne puro some no claro). */
+    --bg: 242 237 226;          /* #F2EDE2 — marfim paper */
+    --surface: 248 245 238;     /* #F8F5EE */
+    --surface-2: 231 225 211;   /* #E7E1D3 */
+    --fg: 26 24 20;             /* #1A1814 — tinta */
+    --fg-muted: 85 81 72;       /* #555148 */
+    --fg-subtle: 110 105 94;    /* #6E695E — 4.7:1 no marfim (AA) */
+    --line: 208 201 186;        /* #D0C9BA */
+    --accent: 110 87 34;        /* #6E5722 — ouro velho, 4.9:1 (AA) */
+    --accent-soft: 92 72 28;    /* hover no claro escurece, não clareia */
+    --accent-deep: 78 61 24;
+    --accent-fg: 250 247 240;
     /* DOIS tons no claro porque o mínimo de contraste depende do tamanho
        do texto: --warm serve o eyebrow (texto pequeno, precisa ~4.5:1) e
        --warm-loud os números gigantes do Stats (3:1 basta). */
-    --warm: 119 99 58;          /* #77633A — bronze escuro (texto pequeno) */
-    --warm-loud: 150 126 74;    /* #967E4A — 3:1 (só texto grande) */
+    --warm: 104 82 32;          /* #685220 — 5.2:1 (texto pequeno) */
+    --warm-loud: 140 112 48;    /* #8C7030 — 3.2:1 (só texto grande) */
     --warm-fg: 255 253 246;
     color-scheme: light;
   }
