@@ -642,12 +642,6 @@ export const PROJECTS: Project[] = [
     live: "https://terral-cafe.vercel.app",
     featured: true,
     homeFeatured: true,
-    // Carro-chefe (ideia C, 12/08): o código já tinha esse card grande
-    // pronto e nenhum projeto ligava a flag. TERRAL tem o gancho mais
-    // demonstrável do acervo (grão que torra ao vivo no scroll) — é o
-    // que melhor prova "site interativo", que é o que a MilWeb vende.
-    // Reversível: é só mover esta linha pra outro projeto.
-    flagship: true,
     image: "/shots/terral.webp",
     imageStatic: true,
     caseStudy: {
@@ -927,6 +921,10 @@ export const PROJECTS: Project[] = [
     repos: [{ label: "Código", url: `${GH}/loja-de-iphone` }],
     featured: true,
     homeFeatured: true,
+    // Carro-chefe (trocado do TERRAL por pedido do Rick, 12/08): é o
+    // projeto mais recente e o vídeo real do unboxing controlado por
+    // scroll é um gancho tão forte quanto o do TERRAL.
+    flagship: true,
     image: "/shots/loja-de-iphone.webp",
     imageStatic: true,
     caseStudy: {
