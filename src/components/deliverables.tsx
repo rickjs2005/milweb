@@ -16,6 +16,7 @@ import { SERVICES } from "@/lib/services";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
 import { REVEAL_VARIANT_ROTATION } from "./reveal-variants";
+import { FocusCard } from "./focus-card";
 
 const ICONS: Record<string, LucideIcon> = {
   Rocket,
@@ -71,35 +72,43 @@ export function Deliverables({ locale }: { locale: Locale }) {
                mobile ele reage ao SCROLL (pedido do Rick, 12/08); no
                desktop reage ao mouse (mesmo mecanismo, outro gatilho). */
             <div key={d.title.en} data-depth={(0.16 + (i % 3) * 0.09).toFixed(2)}>
-              <Reveal
-                delay={(i % 3) * 80}
-                variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
-              >
-                {/* Mobile: linha compacta (ícone à esquerda) — os cards em coluna
-                    davam ~450px cada e a seção virava uma rolagem enorme.
-                    Desktop (sm:+) mantém o card em coluna de sempre. */}
-                <div
-                  className={
-                    "group flex h-full items-start gap-4 rounded-2xl border glass p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)] active:-translate-y-1 sm:block sm:p-6 " +
-                    accent.border +
-                    " sm:border-line/10"
-                  }
+              {/* FocusCard por dentro do data-depth: dois nós, cada um dono
+                  do próprio transform (pai desloca no scroll, filho escala/
+                  brilha) — compõem sem conflito. Ver focus-card.tsx pro
+                  porquê de não ser o sticky-stack do Processo aqui: 6-9
+                  cards pequenos alongariam a seção demais com a pista do
+                  stack. */}
+              <FocusCard>
+                <Reveal
+                  delay={(i % 3) * 80}
+                  variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
                 >
+                  {/* Mobile: linha compacta (ícone à esquerda) — os cards em coluna
+                      davam ~450px cada e a seção virava uma rolagem enorme.
+                      Desktop (sm:+) mantém o card em coluna de sempre. */}
                   <div
                     className={
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors group-hover:bg-accent/20 sm:h-11 sm:w-11 " +
-                      accent.bg + " " + accent.icon + " " + accent.ring +
-                      " sm:bg-accent/10 sm:text-accent sm:ring-accent/20"
+                      "group flex h-full items-start gap-4 rounded-2xl border glass p-4 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_0_44px_-12px_rgb(var(--accent)/0.4)] active:-translate-y-1 sm:block sm:p-6 " +
+                      accent.border +
+                      " sm:border-line/10"
                     }
                   >
-                    <Icon className="h-5 w-5" />
+                    <div
+                      className={
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors group-hover:bg-accent/20 sm:h-11 sm:w-11 " +
+                        accent.bg + " " + accent.icon + " " + accent.ring +
+                        " sm:bg-accent/10 sm:text-accent sm:ring-accent/20"
+                      }
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold text-fg sm:mt-4">{t(d.title)}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-fg-muted sm:mt-2">{t(d.desc)}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-lg font-semibold text-fg sm:mt-4">{t(d.title)}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-fg-muted sm:mt-2">{t(d.desc)}</p>
-                  </div>
-                </div>
-              </Reveal>
+                </Reveal>
+              </FocusCard>
             </div>
           );
         })}

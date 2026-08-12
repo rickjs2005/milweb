@@ -2,6 +2,7 @@ import { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck, LifeBuo
 import { DIFFERENTIALS, UI, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
+import { FocusCard } from "./focus-card";
 
 const ICONS: Record<string, LucideIcon> = { Code2, Gauge, Search, TrendingUp, Sparkles, Timer, ShieldCheck, LifeBuoy };
 
@@ -25,17 +26,23 @@ export function Why({ locale }: { locale: Locale }) {
         {DIFFERENTIALS.map((d, i) => {
           const Icon = ICONS[d.icon] ?? Sparkles;
           return (
-            <Reveal key={d.title.en} delay={(i % 4) * 80}>
-              <div className="flex h-full items-start gap-4 bg-bg p-6 transition-colors hover:bg-surface/60">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">
-                  <Icon className="h-5 w-5" />
+            /* FocusCard (mesma técnica do Deliverables), scale desligado:
+               a linha só clareia ao cruzar o centro no mobile — crescer
+               aqui estouraria o grid apertado (gap-px + overflow-hidden,
+               divisórias de 1px viram desalinhadas). */
+            <FocusCard key={d.title.en} scale={false}>
+              <Reveal delay={(i % 4) * 80}>
+                <div className="flex h-full items-start gap-4 bg-bg p-6 transition-colors hover:bg-surface/60">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-fg">{t(d.title)}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-fg-muted">{t(d.desc)}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-base font-semibold text-fg">{t(d.title)}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-fg-muted">{t(d.desc)}</p>
-                </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            </FocusCard>
           );
         })}
       </div>

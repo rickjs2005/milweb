@@ -2,6 +2,7 @@ import { Cloud, Code2, Server } from "lucide-react";
 import { UI, TECH, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 import { Reveal } from "./reveal";
+import { StackCard } from "./stack-card";
 import { TechMarquee } from "./tech-marquee";
 
 const ALL_TECH = TECH.flatMap((g) => g.items);
@@ -34,19 +35,29 @@ export function Tech({ locale }: { locale: Locale }) {
         <TechMarquee items={ALL_TECH} />
       </Reveal>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-3">
+      {/* Sticky-stack (mesma receita da seção 05/Processo — pedido do Rick,
+          12/08): só 3 grupos, cards grandes, é exatamente o formato que a
+          técnica foi pensada pra empilhar. No mobile cada card gruda e o
+          próximo sobe por cima, encolhendo e escurecendo o de baixo; em
+          md+ volta pra grade normal lado a lado (StackCard detecta via
+          getComputedStyle e desliga o cálculo sozinho). */}
+      <div className="mt-10 md:mt-6 md:grid md:gap-5 md:grid-cols-3">
         {TECH.map((g, i) => {
           const { Icon, tint, ring } = GROUP_STYLE[i % GROUP_STYLE.length]!;
           return (
-            <Reveal key={g.group.en} delay={i * 90} variant={i % 2 === 0 ? "fade-up" : "zoom"}>
-              <div className={"h-full rounded-2xl border glass p-6 " + ring}>
-                <div className={"mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2/70 " + tint}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <p className={"font-mono text-xs uppercase tracking-wider " + tint}>{t(g.group)}</p>
-                <p className="mt-3 text-sm leading-relaxed text-fg-muted">{g.items.join(" · ")}</p>
+            <StackCard
+              key={g.group.en}
+              top={88 + i * 4}
+              zIndex={i + 1}
+              delay={i * 90}
+              className={"sticky mb-[14vh] rounded-2xl border glass p-6 shadow-2xl shadow-bg/60 md:static md:mb-0 md:shadow-none " + ring}
+            >
+              <div className={"mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2/70 " + tint}>
+                <Icon className="h-5 w-5" />
               </div>
-            </Reveal>
+              <p className={"font-mono text-xs uppercase tracking-wider " + tint}>{t(g.group)}</p>
+              <p className="mt-3 text-sm leading-relaxed text-fg-muted">{g.items.join(" · ")}</p>
+            </StackCard>
           );
         })}
       </div>
