@@ -3,7 +3,6 @@ import { ArrowUpRight, ArrowRight, Github, Crown, TrendingUp, FlaskConical, Badg
 import { PROJECTS, UI, type Project, type Localized, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 import { Reveal } from "./reveal";
-import { REVEAL_VARIANT_ROTATION } from "./reveal-variants";
 import { WebsitePreview } from "./website-preview";
 import { TiltCard } from "./tilt-card";
 import { ProjectsGrid } from "./projects-grid";
@@ -385,15 +384,18 @@ export function Projects({ locale }: { locale: Locale }) {
               label: t(FILTER_LABELS[c]),
               count: rest.filter((p) => p.category === c).length,
             }))}
-            items={rest.map((p, i) => ({
+            items={rest.map((p) => ({
               key: p.slug,
               category: p.category,
+              // view-reveal: entrada em CSS puro (ideia A, 12/08) — nada de
+              // Reveal/JS aqui, é exatamente o novo caminho horizontal com
+              // scroll-snap (projects-grid.tsx) que a técnica foi pensada
+              // pra servir. Em desktop (raríssimo essa grade renderizar —
+              // só com <4 itens ou reduced-motion) o card só nasce visível,
+              // sem entrada animada; aceitável, já que hoje sempre há 6+
+              // itens e o desktop normal usa a esteira 3D, não esta grade.
               node: (
-                <Reveal
-                  delay={(i % 2) * 100}
-                  variant={REVEAL_VARIANT_ROTATION[i % REVEAL_VARIANT_ROTATION.length]}
-                  className="h-full"
-                >
+                <div className="view-reveal h-full">
                   <TiltCard className="h-full rounded-2xl">
                     <div
                       className={
@@ -413,7 +415,7 @@ export function Projects({ locale }: { locale: Locale }) {
                       </div>
                     </div>
                   </TiltCard>
-                </Reveal>
+                </div>
               ),
             }))}
           />

@@ -86,12 +86,24 @@ export function ProjectsGrid({
         ))}
       </div>
 
-      <div ref={gridRef} className="mt-8 grid gap-6 lg:grid-cols-2">
+      {/* Galeria horizontal no mobile (pedido do Rick, 12/08 — "algo
+          diferente, tipo GitHub/App Store"): scroll-snap nativo, sem JS
+          de carrossel. Cada card ocupa ~82% da tela (mostra um pedaço do
+          próximo, convite a continuar deslizando) e centraliza ao soltar
+          o dedo. Em lg+ volta pra grade vertical de sempre — mx/px
+          negativos sangram a tira até a borda da tela só abaixo de lg. */}
+      <div
+        ref={gridRef}
+        className="-mx-5 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0 lg:grid lg:snap-none lg:gap-6 lg:overflow-visible lg:px-0 lg:pb-0 lg:grid-cols-2"
+      >
         {items.map((item) => (
           <div
             key={item.key}
             data-cat={item.category}
-            className={active === "all" || active === item.category ? "" : "hidden"}
+            className={
+              "w-[82%] shrink-0 snap-center lg:w-auto lg:shrink " +
+              (active === "all" || active === item.category ? "" : "hidden")
+            }
           >
             {item.node}
           </div>

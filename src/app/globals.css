@@ -270,6 +270,44 @@
     to { transform: skewX(-16deg) translateX(560%); }
   }
 
+  /* ===== Entrada em CSS puro via scroll-driven animation (12/08) =====
+     Pesquisado a pedido do Rick: `animation-timeline` é nativo do
+     navegador — ele lê a posição do elemento no scroll e anima sozinho,
+     ZERO JavaScript (nem listener existe, diferente de todo o resto do
+     site que usa rAF+scroll). Suporte ~84% global em meados de 2026
+     (Chrome/Edge desde dez/2024, Safari 18+); @supports garante que quem
+     não tem a feature (Firefox sem flag) recebe o card só VISÍVEL, nunca
+     preso invisível — mesma filosofia de fallback gracioso do resto do
+     site. Só mobile/touch: no ponteiro fino os cards de Projetos usam
+     <Reveal> (GSAP scrub) — testado e funcionando, não mexi ali.
+     view(inline): a galeria autoral (projects-grid.tsx) rola na
+     horizontal, então o eixo do view-timeline precisa ser inline, não o
+     block (vertical) que é o padrão do view(). */
+  @media (pointer: coarse) {
+    @supports (animation-timeline: view()) {
+      .view-reveal {
+        animation: view-reveal-in linear both;
+        animation-timeline: view(inline);
+        animation-range: contain 0% contain 55%;
+      }
+    }
+  }
+  @keyframes view-reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .view-reveal {
+      animation: none;
+    }
+  }
+
   /* Pulso do CTA principal: anel de glow que expande e dissolve — chama o
      olho sem mexer no layout. reduced-motion global zera. */
   @keyframes cta-pulse {
