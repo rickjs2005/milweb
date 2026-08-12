@@ -22,16 +22,12 @@ export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
 
 /**
  * Cor da plumagem (asas, pés, penas do peito, bico) — cravada de propósito,
- * NÃO vinda de --accent-soft.
- *
- * No tema escuro --accent-soft é #9DB7FF, mais claro que o corpo, e tudo
- * contrasta. No tema claro ele é #2740B8, calibrado pra contrastar com fundo
- * branco — ou seja, mais ESCURO que o --accent e bem no meio do gradiente do
- * corpo (#2F4BD8 → #1E36A8). Resultado: asas, pés e penas sumiam contra o
- * corpo no tema claro. O robô que veio antes cravava as cores pelo mesmo
- * motivo.
+ * NÃO vinda de --accent-soft: o hover do claro é mais ESCURO que o accent
+ * (cai no meio do gradiente do corpo) e as asas sumiam contra o corpo.
+ * Bone levemente tostado: contrasta com o corpo vermelho-queimado nos dois
+ * temas (paleta graphite+bone — Milo trocou o azul junto com o site).
  */
-const PLUMA = "#9db7ff";
+const PLUMA = "#eae2d2";
 
 /** Deslocamento do olhar, aplicado só nas pupilas. */
 const GAZE = { transform: "translate(var(--milo-lx, 0px), var(--milo-ly, 0px))" };
@@ -112,22 +108,22 @@ export function Milo({
       {/* disco facial + tufos de orelha */}
       <path
         d="M110 72c34 0 55 23 55 51 0 30-24 49-55 49s-55-19-55-49c0-28 21-51 55-51z"
-        fill="#0d1126"
+        fill="#1a1815"
         stroke="url(#milo-edge)"
         strokeWidth="2.5"
       />
-      <path d="M67 82 57 46l31 17z" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
-      <path d="M153 82l10-36-31 17z" fill="#0d1126" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M67 82 57 46l31 17z" fill="#1a1815" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M153 82l10-36-31 17z" fill="#1a1815" stroke="url(#milo-edge)" strokeWidth="2.5" strokeLinejoin="round" />
 
       {/* olhos por pose */}
       {pose === "shocked" ? (
         <>
           <g>
-            <circle cx="86" cy="118" r="25" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="3" />
+            <circle cx="86" cy="118" r="25" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="3" />
             <circle cx="86" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
           </g>
           <g>
-            <circle cx="134" cy="118" r="25" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="3" />
+            <circle cx="134" cy="118" r="25" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="3" />
             <circle cx="134" cy="118" r="5.5" fill="rgb(var(--accent))" style={GAZE} />
           </g>
         </>
@@ -146,25 +142,25 @@ export function Milo({
         // quem está pensando não está olhando pra você.
         <>
           <g>
-            <circle cx="86" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
             <circle cx="80" cy="111" r="10" fill="rgb(var(--accent))" />
           </g>
           <g>
-            <circle cx="134" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
             <circle cx="128" cy="111" r="10" fill="rgb(var(--accent))" />
           </g>
         </>
       ) : (
         <>
           <g className="milo-blink">
-            <circle cx="86" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="86" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
             <g style={GAZE}>
               <circle cx="86" cy="118" r="10" fill="rgb(var(--accent))" />
               <circle cx="81" cy="113" r="3.2" fill="#fff" opacity="0.85" />
             </g>
           </g>
           <g className="milo-blink">
-            <circle cx="134" cy="118" r="24" fill="#04060f" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
+            <circle cx="134" cy="118" r="24" fill="#0c0c0a" stroke="rgb(var(--accent))" strokeWidth="2" strokeOpacity="0.35" />
             <g style={GAZE}>
               <circle cx="134" cy="118" r="10" fill="rgb(var(--accent))" />
               <circle cx="129" cy="113" r="3.2" fill="#fff" opacity="0.85" />

@@ -61,54 +61,53 @@
   /* ===== TEMA (variáveis semânticas) — MilWeb =====
      Default = DARK (:root). A classe .light no <html> troca pro claro.
 
-     Acento = ULTRAMARINE ELÉTRICO da marca MilWeb (ecoa o logo), nos dois
-     modos. Deliberadamente FORA da faixa `sky` default do Tailwind: o par
-     slate+sky é o visual que todo gerador de site cospe, porque é o valor
-     que sai da caixa. Aqui o azul é autoral (~228° em vez de ~199°).
+     Paleta GRAPHITE + BONE + VERMELHO QUEIMADO (decisão do Rick, 12/08):
+     saímos de vez do preto + azul elétrico + glow — a linguagem que hoje
+     grita "AI startup / SaaS genérico". Neutros quentes de estúdio
+     editorial; o vermelho queimado NÃO é efeito, é assinatura: aparece só
+     em ações e pequenos indicadores. Nada de gradiente, glow ou borda
+     colorida ambiente.
 
-     --warm é o contraponto quente (CTA, números, destaques). Existe pra
-     quebrar o mono-hue: sem ele 99,8% da cor da página caía numa única
-     faixa de matiz, e é isso que faz uma paleta parecer gerada. */
+     --warm existia como contraponto quente do azul; agora aponta pra
+     própria família do vermelho (eyebrows, números, destaques) — um site
+     de um acento só, de propósito. */
   :root {
-    --bg: 8 10 16;
-    --surface: 15 18 28;
-    --surface-2: 22 27 40;
-    --fg: 244 247 252;
-    --fg-muted: 173 182 199;
-    --fg-subtle: 137 148 166; /* #8994A6 — 5.9:1 no fundo escuro (AA com folga) */
-    --line: 143 163 255;
-    --accent: 91 124 255;       /* #5B7CFF — ultramarine MilWeb */
-    --accent-soft: 157 183 255; /* #9DB7FF */
-    --accent-deep: 51 85 230;   /* #3355E6 */
-    --accent-fg: 6 12 22;       /* texto sobre o azul — 5.3:1 (AA) */
-    --warm: 255 176 32;         /* #FFB020 — âmbar, contraponto quente */
-    --warm-loud: 255 190 61;    /* #FFBE3D — para texto GRANDE (ver .light) */
-    --warm-fg: 26 18 0;         /* texto sobre o âmbar */
+    --bg: 17 17 15;             /* #11110F — graphite */
+    --surface: 25 25 23;        /* #191917 — charcoal */
+    --surface-2: 33 32 29;      /* #21201D */
+    --fg: 241 238 231;          /* #F1EEE7 — bone */
+    --fg-muted: 167 163 155;    /* #A7A39B — warm gray */
+    --fg-subtle: 140 136 128;   /* #8C8880 — 5.1:1 no graphite (AA) */
+    --line: 42 41 37;           /* #2A2925 — borda neutra, quase invisível */
+    --accent: 201 75 53;        /* #C94B35 — vermelho queimado */
+    --accent-soft: 224 100 75;  /* #E0644B — terracota (hover) */
+    --accent-deep: 168 61 42;   /* #A83D2A */
+    --accent-fg: 255 247 242;   /* texto sobre o vermelho — 4.6:1 (AA) */
+    --warm: 224 100 75;         /* terracota p/ texto pequeno no escuro */
+    --warm-loud: 232 122 96;    /* #E87A60 — texto grande */
+    --warm-fg: 32 12 8;
     color-scheme: dark;
   }
   .light {
-    /* Neutros levemente QUENTES (não slate): cinza azulado sob azul frio
-       faz a página inteira ler como uma cor só. */
-    --bg: 250 249 247;
-    --surface: 255 255 255;
-    --surface-2: 242 240 236;
-    --fg: 26 24 21;
-    --fg-muted: 74 70 64;
-    --fg-subtle: 107 100 89; /* #6B6459 — 5.6:1 no fundo claro (AA) */
-    --line: 58 85 204;
-    --accent: 47 75 216;        /* #2F4BD8 — 6.7:1 em branco (AA) */
-    --accent-soft: 39 64 184;
-    --accent-deep: 30 54 168;
-    --accent-fg: 255 255 255;
-    /* DOIS âmbares no claro, porque o mínimo de contraste depende do
-       tamanho do texto. --warm serve o eyebrow (texto pequeno: 4,5:1) e
-       por isso precisa ser escuro. Usar esse mesmo tom nos números
-       gigantes do Stats os deixava marrons, já que eles só precisam de
-       3:1 (texto grande) e estavam pagando a conta do texto pequeno.
-       --warm-loud é o âmbar de verdade, reservado a texto grande. */
-    --warm: 176 86 0;           /* #B05600 — 4,8:1 em branco (texto pequeno) */
-    --warm-loud: 201 122 5;     /* #C97A05 — 3,2:1 (só texto grande) */
-    --warm-fg: 255 255 255;
+    /* O claro não é branco de UI: é PAPEL — bone como fundo, graphite como
+       tinta, o mesmo vermelho (escurecido pra AA) como assinatura. */
+    --bg: 244 241 234;          /* #F4F1EA — bone paper */
+    --surface: 251 249 244;     /* #FBF9F4 */
+    --surface-2: 234 230 221;   /* #EAE6DD */
+    --fg: 24 23 20;             /* #181714 — graphite ink */
+    --fg-muted: 82 79 72;       /* #524F48 */
+    --fg-subtle: 110 106 98;    /* #6E6A62 — 4.9:1 no bone (AA) */
+    --line: 209 204 193;        /* #D1CCC1 */
+    --accent: 168 61 42;        /* #A83D2A — 5.0:1 no bone (AA) */
+    --accent-soft: 143 50 34;   /* hover no claro escurece, não clareia */
+    --accent-deep: 122 42 28;
+    --accent-fg: 255 250 246;
+    /* DOIS tons no claro porque o mínimo de contraste depende do tamanho
+       do texto: --warm serve o eyebrow (texto pequeno, precisa ~4.5:1) e
+       --warm-loud os números gigantes do Stats (3:1 basta). */
+    --warm: 154 52 35;          /* #9A3423 — 5.5:1 (texto pequeno) */
+    --warm-loud: 190 70 48;     /* #BE4630 — 3.6:1 (só texto grande) */
+    --warm-fg: 255 250 246;
     color-scheme: light;
   }
 
@@ -135,32 +134,10 @@
   }
   body {
     @apply bg-bg text-fg-muted antialiased;
-    /* Profundidade com leve brilho azul da marca (sutil). */
-    background-image:
-      radial-gradient(60rem 42rem at 85% -10%, rgb(var(--accent) / 0.10), transparent 62%),
-      radial-gradient(52rem 40rem at -8% 12%, rgb(var(--accent) / 0.06), transparent 62%);
-    /* Sem `background-attachment: fixed`: em mobile ele força repaint a cada
-       frame de scroll (jank/INP). O gradiente cobre a página mesmo sem fixed. */
-  }
-  /* Respiro ambiente: um terceiro brilho que deriva bem devagar (16s), atrás
-     de tudo (z-index -1, pinta antes do conteúdo em fluxo normal). Existe em
-     QUALQUER viewport -- no desktop é imperceptível perto dos outros efeitos
-     (parallax, tour do Milo etc.), mas no mobile (onde nada mais respira
-     sozinho) é o que tira o fundo de "parado". Só transform+opacity (GPU),
-     reduced-motion já mata via regra global no topo do arquivo. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: -12%;
-    z-index: -1;
-    pointer-events: none;
-    background-image: radial-gradient(34rem 34rem at 24% 28%, rgb(var(--accent) / 0.12), transparent 60%);
-    animation: ambient-drift 18s ease-in-out infinite alternate;
-    will-change: transform;
-  }
-  @keyframes ambient-drift {
-    0% { transform: translate(-3%, -2%) scale(1); opacity: 0.7; }
-    100% { transform: translate(4%, 3%) scale(1.15); opacity: 1; }
+    /* Fundo SÓLIDO de propósito (paleta graphite+bone): os brilhos radiais
+       de accent que moravam aqui (e o "respiro ambiente" no ::before) eram
+       exatamente o glow difuso que a nova direção eliminou. Profundidade
+       agora vem do grão de filme e da hierarquia de superfícies. */
   }
   /* Grão de filme: textura quase imperceptível, mata o "chapado". */
   body::after {
@@ -173,7 +150,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   .light body::after { opacity: 0.02; }
-  .light body::before { opacity: 0.6; }
   /* Títulos na fonte display (personalidade) com tracking apertado. */
   h1, h2, h3, h4 {
     font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
@@ -314,9 +290,12 @@
     animation: hero-scroll-dot 2.2s ease-in-out infinite;
   }
 
-  /* Texto em gradiente azul→branco (ecoa o logo MilWeb). */
+  /* Palavra-destaque do headline: vermelho queimado SÓLIDO. Era um
+     gradiente azul→branco — gradiente em texto saiu da linguagem junto com
+     o resto (paleta graphite+bone: a cor é assinatura, não efeito). A
+     classe mantém o nome pra não tocar os usos espalhados. */
   .text-gradient {
-    @apply bg-gradient-to-br from-fg via-accent-soft to-accent bg-clip-text text-transparent;
+    @apply text-accent;
   }
   /* View Transitions: cross-fade rápido no root; os elementos nomeados
      (case-<slug>) morfam com o timing padrão do navegador. */

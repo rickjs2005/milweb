@@ -85,19 +85,19 @@ export const PHYSICS = {
   bubbleEvery: 1.6,
 } as const;
 
-/** Paleta (RGB 0-255) — ultramarine profundo → claro, identidade MilWeb.
- *  Estava em blue-400/cyan-400/sky-400 (defaults do Tailwind) mesmo depois
- *  da troca de paleta do site: as varreduras procuravam hex e `rgb(r g b)`,
- *  e aqui a cor mora em array com vírgula. */
+/** Paleta (RGB 0-255) — vermelho queimado profundo → terracota, identidade
+ *  MilWeb (graphite+bone, 12/08). Atenção de manutenção: varreduras de cor
+ *  por hex/`rgb(r g b)` NÃO acham este arquivo — a cor mora em array com
+ *  vírgula (já passou batido na troca de paleta anterior). */
 export const PALETTE = {
-  headCore: [157, 183, 255],
-  headMid: [91, 124, 255],
-  headEdge: [9, 14, 42],
-  tentacleBase: [51, 85, 230],
-  tentacleTip: [157, 183, 255],
-  glow: [91, 124, 255],
-  eyeSclera: [235, 244, 255],
-  eyePupil: [7, 12, 28],
+  headCore: [224, 100, 75],
+  headMid: [201, 75, 53],
+  headEdge: [42, 18, 12],
+  tentacleBase: [168, 61, 42],
+  tentacleTip: [232, 122, 96],
+  glow: [201, 75, 53],
+  eyeSclera: [241, 238, 231],
+  eyePupil: [17, 17, 15],
 } as const;
 
 /**
@@ -145,12 +145,15 @@ export const STARFIELD = {
  * Esse número é o que separa "atmosfera" de "mancha atrás da leitura".
  */
 export const BODIES = {
-  /** Direção da luz do sol, usada pra iluminar o lado certo dos planetas. */
-  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.34, parallax: 0.015, rgb: [255, 176, 32] },
+  /** Direção da luz do sol, usada pra iluminar o lado certo dos planetas.
+   *  Cores na paleta graphite+bone: sol terracota, planetas em bone,
+   *  bronze e warm gray — os azuis/lilases eram resquício da paleta velha
+   *  e apareciam como manchas azuis soltas no fundo novo. */
+  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.3, parallax: 0.015, rgb: [224, 100, 75] },
   planets: [
-    { nx: 0.16, ny: 0.52, r: 88, alpha: 0.24, parallax: 0.05, rgb: [120, 150, 255], ring: 0 },
-    { nx: 0.68, ny: 0.78, r: 58, alpha: 0.20, parallax: 0.08, rgb: [180, 170, 235], ring: 1.9 },
-    { nx: 0.40, ny: 0.28, r: 40, alpha: 0.17, parallax: 0.11, rgb: [150, 190, 255], ring: 0 },
+    { nx: 0.16, ny: 0.52, r: 88, alpha: 0.2, parallax: 0.05, rgb: [214, 202, 178], ring: 0 },
+    { nx: 0.68, ny: 0.78, r: 58, alpha: 0.18, parallax: 0.08, rgb: [184, 160, 106], ring: 1.9 },
+    { nx: 0.40, ny: 0.28, r: 40, alpha: 0.15, parallax: 0.11, rgb: [167, 163, 155], ring: 0 },
   ],
 } as const;
 

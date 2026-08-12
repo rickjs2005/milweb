@@ -27,15 +27,16 @@ export const FILTER_LABELS: Record<Project["category"], Localized> = {
   "sistema-saas": UI.sections.projectsFilterSistemaSaas,
 };
 
-/** Acento por categoria -- SÓ no mobile (grade fallback; a esteira 3D do
- * desktop não usa isso). O filtro por categoria já existe, mas sem pista
- * visual de qual card é qual sem ler o texto -- a faixa lateral colorida
- * resolve isso num piscar de olhos, na mesma linguagem do card do Tech. */
+/** Faixa lateral dos cards no mobile: neutra pra todo mundo, vermelho SÓ
+ * no sistema/SaaS (o tipo de projeto que a MilWeb mais quer vender). Era
+ * uma cor por categoria (amber/violet/sky/emerald) — arco-íris de card é a
+ * estética que a paleta graphite+bone aposentou; o indicador pontual em
+ * vermelho queimado é a nova linguagem. */
 const CATEGORY_ACCENT: Record<Project["category"], string> = {
-  "landing-essencial": "border-l-amber-400/70",
-  "landing-premium": "border-l-violet-400/70",
-  institucional: "border-l-sky-400/70",
-  "institucional-premium": "border-l-emerald-400/70",
+  "landing-essencial": "border-l-line",
+  "landing-premium": "border-l-line",
+  institucional: "border-l-line",
+  "institucional-premium": "border-l-line",
   "sistema-saas": "border-l-accent/70",
 };
 

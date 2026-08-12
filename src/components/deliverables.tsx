@@ -29,16 +29,12 @@ const ICONS: Record<string, LucideIcon> = {
   Wrench,
 };
 
-/** Acento por card -- SÓ no mobile (revertido em `sm:` pro tratamento
- * neutro/azul único que já existe no desktop). Cicla por índice, mesma
- * ideia do Tech: tira as 6 caixas de terem só o ícone mudando. */
+/** Tratamento único e neutro pra TODOS os cards (era um arco-íris de
+ * emerald/amber/violet/rose/cyan por índice no mobile — exatamente a
+ * estética "SaaS genérico" que a paleta graphite+bone eliminou; na nova
+ * linguagem a cor é assinatura do vermelho, não diferenciador de card). */
 const CARD_ACCENT = [
-  { icon: "text-accent", bg: "bg-accent/10", ring: "ring-accent/20", border: "border-accent/25" },
-  { icon: "text-emerald-400", bg: "bg-emerald-400/10", ring: "ring-emerald-400/20", border: "border-emerald-400/25" },
-  { icon: "text-amber-400", bg: "bg-amber-400/10", ring: "ring-amber-400/20", border: "border-amber-400/25" },
-  { icon: "text-violet-400", bg: "bg-violet-400/10", ring: "ring-violet-400/20", border: "border-violet-400/25" },
-  { icon: "text-rose-400", bg: "bg-rose-400/10", ring: "ring-rose-400/20", border: "border-rose-400/25" },
-  { icon: "text-cyan-400", bg: "bg-cyan-400/10", ring: "ring-cyan-400/20", border: "border-cyan-400/25" },
+  { icon: "text-fg-muted", bg: "bg-surface-2", ring: "ring-line/40", border: "border-line/60" },
 ];
 
 export function Deliverables({ locale }: { locale: Locale }) {

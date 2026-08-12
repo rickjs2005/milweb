@@ -32,9 +32,9 @@ export default async function Image({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          backgroundColor: '#080a10',
+          backgroundColor: '#11110f',
           backgroundImage:
-            'radial-gradient(900px 620px at 82% -12%, rgba(56,189,248,0.28), transparent 60%), radial-gradient(760px 560px at -8% 110%, rgba(14,165,233,0.18), transparent 62%)',
+            'none',
           padding: '72px 88px',
           fontFamily: 'Inter',
         }}
@@ -49,15 +49,15 @@ export default async function Image({
               width: '52px',
               height: '52px',
               borderRadius: '14px',
-              backgroundColor: '#5B7CFF',
-              color: '#06121c',
+              backgroundColor: '#C94B35',
+              color: '#FFF7F2',
               fontSize: '32px',
               fontWeight: 800,
             }}
           >
             M
           </div>
-          <div style={{ display: 'flex', fontSize: '34px', fontWeight: 800, color: '#F4F7FC' }}>
+          <div style={{ display: 'flex', fontSize: '34px', fontWeight: 800, color: '#F1EEE7' }}>
             MilWeb
           </div>
         </div>
@@ -71,7 +71,7 @@ export default async function Image({
               lineHeight: 1.02,
               fontWeight: 800,
               letterSpacing: '-0.03em',
-              color: '#F4F7FC',
+              color: '#F1EEE7',
               maxWidth: '1000px',
             }}
           >
@@ -82,7 +82,7 @@ export default async function Image({
               display: 'flex',
               marginTop: '24px',
               fontSize: '32px',
-              color: '#9DB7FF',
+              color: '#E0644B',
               maxWidth: '980px',
             }}
           >
@@ -91,7 +91,7 @@ export default async function Image({
         </div>
 
         {/* Footer line */}
-        <div style={{ display: 'flex', fontSize: '24px', fontWeight: 600, color: '#ADB6C7' }}>
+        <div style={{ display: 'flex', fontSize: '24px', fontWeight: 600, color: '#A7A39B' }}>
           Case · MilWeb
         </div>
       </div>

@@ -21,7 +21,7 @@ export class Renderer {
   private w = 0;
   private h = 0;
   /** Cor e intensidade do céu, resolvidas do tema (ver refreshTheme). */
-  private starColor: readonly number[] = [157, 183, 255];
+  private starColor: readonly number[] = [241, 238, 231];
   private starAlpha: number = STARFIELD.alphaDark;
   /** Sol e planetas só existem no escuro (ver BODIES). */
   private dark = true;
@@ -73,7 +73,7 @@ export class Renderer {
     this.starColor =
       parsed.length === 3 && parsed.every((n) => Number.isFinite(n))
         ? parsed
-        : [157, 183, 255]; // token ausente/malformado: não apaga o céu
+        : [241, 238, 231]; // token ausente/malformado: não apaga o céu
     this.starAlpha = light ? STARFIELD.alphaLight : STARFIELD.alphaDark;
     this.dark = !light;
   }

@@ -144,45 +144,36 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
 
   const sans = getComputedStyle(document.body).fontFamily || "sans-serif";
 
-  // fundo + brilhos da marca
-  ctx.fillStyle = "#080a10";
-  ctx.fillRect(0, 0, size, size);
-  const glow = ctx.createRadialGradient(size * 0.8, 0, 0, size * 0.8, 0, 700);
-  glow.addColorStop(0, "rgba(56,189,248,0.22)");
-  glow.addColorStop(1, "rgba(56,189,248,0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, size, size);
-  const glow2 = ctx.createRadialGradient(0, size, 0, 0, size, 640);
-  glow2.addColorStop(0, "rgba(251,113,133,0.14)");
-  glow2.addColorStop(1, "rgba(251,113,133,0)");
-  ctx.fillStyle = glow2;
+  // fundo graphite sólido (os glows radiais azul/rosa saíram com a paleta
+  // nova: a imagem de share segue a mesma linguagem editorial do site)
+  ctx.fillStyle = "#11110f";
   ctx.fillRect(0, 0, size, size);
 
   ctx.textAlign = "center";
 
   // eyebrow
-  ctx.fillStyle = "#5b7cff";
+  ctx.fillStyle = "#c94b35";
   ctx.font = `700 30px ${sans}`;
   ctx.fillText("MILWEB · RAIO-X", size / 2, 190);
 
   // título
-  ctx.fillStyle = "#f4f7fc";
+  ctx.fillStyle = "#f1eee7";
   ctx.font = `700 58px ${sans}`;
   ctx.fillText(s.shareTitle1, size / 2, 330);
   ctx.fillText(s.shareTitle2, size / 2, 405);
 
   // valor
-  ctx.fillStyle = "#fb7185";
+  ctx.fillStyle = "#e0644b";
   ctx.font = `800 132px ${sans}`;
   ctx.fillText(loss, size / 2, 580);
 
   // sub
-  ctx.fillStyle = "#adb6c7";
+  ctx.fillStyle = "#a7a39b";
   ctx.font = `400 36px ${sans}`;
   ctx.fillText(fill(s.shareSub, { duration: durationLabel, share }), size / 2, 665);
 
   // divisor
-  ctx.strokeStyle = "rgba(120,180,255,0.25)";
+  ctx.strokeStyle = "rgba(241,238,231,0.22)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(size / 2 - 180, 760);
@@ -190,7 +181,7 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   ctx.stroke();
 
   // rodapé
-  ctx.fillStyle = "#5b7cff";
+  ctx.fillStyle = "#c94b35";
   ctx.font = `700 40px ${sans}`;
   ctx.fillText(s.shareFooter, size / 2, 850);
 

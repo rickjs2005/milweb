@@ -24,9 +24,9 @@ export default async function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          backgroundColor: '#080a10',
+          backgroundColor: '#11110f',
           backgroundImage:
-            'radial-gradient(900px 620px at 82% -12%, rgba(56,189,248,0.28), transparent 60%), radial-gradient(760px 560px at -8% 110%, rgba(14,165,233,0.18), transparent 62%)',
+            'none',
           padding: '80px 96px',
           fontFamily: 'Inter',
         }}
@@ -47,8 +47,8 @@ export default async function Image() {
               width: '64px',
               height: '64px',
               borderRadius: '18px',
-              backgroundColor: '#5B7CFF',
-              color: '#06121c',
+              backgroundColor: '#C94B35',
+              color: '#FFF7F2',
               fontSize: '40px',
               fontWeight: 800,
             }}
@@ -61,11 +61,11 @@ export default async function Image() {
               fontSize: '60px',
               fontWeight: 800,
               letterSpacing: '-0.02em',
-              color: '#F4F7FC',
+              color: '#F1EEE7',
             }}
           >
             Mil
-            <span style={{ color: '#5B7CFF' }}>Web</span>
+            <span style={{ color: '#C94B35' }}>Web</span>
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default async function Image() {
             lineHeight: 1.08,
             fontWeight: 800,
             letterSpacing: '-0.025em',
-            color: '#F4F7FC',
+            color: '#F1EEE7',
             maxWidth: '1000px',
           }}
         >
@@ -91,7 +91,7 @@ export default async function Image() {
             display: 'flex',
             marginTop: '32px',
             fontSize: '30px',
-            color: '#ADB6C7',
+            color: '#A7A39B',
           }}
         >
           Sites, sistemas e SaaS sob medida
@@ -104,7 +104,7 @@ export default async function Image() {
             marginTop: '20px',
             fontSize: '26px',
             fontWeight: 600,
-            color: '#9DB7FF',
+            color: '#E0644B',
           }}
         >
           Next.js · React · TypeScript · SaaS · Landing Pages
