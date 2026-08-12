@@ -85,19 +85,19 @@ export const PHYSICS = {
   bubbleEvery: 1.6,
 } as const;
 
-/** Paleta (RGB 0-255) — vermelho queimado profundo → terracota, identidade
+/** Paleta (RGB 0-255) — laranja queimado profundo → terracota, identidade
  *  MilWeb (graphite+bone, 12/08). Atenção de manutenção: varreduras de cor
  *  por hex/`rgb(r g b)` NÃO acham este arquivo — a cor mora em array com
  *  vírgula (já passou batido na troca de paleta anterior). */
 export const PALETTE = {
-  headCore: [224, 100, 75],
-  headMid: [201, 75, 53],
-  headEdge: [42, 18, 12],
-  tentacleBase: [168, 61, 42],
-  tentacleTip: [232, 122, 96],
-  glow: [201, 75, 53],
-  eyeSclera: [241, 238, 231],
-  eyePupil: [17, 17, 15],
+  headCore: [224, 128, 66],
+  headMid: [199, 107, 50],
+  headEdge: [44, 22, 10],
+  tentacleBase: [166, 86, 38],
+  tentacleTip: [236, 148, 88],
+  glow: [199, 107, 50],
+  eyeSclera: [244, 240, 232],
+  eyePupil: [13, 13, 12],
 } as const;
 
 /**
@@ -149,7 +149,7 @@ export const BODIES = {
    *  Cores na paleta graphite+bone: sol terracota, planetas em bone,
    *  bronze e warm gray — os azuis/lilases eram resquício da paleta velha
    *  e apareciam como manchas azuis soltas no fundo novo. */
-  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.3, parallax: 0.015, rgb: [224, 100, 75] },
+  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.3, parallax: 0.015, rgb: [224, 128, 66] },
   planets: [
     { nx: 0.16, ny: 0.52, r: 88, alpha: 0.2, parallax: 0.05, rgb: [214, 202, 178], ring: 0 },
     { nx: 0.68, ny: 0.78, r: 58, alpha: 0.18, parallax: 0.08, rgb: [184, 160, 106], ring: 1.9 },

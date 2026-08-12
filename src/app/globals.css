@@ -61,53 +61,55 @@
   /* ===== TEMA (variáveis semânticas) — MilWeb =====
      Default = DARK (:root). A classe .light no <html> troca pro claro.
 
-     Paleta GRAPHITE + BONE + VERMELHO QUEIMADO (decisão do Rick, 12/08):
-     saímos de vez do preto + azul elétrico + glow — a linguagem que hoje
-     grita "AI startup / SaaS genérico". Neutros quentes de estúdio
-     editorial; o vermelho queimado NÃO é efeito, é assinatura: aparece só
-     em ações e pequenos indicadores. Nada de gradiente, glow ou borda
-     colorida ambiente.
+     Paleta PRETO + CREME + LARANJA QUEIMADO (decisão do Rick, 12/08 —
+     substituiu a graphite+bone+vermelho da mesma noite, que ele vetou):
+     saímos de vez do preto + azul elétrico + glow — a linguagem que grita
+     "AI startup / SaaS genérico". Preto quente e creme de editorial, com
+     personalidade mais COMERCIAL; o laranja queimado NÃO é efeito, é
+     assinatura: aparece só em ações e pequenos indicadores. Nada de
+     gradiente, glow ou borda colorida ambiente.
 
      --warm existia como contraponto quente do azul; agora aponta pra
-     própria família do vermelho (eyebrows, números, destaques) — um site
+     própria família do laranja (eyebrows, números, destaques) — um site
      de um acento só, de propósito. */
   :root {
-    --bg: 17 17 15;             /* #11110F — graphite */
-    --surface: 25 25 23;        /* #191917 — charcoal */
-    --surface-2: 33 32 29;      /* #21201D */
-    --fg: 241 238 231;          /* #F1EEE7 — bone */
-    --fg-muted: 167 163 155;    /* #A7A39B — warm gray */
-    --fg-subtle: 140 136 128;   /* #8C8880 — 5.1:1 no graphite (AA) */
-    --line: 42 41 37;           /* #2A2925 — borda neutra, quase invisível */
-    --accent: 201 75 53;        /* #C94B35 — vermelho queimado */
-    --accent-soft: 224 100 75;  /* #E0644B — terracota (hover) */
-    --accent-deep: 168 61 42;   /* #A83D2A */
-    --accent-fg: 255 247 242;   /* texto sobre o vermelho — 4.6:1 (AA) */
-    --warm: 224 100 75;         /* terracota p/ texto pequeno no escuro */
-    --warm-loud: 232 122 96;    /* #E87A60 — texto grande */
-    --warm-fg: 32 12 8;
+    --bg: 13 13 12;             /* #0D0D0C — preto quente */
+    --surface: 23 22 20;        /* #171614 */
+    --surface-2: 31 30 27;      /* #1F1E1B */
+    --fg: 244 240 232;          /* #F4F0E8 — creme */
+    --fg-muted: 150 145 138;    /* #96918A */
+    --fg-subtle: 133 128 121;   /* #858079 — 4.7:1 no preto quente (AA) */
+    --line: 41 38 33;           /* #292621 — borda neutra, quase invisível */
+    --accent: 199 107 50;       /* #C76B32 — laranja queimado */
+    --accent-soft: 224 128 66;  /* #E08042 — hover */
+    --accent-deep: 166 86 38;   /* #A65626 */
+    --accent-fg: 26 15 6;       /* texto ESCURO sobre o laranja — 5.5:1
+                                   (branco só dava 3.8:1, reprova AA) */
+    --warm: 224 128 66;         /* laranja claro p/ texto pequeno no escuro */
+    --warm-loud: 236 148 88;    /* #EC9458 — texto grande */
+    --warm-fg: 26 15 6;
     color-scheme: dark;
   }
   .light {
-    /* O claro não é branco de UI: é PAPEL — bone como fundo, graphite como
-       tinta, o mesmo vermelho (escurecido pra AA) como assinatura. */
-    --bg: 244 241 234;          /* #F4F1EA — bone paper */
-    --surface: 251 249 244;     /* #FBF9F4 */
-    --surface-2: 234 230 221;   /* #EAE6DD */
-    --fg: 24 23 20;             /* #181714 — graphite ink */
-    --fg-muted: 82 79 72;       /* #524F48 */
-    --fg-subtle: 110 106 98;    /* #6E6A62 — 4.9:1 no bone (AA) */
-    --line: 209 204 193;        /* #D1CCC1 */
-    --accent: 168 61 42;        /* #A83D2A — 5.0:1 no bone (AA) */
-    --accent-soft: 143 50 34;   /* hover no claro escurece, não clareia */
-    --accent-deep: 122 42 28;
-    --accent-fg: 255 250 246;
+    /* O claro não é branco de UI: é PAPEL creme, tinta preta-quente, o
+       mesmo laranja (escurecido pra AA) como assinatura. */
+    --bg: 244 240 232;          /* #F4F0E8 — creme paper */
+    --surface: 250 248 242;     /* #FAF8F2 */
+    --surface-2: 234 229 219;   /* #EAE5DB */
+    --fg: 24 22 19;             /* #181613 — tinta */
+    --fg-muted: 84 80 73;       /* #545049 */
+    --fg-subtle: 110 105 97;    /* #6E6961 — 4.8:1 no creme (AA) */
+    --line: 210 203 191;        /* #D2CBBF */
+    --accent: 158 82 34;        /* #9E5222 — 4.7:1 no creme (AA) */
+    --accent-soft: 133 68 27;   /* hover no claro escurece, não clareia */
+    --accent-deep: 112 57 23;
+    --accent-fg: 255 250 243;
     /* DOIS tons no claro porque o mínimo de contraste depende do tamanho
        do texto: --warm serve o eyebrow (texto pequeno, precisa ~4.5:1) e
        --warm-loud os números gigantes do Stats (3:1 basta). */
-    --warm: 154 52 35;          /* #9A3423 — 5.5:1 (texto pequeno) */
-    --warm-loud: 190 70 48;     /* #BE4630 — 3.6:1 (só texto grande) */
-    --warm-fg: 255 250 246;
+    --warm: 148 74 28;          /* #944A1C — 5.1:1 (texto pequeno) */
+    --warm-loud: 187 96 40;     /* #BB6028 — 3.4:1 (só texto grande) */
+    --warm-fg: 255 250 243;
     color-scheme: light;
   }
 
@@ -290,7 +292,7 @@
     animation: hero-scroll-dot 2.2s ease-in-out infinite;
   }
 
-  /* Palavra-destaque do headline: vermelho queimado SÓLIDO. Era um
+  /* Palavra-destaque do headline: laranja queimado SÓLIDO. Era um
      gradiente azul→branco — gradiente em texto saiu da linguagem junto com
      o resto (paleta graphite+bone: a cor é assinatura, não efeito). A
      classe mantém o nome pra não tocar os usos espalhados. */

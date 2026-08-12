@@ -24,7 +24,7 @@ export type MiloPose = "idle" | "think" | "shocked" | "happy" | "sleepy";
  * Cor da plumagem (asas, pés, penas do peito, bico) — cravada de propósito,
  * NÃO vinda de --accent-soft: o hover do claro é mais ESCURO que o accent
  * (cai no meio do gradiente do corpo) e as asas sumiam contra o corpo.
- * Bone levemente tostado: contrasta com o corpo vermelho-queimado nos dois
+ * Bone levemente tostado: contrasta com o corpo laranja-queimado nos dois
  * temas (paleta graphite+bone — Milo trocou o azul junto com o site).
  */
 const PLUMA = "#eae2d2";

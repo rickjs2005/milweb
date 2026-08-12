@@ -144,36 +144,36 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
 
   const sans = getComputedStyle(document.body).fontFamily || "sans-serif";
 
-  // fundo graphite sólido (os glows radiais azul/rosa saíram com a paleta
+  // fundo preto-quente sólido (os glows radiais azul/rosa saíram com a paleta
   // nova: a imagem de share segue a mesma linguagem editorial do site)
-  ctx.fillStyle = "#11110f";
+  ctx.fillStyle = "#0d0d0c";
   ctx.fillRect(0, 0, size, size);
 
   ctx.textAlign = "center";
 
   // eyebrow
-  ctx.fillStyle = "#c94b35";
+  ctx.fillStyle = "#c76b32";
   ctx.font = `700 30px ${sans}`;
   ctx.fillText("MILWEB · RAIO-X", size / 2, 190);
 
   // título
-  ctx.fillStyle = "#f1eee7";
+  ctx.fillStyle = "#f4f0e8";
   ctx.font = `700 58px ${sans}`;
   ctx.fillText(s.shareTitle1, size / 2, 330);
   ctx.fillText(s.shareTitle2, size / 2, 405);
 
   // valor
-  ctx.fillStyle = "#e0644b";
+  ctx.fillStyle = "#e08042";
   ctx.font = `800 132px ${sans}`;
   ctx.fillText(loss, size / 2, 580);
 
   // sub
-  ctx.fillStyle = "#a7a39b";
+  ctx.fillStyle = "#96918a";
   ctx.font = `400 36px ${sans}`;
   ctx.fillText(fill(s.shareSub, { duration: durationLabel, share }), size / 2, 665);
 
   // divisor
-  ctx.strokeStyle = "rgba(241,238,231,0.22)";
+  ctx.strokeStyle = "rgba(244,240,232,0.22)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(size / 2 - 180, 760);
@@ -181,7 +181,7 @@ function drawShareCard(s: CalcStrings, loss: string, durationLabel: string, shar
   ctx.stroke();
 
   // rodapé
-  ctx.fillStyle = "#c94b35";
+  ctx.fillStyle = "#c76b32";
   ctx.font = `700 40px ${sans}`;
   ctx.fillText(s.shareFooter, size / 2, 850);
 
