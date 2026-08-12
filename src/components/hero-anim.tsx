@@ -77,7 +77,6 @@ export function HeroAnim({
         // aria:"none": o default punha aria-label em <span> (proibido pela
         // spec ARIA, flag no Lighthouse) — o h1 já carrega o aria-label.
         const split = SplitText.create(leadWords, { type: "chars", mask: "chars", aria: "none" });
-        const cool = getComputedStyle(leadWords[0]!).color;
         gsap.set(split.chars, {
           yPercent: 118,
           color: "#e8722c",
@@ -86,7 +85,25 @@ export function HeroAnim({
         tl.to(split.chars, { yPercent: 0, stagger: 0.016, duration: 0.75, ease: "power4.out" }, 0.8);
         tl.to(
           split.chars,
-          { color: cool, textShadow: "0 0 0px rgba(232,80,20,0)", duration: 1.0, stagger: 0.014, ease: "power2.out" },
+          {
+            // Função (não valor fixo): o tema claro é decidido via JS
+            // (localStorage, theme-toggle.tsx) e podia ainda não ter
+            // trocado a classe no <html> no instante em que este bloco
+            // monta — ler getComputedStyle ali capturava o marfim do
+            // ESCURO e cravava pra sempre, deixando o headline branco
+            // sobre fundo creme no claro (bug real, 12/08). Função é
+            // reavaliada quando a tween começa, ~1s depois, tema já certo.
+            color: () => getComputedStyle(leadWords[0]!).color,
+            textShadow: "0 0 0px rgba(232,80,20,0)",
+            duration: 1.0,
+            stagger: 0.014,
+            ease: "power2.out",
+            // clearProps: sem isso, a cor ficava presa no valor congelado
+            // pra sempre — alternar o tema DEPOIS da entrada não recolori-
+            // ria o headline (inline style sempre vence a classe CSS).
+            // Limpando, o texto volta a herdar text-fg e segue o tema.
+            onComplete: () => gsap.set(split.chars, { clearProps: "color,textShadow" }),
+          },
           1.05,
         );
       }
