@@ -111,8 +111,11 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
       data-hero
       /* z-20 e não z-[2]: o container do texto (irmão) é `relative z-10` e
          ocupa a seção inteira — abaixo disso, a div transparente dele engole
-         o clique do "reexecutar" mesmo com pointer-events-auto no botão. */
-      className="pointer-events-none relative z-20 mt-10 w-full max-w-lg xl:absolute xl:left-[55%] xl:right-[5%] xl:top-1/2 xl:mt-0 xl:w-auto xl:max-w-xl xl:-translate-y-1/2"
+         o clique do "reexecutar" mesmo com pointer-events-auto no botão.
+         top-[12%] fixo (não centrado): centrar pela altura TOTAL (terminal +
+         preview) jogava o conjunto pra baixo demais — o terminal deve nascer
+         na linha do headline, e o preview cresce pra baixo a partir dele. */
+      className="pointer-events-none relative z-20 mt-10 w-full max-w-lg xl:absolute xl:left-[55%] xl:right-[5%] xl:top-[12%] xl:mt-0 xl:w-auto xl:max-w-xl"
     >
       {/* Resumo pra leitor de tela: a coreografia é visual, a informação não. */}
       <p className="sr-only">{t(B.srSummary)}</p>

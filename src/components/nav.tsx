@@ -50,12 +50,12 @@ export function Nav({
   const lineRef = useRef<HTMLSpanElement>(null);
   const pathname = usePathname();
 
-  /* Estado flutuante: só existe se a página tem o hero dark (section#top).
+  /* Estado flutuante: só existe se a página tem o hero (section#top).
      useLayoutEffect pré-paint: nada de flash de vidro na home nem de nav
      transparente nas páginas internas. setFloat só quando muda de verdade
      (ref-guard) — zero re-render por scroll no regime permanente. */
   useLayoutEffect(() => {
-    const hero = document.querySelector("section#top.hero-dark");
+    const hero = document.querySelector("section#top");
     if (!hero) {
       setFloat(false);
       return;
@@ -159,19 +159,17 @@ export function Nav({
 
   const activeIdx = links.findIndex((l) => l.href.slice(1) === active);
 
-  /* No topo a nav usa os tokens do hero (hero-dark) e PRECISA pintar o próprio
-     fundo com bg-bg. O header é sticky, então o hero começa DEPOIS dele
-     (y=77), nunca atrás: sem fundo próprio, o que aparece atrás da nav é o
-     fundo da PÁGINA. No tema escuro isso passava batido porque a página também
-     é escura, mas no claro o texto cinza-claro do hero-dark caía sobre #FAF9F7
-     e o wordmark ficava em 1,94:1. Pintar com bg-bg (o mesmo sólido do hero)
-     resolve nos dois temas e ainda elimina a costura entre a faixa da nav e o
-     topo do hero. */
+  /* No topo a nav pinta o próprio fundo com bg-bg (o mesmo sólido do hero,
+     que agora segue o tema como o resto do site — o modo .hero-dark morreu
+     junto com a cena 3D). O header é sticky, então o hero começa DEPOIS
+     dele (y=77), nunca atrás: sem fundo próprio, o que aparece atrás da nav
+     é o fundo da PÁGINA. bg-bg elimina a costura entre a faixa da nav e o
+     topo do hero nos dois temas. */
   return (
     <header
       className={
         "sticky top-0 z-50 transition-colors duration-300 " +
-        (float ? "hero-dark bg-bg border-b border-transparent" : "glass-nav border-b border-line/10")
+        (float ? "bg-bg border-b border-transparent" : "glass-nav border-b border-line/10")
       }
     >
       <div aria-hidden className="absolute inset-x-0 top-0 h-[2px]">
@@ -256,11 +254,11 @@ export function Nav({
         </div>
       </nav>
 
-      {/* Menu mobile cinematográfico: atmosfera do hero (sempre dark),
+      {/* Menu mobile cinematográfico: atmosfera do hero (segue o tema),
           poeira em suspensão e links numerados em fonte display. */}
       <div
         className={
-          "hero-dark fixed inset-0 z-[60] h-[100dvh] overflow-y-auto bg-[#070a12] transition-opacity duration-300 md:hidden " +
+          "fixed inset-0 z-[60] h-[100dvh] overflow-y-auto bg-bg transition-opacity duration-300 md:hidden " +
           (open ? "opacity-100" : "pointer-events-none opacity-0")
         }
       >

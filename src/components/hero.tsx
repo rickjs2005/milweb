@@ -16,15 +16,11 @@ export function Hero({ locale }: { locale: Locale }) {
   return (
     <HeroAnim
       id="top"
-      className="hero-dark relative isolate overflow-hidden border-b border-line/10 bg-bg bg-grid"
+      className="relative isolate overflow-hidden border-b border-line/10 bg-bg bg-grid"
     >
-      {/* Fallback e base da cena: se a imagem do HeroCinema falhar, este glow
-          + o bg-grid da seção continuam segurando o fundo. */}
-      <div
-        aria-hidden
-        data-depth="0.5"
-        className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]"
-      />
+      {/* (O glow azul gigante que morava aqui saiu a pedido do Rick — a
+          mancha difusa era a maior "cara de IA" do hero, principalmente no
+          tema claro. O fundo agora é só grid + a atmosfera do HeroCinema.) */}
       <HeroCinema />
 
       <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">

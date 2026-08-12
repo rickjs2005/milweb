@@ -221,39 +221,9 @@
       linear-gradient(to bottom, rgb(var(--line) / 0.03) 1px, transparent 1px);
   }
 
-  /* ===== Hero cinematográfico =====
-     A seção do hero é SEMPRE dark (imagem noturna não convive com tema
-     claro): .hero-dark re-declara os tokens dark no próprio elemento, e
-     variável no elemento vence a herdada do html.light. */
-  .hero-dark {
-    --bg: 8 10 16;
-    --surface: 15 18 28;
-    --surface-2: 22 27 40;
-    --fg: 244 247 252;
-    --fg-muted: 173 182 199;
-    --fg-subtle: 137 148 166;
-    --line: 143 163 255;
-    --accent: 91 124 255;
-    --accent-soft: 157 183 255;
-    --accent-deep: 51 85 230;
-    --accent-fg: 6 12 22;
-    --warm: 255 176 32;
-    --warm-fg: 26 18 0;
-    color-scheme: dark;
-  }
-  /* No claro o hero dark termina em corte limpo: um fio de acento na borda
-     marca a costura como INTENCIONAL (bloco-cinema), em vez de tentar
-     fundir escuro com branco — gradiente entre os dois vira névoa suja. */
-  .light .hero-dark {
-    border-bottom: 1px solid rgb(var(--accent) / 0.35);
-  }
-  /* Grid do tema claro voltaria a 3% dentro do hero — restaura os 5% dark. */
-  .light .hero-dark .bg-grid,
-  .light .hero-dark.bg-grid {
-    background-image:
-      linear-gradient(to right, rgb(var(--line) / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(var(--line) / 0.05) 1px, transparent 1px);
-  }
+  /* (O hero era SEMPRE dark via .hero-dark — tokens re-declarados no
+     elemento. Saiu junto com a cena 3D: o hero atual (terminal-construtor)
+     é todo token-based e acompanha o tema como qualquer outra seção.) */
   /* Pulso do CTA principal: anel de glow que expande e dissolve — chama o
      olho sem mexer no layout. reduced-motion global zera. */
   @keyframes cta-pulse {

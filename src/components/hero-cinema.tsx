@@ -10,19 +10,10 @@
 export function HeroCinema() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* Profundidade de cor: azul da marca respirando nos cantos. Via token
-          (--accent), não hex fixo: seguir a paleta é de graça e o gradiente
-          acompanha qualquer troca futura de acento. */}
-      <div className="absolute inset-0 [background:radial-gradient(52rem_34rem_at_78%_30%,rgb(var(--accent)/0.10),transparent_62%),radial-gradient(40rem_30rem_at_8%_82%,rgb(var(--accent-deep)/0.07),transparent_60%)]" />
-
-      {/* Feixes de luz volumétrica descendo da direita (o builder vive ali).
-          Só em md+: blur de elementos gigantes é caro demais em celular
-          (Style & Layout era ~3,5s no trace throttled do Lighthouse). */}
-      <div data-depth="0.12" className="absolute -inset-y-[10%] inset-x-0 hidden md:block">
-        <div className="absolute -top-24 right-[10%] h-[130%] w-44 rotate-[22deg] bg-gradient-to-b from-accent/12 via-accent/[0.04] to-transparent blur-2xl" />
-        <div className="absolute -top-24 right-[30%] h-[130%] w-24 rotate-[22deg] bg-gradient-to-b from-accent/[0.09] via-accent/[0.03] to-transparent blur-2xl" />
-        <div className="absolute -top-24 right-[48%] h-[120%] w-14 rotate-[22deg] bg-gradient-to-b from-accent/[0.06] to-transparent blur-xl" />
-      </div>
+      {/* (Os washes radiais de cor e os feixes de luz volumétrica saíram
+          junto com o glow do hero — pedido do Rick: a névoa azul difusa
+          gritava "site de IA", principalmente no tema claro. A atmosfera
+          agora é só textura: poeira, vinheta e o grid da seção.) */}
 
       {/* Poeira em suspensão (CSS): serve o mobile e reforça o desktop. */}
       {DUST.map((d, i) => (
@@ -42,12 +33,10 @@ export function HeroCinema() {
         />
       ))}
 
-      {/* Vinheta suave + fade no pé. O fade mira o PRÓPRIO escuro do hero
-          (--bg dentro do escopo .hero-dark): a cena assenta num rodapé
-          sólido e a seção seguinte começa num corte limpo — tentar fundir
-          dark com branco via gradiente vira névoa cinza lavada (testado e
-          rejeitado pelo Rick). */}
-      <div className="absolute inset-0 [background:radial-gradient(130%_105%_at_50%_40%,transparent_55%,rgb(5_7_13/0.6)_100%)]" />
+      {/* Vinheta suave + fade no pé — ambos em --bg (não hex fixo): no dark
+          escurecem as bordas como antes; no claro a vinheta "clareia" as
+          bordas de forma invisível em vez de sujar o branco com sombra. */}
+      <div className="absolute inset-0 [background:radial-gradient(130%_105%_at_50%_40%,transparent_55%,rgb(var(--bg)/0.6)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[rgb(var(--bg))]" />
     </div>
   );
