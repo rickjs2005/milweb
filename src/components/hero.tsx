@@ -25,8 +25,12 @@ export function Hero({ locale }: { locale: Locale }) {
       <HeroCinema />
       <HeroEmbers />
 
-      <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
-        <div className="max-w-[50rem]">
+      {/* Em xl vira flex de DUAS COLUNAS (texto flex-1 + builder 500px):
+          o posicionamento absoluto do builder deixava o headline passar
+          por baixo do card em monitores largos (bug real no 1920 do Rick)
+          — com colunas de verdade o navegador garante que nunca se tocam. */}
+      <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28 xl:flex-row xl:items-center xl:gap-12">
+        <div className="max-w-[50rem] xl:min-w-0 xl:flex-1">
           <span
             data-hero
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-soft backdrop-blur-sm"
@@ -150,18 +154,7 @@ export function Hero({ locale }: { locale: Locale }) {
             </Magnetic>
           </div>
         </div>
-      </div>
 
-      {/* Abaixo de xl o construtor mora aqui: irmão do container-page (não
-          filho — container-page já é `relative` pra vencer o HeroCinema
-          absoluto, e virar filho dele faria o builder herdar esse ancestral
-          posicionado, quebrando as coordenadas de xl abaixo, tunadas contra
-          a SEÇÃO inteira e não contra essa coluna). Reusa a própria classe
-          `.container-page` só pra alinhar com os CTAs acima. Em xl o wrapper
-          vira `display: contents` (some da árvore de caixas, então deixa de
-          contar como ancestral posicionado) e o builder, xl:absolute, pula
-          direto pra seção — o palco terminal→site à direita do texto. */}
-      <div className="container-page relative z-10 xl:contents">
         <HeroBuilder locale={locale} />
       </div>
 

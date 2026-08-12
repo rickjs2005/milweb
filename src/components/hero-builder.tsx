@@ -112,13 +112,10 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
       data-hero-builder
       /* data-hero-builder: o hero-anim coreografa este bloco à parte (boot
          com flicker de CRT ANTES do texto — ver hero-anim.tsx).
-         z-20 e não z-[2]: o container do texto (irmão) é `relative z-10` e
-         ocupa a seção inteira — abaixo disso, a div transparente dele engole
-         o clique do "reexecutar" mesmo com pointer-events-auto no botão.
-         top-[12%] fixo (não centrado): centrar pela altura TOTAL (terminal +
-         preview) jogava o conjunto pra baixo demais — o terminal deve nascer
-         na linha do headline, e o preview cresce pra baixo a partir dele. */
-      className="pointer-events-none relative z-20 mt-10 w-full max-w-lg xl:absolute xl:left-[55%] xl:right-[5%] xl:top-[12%] xl:mt-0 xl:w-auto xl:max-w-xl"
+         Em xl é a SEGUNDA COLUNA do flex do hero (largura fixa, shrink-0)
+         — era xl:absolute com left/top e o headline em escala de pôster
+         passava por baixo do card em monitores largos. */
+      className="pointer-events-none relative z-20 mt-10 w-full max-w-lg xl:mt-0 xl:w-[500px] xl:max-w-none xl:shrink-0"
     >
       {/* Resumo pra leitor de tela: a coreografia é visual, a informação não. */}
       <p className="sr-only">{t(B.srSummary)}</p>
@@ -289,9 +286,11 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
         </Reveal>
 
         {/* 4ª etapa: conversão — CTA em brasa + FAB do WhatsApp (verde de
-            verdade, pequeno: é a assinatura do canal). */}
+            verdade: é a assinatura do canal). O FAB é INLINE no rodapé —
+            flutuando pra fora da linha, o overflow-hidden do card cortava
+            o círculo ao meio (bug apontado pelo Rick, 12/08). */}
         <Reveal show={done >= 4}>
-          <div className="relative flex items-center justify-between border-t border-[#e7dfcd] px-5 py-4">
+          <div className="flex items-center justify-between border-t border-[#e7dfcd] px-5 py-4">
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm"
               style={{ background: "linear-gradient(170deg,#e8722c 0%,#d8430f 100%)" }}
@@ -299,9 +298,11 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
               <MessageCircle className="h-3 w-3" />
               {t(B.preview.cta)}
             </span>
-            <span className="text-[10px] text-[#8d8574]">© {t(B.preview.brand)}</span>
-            <span className="absolute -top-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#25d366] shadow-md shadow-black/30">
-              <MessageCircle className="h-4 w-4 text-white" />
+            <span className="flex items-center gap-2.5">
+              <span className="text-[10px] text-[#8d8574]">© {t(B.preview.brand)}</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25d366] shadow-sm">
+                <MessageCircle className="h-4 w-4 text-white" />
+              </span>
             </span>
           </div>
         </Reveal>
