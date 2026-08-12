@@ -72,16 +72,18 @@
      família do champagne (eyebrows, números, destaques) — um metal só,
      de propósito. */
   :root {
-    --bg: 10 10 9;              /* #0A0A09 — preto VAZIO (pedido do Rick:
-                                   fundo de espaço de verdade; o preto
-                                   quente anterior lavava os planetas) */
-    --surface: 19 18 16;        /* #131210 */
-    --surface-2: 27 26 23;      /* #1B1A17 */
-    --fg: 240 227 198;          /* #F0E3C6 — dourado-claro (ouro, não
-                                   marfim — pedido do Rick 12/08) */
-    --fg-muted: 168 159 141;    /* #A89F8D */
-    --fg-subtle: 141 133 117;   /* #8D8575 — 5:1 no preto vazio (AA) */
-    --line: 40 38 32;           /* #282620 — borda neutra, quase invisível */
+    --bg: 0 0 0;                /* #000000 — ESCURIDÃO TOTAL (pedido do
+                                   Rick 12/08: espaço de verdade; os
+                                   planetas do céu da Lula ficam como
+                                   estão e brilham contra o vácuo) */
+    --surface: 14 13 12;        /* #0E0D0C */
+    --surface-2: 24 22 20;      /* #181614 */
+    --fg: 244 106 52;           /* #F46A34 — laranja quase vermelho
+                                   (pedido do Rick 12/08: era o
+                                   dourado-claro #F0E3C6) */
+    --fg-muted: 205 105 66;     /* #CD6942 — 5.9:1 no preto (AA) */
+    --fg-subtle: 178 91 58;     /* #B25B3A — 4.6:1 no preto (AA) */
+    --line: 42 35 30;           /* #2A231E — borda neutra, quase invisível */
     --accent: 201 164 92;       /* #C9A45C — champagne */
     --accent-soft: 221 186 116; /* #DDBA74 — hover */
     --accent-deep: 168 134 70;  /* #A88646 */
