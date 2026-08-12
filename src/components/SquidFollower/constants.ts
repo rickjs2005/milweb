@@ -121,7 +121,7 @@ export const STARFIELD = {
    *  dia (--warm, #A85400) é escura sobre fundo quase branco, então some
    *  antes de incomodar. A 0.55 a poeira era literalmente imperceptível na
    *  captura. O escuro é o oposto: estrela clara sobre preto rende fácil. */
-  alphaDark: 1,
+  alphaDark: 1.2, /* preto vazio aguenta estrela mais viva (12/08) */
   alphaLight: 1.6,
   /** Da mais distante (quase parada) à mais próxima (acompanha o scroll). */
   layers: [
@@ -146,14 +146,16 @@ export const STARFIELD = {
  */
 export const BODIES = {
   /** Direção da luz do sol, usada pra iluminar o lado certo dos planetas.
-   *  Cores na paleta preto+champagne: sol DOURADO, planetas em marfim,
-   *  champagne e warm gray — os azuis/lilases eram resquício da paleta
-   *  velha e apareciam como manchas azuis soltas no fundo novo. */
-  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0.3, parallax: 0.015, rgb: [221, 186, 116] },
+   *  Sol com alpha 0 (NÃO desenha, só dá a direção da luz): o disco
+   *  dourado de 200px lavava o fundo inteiro — crítica do Rick (12/08),
+   *  "espaço é preto VAZIO, aí valoriza os planetas". Pelo mesmo motivo
+   *  os planetas subiram de alpha: contra o preto puro eles aguentam
+   *  mais presença sem virar mancha atrás de texto. */
+  sun: { nx: 0.82, ny: 0.14, r: 200, alpha: 0, parallax: 0.015, rgb: [221, 186, 116] },
   planets: [
-    { nx: 0.16, ny: 0.52, r: 88, alpha: 0.2, parallax: 0.05, rgb: [220, 212, 194], ring: 0 },
-    { nx: 0.68, ny: 0.78, r: 58, alpha: 0.18, parallax: 0.08, rgb: [201, 164, 92], ring: 1.9 },
-    { nx: 0.40, ny: 0.28, r: 40, alpha: 0.15, parallax: 0.11, rgb: [156, 150, 138], ring: 0 },
+    { nx: 0.16, ny: 0.52, r: 88, alpha: 0.28, parallax: 0.05, rgb: [220, 212, 194], ring: 0 },
+    { nx: 0.68, ny: 0.78, r: 58, alpha: 0.26, parallax: 0.08, rgb: [201, 164, 92], ring: 1.9 },
+    { nx: 0.40, ny: 0.28, r: 40, alpha: 0.22, parallax: 0.11, rgb: [156, 150, 138], ring: 0 },
   ],
 } as const;
 

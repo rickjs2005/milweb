@@ -72,13 +72,16 @@
      família do champagne (eyebrows, números, destaques) — um metal só,
      de propósito. */
   :root {
-    --bg: 14 13 11;             /* #0E0D0B — preto quente */
-    --surface: 24 22 19;        /* #181613 */
-    --surface-2: 32 30 26;      /* #201E1A */
-    --fg: 242 237 226;          /* #F2EDE2 — marfim */
-    --fg-muted: 156 150 138;    /* #9C968A */
-    --fg-subtle: 138 132 120;   /* #8A8478 — 4.9:1 no preto quente (AA) */
-    --line: 43 40 34;           /* #2B2822 — borda neutra, quase invisível */
+    --bg: 10 10 9;              /* #0A0A09 — preto VAZIO (pedido do Rick:
+                                   fundo de espaço de verdade; o preto
+                                   quente anterior lavava os planetas) */
+    --surface: 19 18 16;        /* #131210 */
+    --surface-2: 27 26 23;      /* #1B1A17 */
+    --fg: 240 227 198;          /* #F0E3C6 — dourado-claro (ouro, não
+                                   marfim — pedido do Rick 12/08) */
+    --fg-muted: 168 159 141;    /* #A89F8D */
+    --fg-subtle: 141 133 117;   /* #8D8575 — 5:1 no preto vazio (AA) */
+    --line: 40 38 32;           /* #282620 — borda neutra, quase invisível */
     --accent: 201 164 92;       /* #C9A45C — champagne */
     --accent-soft: 221 186 116; /* #DDBA74 — hover */
     --accent-deep: 168 134 70;  /* #A88646 */
