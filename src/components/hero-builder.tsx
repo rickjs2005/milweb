@@ -199,27 +199,36 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {/* ===== Preview: o site nascendo ===== */}
+      {/* ===== Preview: o site nascendo =====
+          Cores CRAVADAS (papel claro, tinta, brasa) e NÃO tokens do tema,
+          de propósito: isto é o PRODUTO ENTREGUE — um site premium claro
+          brilhando contra a escuridão da página. Na 1ª versão ele herdava
+          os tokens dark e virava wireframe cinza fantasma sobre o preto
+          ("ficou fraco", Rick 12/08). */}
       <div
         aria-hidden
-        className={`mt-4 overflow-hidden rounded-xl border border-line/15 bg-bg transition-all duration-700 ease-out ${
+        className={`mt-4 overflow-hidden rounded-xl bg-[#f6f1e7] ring-1 ring-white/15 transition-all duration-700 ease-out ${
           done > 0 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        } ${finished ? "scale-100 shadow-2xl shadow-accent/10" : "scale-[0.985] shadow-lg shadow-black/20"}`}
+        } ${
+          finished
+            ? "scale-100 shadow-[0_32px_90px_-24px_rgb(0_0_0/0.9),0_0_50px_-18px_rgb(232_114_44/0.35)]"
+            : "scale-[0.985] shadow-[0_18px_50px_-20px_rgb(0_0_0/0.8)]"
+        }`}
       >
         {/* Chrome do navegador: a URL preenche no deploy. */}
-        <div className="flex items-center gap-3 border-b border-line/10 bg-white/[0.02] px-4 py-2.5">
+        <div className="flex items-center gap-3 border-b border-[#e2d9c6] bg-[#ece5d4] px-4 py-2.5">
           <span className="flex gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-line/25" />
-            <span className="h-2.5 w-2.5 rounded-full bg-line/25" />
-            <span className="h-2.5 w-2.5 rounded-full bg-line/25" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#d9cfba]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#d9cfba]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#d9cfba]" />
           </span>
           <span
             className={`mx-auto flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-[11px] transition-colors duration-500 ${
-              deployed ? "bg-accent/10 text-accent-soft" : "bg-line/10 text-fg-subtle"
+              deployed ? "bg-[#f5e3c8] text-[#a05515]" : "bg-[#e2d9c6] text-[#8d8574]"
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${deployed ? "bg-accent" : "bg-line/30"}`}
+              className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${deployed ? "bg-[#e8722c]" : "bg-[#c4b99f]"}`}
             />
             {deployed ? t(B.url) : "···"}
           </span>
@@ -228,11 +237,13 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
 
         {/* 1ª etapa: header e navegação */}
         <Reveal show={done >= 1}>
-          <div className="flex items-center justify-between border-b border-line/10 px-5 py-3">
-            <span className="text-[11px] font-bold tracking-[0.18em] text-fg">{t(B.preview.brand)}</span>
+          <div className="flex items-center justify-between border-b border-[#e7dfcd] px-5 py-3">
+            <span className="font-display text-[12px] font-bold tracking-[0.18em] text-[#171410]">
+              {t(B.preview.brand)}
+            </span>
             <span className="flex gap-4">
               {B.preview.nav.map((n) => (
-                <span key={n.pt} className="text-[11px] text-fg-subtle">
+                <span key={n.pt} className="text-[11px] font-medium text-[#8d8574]">
                   {t(n)}
                 </span>
               ))}
@@ -243,34 +254,49 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
         {/* 2ª etapa: hero do cliente */}
         <Reveal show={done >= 2}>
           <div className="px-5 pb-5 pt-6">
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-accent-soft">{t(B.preview.eyebrow)}</p>
-            <p className="mt-2 max-w-[24ch] text-xl font-bold leading-snug tracking-tight text-fg">{t(B.preview.tagline)}</p>
-            <p className="mt-2 max-w-[42ch] text-xs leading-relaxed text-fg-muted">{t(B.preview.sub)}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b3641f]">{t(B.preview.eyebrow)}</p>
+            <p className="mt-2 max-w-[24ch] font-display text-[22px] font-bold leading-snug tracking-tight text-[#171410]">
+              {t(B.preview.tagline)}
+            </p>
+            <p className="mt-2 max-w-[42ch] text-xs leading-relaxed text-[#6f695d]">{t(B.preview.sub)}</p>
           </div>
         </Reveal>
 
-        {/* 3ª etapa: a prateleira de produtos */}
+        {/* 3ª etapa: a prateleira — produtos com "foto" (gradiente de
+            material: latão, pedra, carvão), nome e preço de verdade. */}
         <Reveal show={done >= 3}>
           <div className="grid grid-cols-3 gap-2.5 px-5 pb-5">
-            {[0.14, 0.09, 0.05].map((a) => (
-              <div key={a} className="rounded-lg border border-line/10 p-2.5">
-                <div className="h-10 rounded-md" style={{ background: `rgb(var(--accent) / ${a})` }} />
-                <div className="mt-2 h-1.5 w-3/4 rounded-full bg-line/20" />
-                <div className="mt-1.5 h-1.5 w-1/2 rounded-full bg-line/10" />
+            {B.preview.products.map((p, i) => (
+              <div key={p.price} className="rounded-lg border border-[#e7dfcd] bg-[#fffdf7] p-2 shadow-sm">
+                <div
+                  className="h-14 rounded-md"
+                  style={{
+                    background: [
+                      "linear-gradient(135deg,#eab568 0%,#c97b32 60%,#8f4f1a 100%)",
+                      "linear-gradient(135deg,#dcd6c9 0%,#a9a091 65%,#7b7264 100%)",
+                      "linear-gradient(135deg,#4a443a 0%,#26221b 70%,#131109 100%)",
+                    ][i],
+                  }}
+                />
+                <p className="mt-2 text-[10px] font-semibold text-[#2a2620]">{t(p.name)}</p>
+                <p className="text-[10px] text-[#8d8574]">{p.price}</p>
               </div>
             ))}
           </div>
         </Reveal>
 
-        {/* 4ª etapa: conversão — CTA + FAB do WhatsApp (verde de verdade,
-            pequeno: é a assinatura do canal, não a paleta do site). */}
+        {/* 4ª etapa: conversão — CTA em brasa + FAB do WhatsApp (verde de
+            verdade, pequeno: é a assinatura do canal). */}
         <Reveal show={done >= 4}>
-          <div className="relative flex items-center justify-between border-t border-line/10 px-5 py-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[11px] font-semibold text-accent-fg">
+          <div className="relative flex items-center justify-between border-t border-[#e7dfcd] px-5 py-4">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+              style={{ background: "linear-gradient(170deg,#e8722c 0%,#d8430f 100%)" }}
+            >
               <MessageCircle className="h-3 w-3" />
               {t(B.preview.cta)}
             </span>
-            <span className="text-[10px] text-fg-subtle">© {t(B.preview.brand)}</span>
+            <span className="text-[10px] text-[#8d8574]">© {t(B.preview.brand)}</span>
             <span className="absolute -top-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#25d366] shadow-md shadow-black/30">
               <MessageCircle className="h-4 w-4 text-white" />
             </span>

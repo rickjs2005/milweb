@@ -1912,7 +1912,9 @@ export const UI = {
         en: "Demo: a terminal builds a premium website — responsive architecture, custom design, performance, SEO and WhatsApp conversion — and deploys it to yourbusiness.com.",
       },
       /* O site fictício que nasce no preview. "SUA EMPRESA" de propósito:
-         o visitante se enxerga no lugar, sem inventar marca descartável. */
+         o visitante se enxerga no lugar, sem inventar marca descartável.
+         Produtos com nome+preço REAIS (não skeleton): o preview é a prova
+         do serviço — precisa parecer loja de verdade, não wireframe. */
       preview: {
         brand: { pt: "SUA EMPRESA", en: "YOUR BUSINESS" },
         nav: [
@@ -1920,12 +1922,17 @@ export const UI = {
           { pt: "Produtos", en: "Products" },
           { pt: "Contato", en: "Contact" },
         ] as Localized[],
-        eyebrow: { pt: "Bem-vindo", en: "Welcome" },
+        eyebrow: { pt: "Coleção nova", en: "New collection" },
         tagline: { pt: "Experiência premium para seus clientes.", en: "A premium experience for your customers." },
         sub: {
           pt: "Do primeiro clique à conversa no WhatsApp — rápido, bonito e no ar.",
           en: "From the first click to a WhatsApp chat — fast, beautiful and live.",
         },
+        products: [
+          { name: { pt: "Produto 01", en: "Product 01" }, price: "R$ 189" },
+          { name: { pt: "Produto 02", en: "Product 02" }, price: "R$ 249" },
+          { name: { pt: "Produto 03", en: "Product 03" }, price: "R$ 329" },
+        ],
         cta: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
       },
     },
