@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, RotateCcw } from "lucide-react";
+import { MessageCircle, RotateCcw, Star } from "lucide-react";
 import { UI, type Locale } from "@/lib/content";
 import { makeT } from "@/lib/i18n";
 
@@ -23,8 +23,8 @@ import { makeT } from "@/lib/i18n";
 
 const TYPE_MS_MIN = 26;
 const TYPE_MS_JIT = 34;
-const STEP_WORK_MS = 620; // "▸ etapa..." girando antes do ✓
-const STEP_GAP_MS = 380;
+const STEP_WORK_MS = 520; // "▸ etapa..." girando antes do ✓ (5 etapas agora)
+const STEP_GAP_MS = 300;
 
 type Stage = "idle" | "build" | "steps" | "deploy" | "deployed" | "done";
 
@@ -211,7 +211,7 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
           done > 0 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         } ${
           finished
-            ? "scale-100 shadow-[0_32px_90px_-24px_rgb(0_0_0/0.9),0_0_50px_-18px_rgb(232_114_44/0.35)]"
+            ? "pv-sheen scale-100 shadow-[0_32px_90px_-24px_rgb(0_0_0/0.9),0_0_50px_-18px_rgb(232_114_44/0.35)]"
             : "scale-[0.985] shadow-[0_18px_50px_-20px_rgb(0_0_0/0.8)]"
         }`}
       >
@@ -235,15 +235,19 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
           <span className="w-12" />
         </div>
 
-        {/* 1ª etapa: header e navegação */}
+        {/* 1ª etapa: header e navegação (links descem um a um) */}
         <Reveal show={done >= 1}>
           <div className="flex items-center justify-between border-b border-[#e7dfcd] px-5 py-3">
-            <span className="font-display text-[12px] font-bold tracking-[0.18em] text-[#171410]">
+            <span className="pv-rise font-display text-[12px] font-bold tracking-[0.18em] text-[#171410]">
               {t(B.preview.brand)}
             </span>
             <span className="flex gap-4">
-              {B.preview.nav.map((n) => (
-                <span key={n.pt} className="text-[11px] font-medium text-[#8d8574]">
+              {B.preview.nav.map((n, i) => (
+                <span
+                  key={n.pt}
+                  className="pv-rise text-[11px] font-medium text-[#8d8574]"
+                  style={{ animationDelay: `${0.15 + i * 0.1}s` }}
+                >
                   {t(n)}
                 </span>
               ))}
@@ -251,26 +255,55 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
           </div>
         </Reveal>
 
-        {/* 2ª etapa: hero do cliente */}
+        {/* 2ª etapa: hero do cliente — texto + banner "fotografado"
+            (a imagem revela em wipe, como foto saindo do revelador). */}
         <Reveal show={done >= 2}>
-          <div className="px-5 pb-5 pt-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b3641f]">{t(B.preview.eyebrow)}</p>
-            <p className="mt-2 max-w-[24ch] font-display text-[22px] font-bold leading-snug tracking-tight text-[#171410]">
-              {t(B.preview.tagline)}
-            </p>
-            <p className="mt-2 max-w-[42ch] text-xs leading-relaxed text-[#6f695d]">{t(B.preview.sub)}</p>
+          <div className="flex items-center gap-4 px-5 pb-4 pt-5">
+            <div className="min-w-0 flex-1">
+              <p className="pv-rise text-[10px] font-semibold uppercase tracking-[0.22em] text-[#b3641f]">
+                {t(B.preview.eyebrow)}
+              </p>
+              <p
+                className="pv-rise mt-1.5 max-w-[22ch] font-display text-[19px] font-bold leading-snug tracking-tight text-[#171410]"
+                style={{ animationDelay: "0.12s" }}
+              >
+                {t(B.preview.tagline)}
+              </p>
+              <p className="pv-rise mt-1.5 max-w-[40ch] text-[11px] leading-relaxed text-[#6f695d]" style={{ animationDelay: "0.24s" }}>
+                {t(B.preview.sub)}
+              </p>
+              <span
+                className="pv-pop mt-2.5 inline-block rounded-full bg-[#1a1712] px-3 py-1 text-[10px] font-semibold text-[#f6f1e7]"
+                style={{ animationDelay: "0.4s" }}
+              >
+                {t(B.preview.heroCta)}
+              </span>
+            </div>
+            <div
+              className="pv-wipe h-24 w-28 shrink-0 rounded-lg shadow-sm"
+              style={{
+                animationDelay: "0.2s",
+                background:
+                  "radial-gradient(circle at 68% 26%, #f6c87e 0%, rgba(246,200,126,0) 34%), linear-gradient(158deg, #2c2318 0%, #7a4c1e 52%, #d99a4e 100%)",
+              }}
+            />
           </div>
         </Reveal>
 
-        {/* 3ª etapa: a prateleira — produtos com "foto" (gradiente de
-            material: latão, pedra, carvão), nome e preço de verdade. */}
+        {/* 3ª etapa: a prateleira — cada produto POP com mola, um por vez;
+            a foto de material (latão, pedra, carvão) revela em wipe. */}
         <Reveal show={done >= 3}>
-          <div className="grid grid-cols-3 gap-2.5 px-5 pb-5">
+          <div className="grid grid-cols-3 gap-2.5 px-5 pb-4">
             {B.preview.products.map((p, i) => (
-              <div key={p.price} className="rounded-lg border border-[#e7dfcd] bg-[#fffdf7] p-2 shadow-sm">
+              <div
+                key={p.price}
+                className="pv-pop rounded-lg border border-[#e7dfcd] bg-[#fffdf7] p-2 shadow-sm"
+                style={{ animationDelay: `${i * 0.16}s` }}
+              >
                 <div
-                  className="h-14 rounded-md"
+                  className="pv-wipe h-14 rounded-md"
                   style={{
+                    animationDelay: `${0.18 + i * 0.16}s`,
                     background: [
                       "linear-gradient(135deg,#eab568 0%,#c97b32 60%,#8f4f1a 100%)",
                       "linear-gradient(135deg,#dcd6c9 0%,#a9a091 65%,#7b7264 100%)",
@@ -285,22 +318,51 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
           </div>
         </Reveal>
 
-        {/* 4ª etapa: conversão — CTA em brasa + FAB do WhatsApp (verde de
+        {/* 4ª etapa: prova social — estrelas acendem uma a uma + citação. */}
+        <Reveal show={done >= 4}>
+          <div className="mx-5 mb-4 rounded-lg bg-[#efe9db] px-4 py-3">
+            <span className="flex items-center gap-2">
+              <span className="flex gap-0.5">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star
+                    key={i}
+                    className="pv-pop h-3 w-3 fill-[#e8722c] text-[#e8722c]"
+                    style={{ animationDelay: `${i * 0.09}s` }}
+                  />
+                ))}
+              </span>
+              <span className="pv-rise text-[10px] font-semibold text-[#2a2620]" style={{ animationDelay: "0.45s" }}>
+                {t(B.preview.rating)}
+              </span>
+            </span>
+            <p className="pv-rise mt-1.5 text-[11px] italic leading-snug text-[#4a453b]" style={{ animationDelay: "0.55s" }}>
+              {t(B.preview.quote)}{" "}
+              <span className="not-italic text-[10px] text-[#8d8574]">{t(B.preview.quoteAuthor)}</span>
+            </p>
+          </div>
+        </Reveal>
+
+        {/* 5ª etapa: conversão — CTA em brasa + FAB do WhatsApp (verde de
             verdade: é a assinatura do canal). O FAB é INLINE no rodapé —
             flutuando pra fora da linha, o overflow-hidden do card cortava
             o círculo ao meio (bug apontado pelo Rick, 12/08). */}
-        <Reveal show={done >= 4}>
+        <Reveal show={done >= 5}>
           <div className="flex items-center justify-between border-t border-[#e7dfcd] px-5 py-4">
             <span
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm"
+              className="pv-pop inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm"
               style={{ background: "linear-gradient(170deg,#e8722c 0%,#d8430f 100%)" }}
             >
               <MessageCircle className="h-3 w-3" />
               {t(B.preview.cta)}
             </span>
             <span className="flex items-center gap-2.5">
-              <span className="text-[10px] text-[#8d8574]">© {t(B.preview.brand)}</span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25d366] shadow-sm">
+              <span className="pv-rise text-[10px] text-[#8d8574]" style={{ animationDelay: "0.2s" }}>
+                © {t(B.preview.brand)}
+              </span>
+              <span
+                className="pv-pop flex h-8 w-8 items-center justify-center rounded-full bg-[#25d366] shadow-sm"
+                style={{ animationDelay: "0.3s" }}
+              >
                 <MessageCircle className="h-4 w-4 text-white" />
               </span>
             </span>
@@ -313,12 +375,15 @@ export function HeroBuilder({ locale }: { locale: Locale }) {
 
 /* Seção do preview que "nasce": altura + fade + leve subida, na ordem em que
    o terminal conclui cada etapa. grid-rows 0fr→1fr anima altura real sem
-   max-height mágico (que ou corta ou atrasa a transição). */
+   max-height mágico (que ou corta ou atrasa a transição).
+   pv/pv-live: quando a seção liga, os filhos marcados (pv-pop/pv-wipe/
+   pv-rise, com animationDelay próprio) executam a coreografia interna —
+   é o que faz o site parecer CONSTRUÍDO peça a peça, não só "fade". */
 function Reveal({ show, children }: { show: boolean; children: React.ReactNode }) {
   return (
     <div
-      className={`grid transition-[grid-template-rows,opacity,transform] duration-700 ease-out ${
-        show ? "translate-y-0 grid-rows-[1fr] opacity-100" : "translate-y-2 grid-rows-[0fr] opacity-0"
+      className={`pv grid transition-[grid-template-rows,opacity,transform] duration-700 ease-out ${
+        show ? "pv-live translate-y-0 grid-rows-[1fr] opacity-100" : "translate-y-2 grid-rows-[0fr] opacity-0"
       }`}
     >
       <div className="min-h-0 overflow-hidden">{children}</div>

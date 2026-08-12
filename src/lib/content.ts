@@ -1901,7 +1901,8 @@ export const UI = {
       steps: [
         { pt: "arquitetura responsiva", en: "responsive architecture" },
         { pt: "design sob medida", en: "custom design" },
-        { pt: "performance e SEO", en: "performance & SEO" },
+        { pt: "catálogo e preços", en: "catalog & pricing" },
+        { pt: "provas sociais", en: "social proof" },
         { pt: "conversão via WhatsApp", en: "WhatsApp conversion" },
       ] as Localized[],
       cmdDeploy: { pt: "milweb deploy", en: "milweb deploy" },
@@ -1928,11 +1929,18 @@ export const UI = {
           pt: "Do primeiro clique à conversa no WhatsApp — rápido, bonito e no ar.",
           en: "From the first click to a WhatsApp chat — fast, beautiful and live.",
         },
+        heroCta: { pt: "Ver coleção", en: "View collection" },
         products: [
           { name: { pt: "Produto 01", en: "Product 01" }, price: "R$ 189" },
           { name: { pt: "Produto 02", en: "Product 02" }, price: "R$ 249" },
           { name: { pt: "Produto 03", en: "Product 03" }, price: "R$ 329" },
         ],
+        rating: { pt: "4,9 · 132 avaliações", en: "4.9 · 132 reviews" },
+        quote: {
+          pt: "“Chegou em dois dias e a qualidade é absurda.”",
+          en: "“Arrived in two days and the quality is unreal.”",
+        },
+        quoteAuthor: { pt: "Marina S. — cliente", en: "Marina S. — customer" },
         cta: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
       },
     },
