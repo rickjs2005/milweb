@@ -1891,18 +1891,43 @@ export const UI = {
     ctaWhats: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
     available: { pt: "Disponível para novos projetos", en: "Available for new projects" },
     miloHi: { pt: "Oi! Eu sou o Milo 👋", en: "Hi! I'm Milo 👋" },
-    /* Linhas do terminal do hero ("uma linha vira um sistema"). A ORDEM
-       importa: cada linha compila a forma correspondente do ciclo da cena
-       (SITES → APPS → WEB → monograma MW). Linha e forma vivem juntas aqui
-       pra tradução nunca dessincronizar da coreografia. */
-    terminal: {
-      prompt: { pt: "❯", en: "❯" },
-      lines: [
-        { pt: 'milweb.criar("um site que vende")', en: 'milweb.create("a website that sells")' },
-        { pt: 'milweb.criar("um app sob medida")', en: 'milweb.create("a custom-built app")' },
-        { pt: 'milweb.criar("sua presença na web")', en: 'milweb.create("your presence on the web")' },
-        { pt: "milweb.assinar()", en: "milweb.sign()" },
+    /* Terminal-construtor do hero (hero-builder): o comando roda, cada
+       etapa ganha ✓ e a seção correspondente do site-preview NASCE ao lado.
+       A ORDEM importa: etapa i revela a seção i do preview (header → hero →
+       produtos → conversão). Etapa e seção vivem juntas aqui pra tradução
+       nunca dessincronizar da coreografia. */
+    builder: {
+      cmdBuild: { pt: "milweb build --premium", en: "milweb build --premium" },
+      steps: [
+        { pt: "arquitetura responsiva", en: "responsive architecture" },
+        { pt: "design sob medida", en: "custom design" },
+        { pt: "performance e SEO", en: "performance & SEO" },
+        { pt: "conversão via WhatsApp", en: "WhatsApp conversion" },
       ] as Localized[],
+      cmdDeploy: { pt: "milweb deploy", en: "milweb deploy" },
+      url: { pt: "suaempresa.com.br", en: "yourbusiness.com" },
+      replay: { pt: "reexecutar", en: "replay" },
+      srSummary: {
+        pt: "Demonstração: um terminal constrói um site premium — arquitetura responsiva, design sob medida, performance, SEO e conversão via WhatsApp — e publica em suaempresa.com.br.",
+        en: "Demo: a terminal builds a premium website — responsive architecture, custom design, performance, SEO and WhatsApp conversion — and deploys it to yourbusiness.com.",
+      },
+      /* O site fictício que nasce no preview. "SUA EMPRESA" de propósito:
+         o visitante se enxerga no lugar, sem inventar marca descartável. */
+      preview: {
+        brand: { pt: "SUA EMPRESA", en: "YOUR BUSINESS" },
+        nav: [
+          { pt: "Início", en: "Home" },
+          { pt: "Produtos", en: "Products" },
+          { pt: "Contato", en: "Contact" },
+        ] as Localized[],
+        eyebrow: { pt: "Bem-vindo", en: "Welcome" },
+        tagline: { pt: "Experiência premium para seus clientes.", en: "A premium experience for your customers." },
+        sub: {
+          pt: "Do primeiro clique à conversa no WhatsApp — rápido, bonito e no ar.",
+          en: "From the first click to a WhatsApp chat — fast, beautiful and live.",
+        },
+        cta: { pt: "Falar no WhatsApp", en: "Chat on WhatsApp" },
+      },
     },
     // Painel de produto codificado no lugar da imagem estática do hero —
     // um dashboard fictício de cliente, animado em CSS puro.

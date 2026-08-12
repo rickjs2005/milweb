@@ -1,9 +1,9 @@
 /**
  * Atmosfera do hero: fundo codificado (gradiente profundo, feixes de luz
  * volumétrica, poeira em suspensão, vinheta e fade no pé) — a foto genérica
- * de escritório FOI REMOVIDA de propósito: a identidade visual agora é a
- * cena 3D (hero-scene) por cima desta base. No mobile (sem cena 3D) esta
- * atmosfera + o conteúdo são o hero inteiro.
+ * de escritório FOI REMOVIDA de propósito: a identidade visual agora é o
+ * terminal-construtor (hero-builder) por cima desta base — a atmosfera
+ * segura o fundo em qualquer tela.
  *
  * Server component puro; todo movimento é CSS (reduced-motion global zera).
  */
@@ -15,7 +15,7 @@ export function HeroCinema() {
           acompanha qualquer troca futura de acento. */}
       <div className="absolute inset-0 [background:radial-gradient(52rem_34rem_at_78%_30%,rgb(var(--accent)/0.10),transparent_62%),radial-gradient(40rem_30rem_at_8%_82%,rgb(var(--accent-deep)/0.07),transparent_60%)]" />
 
-      {/* Feixes de luz volumétrica descendo da direita (cena 3D vive ali).
+      {/* Feixes de luz volumétrica descendo da direita (o builder vive ali).
           Só em md+: blur de elementos gigantes é caro demais em celular
           (Style & Layout era ~3,5s no trace throttled do Lighthouse). */}
       <div data-depth="0.12" className="absolute -inset-y-[10%] inset-x-0 hidden md:block">

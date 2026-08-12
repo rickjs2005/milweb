@@ -3,8 +3,7 @@ import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { Magnetic } from "./magnetic";
 import { HeroAnim } from "./hero-anim";
 import { HeroCinema } from "./hero-cinema";
-import { HeroScene } from "./hero-scene";
-import { HeroTerminal } from "./hero-terminal";
+import { HeroBuilder } from "./hero-builder";
 import { UI, PROFILE, QUOTE, type Locale } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
 
@@ -27,7 +26,6 @@ export function Hero({ locale }: { locale: Locale }) {
         className="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[52rem] -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]"
       />
       <HeroCinema />
-      <HeroScene />
 
       <div className="container-page relative z-10 flex min-h-[92vh] flex-col justify-center py-20 sm:py-28">
         <div className="max-w-3xl">
@@ -151,18 +149,17 @@ export function Hero({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {/* Abaixo de xl o terminal mora aqui: irmão do container-page (não
-          filho — container-page já é `relative` pra vencer o HeroCinema/
-          HeroScene absolutos, e virar filho dele faria o terminal herdar
-          esse ancestral posicionado, quebrando as coordenadas de xl abaixo,
-          tunadas contra a SEÇÃO inteira e não contra essa coluna). Reusa a
-          própria classe `.container-page` só pra alinhar com os CTAs acima.
-          Em xl o wrapper vira `display: contents` (some da árvore de caixas,
-          então deixa de contar como ancestral posicionado) e o terminal,
-          xl:absolute, pula direto pra seção — voltando a ser o overlay ao
-          lado da cena. */}
+      {/* Abaixo de xl o construtor mora aqui: irmão do container-page (não
+          filho — container-page já é `relative` pra vencer o HeroCinema
+          absoluto, e virar filho dele faria o builder herdar esse ancestral
+          posicionado, quebrando as coordenadas de xl abaixo, tunadas contra
+          a SEÇÃO inteira e não contra essa coluna). Reusa a própria classe
+          `.container-page` só pra alinhar com os CTAs acima. Em xl o wrapper
+          vira `display: contents` (some da árvore de caixas, então deixa de
+          contar como ancestral posicionado) e o builder, xl:absolute, pula
+          direto pra seção — o palco terminal→site à direita do texto. */}
       <div className="container-page relative z-10 xl:contents">
-        <HeroTerminal locale={locale} />
+        <HeroBuilder locale={locale} />
       </div>
 
       {/* Indicador de scroll (decorativo — a âncora real é a própria rolagem;
