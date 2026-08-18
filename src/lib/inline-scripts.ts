@@ -51,6 +51,7 @@ export const siteJsonLd = (locale: "pt" | "en") =>
     email: PROFILE.email,
     // Mesmo numero dos botoes de WhatsApp do site — o canal de contato real.
     telephone: `+${PROFILE.whatsapp}`,
+    logo: `${SITE_URL}${PROFILE.logo}`,
     image: `${SITE_URL}/opengraph-image`,
     description: SITE_COPY[locale].description,
     inLanguage: locale === "en" ? "en" : "pt-BR",
