@@ -2055,6 +2055,19 @@ export const UI = {
     gallery: { pt: "Mais telas", en: "More screens" },
     rights: { pt: "Feito com Next.js e Tailwind.", en: "Built with Next.js and Tailwind." },
     footerNote: { pt: "Freelancer independente · fundador da MilWeb.", en: "Independent freelancer · founder of MilWeb." },
+    notFoundTitle: { pt: "Página não encontrada", en: "Page not found" },
+    notFoundBody: {
+      pt: "O link mudou de lugar ou nunca existiu. Volta pra home ou dá uma olhada nos projetos.",
+      en: "The link moved or never existed. Head back home or take a look at the projects.",
+    },
+    notFoundBackHome: { pt: "Voltar ao início", en: "Back to home" },
+    notFoundSeeProjects: { pt: "Ver projetos", en: "See projects" },
+    errorTitle: { pt: "Algo quebrou", en: "Something broke" },
+    errorBody: {
+      pt: "Um erro inesperado aconteceu do meu lado. Tenta de novo — se continuar, me chama no WhatsApp.",
+      en: "Something broke on my end. Try again — if it keeps happening, message me on WhatsApp.",
+    },
+    errorRetry: { pt: "Tentar de novo", en: "Try again" },
   },
 } satisfies Record<string, Record<string, unknown>>;
 

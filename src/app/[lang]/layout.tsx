@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Logo } from "@/components/logo";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { TrackConversions } from "@/components/track-conversions";
 import { WhatsappFab } from "@/components/whatsapp-fab";
@@ -12,18 +12,8 @@ import { SquidFollower } from "@/components/SquidFollower";
 import { MiloProtagonist } from "@/components/milo-protagonist";
 import { ViewTransitions } from "@/components/view-transitions";
 import { PROFILE, SITE_URL } from "@/lib/content";
-import { htmlLang, localeFrom, LOCALES, type LangParams } from "@/lib/i18n";
+import { localeFrom, LOCALES, type LangParams } from "@/lib/i18n";
 import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
-import { THEME_SCRIPT } from "@/lib/theme-script";
-import "../globals.css";
-
-const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["600", "700", "800"],
-});
 
 /** hreflang do site inteiro: PT na raiz, EN em /en (x-default = PT). */
 const LANGUAGE_ALTERNATES = {
@@ -118,26 +108,26 @@ export default async function RootLayout({
 }) {
   const locale = await localeFrom(params);
   return (
-    <html lang={htmlLang(locale)} className={`${sans.variable} ${mono.variable} ${display.variable}`} suppressHydrationWarning>
-      <head>
-        {/* Anti-flash: aplica o tema salvo antes do paint (default = dark). */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
-      <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
-        <SmoothScroll />
-        <TrackConversions />
-        <CursorGlow />
-        <SquidFollower />
-        <MouseParallax />
-        <MiloProtagonist locale={locale} />
-        <ViewTransitions />
-        {children}
-        <WhatsappFab locale={locale} />
-        <Konami />
-        <Analytics />
-        <SpeedInsights />
-      </body>
-    </html>
+    <>
+      {/* Assinatura de entrada — ver nota em globals.css (.preloader). */}
+      <div aria-hidden="true" className="preloader fixed inset-0 z-[100] flex items-center justify-center bg-bg">
+        <span className="preloader-mark">
+          <Logo withWordmark={false} size={48} />
+        </span>
+      </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
+      <SmoothScroll />
+      <TrackConversions />
+      <CursorGlow />
+      <SquidFollower />
+      <MouseParallax />
+      <MiloProtagonist locale={locale} />
+      <ViewTransitions />
+      {children}
+      <WhatsappFab locale={locale} />
+      <Konami />
+      <Analytics />
+      <SpeedInsights />
+    </>
   );
 }
