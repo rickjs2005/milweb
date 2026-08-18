@@ -11,7 +11,7 @@ import { Tech } from "@/components/tech";
 import { Faq } from "@/components/faq";
 import { About } from "@/components/about";
 import { Contact, Footer } from "@/components/contact";
-import { QUOTE, UI } from "@/lib/content";
+import { PROJECTS, QUOTE, UI } from "@/lib/content";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 
 export default async function Home({ params }: { params: Promise<LangParams> }) {
@@ -25,7 +25,9 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
     // caminhos no menu eram o mesmo funil partido em dois). Href de rota
     // funciona no Nav: o scroll-spy filtra ids inexistentes.
     { href: "/diagnostico", label: t(UI.nav.diagnosis) },
-    { href: "#projects", label: t(UI.nav.projects) },
+    // Contagem no rótulo (padrão de agências como basement.studio: "Showcase
+    // (26)") -- sinaliza volume de portfólio sem precisar de seção própria.
+    { href: "#projects", label: `${t(UI.nav.projects)} (${PROJECTS.length})` },
     { href: "#process", label: t(UI.nav.process) },
     { href: "#faq", label: t(UI.nav.faq) },
     { href: "#contact", label: t(UI.nav.contact) },

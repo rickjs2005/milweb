@@ -8,6 +8,7 @@ import { Logo } from "@/components/logo";
 import { Contact, Footer } from "@/components/contact";
 import { ArchiveFilter } from "@/components/archive-filter";
 import { FILTER_CATEGORIES, FILTER_LABELS } from "@/components/projects";
+import { DiagnosticBanner } from "@/components/diagnostic-banner";
 
 /**
  * O acervo completo, fora da home.
@@ -228,6 +229,12 @@ export default async function ProjectsIndexPage({ params }: { params: Promise<La
           ]}
         />
       </main>
+
+      {/* Acervo standalone: quem chega direto aqui (Google, link
+          compartilhado) pode nunca passar pela home, então nunca veria o
+          DiagnosticBanner que existe lá entre Projetos e Lab. Mesmo
+          componente, sem copy nova. */}
+      <DiagnosticBanner locale={locale} />
 
       <Contact locale={locale} />
       <Footer locale={locale} />
