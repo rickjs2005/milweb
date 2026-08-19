@@ -15,6 +15,7 @@ import { PROJECTS, QUOTE, UI } from "@/lib/content";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 
 export default async function Home({ params }: { params: Promise<LangParams> }) {
+  throw new Error("teste temporario do error.tsx em producao");
   const locale = await localeFrom(params);
   const t = makeT(locale);
 
