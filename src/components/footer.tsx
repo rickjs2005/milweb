@@ -28,7 +28,7 @@ export function Footer({ locale }: { locale: Locale }) {
         </ul>
         <div className="col-span-4 flex flex-col justify-between md:col-span-3 md:text-right">
           <p>{BRAND.index}</p>
-          <p className="mt-4 tnum">© {year} MilWeb — {t(BRAND.origin)}</p>
+          <p className="mt-4 tnum">© {year} MilWeb — {t({ pt: "Brasil", en: "Brazil" })}</p>
         </div>
       </div>
     </footer>
