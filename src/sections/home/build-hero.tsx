@@ -128,7 +128,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
       id="top"
       data-act="ACT 02 / BUILD"
       data-inspect="HERO"
-      className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden px-margin pb-6 pt-nav md:pb-8"
+      className="relative flex min-h-[92svh] flex-col justify-between overflow-hidden px-margin pb-6 pt-nav md:min-h-[100svh] md:pb-8"
     >
       {/* GRID 12 (camada de design) */}
       <div data-layer="grid" aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 z-0 hidden md:grid" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
@@ -196,7 +196,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
       <div className="relative z-10 mt-auto pt-[18svh] md:pt-[22svh]">
         <h1 className="t-display t-display-xl text-ink" data-inspect="HERO_TITLE">
           {s.headline.map((line) => (
-            <span key={line} data-line className="block whitespace-nowrap">
+            <span key={line} data-line className="block md:whitespace-nowrap">
               {line}
             </span>
           ))}

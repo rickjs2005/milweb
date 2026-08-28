@@ -92,7 +92,7 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
   return (
     <section ref={root} id="capabilities" data-act="ACT 04 / CAPABILITIES" data-inspect="CAPABILITIES" className="container-page relative bg-paper py-24 md:py-40">
       {/* grid (reação "grid") */}
-      <div data-grid aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 grid" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
+      <div data-grid aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 grid opacity-0" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
         {Array.from({ length: 12 }).map((_, i) => (
           <span key={i} className="block h-full border-l border-neutral last:border-r" />
         ))}
@@ -111,8 +111,8 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
             className="group relative flex items-baseline gap-6 border-b border-neutral py-4 [transform-style:preserve-3d] md:gap-10 md:py-6"
             data-inspect={`CAPABILITY_${c.n}`}
           >
-            <span data-wire aria-hidden="true" className="pointer-events-none absolute inset-0 border border-dashed border-ink/60" />
-            <span data-wire aria-hidden="true" className="t-mono pointer-events-none absolute right-2 top-2 text-ink-3">
+            <span data-wire aria-hidden="true" className="pointer-events-none absolute inset-0 border border-dashed border-ink/60 opacity-0" />
+            <span data-wire aria-hidden="true" className="t-mono pointer-events-none absolute right-2 top-2 text-ink-3 opacity-0">
               [LI] {i + 1}/{items.length}
             </span>
             <span className="t-mono tnum text-ink-3">{c.n}</span>

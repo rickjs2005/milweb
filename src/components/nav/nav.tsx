@@ -103,7 +103,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
 
         <button
           type="button"
-          className="link-rule md:hidden"
+          className="link-rule uppercase md:hidden"
           aria-expanded={open}
           aria-controls="nav-overlay"
           onClick={() => setOpen((v) => !v)}
