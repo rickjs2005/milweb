@@ -11,7 +11,15 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, CustomEase, useGSAP);
 
-/** Easings oficiais (equivalentes 1:1 aos --ease-* do CSS). */
+/**
+ * Easings oficiais (equivalentes 1:1 aos --ease-* do CSS). Sistema, não
+ * sortimento — cada família tem um papel:
+ *   outExpo    · ENTRADAS (texto, mídia, caixas)
+ *   outQuint   · DESACELERAÇÕES com peso (mecanismo do Aurex, saídas suaves)
+ *   inOutQuart · TRANSIÇÕES entre estados (cortes, clip, rota)
+ *   smooth     · SCRUB lento com respiro (Terral)
+ *   "none"     · SCRUB puro amarrado ao progresso
+ */
 export const EASE = {
   outExpo: CustomEase.create("mw-out-expo", "0.16, 1, 0.3, 1"),
   outQuint: CustomEase.create("mw-out-quint", "0.22, 1, 0.36, 1"),

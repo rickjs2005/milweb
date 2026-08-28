@@ -8,6 +8,8 @@ import { PROFILE, UI } from "@/lib/content";
 import { makeT, withLocale, type Locale } from "@/lib/i18n";
 import { CaseExperience } from "./case-experience";
 import { CaseNext } from "./case-next";
+import { AurexExplosion, TerralHold, VertexPipeline } from "./case-diagrams";
+import { CaseHeroLayers } from "./case-hero-layers";
 
 const L = CASE_LABELS;
 
@@ -32,6 +34,7 @@ function fallbackStory(p: ProjectEntry, locale: Locale): CaseStory {
   const imgs = [p.image, ...gallery.map((g) => g.src)].filter(Boolean) as string[];
   const layouts: CaseStory["screens"][number]["layout"][] = ["full", "offset", "wide", "crop"];
   return {
+    variant: "kavita",
     ideaHeadline: p.tagline,
     ideaBody: p.problem,
     steps: (p.caseStudy?.highlights ?? []).slice(0, 4).map((h, i) => ({ label: String(i + 1).padStart(2, "0"), text: h.detail, image: imgs[i % Math.max(imgs.length, 1)] ?? "" })),
@@ -72,7 +75,7 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
   const hasNumber = p.n !== "—";
 
   return (
-    <article className="case" data-world={p.slug} data-inspect={`CASE / ${p.slug.toUpperCase()}`}>
+    <article className="case" data-world={p.slug} data-variant={story.variant} data-inspect={`CASE / ${p.slug.toUpperCase()}`}>
       {/* 00 — INTRO + 01 — HERO */}
       <header className="container-page pt-nav">
         <div className="rule flex items-center justify-between pt-3 t-mono">
@@ -96,7 +99,8 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
 
       <figure className="case-hero relative mt-8 md:mt-12" data-inspect="HERO_MEDIA">
         <div className="relative mx-margin aspect-[16/10] max-h-[78svh] overflow-hidden bg-neutral" style={{ viewTransitionName: `case-media-${p.slug}` }}>
-          <Image src={hero} alt={t({ pt: `${p.title} — tela inicial`, en: `${p.title} — home screen` })} fill priority sizes="100vw" className="object-cover object-top" />
+          <Image src={hero} alt={t({ pt: `${p.title} — tela inicial`, en: `${p.title} — home screen` })} fill priority sizes="100vw" className="object-cover object-top" data-hero-img />
+          <CaseHeroLayers variant={story.variant} words={story.words} />
         </div>
       </figure>
 
@@ -140,7 +144,7 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
 
       {/* 03 — EXPERIENCE (sticky media + passos) */}
       {story.steps.length > 0 && (
-        <CaseExperience label={L.experience} steps={story.steps.map((s) => ({ label: s.label, text: t(s.text), image: s.image }))} title={p.title} />
+        <CaseExperience label={L.experience} variant={story.variant} steps={story.steps.map((s) => ({ label: s.label, text: t(s.text), image: s.image }))} title={p.title} />
       )}
 
       {/* FULL BLEED */}
@@ -153,6 +157,9 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
       <div className="container-page">
         {/* 04 — UNDER THE HOOD */}
         <Chapter label={L.hood} wide>
+          {story.variant === "vertex" && <VertexPipeline labels={{ scroll: t({ pt: "rolar / voltar", en: "scroll / reverse" }).toUpperCase(), progress: "progress", damped: "damped", time: "currentTime" }} />}
+          {story.variant === "aurex" && <AurexExplosion label="EXPLODE" />}
+          {story.variant === "terral" && <TerralHold labels={{ hold: t({ pt: "Segure por seis segundos", en: "Hold for six seconds" }).toUpperCase(), holding: t({ pt: "Segurando…", en: "Holding…" }).toUpperCase(), done: t({ pt: "Você segurou.", en: "You held." }).toUpperCase(), reset: t({ pt: "de novo", en: "again" }).toUpperCase() }} />}
           {story.flow.length > 0 && (
             <ol className="flex flex-wrap items-center gap-x-3 gap-y-3 t-mono" data-inspect="FLOW" aria-label="Flow">
               {story.flow.map((f, i) => (
@@ -163,7 +170,7 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
               ))}
             </ol>
           )}
-          <ul className={"divide-y divide-neutral border-t border-ink " + (story.flow.length ? "mt-10" : "")}>
+          <ul className={"divide-y divide-neutral border-t border-ink " + (story.flow.length || story.variant !== "kavita" ? "mt-10" : "")}>
             {story.hood.map((h, i) => {
               const para = narrative[h.paragraph];
               const summary = t(h.summary);

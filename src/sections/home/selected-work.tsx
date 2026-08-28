@@ -84,7 +84,6 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: W
             // blueprint: guias se desenham, a imagem sobe em 4 fatias verticais
             enterTl.fromTo(q("[data-guide]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.6, ease: "none" }, 0);
             enterTl.fromTo(q("[data-strip]"), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", stagger: 0.08, duration: 0.5 }, 0.15);
-            enterTl.fromTo(q("[data-measure]"), { autoAlpha: 0 }, { autoAlpha: 1, stagger: 0.06, duration: 0.3 }, 0.55);
           }
           if (world === "aurex-timepieces") {
             // mecanismo: anéis giram e escalam do centro, a imagem abre em círculo
@@ -124,17 +123,6 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: W
               .to(media, { clipPath: "circle(0% at 50% 50%)", duration: 0.8, ease: EASE.inOutQuart }, 0.1);
           }
 
-          // rotação contínua dos anéis do Aurex (só desktop, pausa fora da viewport)
-          if (world === "aurex-timepieces" && desktop) {
-            const rings = q<HTMLElement>("[data-ring]");
-            const spin = rings.map((r, k) => gsap.to(r, { rotate: `+=${k % 2 ? -360 : 360}`, duration: 90 + k * 30, repeat: -1, ease: "none", paused: true }));
-            const io = new IntersectionObserver(([e]) => spin.forEach((s) => (e.isIntersecting ? s.play() : s.pause())), { threshold: 0.1 });
-            io.observe(panel);
-            return () => {
-              io.disconnect();
-              spin.forEach((s) => s.kill());
-            };
-          }
         });
       });
 
@@ -191,7 +179,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: W
                 style={{ viewTransitionName: `case-media-${w.slug}`, width: "min(100%, calc(50svh * 1.6))" }}
                 data-inspect="MEDIA"
               >
-                <Image src={w.image} alt={w.name} fill loading={i === 0 ? "eager" : "lazy"} sizes="(min-width: 1080px) 60vw, 100vw" className="object-cover object-top" />
+                <Image src={w.image} alt={w.name} fill loading="lazy" sizes="(min-width: 1080px) 60vw, 100vw" className="object-cover object-top" />
                 {w.slug === "kavita-drones" &&
                   [0, 1, 2].map((k) => (
                     <span key={k} data-band aria-hidden="true" className="absolute inset-x-0" style={{ top: `${k * 33.34}%`, height: "33.4%", backgroundImage: `url(${w.image})`, backgroundSize: "100% 300%", backgroundPosition: `0 ${k * 50}%`, opacity: 0 }} />

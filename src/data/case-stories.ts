@@ -7,7 +7,11 @@ import type { Localized } from "@/lib/content";
  */
 export type Screen = { src: string; alt: Localized; layout: "full" | "wide" | "offset" | "crop" };
 
+export type CaseVariant = "kavita" | "terral" | "vertex" | "aurex";
+
 export type CaseStory = {
+  /** Direção de arte/mecânica do case (hero, experience, diagrama). */
+  variant: CaseVariant;
   /** Frase-headline do capítulo THE IDEA (curta, editorial). */
   ideaHeadline: Localized;
   ideaBody: Localized;
@@ -30,6 +34,7 @@ export type CaseStory = {
 
 export const CASE_STORIES: Record<string, CaseStory> = {
   "kavita-drones": {
+    variant: "kavita",
     ideaHeadline: { pt: "A revenda precisava transformar catálogo em conversa.", en: "The reseller needed to turn a catalog into a conversation." },
     ideaBody: {
       pt: "Uma landing de drones agrícolas não vende sozinha — ela precisa entregar um orçamento pronto, no WhatsApp da filial certa, sem inventar uma especificação sequer. Sem framework, sem build: só HTML, CSS e JavaScript escritos à mão.",
@@ -65,6 +70,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
   },
 
   terral: {
+    variant: "terral",
     ideaHeadline: { pt: "Café é sobre esperar o tempo certo.", en: "Coffee is about waiting the right amount of time." },
     ideaBody: {
       pt: "Sites de café mostram sacas paradas. O Terral conta o caminho do grão em cinco capítulos guiados pelo scroll — Caparaó, Terreiro, Tambor, Moenda, Xícara — em que a tipografia gigante faz o papel da imagem e o vídeo real faz o papel do argumento.",
@@ -82,7 +88,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
       { label: "SHOP", summary: { pt: "Vitrine de blends com notas SCA e pedido no WhatsApp; rodapé com letreiro TERRAL de ponta a ponta e marquee.", en: "Blend showcase with SCA scores and WhatsApp ordering; footer with an edge-to-edge TERRAL letterpress and marquee." }, paragraph: 1 },
       { label: "THE SECRET", summary: { pt: "Hold de seis segundos revela a casa do torrador — a tese do site num gesto.", en: "A six-second hold reveals the roaster's house — the site's thesis in one gesture." }, paragraph: 2 },
     ],
-    flow: ["SCROLL", "5 CHAPTERS", "VIDEO + TYPE", "BLENDS", "WHATSAPP"],
+    flow: [],
     stats: [
       { value: "05", label: { pt: "capítulos", en: "chapters" } },
       { value: "03", label: { pt: "blends", en: "blends" } },
@@ -99,6 +105,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
   },
 
   "atelier-vertex": {
+    variant: "vertex",
     ideaHeadline: { pt: "Rolar constrói o prédio. Voltar desconstrói.", en: "Scrolling builds the building. Scrolling back tears it down." },
     ideaBody: {
       pt: "Um escritório de arquitetura vende execução, não fotos. O site é um filme real de obra — do andaime à fachada — cujo tempo pertence 100% ao scroll, sem autoplay. No meio, o vídeo escurece e vira mesa de luz: a planta se desenha com cotas reais.",
@@ -116,7 +123,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
       { label: "BLUEPRINT", summary: { pt: "Planta com pathLength=1; fronteiras das cenas calibradas extraindo frames a cada 0,5 s (transformação real entre 40% e 70%).", en: "Floor plan via pathLength=1; scene boundaries calibrated by extracting frames every 0.5 s (real transformation between 40% and 70%)." }, paragraph: 1 },
       { label: "DESIGN AUDIT", summary: { pt: "Auto-auditoria 0–10 contra o build real: header ilegível e menu mobile quebrado por backdrop-filter — corrigidos.", en: "0–10 self-audit against the real build: illegible header and a mobile menu broken by backdrop-filter — both fixed." }, paragraph: 2 },
     ],
-    flow: ["SCROLL", "ScrollTrigger", "world.ts", "rAF + damping", "video.currentTime"],
+    flow: [],
     stats: [
       { value: "100%", label: { pt: "do vídeo no scroll", en: "of the film on scroll" } },
       { value: "GOP 1", label: { pt: "todo frame é keyframe", en: "every frame a keyframe" } },
@@ -133,6 +140,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
   },
 
   "aurex-timepieces": {
+    variant: "aurex",
     ideaHeadline: { pt: "Foto parada não justifica preço. Mecânica, sim.", en: "A still photo doesn't justify a price. Mechanics do." },
     ideaBody: {
       pt: "O AX-01 é um calibre 100% procedural que se desmonta peça por peça conforme o scroll — caixa, bezel, coroa, mostrador, ponteiros, trem de engrenagens, espiral, escape, rotor, tourbillon — e remonta no caminho inverso exato.",
@@ -150,7 +158,7 @@ export const CASE_STORIES: Record<string, CaseStory> = {
       { label: "RAYCAST DEBUG", summary: { pt: "Uma tampa invisível tapou o mostrador por uma sessão inteira; um raycast do centro da tela listou os hits e expôs o bug.", en: "An invisible cap hid the dial for an entire session; a raycast from screen center listed hits and exposed the bug." }, paragraph: 1 },
       { label: "MATERIALS", summary: { pt: "CanvasTexture no mostrador foi o maior salto de realismo a custo zero; vidro em MeshBasicMaterial para matar o véu de Fresnel.", en: "A CanvasTexture on the dial was the biggest realism jump at zero cost; glass as MeshBasicMaterial to kill the Fresnel veil." }, paragraph: 2 },
     ],
-    flow: ["SCROLL", "EXPLODE PROGRESS", "PART delay / span", "smoothstep", "EXPLODED WATCH"],
+    flow: [],
     stats: [
       { value: "15", label: { pt: "cenas", en: "scenes" } },
       { value: "10", label: { pt: "peças que se desmontam", en: "parts that come apart" } },

@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { gsap, EASE, MQ, ScrollTrigger, useGSAP } from "@/animations/gsap";
+import type { CaseVariant } from "@/data/case-stories";
 
 type Step = { label: string; text: string; image: string };
 
@@ -11,7 +12,7 @@ type Step = { label: string; text: string; image: string };
  * rolam à esquerda; a imagem troca quando cada passo cruza o centro. Mobile
  * e reduced-motion: texto / mídia / texto / mídia, sem sticky.
  */
-export function CaseExperience({ label, steps, title }: { label: string; steps: Step[]; title: string }) {
+export function CaseExperience({ label, steps, title, variant = "kavita" }: { label: string; steps: Step[]; title: string; variant?: CaseVariant }) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -21,9 +22,24 @@ export function CaseExperience({ label, steps, title }: { label: string; steps: 
       mm.add(`${MQ.noReduce} and (min-width: 1080px)`, () => {
         const imgs = Array.from(el.querySelectorAll<HTMLElement>("[data-media]"));
         const items = Array.from(el.querySelectorAll<HTMLElement>("[data-step]"));
+        // A troca de mídia tem a assinatura de cada mundo:
+        //  kavita · corte técnico (clip horizontal, rápido)
+        //  terral · dissolve lento com deriva (câmera)
+        //  vertex · fatias verticais (a mesma linguagem do mundo na Home)
+        //  aurex  · abertura circular (mecânica radial)
+        let current = -1;
         const show = (i: number) => {
-          imgs.forEach((im, k) => gsap.to(im, { autoAlpha: k === i ? 1 : 0, scale: k === i ? 1 : 1.04, duration: 0.6, ease: EASE.outExpo, overwrite: true }));
+          if (i === current) return;
+          current = i;
           items.forEach((it, k) => it.classList.toggle("is-active", k === i));
+          imgs.forEach((im, k) => {
+            const on = k === i;
+            gsap.killTweensOf(im);
+            if (variant === "terral") gsap.to(im, { autoAlpha: on ? 1 : 0, scale: on ? 1 : 1.05, duration: 1.4, ease: EASE.smooth });
+            else if (variant === "vertex") gsap.to(im, { clipPath: on ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)", autoAlpha: 1, duration: 0.9, ease: EASE.inOutQuart });
+            else if (variant === "aurex") gsap.to(im, { clipPath: on ? "circle(75% at 50% 50%)" : "circle(0% at 50% 50%)", autoAlpha: 1, duration: 1, ease: EASE.outQuint });
+            else gsap.to(im, { clipPath: on ? "inset(0 0% 0 0)" : "inset(0 0 0 100%)", autoAlpha: 1, duration: 0.55, ease: EASE.inOutQuart });
+          });
         };
         show(0);
         const triggers = items.map((it, i) =>
@@ -51,7 +67,7 @@ export function CaseExperience({ label, steps, title }: { label: string; steps: 
               {/* mobile: mídia inline após cada passo */}
               {s.image && (
                 <div className="relative mt-6 aspect-[16/10] overflow-hidden bg-neutral lg:hidden">
-                  <Image src={s.image} alt={`${title} — ${s.label}`} fill loading="lazy" sizes="100vw" className="object-cover object-top" />
+                  <Image src={s.image} alt={`${title} — ${s.label}`} fill loading="lazy" sizes="(min-width: 1080px) 1px, 100vw" className="object-cover object-top" />
                 </div>
               )}
             </li>

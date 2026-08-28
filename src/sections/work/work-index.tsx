@@ -59,18 +59,32 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
           x(Math.min(e.clientX + 40, window.innerWidth - pv.offsetWidth - 16));
           y(e.clientY - pv.offsetHeight / 2);
         };
-        const over = (e: PointerEvent) => {
-          const row = (e.target as HTMLElement).closest<HTMLElement>("[data-slug]");
-          if (!row) return;
-          const slug = row.dataset.slug!;
+        const showFor = (slug: string) => {
           imgs.forEach((im) => (im.style.opacity = im.dataset.pv === slug ? "1" : "0"));
           gsap.to(pv, { autoAlpha: 1, scale: 1, duration: 0.4, ease: EASE.outExpo, overwrite: true });
         };
+        const over = (e: PointerEvent) => {
+          const row = (e.target as HTMLElement).closest<HTMLElement>("[data-slug]");
+          if (row) showFor(row.dataset.slug!);
+        };
+        // Teclado: ao focar uma linha, o preview aparece ancorado à própria linha.
+        const focus = (e: FocusEvent) => {
+          const row = (e.target as HTMLElement).closest<HTMLElement>("[data-slug]");
+          if (!row) return;
+          const r = row.getBoundingClientRect();
+          x(Math.min(r.left + r.width * 0.55, window.innerWidth - pv.offsetWidth - 16));
+          y(r.top + r.height / 2 - pv.offsetHeight / 2);
+          showFor(row.dataset.slug!);
+        };
+        el.addEventListener("focusin", focus);
+        el.addEventListener("focusout", leave);
         const leave = () => gsap.to(pv, { autoAlpha: 0, scale: 0.92, duration: 0.3, ease: EASE.outQuint, overwrite: true });
         el.addEventListener("pointerover", over);
         el.addEventListener("pointerleave", leave);
         el.addEventListener("pointermove", move);
         return () => {
+          el.removeEventListener("focusin", focus);
+          el.removeEventListener("focusout", leave);
           el.removeEventListener("pointerover", over);
           el.removeEventListener("pointerleave", leave);
           el.removeEventListener("pointermove", move);
@@ -105,6 +119,11 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
             <li key={r.slug} className="border-b border-neutral">
               <Link href={r.href} data-slug={r.slug} className="grid-12 group items-baseline gap-y-1 py-4 transition-colors duration-fast hover:bg-paper-2 md:py-5">
                 <span className="t-mono col-span-1 tnum text-ink-3">{r.n}</span>
+                {r.image && (
+                  <span className="relative col-span-4 -order-1 block aspect-[16/10] w-20 overflow-hidden bg-neutral md:hidden">
+                    <Image src={r.image} alt="" fill sizes="80px" className="object-cover object-top" />
+                  </span>
+                )}
                 <span className="col-span-3 font-display text-[clamp(1.5rem,2.6vw,2.6rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-ink [font-stretch:125%] md:col-span-4 lg:col-span-5">{r.title}</span>
                 <span className="t-mono col-span-4 text-ink-2 md:col-span-2 lg:col-span-4">
                   {r.displayType}
