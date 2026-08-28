@@ -2,7 +2,7 @@
 
 Tipo: institucional
 Stack: Next.js 15, App Router, React 19, Tailwind 3.4, GSAP 3.15 (ScrollTrigger, SplitText, CustomEase), Lenis 1.3, WebGL cru (shader próprio), @vercel/analytics
-Branch de trabalho: `rebuild/awwwards` (main ainda tem o site antigo)
+Branch: `main` (rebuild/awwwards mergeada em 28/08/2026, deploy e0e7594 no ar em milweb.com.br)
 Documento-base: `docs/rebuild/00-audit.md` (auditoria + direção + plano)
 
 ## Progresso
@@ -19,8 +19,8 @@ Fase 10 — Acessibilidade        ✓  (Lighthouse a11y 100 em ambos; foco visí
 Fase 11 — Analytics e conversão ◐  (track-conversions mantido; eventos reais não confirmados em produção)
 Fase 12 — Segurança             ✓  (CSP estático, headers e redirects mantidos do site anterior; strict mode reativado)
 Fase 13 — QA                    ◐  (validado em Edge/Chromium desktop 1440 e mobile 390 via scripts/shot.mjs; Safari/Firefox e tablet NÃO testados)
-Fase 14 — Deploy                ○  (branch não mergeada nem publicada; produção ainda é o site antigo)
-Fase 15 — Indexação             ○  (após deploy: reenviar sitemap, conferir redirects /projetos no Search Console)
+Fase 14 — Deploy                ✓  (Vercel READY, aliases apex/www/vercel.app; redirects /projetos→/work 308 conferidos; console limpo em produção)
+Fase 15 — Indexação             ◐  (sitemap novo publicado; falta reenviar no Search Console e pedir indexação de /work, /studio, /services, /contact)
 Fase 16 — Entrega               ○
 
 ## Bloqueios
@@ -29,7 +29,7 @@ Fase 16 — Entrega               ○
 - Vídeos `public/lab/full-*.mp4` (67 MB) continuam no repo — só carregam sob play, mas pesam no clone.
 
 ## Próxima ação
-1. Merge de `rebuild/awwwards` em `main` e deploy na Vercel (preview primeiro; conferir OG images, redirects e o Boot em rede real).
+1. Search Console: reenviar sitemap.xml, pedir indexação das rotas novas, acompanhar os 308 de /projetos.
 2. Performance mobile: dynamic import dos atos abaixo da dobra + medir de novo.
 3. QA Safari (iOS) e Firefox: View Transitions cai no fallback; conferir `font-stretch` no Safari e o WebGL do Lab.
 4. Reskin de verdade do `/diagnostico` no sistema novo.
