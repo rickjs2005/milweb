@@ -5,8 +5,7 @@ const nextConfig = {
   // As OG images dos cases leem public/og/<slug>.jpg do disco: o /public não
   // entra no filesystem da função por padrão — só com tracing explícito.
   outputFileTracingIncludes: {
-    "/[lang]/work/[slug]/opengraph-image": ["./public/og/**"],
-    "/[lang]/work/[slug]/twitter-image": ["./public/og/**"],
+    "/**": ["./public/og/**"],
   },
 
   // /raio-x foi a primeira casa do funil de diagnóstico (viveu algumas horas

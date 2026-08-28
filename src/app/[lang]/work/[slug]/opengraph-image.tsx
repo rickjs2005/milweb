@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getProject, TOTAL_LABEL } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
+import { SITE_URL } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 export const alt = "MilWeb — case study";
@@ -29,7 +30,13 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     try {
       const buf = await readFile(join(process.cwd(), "public", "og", `${p.slug}.jpg`));
       img = `data:image/jpeg;base64,${buf.toString("base64")}`;
-    } catch {}
+    } catch {
+      // Fallback: busca pela CDN (pode ser barrado pelo firewall; melhor que nada).
+      try {
+        const res = await fetch(`${SITE_URL}/og/${p.slug}.jpg`);
+        if (res.ok && (res.headers.get("content-type") ?? "").startsWith("image/")) img = `data:image/jpeg;base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
+      } catch {}
+    }
   }
 
   return new ImageResponse(
