@@ -24,13 +24,13 @@ Fase 15 — Indexação             ◐  (sitemap novo publicado; falta reenviar
 Fase 16 — Entrega               ○
 
 ## Bloqueios
-- OG image dos cases não renderiza em `next dev` no Windows (bug do @vercel/og com caminho `file:\C:`); em produção funciona — conferir sempre em milweb.com.br/work/<slug>/opengraph-image.
+- OG image dos cases não renderiza em `next dev` no Windows (bug do @vercel/og); em produção validada em 28/08 com frame real (public/og/*.png via outputFileTracingIncludes).
 - Lighthouse mobile ~72: o custo é hidratação (GSAP+SplitText+Lenis no chunk da home) em CPU 4x mais lenta. Candidatos: carregar `SelectedWork`/`Capabilities`/`Break` sob `next/dynamic` após idle; subset menor do Archivo (só latin já é); avaliar `font-display: optional` no mono.
 - `/diagnostico` e seus componentes (dependency-calc, google-sim, fair-price, included) só passaram por shim CSS plano — ainda têm cara do site antigo (sliders azuis, rounded). Funcionais, mas destoam.
 - Vídeos `public/lab/full-*.mp4` (67 MB) continuam no repo — só carregam sob play, mas pesam no clone.
 
 ## Próxima ação
-1. Fase 03 publicada: validar em produção a transição Home→Case (View Transitions só no Chrome/Edge/Safari 18+) e as OG images dos 4 selecionados.
+1. Fase 03 publicada e OG validada. Falta conferir a olho a transição Home→Case no Chrome (View Transitions; Firefox cai no cross-fade) e o Selected Work em trackpad/touch real.
 2. Search Console: reenviar sitemap.xml, pedir indexação das rotas novas, acompanhar os 308 de /projetos.
 2. Performance mobile: dynamic import dos atos abaixo da dobra + medir de novo.
 3. QA Safari (iOS) e Firefox: View Transitions cai no fallback; conferir `font-stretch` no Safari e o WebGL do Lab.
