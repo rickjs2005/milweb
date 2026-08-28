@@ -202,3 +202,18 @@
 
 /* Enquanto segura: sem seleção de texto, cursor de mira. */
 html.inspecting, html.inspecting * { user-select: none; cursor: crosshair !important; }
+
+/* =====================================================================
+   BOOT (ACT 01) — animação inteira em CSS, HTML vindo do servidor.
+   ===================================================================== */
+html.booting { overflow: hidden; }
+.boot { clip-path: inset(0 0 0 0); animation: boot-exit 0.7s var(--ease-in-out-quart) 1.2s both; }
+.boot.is-skipped { animation: boot-exit 0.45s var(--ease-in-out-quart) 0s both; }
+.boot-id { opacity: 0; transform: translateY(40%); animation: boot-rise 0.55s var(--ease-out-expo) both; }
+.boot-line { opacity: 0; animation: boot-show 0.01s linear both; }
+.boot-cursor { animation: boot-blink 0.18s steps(1) 0.45s 6; }
+@keyframes boot-exit { to { clip-path: inset(0 0 100% 0); visibility: hidden; } }
+@keyframes boot-rise { to { opacity: 1; transform: none; } }
+@keyframes boot-show { to { opacity: 1; } }
+@keyframes boot-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .boot { display: none; } }

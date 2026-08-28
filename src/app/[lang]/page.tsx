@@ -31,9 +31,9 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
             inspect: t(HOME.hero.inspect),
             scroll: t(HOME.hero.scroll),
             images: [
-              { src: "/shots/kavita-drones.webp", alt: "Kavita", n: "01 / KAVITA" },
-              { src: "/shots/terral.webp", alt: "Terral", n: "02 / TERRAL" },
-              { src: "/shots/atelier-vertex.webp", alt: "Atelier Vertex", n: "03 / VERTEX" },
+              { src: "/shots/kavita-drones/hero.webp", alt: "Kavita", n: "01 / KAVITA" },
+              { src: "/shots/terral/sol.webp", alt: "Terral", n: "02 / TERRAL" },
+              { src: "/shots/atelier-vertex/entregue.webp", alt: "Atelier Vertex", n: "03 / VERTEX" },
             ],
           }}
         />

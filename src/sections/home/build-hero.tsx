@@ -106,15 +106,9 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
         setStage(5);
         gsap.set(q("[data-ship]"), { autoAlpha: 1 });
         gsap.set([q("[data-layer=wire]"), q("[data-layer=grid]"), q("[data-layer=scan]"), q("[data-hint]")], { display: "none" });
-        gsap.set(q("[data-layer=code]"), { position: "static", scale: 1, autoAlpha: 1 });
-        gsap.set(q("[data-layer=code] span"), { autoAlpha: 1 });
         gsap.set(q("[data-layer=images]"), { display: "none" });
-        if (window.matchMedia(MQ.reduce).matches) return;
-        gsap.fromTo(
-          h1,
-          { fontStretch: "80%" },
-          { fontStretch: "125%", ease: "none", scrollTrigger: { trigger: h1, start: "top 90%", end: "top 40%", scrub: 0.4 } },
-        );
+        // Sem tween de font-stretch aqui: re-quebrar as linhas da headline
+        // muda a altura do bloco (CLS) e repinta o LCP depois da hidratação.
       });
 
       return () => mm.revert();
@@ -147,7 +141,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
       </div>
 
       {/* CÓDIGO (estado zero) */}
-      <pre data-layer="code" aria-hidden="true" className="t-code absolute left-margin top-[calc(var(--nav-h)+1.25rem)] z-10 text-ink md:top-[calc(var(--nav-h)+3rem)]">
+      <pre data-layer="code" aria-hidden="true" className="t-code relative z-10 mt-5 text-ink md:absolute md:left-margin md:top-[calc(var(--nav-h)+3rem)] md:mt-0">
         {CODE.map((l) => (
           <span key={l} className="block">
             {l}
@@ -177,7 +171,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
         {s.images.map((im, i) => (
           <figure
             key={im.src}
-            className="absolute aspect-[4/3] overflow-hidden bg-neutral"
+            className="absolute aspect-[16/10] overflow-hidden bg-neutral"
             style={
               i === 0
                 ? { right: "var(--margin)", top: "34%", width: "17%" }
@@ -186,7 +180,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
                   : { right: "calc(var(--margin) + 6%)", top: "66%", width: "12%" }
             }
           >
-            <Image src={im.src} alt="" fill sizes="320px" className="object-cover object-top grayscale" />
+            <Image src={im.src} alt="" fill sizes="(min-width: 1080px) 18vw, 30vw" className="object-cover object-top grayscale" />
             <figcaption className="t-mono absolute bottom-1 left-1 text-paper mix-blend-difference">{im.n}</figcaption>
           </figure>
         ))}

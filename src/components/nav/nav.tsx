@@ -21,7 +21,9 @@ export type NavStrings = {
  * colorido, sem vidro — uma régua de 1px separa a nav do conteúdo.
  */
 export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }) {
-  const pathname = usePathname() ?? "/";
+  // O middleware reescreve "/" → "/pt" por dentro; usePathname devolve o
+  // path interno. Normaliza pra URL pública antes de comparar/trocar idioma.
+  const pathname = (usePathname() ?? "/").replace(/^\/pt(?=\/|$)/, "") || "/";
   const [open, setOpen] = useState(false);
   const [act, setAct] = useState<string>("");
 

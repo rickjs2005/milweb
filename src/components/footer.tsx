@@ -14,17 +14,17 @@ export function Footer({ locale }: { locale: Locale }) {
           <p className="text-ink">{BRAND.mark}</p>
           <p className="mt-1">{t(BRAND.tagline)}</p>
         </div>
-        <ul className="col-span-2 space-y-1 md:col-span-3">
-          <li><Link className="link-rule text-ink" href={withLocale(locale, "/work")}>{t(NAV.work)}</Link></li>
-          <li><Link className="link-rule text-ink" href={withLocale(locale, "/lab")}>{t(NAV.lab)}</Link></li>
-          <li><Link className="link-rule text-ink" href={withLocale(locale, "/studio")}>{t(NAV.studio)}</Link></li>
-          <li><Link className="link-rule text-ink" href={withLocale(locale, "/services")}>{t(NAV.services)}</Link></li>
+        <ul className="col-span-2 md:col-span-3">
+          <li><Link className="link-rule inline-block py-1 text-ink" href={withLocale(locale, "/work")}>{t(NAV.work)}</Link></li>
+          <li><Link className="link-rule inline-block py-1 text-ink" href={withLocale(locale, "/lab")}>{t(NAV.lab)}</Link></li>
+          <li><Link className="link-rule inline-block py-1 text-ink" href={withLocale(locale, "/studio")}>{t(NAV.studio)}</Link></li>
+          <li><Link className="link-rule inline-block py-1 text-ink" href={withLocale(locale, "/services")}>{t(NAV.services)}</Link></li>
         </ul>
-        <ul className="col-span-2 space-y-1 md:col-span-3">
-          <li><a className="link-rule text-ink" href={`mailto:${PROFILE.email}`}>Email</a></li>
-          <li><a className="link-rule text-ink" href={`https://wa.me/${PROFILE.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
-          <li><a className="link-rule text-ink" href={PROFILE.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>
-          <li><a className="link-rule text-ink" href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+        <ul className="col-span-2 md:col-span-3">
+          <li><a className="link-rule inline-block py-1 text-ink" href={`mailto:${PROFILE.email}`}>Email</a></li>
+          <li><a className="link-rule inline-block py-1 text-ink" href={`https://wa.me/${PROFILE.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+          <li><a className="link-rule inline-block py-1 text-ink" href={PROFILE.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a className="link-rule inline-block py-1 text-ink" href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
         </ul>
         <div className="col-span-4 flex flex-col justify-between md:col-span-3 md:text-right">
           <p>{BRAND.index}</p>
