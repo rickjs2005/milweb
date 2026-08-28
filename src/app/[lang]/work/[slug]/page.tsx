@@ -1,0 +1,79 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { PROJECTS, PROFILE, SITE_URL, searchDescription } from "@/lib/content";
+import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { CaseStudy } from "@/sections/case/case-study";
+import { Footer } from "@/components/footer";
+import { NAV } from "@/data/brand";
+
+/** Um case por projeto — o segmento [lang] pai já enumera os dois idiomas. */
+export function generateStaticParams() {
+  return PROJECTS.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<LangParams & { slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const p = PROJECTS.find((x) => x.slug === slug);
+  if (!p) return {};
+  const locale = await localeFrom(params);
+  const description = searchDescription(p.result[locale]);
+  const canonical = `${locale === "en" ? "/en" : ""}/work/${p.slug}`;
+  const url = `${SITE_URL}${canonical}`;
+  const title = `${p.title} — ${p.tagline[locale]}`;
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: { "pt-BR": `/work/${p.slug}`, en: `/en/work/${p.slug}`, "x-default": `/work/${p.slug}` },
+    },
+    openGraph: { type: "article", title: `${p.title} | MilWeb`, description, url },
+    twitter: { card: "summary_large_image", title: `${p.title} | MilWeb`, description },
+  };
+}
+
+export default async function ProjectPage({ params }: { params: Promise<LangParams & { slug: string }> }) {
+  const { slug } = await params;
+  const locale = await localeFrom(params);
+  const t = makeT(locale);
+  const idx = PROJECTS.findIndex((p) => p.slug === slug);
+  if (idx === -1) notFound();
+
+  const project = PROJECTS[idx];
+  const next = PROJECTS[(idx + 1) % PROJECTS.length];
+  const url = `${SITE_URL}${withLocale(locale, `/work/${project.slug}`)}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        name: project.title,
+        headline: t(project.tagline),
+        description: t(project.result),
+        url,
+        inLanguage: locale === "en" ? "en" : "pt-BR",
+        keywords: project.stack.join(", "),
+        creator: { "@type": "Person", name: "Rick Januario", url: PROFILE.github },
+        ...(project.live ? { sameAs: project.live } : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${withLocale(locale, "/")}` },
+          { "@type": "ListItem", position: 2, name: t(NAV.work), item: `${SITE_URL}${withLocale(locale, "/work")}` },
+          { "@type": "ListItem", position: 3, name: project.title, item: url },
+        ],
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <main>
+        <CaseStudy project={project} next={{ slug: next.slug, title: next.title }} index={idx} total={PROJECTS.length} locale={locale} />
+      </main>
+      <Footer locale={locale} />
+    </>
+  );
+}

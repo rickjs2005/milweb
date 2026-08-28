@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { DIAGNOSTICO, PROFILE, SITE_URL, UI } from "@/lib/content";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
-import { Logo } from "@/components/logo";
 import { Dependency } from "@/components/dependency";
 import { Google } from "@/components/google";
 import { FairPrice } from "@/components/fair-price";
 import { Included } from "@/components/included";
 import { Reveal } from "@/components/reveal";
-import { Footer } from "@/components/contact";
+import { Footer } from "@/components/footer";
 
 /**
  * /diagnostico — o funil de convencimento inteiro numa página só, fora da
@@ -61,36 +60,13 @@ export default async function DiagnosticoPage({ params }: { params: Promise<Lang
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line/10 glass-nav">
-        <div className="container-page flex h-16 items-center justify-between">
-          <Link href={withLocale(locale, "/")} aria-label={t(UI.labels.home)}>
-            <Logo />
-          </Link>
-          <a
-            href={waHref(t(DIAGNOSTICO.cta.whats))}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3.5 py-2 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-soft"
-          >
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </a>
-        </div>
-      </header>
-
       <main>
-        <div className="container-page pt-16 sm:pt-24">
-          <Link
-            href={withLocale(locale, "/")}
-            className="inline-flex items-center gap-1.5 text-sm text-fg-subtle transition-colors hover:text-fg"
-          >
-            <ArrowLeft className="h-4 w-4" /> {t({ pt: "Voltar pra home", en: "Back to home" })}
-          </Link>
-
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-fg sm:text-5xl">
+        <div className="container-page pt-nav">
+          <div className="rule mt-8 flex items-center justify-between pt-3 t-mono md:mt-12"><span>DIAGNOSTICO</span><span className="tnum text-ink-3">05 / STEPS</span></div>
+          <h1 className="t-display t-display-md mt-10 max-w-6xl text-ink">
             {t({ pt: "Diagnóstico do seu negócio na internet", en: "An audit of your business online" })}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-fg-subtle">
+          <p className="t-lead mt-10 max-w-3xl text-ink-2">
             {t({
               pt: "Do problema ao preço, na ordem certa: o risco de viver só de rede social, o que o Google mostra de você, como eu calculo o orçamento e o que vem dentro do projeto. No final, um diagnóstico gratuito.",
               en: "From problem to price, in the right order: the risk of living on social media alone, what Google shows about you, how I price the work and what comes inside the project. At the end, a free audit.",

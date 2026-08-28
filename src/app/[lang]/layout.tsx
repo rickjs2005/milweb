@@ -1,55 +1,26 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Logo } from "@/components/logo";
-import { SmoothScroll } from "@/components/smooth-scroll";
+import { ScrollProvider } from "@/components/scroll-provider";
 import { TrackConversions } from "@/components/track-conversions";
-import { WhatsappFab } from "@/components/whatsapp-fab";
-import { Konami } from "@/components/konami";
-import { CursorGlow } from "@/components/cursor-glow";
-import { MouseParallax } from "@/components/mouse-parallax";
-import { SquidFollower } from "@/components/SquidFollower";
-import { MiloProtagonist } from "@/components/milo-protagonist";
 import { ViewTransitions } from "@/components/view-transitions";
+import { Nav } from "@/components/nav/nav";
+import { InspectProvider } from "@/features/inspect/inspect-provider";
+import { NAV } from "@/data/brand";
 import { PROFILE, SITE_URL } from "@/lib/content";
-import { localeFrom, LOCALES, type LangParams } from "@/lib/i18n";
+import { localeFrom, LOCALES, makeT, type LangParams } from "@/lib/i18n";
 import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
 
-/** hreflang do site inteiro: PT na raiz, EN em /en (x-default = PT). */
-const LANGUAGE_ALTERNATES = {
-  "pt-BR": "/",
-  en: "/en",
-  "x-default": "/",
-};
+const LANGUAGE_ALTERNATES = { "pt-BR": "/", en: "/en", "x-default": "/" };
 
-/**
- * As duas versões do site saem prontas do build. Como é o segmento mais
- * externo, este generateStaticParams vale para toda a árvore abaixo — as
- * páginas filhas só precisam declarar os params que elas mesmas abrem
- * (ex.: o slug do case).
- */
 export function generateStaticParams() {
   return LOCALES.map((lang) => ({ lang }));
 }
 
-/**
- * Só `pt` e `en` são [lang] válidos; o resto é 404.
- *
- * O middleware não toca em path com ponto (o matcher exclui `.*\..*`, senão
- * /sitemap.xml viraria /pt/sitemap.xml). Sem ninguém barrando, /llms.txt
- * caía direto aqui como lang="llms.txt", e como normalizeLocale devolve pt
- * para qualquer coisa que não seja "en", o Next respondia a HOME INTEIRA
- * com status 200 — 329KB. Valia para qualquer extensão: /ads.txt, /foo.xml,
- * /teste.pdf. Um soft 404 sem fim, e a razão de o PageSpeed acusar timeout
- * ao buscar llms.txt: ele pedia um texto e recebia a home.
- */
+/** Só `pt` e `en` são [lang] válidos; o resto é 404 (ver histórico: soft 404 de /llms.txt). */
 export const dynamicParams = false;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<LangParams>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const { title, description } = SITE_COPY[locale];
   const canonical = locale === "en" ? "/en" : "/";
@@ -58,22 +29,18 @@ export async function generateMetadata({
     title: { default: title, template: `%s | MilWeb` },
     description,
     applicationName: "MilWeb",
-    authors: [{ name: "Rick", url: PROFILE.github }],
-    creator: "Rick (MilWeb)",
+    authors: [{ name: "Rick Januario", url: PROFILE.github }],
+    creator: "MilWeb",
     keywords: [
-      "desenvolvedor freelancer",
+      "creative development studio",
+      "creative developer",
+      "WebGL",
+      "Next.js",
+      "GSAP",
+      "digital experiences",
       "criação de sites",
       "desenvolvimento web",
-      "landing page",
-      "sistema web",
-      "catálogo WhatsApp",
-      "loja virtual",
-      "dashboard",
-      "automação",
-      "Next.js",
-      "React",
       "MilWeb",
-      "Rick",
     ],
     alternates: { canonical, languages: LANGUAGE_ALTERNATES },
     verification: { google: "2CbbaRNR_vN6f0XIjYuMmTu9UpHcKuleYfJtOjWyNmE" },
@@ -91,43 +58,34 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
-  themeColor: "#080a10",
-  // "dark light" (dark primeiro = padrão do site). Só "dark" fazia o
-  // navegador pintar os controles nativos — os sliders da calculadora, o
-  // campo do teste do Google, as scrollbars — em escuro mesmo com o tema
-  // claro ligado pelo toggle.
-  colorScheme: "dark light",
+  themeColor: "#F2F0EA",
+  colorScheme: "light",
 };
 
-export default async function RootLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<LangParams>;
-}) {
+export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
+  const t = makeT(locale);
   return (
-    <>
-      {/* Assinatura de entrada — ver nota em globals.css (.preloader). */}
-      <div aria-hidden="true" className="preloader fixed inset-0 z-[100] flex items-center justify-center bg-bg">
-        <span className="preloader-mark">
-          <Logo withWordmark={false} size={48} />
-        </span>
-      </div>
+    <ScrollProvider>
+      <InspectProvider>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
-      <SmoothScroll />
       <TrackConversions />
-      <CursorGlow />
-      <SquidFollower />
-      <MouseParallax />
-      <MiloProtagonist locale={locale} />
       <ViewTransitions />
+      <Nav
+        locale={locale}
+        strings={{
+          work: t(NAV.work),
+          lab: t(NAV.lab),
+          studio: t(NAV.studio),
+          contact: t(NAV.contact),
+          menu: t(NAV.menu),
+          close: t(NAV.close),
+        }}
+      />
       {children}
-      <WhatsappFab locale={locale} />
-      <Konami />
       <Analytics />
       <SpeedInsights />
-    </>
+      </InspectProvider>
+    </ScrollProvider>
   );
 }

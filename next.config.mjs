@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Desligado por causa do GSAP/ScrollTrigger: o double-invoke do React Strict
-  // Mode em DEV monta→desmonta→monta cada página, e a recriação de
-  // ScrollTriggers (inclusive em navegação client-side, ex.: voltar de /cv para
-  // a home) corrompe a lista interna do GSAP — erro "Cannot read properties of
-  // undefined (reading 'end')". Strict Mode só roda em dev; produção (next
-  // start) monta uma vez só, então isto não muda o comportamento publicado.
-  reactStrictMode: false,
+  reactStrictMode: true,
 
   // /raio-x foi a primeira casa do funil de diagnóstico (viveu algumas horas
   // no ar em 31/07/2026) antes de virar /diagnostico com o funil completo.
@@ -15,6 +9,12 @@ const nextConfig = {
     return [
       { source: "/raio-x", destination: "/diagnostico", permanent: true },
       { source: "/en/raio-x", destination: "/en/diagnostico", permanent: true },
+      // O acervo e os cases mudaram de /projetos para /work na reconstrução
+      // de 08/2026. Links antigos (WhatsApp, LinkedIn, Google) continuam.
+      { source: "/projetos", destination: "/work", permanent: true },
+      { source: "/projetos/:slug", destination: "/work/:slug", permanent: true },
+      { source: "/en/projetos", destination: "/en/work", permanent: true },
+      { source: "/en/projetos/:slug", destination: "/en/work/:slug", permanent: true },
 
       // www servia o site inteiro com 200, ou seja, cada página tinha dois
       // endereços públicos. O canonical já apontava pro apex e segurava a

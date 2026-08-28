@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Milo, type MiloPose } from "./milo";
-import { miloSay } from "@/lib/milo-bus";
 
 /** Strings já localizadas (resolvidas no servidor) pra ilha client. */
 export type CalcStrings = {
@@ -234,8 +232,6 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
       tier: lostRevenue >= 20000 ? 2 : lostRevenue >= 4000 ? 1 : 0,
     };
   }, [revenue, clients, share, days]);
-
-  const pose: MiloPose = r.tier === 2 ? "shocked" : r.tier === 1 ? "think" : "idle";
   const durationLabel = days === 1 ? s.h24 : s.d7;
   const loseSub = fill(s.loseSub, { duration: durationLabel, share });
 
@@ -336,7 +332,6 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
         </div>
 
         <div className="mt-6 flex items-end gap-3">
-          <Milo pose={pose} className="w-20 shrink-0" />
           <p className="mb-3 rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/80 px-4 py-3 text-sm leading-relaxed text-fg-muted">
             {s.milo[r.tier]}
           </p>
@@ -348,14 +343,6 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
             type="button"
             onClick={() => {
               setDiagOpen(true);
-              // O Milo do FAB reforça o resultado. A banda vem da NOTA
-              // (a fala cita a nota) — o r.tier é baseado no prejuízo em
-              // R$, outra escala, e geraria falas contraditórias.
-              const band = riskScore >= 70 ? 2 : riskScore >= 40 ? 1 : 0;
-              miloSay({
-                text: fill(s.miloDiag[band], { score: riskScore }),
-                pose: band === 2 ? "shocked" : band === 1 ? "think" : "happy",
-              });
             }}
             className="glow-accent mt-5 w-full rounded-xl bg-accent px-5 py-3.5 text-sm font-semibold text-accent-fg transition-transform hover:scale-[1.02]"
           >

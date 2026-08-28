@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Milo } from "./milo";
 
 /** Strings já localizadas (resolvidas no servidor) pra ilha client. */
 export type GoogleSimStrings = {
@@ -146,7 +145,6 @@ export function GoogleSim({ s }: { s: GoogleSimStrings }) {
           style={{ opacity: phase === "done" ? 1 : 0 }}
           aria-hidden={phase !== "done"}
         >
-          <Milo pose="idle" className="w-20 shrink-0" />
           <p className="mb-3 rounded-2xl rounded-bl-md border border-line/15 bg-surface-2/80 px-4 py-3 text-sm leading-relaxed text-fg-muted">
             {s.milo}
           </p>

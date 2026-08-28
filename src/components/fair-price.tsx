@@ -101,7 +101,7 @@ export function FairPrice({ locale }: { locale: Locale }) {
                 {t(FAIR_PRICE.cta)}
               </a>
               <Link
-                href={withLocale(locale, "/projetos/millead")}
+                href={withLocale(locale, "/work/millead")}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-soft"
               >
                 {t(FAIR_PRICE.caseLink)} <ArrowRight className="h-4 w-4" />

@@ -6,7 +6,7 @@ const CSP = buildCsp({ dev: process.env.NODE_ENV === "development" });
 /**
  * i18n por URL, com o locale vivendo no SEGMENTO da rota (app/[lang]/...).
  *
- * As URLs públicas não mudaram: PT na raiz (`/`, `/projetos`) e EN em `/en`.
+ * As URLs públicas não mudaram: PT na raiz (`/`, `/work`) e EN em `/en`.
  * O que mudou é como o servidor descobre o idioma. Antes era um cookie lido
  * com `cookies()` dentro das Server Components — e ler cookie opta a rota
  * por render dinâmico, o que impedia qualquer página de ser pré-renderizada
@@ -14,7 +14,7 @@ const CSP = buildCsp({ dev: process.env.NODE_ENV === "development" });
  * então as duas versões saem prontas do build e são servidas da CDN.
  *
  *   /            → reescreve para /pt          (invisível pro visitante)
- *   /projetos    → reescreve para /pt/projetos
+ *   /work    → reescreve para /pt/work
  *   /en, /en/... → passa direto (já casa com [lang])
  *   /pt, /pt/... → REDIRECIONA para a URL sem prefixo
  *

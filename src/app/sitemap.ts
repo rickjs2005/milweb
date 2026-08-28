@@ -45,10 +45,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // O funil inteiro fora da home: Raio-X + Google + cálculo do orçamento
     // + o que está incluso + CTA, numa página só (/raio-x redireciona).
     ...entry("/diagnostico", 0.9),
+    ...entry("/work", 0.9),
     ...entry("/lab", 0.8),
-    // O índice de projetos existe desde que a home passou a mostrar só uma
-    // seleção: é por ele que o acervo completo continua alcançável.
-    ...entry("/projetos", 0.8),
-    ...PROJECTS.flatMap((p) => entry(`/projetos/${p.slug}`, 0.8)),
+    ...entry("/studio", 0.8),
+    ...entry("/services", 0.9),
+    ...entry("/contact", 0.8),
+    ...PROJECTS.flatMap((p) => entry(`/work/${p.slug}`, 0.8)),
   ];
 }
