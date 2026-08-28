@@ -52,7 +52,7 @@ export function CaseNext({ label, title, name, n, image, href, slug, allHref, al
         </div>
       </Link>
       <p className="t-mono pb-4">
-        <Link href={allHref} className="link-rule text-ink-3">
+        <Link href={allHref} className="link-rule inline-block py-2 text-ink-3">
           {allLabel} →
         </Link>
       </p>
