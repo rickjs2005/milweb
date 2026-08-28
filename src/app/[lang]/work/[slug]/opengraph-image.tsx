@@ -26,16 +26,22 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   // da função via outputFileTracingIncludes no next.config) — buscar por
   // URL falha quando o firewall da Vercel desafia o fetch da própria função.
   let img: string | null = null;
+  let diag = "";
   if (p) {
+    const file = join(process.cwd(), "public", "og", `${p.slug}.jpg`);
     try {
-      const buf = await readFile(join(process.cwd(), "public", "og", `${p.slug}.jpg`));
+      const buf = await readFile(file);
       img = `data:image/jpeg;base64,${buf.toString("base64")}`;
-    } catch {
+    } catch (e) {
+      diag = `fs:${(e as Error).message.slice(0, 60)}`;
       // Fallback: busca pela CDN (pode ser barrado pelo firewall; melhor que nada).
       try {
         const res = await fetch(`${SITE_URL}/og/${p.slug}.jpg`);
+        diag += ` | http:${res.status} ${res.headers.get("content-type")}`;
         if (res.ok && (res.headers.get("content-type") ?? "").startsWith("image/")) img = `data:image/jpeg;base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
-      } catch {}
+      } catch (e) {
+        diag += ` | fetch:${(e as Error).message.slice(0, 60)}`;
+      }
     }
   }
 
@@ -61,6 +67,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           {img && <img src={img} alt="" width={720} height={450} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />}
         </div>
         <div style={{ position: "absolute", left: "64px", bottom: "40px", width: "10px", height: "10px", backgroundColor: "#B7FF37" }} />
+        {diag && <div style={{ position: "absolute", right: "64px", bottom: "12px", fontSize: "11px", color: "#5F5F5A" }}>{diag}</div>}
       </div>
     ),
     { ...size, fonts: [{ name: "Inter", data: font, weight: 700, style: "normal" }] },
