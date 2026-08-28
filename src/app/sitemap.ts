@@ -1,49 +1,35 @@
 import type { MetadataRoute } from "next";
 import { PROJECTS, SITE_URL } from "@/lib/content";
 import { SERVICES } from "@/lib/services";
+import { HREFLANG, LOCALES, type Locale } from "@/i18n/config";
+import { alternatesOf } from "@/i18n/routing";
 
 /**
- * Sitemap bilíngue: cada URL PT declara sua alternativa EN (e vice-versa).
+ * Sitemap trilíngue: cada URL (PT, EN, ES) declara as três alternativas
+ * + x-default (= PT). URLs públicas vêm da tabela de rotas (localizePath).
  *
- * Sem `lastModified`: era `new Date()` do build, então as 66 URLs juravam ter
- * mudado toda vez que qualquer coisa subia. lastmod só vale quando aponta
- * mudança real da página — declarado errado, é sinal que o buscador aprende
- * a ignorar. Melhor omitir do que mentir.
+ * Sem `lastModified`: era `new Date()` do build e todas as URLs juravam ter
+ * mudado a cada deploy. Melhor omitir do que mentir.
  */
+const STEP: Record<Locale, number> = { pt: 0, en: 0.1, es: 0.1 };
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const entry = (
-    path: string,
-    priority: number,
-  ): MetadataRoute.Sitemap[number][] => [
-    {
-      url: `${SITE_URL}${path === "/" ? "/" : path}`,
-      changeFrequency: "monthly",
-      priority,
-      alternates: {
-        languages: {
-          "pt-BR": `${SITE_URL}${path === "/" ? "/" : path}`,
-          en: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
-        },
-      },
-    },
-    {
-      url: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
-      changeFrequency: "monthly",
-      priority: priority - 0.1,
-      alternates: {
-        languages: {
-          "pt-BR": `${SITE_URL}${path === "/" ? "/" : path}`,
-          en: `${SITE_URL}${path === "/" ? "/en" : `/en${path}`}`,
-        },
-      },
-    },
-  ];
+  const entry = (internal: string, priority: number): MetadataRoute.Sitemap[number][] => {
+    const alts = alternatesOf(internal);
+    const languages: Record<string, string> = {};
+    for (const l of LOCALES) languages[HREFLANG[l]] = `${SITE_URL}${alts[l]}`;
+    languages["x-default"] = `${SITE_URL}${alts.pt}`;
+    return LOCALES.map((l) => ({
+      url: `${SITE_URL}${alts[l]}`,
+      changeFrequency: "monthly" as const,
+      priority: Math.round((priority - STEP[l]) * 10) / 10,
+      alternates: { languages },
+    }));
+  };
 
   return [
     ...entry("/", 1),
     ...SERVICES.flatMap((s) => entry(`/${s.slug}`, 0.9)),
-    // O funil inteiro fora da home: Raio-X + Google + cálculo do orçamento
-    // + o que está incluso + CTA, numa página só (/raio-x redireciona).
     ...entry("/diagnostico", 0.9),
     ...entry("/work", 0.9),
     ...entry("/lab", 0.8),

@@ -1,4 +1,5 @@
 import { PROJECTS, type Project } from "@/lib/content";
+import { PROJECT_SLUGS } from "./slugs";
 
 /**
  * FONTE ÚNICA de ordem, numeração e taxonomia de exibição dos projetos.
@@ -130,3 +131,10 @@ export function getProject(slug: string): ProjectEntry | undefined {
 
 /** Todos os slugs com página (listados + ocultos) — para generateStaticParams. */
 export const ALL_SLUGS = PROJECTS.map((p) => p.slug);
+
+// data/slugs.ts é a cópia leve usada pelo middleware; divergência derruba o build.
+{
+  const a = [...ALL_SLUGS].sort().join(",");
+  const b = [...PROJECT_SLUGS].sort().join(",");
+  if (a !== b) throw new Error(`data/slugs.ts desatualizado — esperado: ${a}`);
+}

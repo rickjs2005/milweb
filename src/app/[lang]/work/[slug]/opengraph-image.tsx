@@ -15,7 +15,7 @@ export const contentType = "image/png";
  */
 export default async function Image({ params }: { params: Promise<{ slug: string; lang: string }> }) {
   const { slug, lang } = await params;
-  const locale = lang === "en" ? "en" : "pt";
+  const locale = lang === "en" ? "en" : lang === "es" ? "es" : "pt";
   const p = getProject(slug);
   const sel = SELECTED_WORK.find((w) => w.slug === slug);
   const title = sel ? sel.title[locale] : [p?.title ?? "MilWeb"];

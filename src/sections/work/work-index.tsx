@@ -99,7 +99,7 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
 
   return (
     <div className="mt-12 md:mt-20">
-      <div className="flex flex-wrap gap-x-6 gap-y-2 t-mono" role="group" aria-label="Filter" data-no-inspect>
+      <div className="flex flex-wrap gap-x-6 gap-y-2 t-mono" role="group" aria-label={labels.all} data-no-inspect>
         {filters.map((f) => (
           <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={"link-rule py-1 transition-colors duration-fast " + (filter === f ? "signal-dot text-ink" : "text-ink-3 hover:text-ink")}>
             {labels[f]} <span className="tnum">({String(counts[f]).padStart(2, "0")})</span>

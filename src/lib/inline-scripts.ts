@@ -5,7 +5,11 @@
  * dois lugares (metadata e dados estruturados) e precisava de um dono só.
  * O <script> inline executável mora em ./theme-script.
  */
-import { PROFILE, SITE_URL } from "./content";
+import { PROFILE, SITE_URL, type Locale } from "./content";
+import { pt } from "@/i18n/pt";
+import { en } from "@/i18n/en";
+import { es } from "@/i18n/es";
+import { HTML_LANG } from "@/i18n/config";
 
 /**
  * A description precisa caber em 160 caracteres: acima disso o Google corta
@@ -14,18 +18,11 @@ import { PROFILE, SITE_URL } from "./content";
  * Node.js, Supabase) — a mesma linguagem que saiu do hero, e que não diz
  * nada para o dono de negócio que está lendo o resultado da busca.
  */
-export const SITE_COPY = {
-  pt: {
-    title: "MilWeb | Sites e sistemas que dão resultado",
-    description:
-      "Sites e sistemas que fazem seu negócio vender: mais orçamentos no WhatsApp, mais visibilidade no Google e páginas que abrem em menos de 2 segundos.",
-  },
-  en: {
-    title: "MilWeb | Websites and systems that deliver results",
-    description:
-      "Websites and systems that make your business sell: more WhatsApp enquiries, more visibility on Google and pages that load in under 2 seconds.",
-  },
-} as const;
+export const SITE_COPY: Record<Locale, { title: string; description: string }> = {
+  pt: { title: pt.meta.siteTitle, description: pt.meta.siteDescription },
+  en: { title: en.meta.siteTitle, description: en.meta.siteDescription },
+  es: { title: es.meta.siteTitle, description: es.meta.siteDescription },
+};
 
 /**
  * @id estável da MilWeb. Serve de âncora: as menções espalhadas pelo site
@@ -41,7 +38,7 @@ export const ORG_ID = `${SITE_URL}/#milweb`;
  * Recebe o locale: a descrição saía sempre em português, inclusive nas
  * páginas /en, e descrevia a entidade num idioma que não era o da página.
  */
-export const siteJsonLd = (locale: "pt" | "en") =>
+export const siteJsonLd = (locale: Locale) =>
   JSON.stringify({
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
@@ -54,11 +51,11 @@ export const siteJsonLd = (locale: "pt" | "en") =>
     logo: `${SITE_URL}${PROFILE.logo}`,
     image: `${SITE_URL}/opengraph-image`,
     description: SITE_COPY[locale].description,
-    inLanguage: locale === "en" ? "en" : "pt-BR",
+    inLanguage: HTML_LANG[locale],
     areaServed: "BR",
     founder: {
       "@type": "Person",
-      name: "Rick",
+      name: "Rick Januario",
       sameAs: [PROFILE.github, PROFILE.linkedin].filter(Boolean),
     },
     knowsAbout: ["Next.js", "React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "SEO"],

@@ -5,7 +5,8 @@ import { ALL_SLUGS, getProject } from "@/data/projects";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { CaseStudy } from "@/sections/case/case-study";
 import { Footer } from "@/components/footer";
-import { NAV } from "@/data/brand";
+import { getDict, HTML_LANG } from "@/i18n";
+import { pageMetadata } from "@/lib/seo";
 
 /** Um case por projeto — o segmento [lang] pai já enumera os dois idiomas. */
 export function generateStaticParams() {
@@ -18,16 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<LangParams 
   if (!p) return {};
   const locale = await localeFrom(params);
   const description = searchDescription(p.result[locale]);
-  const canonical = `${locale === "en" ? "/en" : ""}/work/${p.slug}`;
-  const url = `${SITE_URL}${canonical}`;
-  const title = `${p.title} — ${p.tagline[locale]}`;
-  return {
-    title,
-    description,
-    alternates: { canonical, languages: { "pt-BR": `/work/${p.slug}`, en: `/en/work/${p.slug}`, "x-default": `/work/${p.slug}` } },
-    openGraph: { type: "article", title: `${p.title} | MilWeb`, description, url },
-    twitter: { card: "summary_large_image", title: `${p.title} | MilWeb`, description },
-  };
+  return pageMetadata({ locale, internalPath: `/work/${p.slug}`, title: `${p.title} — ${p.tagline[locale]}`, description, type: "article" });
 }
 
 export default async function ProjectPage({ params }: { params: Promise<LangParams & { slug: string }> }) {
@@ -47,7 +39,7 @@ export default async function ProjectPage({ params }: { params: Promise<LangPara
         headline: t(project.tagline),
         description: t(project.result),
         url,
-        inLanguage: locale === "en" ? "en" : "pt-BR",
+        inLanguage: HTML_LANG[locale],
         keywords: project.stack.join(", "),
         creator: { "@type": "Person", name: "Rick Januario", url: PROFILE.github },
         ...(project.live ? { sameAs: project.live } : {}),
@@ -56,7 +48,7 @@ export default async function ProjectPage({ params }: { params: Promise<LangPara
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${withLocale(locale, "/")}` },
-          { "@type": "ListItem", position: 2, name: t(NAV.work), item: `${SITE_URL}${withLocale(locale, "/work")}` },
+          { "@type": "ListItem", position: 2, name: getDict(locale).nav.work, item: `${SITE_URL}${withLocale(locale, "/work")}` },
           { "@type": "ListItem", position: 3, name: project.title, item: url },
         ],
       },

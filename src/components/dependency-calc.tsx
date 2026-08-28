@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 /** Strings já localizadas (resolvidas no servidor) pra ilha client. */
 export type CalcStrings = {
-  locale: "pt" | "en";
+  locale: "pt" | "en" | "es";
   title: string;
   revenue: string;
   ig: string;
@@ -204,12 +204,12 @@ export function DependencyCalc({ s }: { s: CalcStrings }) {
   const [diagOpen, setDiagOpen] = useState(false);
 
   const nf = useMemo(
-    () => new Intl.NumberFormat(s.locale === "pt" ? "pt-BR" : "en-US", { maximumFractionDigits: 0 }),
+    () => new Intl.NumberFormat(s.locale === "pt" ? "pt-BR" : s.locale === "es" ? "es-419" : "en-US", { maximumFractionDigits: 0 }),
     [s.locale],
   );
   const cf = useMemo(
     () =>
-      new Intl.NumberFormat(s.locale === "pt" ? "pt-BR" : "en-US", {
+      new Intl.NumberFormat(s.locale === "pt" ? "pt-BR" : s.locale === "es" ? "es-419" : "en-US", {
         style: "currency",
         currency: "BRL",
         maximumFractionDigits: 0,

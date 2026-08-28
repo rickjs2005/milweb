@@ -13,7 +13,7 @@ import { onIdle } from "@/animations/idle";
  * enquanto a seção está visível; sem WebGL/reduced-motion fica a versão
  * estática com o poster.
  */
-export function LabTeaser({ eyebrow, title, body, enter, href, poster }: { eyebrow: string; title: string; body: string; enter: string; href: string; poster: string }) {
+export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech }: { eyebrow: string; title: string; body: string; enter: string; href: string; poster: string; act: string; tech: string }) {
   const root = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -109,14 +109,14 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster }: { eyebr
   );
 
   return (
-    <section ref={root} id="lab" data-act="ACT 05 / LAB" data-inspect="LAB_TEASER" className="relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden bg-ink px-margin pb-8 pt-nav text-paper">
+    <section ref={root} id="lab" data-act={act} data-inspect="LAB_TEASER" className="relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden bg-ink px-margin pb-8 pt-nav text-paper">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 -z-10 h-full w-full opacity-0 transition-opacity duration-slow data-[ready]:opacity-100" data-inspect="CANVAS / GLSL" />
       {/* fallback estático (sem WebGL / reduced-motion): o poster do experimento */}
       <div aria-hidden="true" className="absolute inset-0 -z-20 bg-cover bg-center opacity-40" style={{ backgroundImage: `url(${poster})` }} />
 
       <div className="flex items-center justify-between border-t border-paper/40 pt-3 t-mono">
         <span>{eyebrow}</span>
-        <span className="tnum text-paper/60">GLSL / WEBGL</span>
+        <span className="tnum text-paper/60">{tech}</span>
       </div>
 
       <h2 className="t-display t-display-xl relative text-paper [&_div]:inline-block" data-inspect="LAB_TITLE">

@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { PROFILE } from "@/lib/content";
+import { fitLines } from "@/lib/fit";
 
 /**
  * ACT 09 — CONTACT. A última viewport: uma pergunta e uma ação. Ao
  * aproximar o cursor de PROJECT, a palavra revela a própria estrutura —
  * bounding box, labels e uma cota — só com CSS (group-hover).
  */
-export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp }: { headline: readonly string[]; cta: string; ctaWord: string; href: string; email: string; whatsapp: string }) {
+export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act, label }: { headline: readonly string[]; cta: string; ctaWord: string; href: string; email: string; whatsapp: string; act: string; label: string }) {
   const [before, after] = cta.split(ctaWord);
   return (
-    <section id="contact" data-act="ACT 09 / CONTACT" data-inspect="CONTACT" className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-nav">
+    <section id="contact" data-act={act} data-inspect="CONTACT" className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-nav">
       <div className="rule flex items-center justify-between pt-3 t-mono">
-        <span>CONTACT</span>
+        <span>{label}</span>
         <span className="tnum text-ink-3">MW/009</span>
       </div>
 
-      <h2 className="t-display t-display-xl text-ink" data-inspect="H2">
+      <h2 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(headline)} data-inspect="H2">
         {headline.map((l) => (
           <span key={l} className="block">
             {l}

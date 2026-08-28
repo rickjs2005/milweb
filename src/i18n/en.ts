@@ -1,0 +1,55 @@
+import type { Dictionary } from "./types";
+
+export const en: Dictionary = {
+  meta: {
+    langName: "English",
+    selectLanguage: "Select language",
+    siteTitle: "MilWeb | Creative development studio",
+    siteDescription: "MilWeb is a creative development studio in Brazil: websites, systems and digital experiences built with design, code, motion and WebGL — from first wireframe to deploy.",
+  },
+  nav: { work: "Work", lab: "Lab", studio: "Studio", services: "Services", contact: "Contact", menu: "Menu", close: "Close", primary: "Primary navigation" },
+  acts: { build: "ACT 02 / BUILD", work: "ACT 03 / WORK", capabilities: "ACT 04 / CAPABILITIES", lab: "ACT 05 / LAB", brk: "ACT 06 / BREAK", human: "ACT 07 / HUMAN", builtWith: "ACT 08 / BUILT WITH", contact: "ACT 09 / CONTACT" },
+  boot: { tagline: "CREATIVE DEVELOPMENT STUDIO", origin: "BRAZIL — 2026", lines: ["initializing experience", "loading structure", "loading motion", "loading interaction"], skip: "skip" },
+  hero: {
+    headline: ["CODE SHOULD", "MOVE PEOPLE."],
+    stages: ["STRUCTURE", "DESIGN", "MOTION", "INTERACTION", "EXPERIENCE", "SHIP"],
+    support: ["CREATIVE DEVELOPMENT", "DIGITAL EXPERIENCES", "BRAZIL — WORLDWIDE"],
+    inspect: "HOLD TO INSPECT",
+    scroll: "SCROLL TO BUILD",
+  },
+  inspect: { title: "INSPECT MODE — STRUCTURE VIEW", dev: "MW / DEV" },
+  work: {
+    eyebrow: "SELECTED WORK",
+    enter: "ENTER EXPERIENCE",
+    all: "ALL WORK",
+    clientWork: "CLIENT WORK",
+    labels: {
+      kavita: ["T25P · T70P · T100", "26 ITEMS · 05 CATEGORIES", "04 BRANCHES · MG / ES / RJ"],
+      terral: ["THE ROASTER'S HOUSE — HOLD 6S", "05 CHAPTERS", "03 BLENDS"],
+      vertex: ["SCALE 1:75 · REV 03", "11.50 M", "GOP 1 — EVERY FRAME A KEYFRAME"],
+      aurex: ["CALIBRE AX-01 TOURBILLON", "15 SCENES", "10 PARTS · 05 GEARS"],
+    },
+  },
+  displayType: { "CLIENT WORK": "CLIENT WORK", "SCROLL EXPERIENCE": "SCROLL EXPERIENCE", "WEBGL EXPERIENCE": "WEBGL EXPERIENCE", "INTERACTIVE COMMERCE": "INTERACTIVE COMMERCE", "DIGITAL PRODUCT": "DIGITAL PRODUCT", "CREATIVE DEVELOPMENT": "CREATIVE DEVELOPMENT", EXPERIMENTAL: "EXPERIMENTAL" },
+  capabilities: { eyebrow: "CAPABILITIES", items: ["Digital experiences", "Creative development", "WebGL & 3D", "Motion systems", "Digital products"], react: { depth: "DEPTH", structure: "STRUCTURE", perspective: "PERSPECTIVE", type: "TYPE", grid: "GRID" } },
+  lab: { eyebrow: "LAB / 001", title: "EVENT HORIZON", enter: "ENTER THE LAB", tech: "GLSL / WEBGL", pageTitle: ["MADE OF", "CODE."], experiments: "EXPERIMENTS" },
+  brk: { title: ["EVERYTHING", "IN ITS PLACE."], trigger: "DO NOT PRESS", headline: ["YOU BROKE", "THE INTERNET."], sub: "RICK CAN FIX IT.", rebuild: "REBUILD", pieces: ["[SECTION]", "[GRID 12]", "[H2]", "[CANVAS]", "[GSAP]"] },
+  human: { headline: ["BEHIND", "ALL THIS", "CODE"], tail: "IS A HUMAN." },
+  builtWith: { eyebrow: "BUILT WITH", big: ["IDEAS", "CODE", "MOTION", "TOO MUCH COFFEE"] },
+  contact: { headline: ["HAVE SOMETHING", "WORTH BUILDING?"], cta: "START A PROJECT", ctaWord: "PROJECT", email: "EMAIL", label: "CONTACT" },
+  archive: {
+    label: "WORK / ARCHIVE",
+    title: ["ALL", "WORK."],
+    filters: { all: "ALL", client: "CLIENT", scroll: "SCROLL EXPERIENCES", webgl: "WEBGL / 3D", product: "DIGITAL PRODUCTS" },
+    columns: { index: "INDEX", project: "PROJECT", type: "TYPE", year: "YEAR", studio: "STUDIO" },
+  },
+  caseUi: {
+    project: "PROJECT", idea: "02 / THE IDEA", experience: "03 / EXPERIENCE", hood: "04 / UNDER THE HOOD", details: "05 / DETAILS", result: "06 / RESULT", screens: "07 / SELECTED SCREENS", next: "NEXT EXPERIENCE",
+    client: "CLIENT", studio: "STUDIO", type: "TYPE", year: "YEAR", status: "STATUS", live: "LIVE", visit: "VISIT SITE", code: "CODE", builtWith: "BUILT WITH", allWork: "ALL WORK", expand: "READ THE TECHNICAL DETAIL", similar: "I WANT SOMETHING LIKE THIS", screen: "SCREEN",
+    heroAlt: "home screen", day: "DAY", scrollReverse: "SCROLL / REVERSE", hold: "HOLD FOR SIX SECONDS", holding: "HOLDING…", held: "YOU HELD.", again: "AGAIN", heldMessage: "You held. It's what Terral asks of a coffee: that someone waits its time.", explode: "EXPLODE",
+    parts: ["CASE", "BEZEL", "CROWN", "DIAL", "HANDS", "GEAR TRAIN", "MAINSPRING", "ESCAPEMENT", "ROTOR", "TOURBILLON"],
+  },
+  pages: { studio: "STUDIO", services: "SERVICES", contact: "CONTACT", diagnostic: "BUSINESS AUDIT", diagnosticSteps: "05 / STEPS", serviceContact: "04 / CONTACT", serviceIncluded: "01 / WHAT'S INCLUDED", serviceHow: "02 / HOW IT WORKS", whatsapp: "WHATSAPP" },
+  errors: { notFound: ["404", "NOT FOUND."], broke: ["SOMETHING", "BROKE."], err404: "ERR / 404", err500: "ERR / 500" },
+  footer: { email: "Email", year: "Brazil" },
+};

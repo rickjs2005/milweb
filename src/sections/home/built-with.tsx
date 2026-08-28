@@ -1,9 +1,9 @@
 import { Reveal } from "@/animations/reveal";
 
 /** ACT 08 — BUILT WITH. Quatro palavras grandes; a stack em mono, discreta. */
-export function BuiltWith({ eyebrow, big, stack }: { eyebrow: string; big: readonly string[]; stack: readonly string[] }) {
+export function BuiltWith({ eyebrow, big, stack, act }: { eyebrow: string; big: readonly string[]; stack: readonly string[]; act: string }) {
   return (
-    <section data-act="ACT 08 / BUILT WITH" data-inspect="BUILT_WITH" className="container-page py-24 md:py-32">
+    <section data-act={act} data-inspect="BUILT_WITH" className="container-page py-24 md:py-32">
       <Reveal>
         <div data-rule className="rule flex items-center justify-between pt-3 t-mono">
           <span data-reveal>{eyebrow}</span>

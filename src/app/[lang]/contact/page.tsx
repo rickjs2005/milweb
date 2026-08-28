@@ -2,36 +2,34 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { QuoteComposer } from "@/components/quote-composer";
 import { CONTACT_PAGE } from "@/data/studio";
-import { PROFILE, QUOTE, SITE_URL } from "@/lib/content";
+import { PROFILE, QUOTE, type Localized } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
+import { getDict } from "@/i18n";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
+import { fitLines } from "@/lib/fit";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/contact`;
-  return {
-    title: t(CONTACT_PAGE.meta.title),
-    description: t(CONTACT_PAGE.meta.description),
-    alternates: { canonical, languages: { "pt-BR": "/contact", en: "/en/contact", "x-default": "/contact" } },
-    openGraph: { type: "website", title: `${t(CONTACT_PAGE.meta.title)} | MilWeb`, description: t(CONTACT_PAGE.meta.description), url: `${SITE_URL}${canonical}` },
-  };
+  return pageMetadata({ locale, internalPath: "/contact", title: t(CONTACT_PAGE.meta.title), description: t(CONTACT_PAGE.meta.description) });
 }
 
 /** /contact — a pergunta, os canais e o compositor de mensagem. */
 export default async function ContactPage({ params }: { params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const opt = (o: { key: string; label: { pt: string; en: string }; phrase: { pt: string; en: string } }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
+  const opt = (o: { key: string; label: Localized; phrase: Localized }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
+  const d = getDict(locale);
   return (
     <>
       <main className="container-page pt-nav" data-inspect="CONTACT_PAGE">
         <header className="pt-8 md:pt-12">
-          <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>CONTACT</span>
-            <span className="tnum text-ink-3">{t(CONTACT_PAGE.location).toUpperCase()}</span>
+          <div className="rule flex items-center justify-between gap-4 pt-3 t-mono">
+            <span>{d.pages.contact}</span>
+            <span className="tnum text-right text-ink-3 [&_span]:whitespace-nowrap">{t(CONTACT_PAGE.location).toUpperCase().split(" · ").map((part, i) => <span key={part}>{i > 0 ? " · " : ""}{part}</span>)}</span>
           </div>
-          <h1 className="t-display t-display-xl mt-10 text-ink">
-            {CONTACT_PAGE.title.map((l) => (
+          <h1 className="t-display t-display-xl t-fit mt-10 text-ink" style={fitLines(CONTACT_PAGE.title[locale])}>
+            {CONTACT_PAGE.title[locale].map((l) => (
               <span key={l} className="block">
                 {l}
               </span>

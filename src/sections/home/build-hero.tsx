@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import { fitLines } from "@/lib/fit";
 import { gsap, EASE, MQ, ScrollTrigger, SplitText, useGSAP } from "@/animations/gsap";
 
 export type BuildHeroStrings = {
@@ -34,7 +35,7 @@ const CODE = [
  * expansão tipográfica roda amarrada ao scroll normal (barata) — o conceito
  * sobrevive, o custo não.
  */
-export function BuildHero({ s }: { s: BuildHeroStrings }) {
+export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -120,7 +121,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
     <section
       ref={root}
       id="top"
-      data-act="ACT 02 / BUILD"
+      data-act={act}
       data-inspect="HERO"
       className="relative flex min-h-[92svh] flex-col justify-between overflow-hidden px-margin pb-6 pt-nav md:min-h-[100svh] md:pb-8"
     >
@@ -188,7 +189,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
 
       {/* TIPOGRAFIA (o LCP) */}
       <div className="relative z-10 mt-auto pt-[18svh] md:pt-[22svh]">
-        <h1 className="t-display t-display-xl text-ink" data-inspect="HERO_TITLE">
+        <h1 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(s.headline)} data-inspect="HERO_TITLE">
           {s.headline.map((line) => (
             <span key={line} data-line className="block md:whitespace-nowrap">
               {line}

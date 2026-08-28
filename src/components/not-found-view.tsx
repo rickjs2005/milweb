@@ -1,33 +1,29 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { BRAND } from "@/data/brand";
-import { UI, type Locale } from "@/lib/content";
-import { makeT, withLocale } from "@/lib/i18n";
+import { getDict } from "@/i18n";
+import { UI } from "@/lib/content";
+import { makeT, withLocale, type Locale } from "@/lib/i18n";
 
 /**
- * 404 na raiz de app/ (fora de [lang]) — único lugar em que o Next a
- * alcança. Locale sai do pathname. Mesma tipografia, mesma régua, mesmo
- * papel: a página de erro é reconhecível como MilWeb sem logo.
+ * Página 404 com a identidade do site (mesma tipografia, régua e papel).
+ * Sem hooks: serve tanto para o catch-all de [lang] (rota desconhecida,
+ * status 404 vindo do middleware) quanto para o not-found.tsx do segmento.
  */
-export default function NotFound() {
-  const pathname = usePathname() ?? "/";
-  const locale: Locale = pathname.startsWith("/en") ? "en" : "pt";
+export function NotFoundView({ locale }: { locale: Locale }) {
+  const d = getDict(locale);
   const t = makeT(locale);
-
   return (
-    <main className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-6">
+    <main className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-6" data-inspect="ERROR / 404">
       <div className="rule flex items-center justify-between pt-3 t-mono">
         <Link href={withLocale(locale, "/")}>{BRAND.mark}</Link>
-        <span className="tnum">ERR / 404</span>
+        <span className="tnum">{d.errors.err404}</span>
       </div>
 
       <div>
         <p className="t-mono text-ink-3">{t(UI.labels.notFoundTitle)}</p>
         <h1 className="t-display t-display-xl mt-4 text-ink">
-          <span className="block">404</span>
-          <span className="block">NOT FOUND.</span>
+          <span className="block">{d.errors.notFound[0]}</span>
+          <span className="block">{d.errors.notFound[1]}</span>
         </h1>
       </div>
 

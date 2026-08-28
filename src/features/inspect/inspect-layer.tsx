@@ -51,7 +51,7 @@ function collect(): Box[] {
  * mira do cursor com coordenadas. Só lê o DOM (getBoundingClientRect) —
  * nada é modificado no conteúdo. Recalcula em scroll/resize via rAF.
  */
-export function InspectLayer() {
+export function InspectLayer({ strings }: { strings: { title: string; dev: string } }) {
   const root = useRef<HTMLDivElement>(null);
   const boxesRef = useRef<HTMLDivElement>(null);
   const coordRef = useRef<HTMLSpanElement>(null);
@@ -118,12 +118,8 @@ export function InspectLayer() {
       {/* caixas */}
       <div ref={boxesRef} className="absolute inset-0" />
       {/* rodapé técnico */}
-      <p className="t-mono absolute bottom-4 left-margin text-signal">
-        INSPECT MODE — STRUCTURE VIEW
-      </p>
-      <p className="t-mono absolute bottom-4 right-margin text-signal">
-        MW / DEV
-      </p>
+      <p className="t-mono absolute bottom-4 left-margin text-signal">{strings.title}</p>
+      <p className="t-mono absolute bottom-4 right-margin text-signal">{strings.dev}</p>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { addBody, createWorld, hit, render, settled, step, type World } from "@/
  * interface volta ao lugar em coreografia (GSAP para a posição de origem).
  * Nada sai desta seção; a página nunca precisa recarregar.
  */
-export function BreakTheWebsite({ trigger, headline, sub, rebuild, title }: { trigger: string; headline: readonly string[]; sub: string; rebuild: string; title: [string, string] }) {
+export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, pieces }: { trigger: string; headline: readonly string[]; sub: string; rebuild: string; title: readonly [string, string]; act: string; pieces: readonly [string, string, string, string, string] }) {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"idle" | "breaking" | "broken" | "rebuilding">("idle");
@@ -134,12 +134,12 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title }: { tr
   const broken = state === "broken";
 
   return (
-    <section ref={root} id="break" data-act="ACT 06 / BREAK" data-inspect="BREAK" className="relative isolate overflow-hidden bg-paper">
+    <section ref={root} id="break" data-act={act} data-inspect="BREAK" className="relative isolate overflow-hidden bg-paper">
       <div ref={stage} className="container-page relative flex min-h-[100svh] flex-col justify-between pb-8 pt-nav" data-inspect="PHYSICS_STAGE">
         <div data-piece className="rule flex items-center justify-between pt-3 t-mono">
-          <span data-piece>[SECTION]</span>
+          <span data-piece>{pieces[0]}</span>
           <span data-piece className="tnum text-ink-3">
-            [GRID 12]
+            {pieces[1]}
           </span>
         </div>
 
@@ -150,9 +150,9 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title }: { tr
 
         <div className="flex flex-wrap items-end justify-between gap-6 t-mono">
           <div className="space-y-0.5 text-ink-3">
-            <p data-piece>[H2]</p>
-            <p data-piece>[CANVAS]</p>
-            <p data-piece>[GSAP]</p>
+            <p data-piece>{pieces[2]}</p>
+            <p data-piece>{pieces[3]}</p>
+            <p data-piece>{pieces[4]}</p>
           </div>
           <button
             type="button"

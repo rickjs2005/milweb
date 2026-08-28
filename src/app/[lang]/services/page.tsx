@@ -3,20 +3,17 @@ import Link from "next/link";
 import { Reveal } from "@/animations/reveal";
 import { Footer } from "@/components/footer";
 import { SERVICES_PAGE } from "@/data/studio";
-import { DELIVERABLES, DIFFERENTIALS, PROFILE, QUOTE, SITE_URL } from "@/lib/content";
+import { DELIVERABLES, DIFFERENTIALS, PROFILE, QUOTE } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
+import { getDict } from "@/i18n";
 import { SERVICES } from "@/lib/services";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { fitLines } from "@/lib/fit";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/services`;
-  return {
-    title: t(SERVICES_PAGE.meta.title),
-    description: t(SERVICES_PAGE.meta.description),
-    alternates: { canonical, languages: { "pt-BR": "/services", en: "/en/services", "x-default": "/services" } },
-    openGraph: { type: "website", title: `${t(SERVICES_PAGE.meta.title)} | MilWeb`, description: t(SERVICES_PAGE.meta.description), url: `${SITE_URL}${canonical}` },
-  };
+  return pageMetadata({ locale, internalPath: "/services", title: t(SERVICES_PAGE.meta.title), description: t(SERVICES_PAGE.meta.description) });
 }
 
 /** /services — o hub comercial: serviços (com página própria), entregas, garantias, diagnóstico. */
@@ -24,15 +21,16 @@ export default async function ServicesPage({ params }: { params: Promise<LangPar
   const locale = await localeFrom(params);
   const t = makeT(locale);
   const wa = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(t(QUOTE.fallback))}`;
+  const d = getDict(locale);
   return (
     <>
       <main className="container-page pt-nav" data-inspect="SERVICES">
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>SERVICES</span>
+            <span>{d.pages.services}</span>
             <span className="tnum text-ink-3">{String(SERVICES.length).padStart(2, "0")}</span>
           </div>
-          <h1 className="t-display t-display-xl mt-10 text-ink">{SERVICES_PAGE.title[0]}</h1>
+          <h1 className="t-display t-display-xl t-fit mt-10 text-ink" style={fitLines(SERVICES_PAGE.title[locale])}>{SERVICES_PAGE.title[locale][0]}</h1>
           <p className="t-lead mt-10 max-w-3xl text-ink-2">{t(SERVICES_PAGE.intro)}</p>
         </header>
 

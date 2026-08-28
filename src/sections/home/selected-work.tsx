@@ -31,7 +31,7 @@ export type WorkItem = {
  * canvas. A mídia e o título carregam view-transition-name para viajar até
  * o hero do case.
  */
-export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: WorkItem[]; eyebrow: string; enter: string; all: string; allHref: string }) {
+export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientWork }: { items: WorkItem[]; eyebrow: string; enter: string; all: string; allHref: string; act: string; clientWork: string }) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -137,7 +137,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: W
   const total = String(items.length).padStart(2, "0");
 
   return (
-    <section ref={root} id="work" data-act="ACT 03 / WORK" data-inspect="SELECTED_WORK" className="relative">
+    <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative">
       {items.map((w, i) => (
         <article
           key={w.slug}
@@ -208,7 +208,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref }: { items: W
             </h2>
             <div className="col-span-4 md:col-span-3 md:text-right">
               <p data-text className="t-mono opacity-80">
-                {w.client ? `CLIENT WORK — ${w.client.toUpperCase()}` : w.displayType}
+                {w.client ? `${clientWork} — ${w.client.toUpperCase()}` : w.displayType}
                 {w.year ? ` — ${w.year}` : ""}
               </p>
               <Link data-text href={w.href} className="link-rule t-mono mt-3 inline-block" data-inspect="CTA / ENTER">

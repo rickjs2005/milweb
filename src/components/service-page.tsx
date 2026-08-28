@@ -3,10 +3,11 @@ import { Reveal } from "@/animations/reveal";
 import { Footer } from "@/components/footer";
 import { QuoteComposer } from "@/components/quote-composer";
 import { CONTACT_PAGE } from "@/data/studio";
-import { PROFILE, QUOTE, SITE_URL, type Locale } from "@/lib/content";
+import { PROFILE, QUOTE, SITE_URL, type Locale, type Localized } from "@/lib/content";
 import { ORG_ID } from "@/lib/inline-scripts";
 import type { Service } from "@/lib/services";
 import { makeT, withLocale } from "@/lib/i18n";
+import { getDict, HTML_LANG } from "@/i18n";
 
 /**
  * Página de serviço (SEO): título → benefícios → processo → FAQ → compositor
@@ -15,21 +16,22 @@ import { makeT, withLocale } from "@/lib/i18n";
  */
 export async function ServicePage({ service, locale }: { service: Service; locale: Locale }) {
   const t = makeT(locale);
+  const d = getDict(locale);
   const wa = `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(t(service.ctaWhats))}`;
   const home = withLocale(locale, "/");
-  const path = `${locale === "en" ? "/en" : ""}/${service.slug}`;
-  const opt = (o: { key: string; label: { pt: string; en: string }; phrase: { pt: string; en: string } }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
+  const path = withLocale(locale, `/${service.slug}`);
+  const opt = (o: { key: string; label: Localized; phrase: Localized }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Service", name: t(service.label), description: t(service.metaDescription), url: `${SITE_URL}${path}`, inLanguage: locale === "en" ? "en" : "pt-BR", areaServed: "BR", provider: { "@id": ORG_ID } },
+      { "@type": "Service", name: t(service.label), description: t(service.metaDescription), url: `${SITE_URL}${path}`, inLanguage: HTML_LANG[locale], areaServed: "BR", provider: { "@id": ORG_ID } },
       { "@type": "FAQPage", mainEntity: service.faq.map((f) => ({ "@type": "Question", name: t(f.q), acceptedAnswer: { "@type": "Answer", text: t(f.a) } })) },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${home}` },
-          { "@type": "ListItem", position: 2, name: "Services", item: `${SITE_URL}${withLocale(locale, "/services")}` },
+          { "@type": "ListItem", position: 2, name: d.nav.services, item: `${SITE_URL}${withLocale(locale, "/services")}` },
           { "@type": "ListItem", position: 3, name: t(service.label), item: `${SITE_URL}${path}` },
         ],
       },
@@ -43,10 +45,10 @@ export async function ServicePage({ service, locale }: { service: Service; local
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
             <Link href={withLocale(locale, "/services")} className="link-rule">
-              SERVICES / {t(service.eyebrow).toUpperCase()}
+              {d.pages.services} / {t(service.eyebrow).toUpperCase()}
             </Link>
             <a href={wa} target="_blank" rel="noopener noreferrer" className="link-rule text-ink">
-              WHATSAPP ↗
+              {d.pages.whatsapp} ↗
             </a>
           </div>
           <h1 className="t-display t-display-md mt-10 max-w-6xl text-ink">
@@ -58,7 +60,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
         <Reveal as="section" className="grid-12 gap-y-6 py-16 md:py-24">
           <div data-rule className="rule col-span-4 md:col-span-8 lg:col-span-12" />
           <p data-reveal className="t-mono col-span-4 text-ink-3 md:col-span-2">
-            01 / {t({ pt: "O que está incluso", en: "What's included" }).toUpperCase()}
+            {d.pages.serviceIncluded}
           </p>
           <ul className="col-span-4 grid gap-x-gutter gap-y-8 md:col-span-6 md:col-start-3 md:grid-cols-2 lg:col-span-9 lg:col-start-3 lg:grid-cols-3">
             {service.benefits.map((b, i) => (
@@ -73,7 +75,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
         <Reveal as="section" className="grid-12 gap-y-6 py-16 md:py-24">
           <div data-rule className="rule col-span-4 md:col-span-8 lg:col-span-12" />
           <p data-reveal className="t-mono col-span-4 text-ink-3 md:col-span-2">
-            02 / {t({ pt: "Como funciona", en: "How it works" }).toUpperCase()}
+            {d.pages.serviceHow}
           </p>
           <ol className="col-span-4 grid gap-x-gutter gap-y-8 md:col-span-6 md:col-start-3 md:grid-cols-2 lg:col-span-9 lg:col-start-3 lg:grid-cols-4">
             {service.steps.map((s, i) => (
@@ -105,7 +107,7 @@ export async function ServicePage({ service, locale }: { service: Service; local
         </Reveal>
 
         <section className="rule grid-12 gap-y-6 py-16 md:py-24">
-          <p className="t-mono col-span-4 text-ink-3 md:col-span-2">04 / CONTACT</p>
+          <p className="t-mono col-span-4 text-ink-3 md:col-span-2">{d.pages.serviceContact}</p>
           <div className="col-span-4 md:col-span-6 md:col-start-3 lg:col-span-7 lg:col-start-3">
             <QuoteComposer
               typeQuestion={t(QUOTE.typeQuestion)}

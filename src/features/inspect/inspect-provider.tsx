@@ -22,7 +22,7 @@ const HOLD_MS_TOUCH = 380;
  * Um clique curto nunca dispara (limiar de 260 ms). Se o hold começou sobre
  * um link, o click do release é engolido para não navegar por acidente.
  */
-export function InspectProvider({ children }: { children: ReactNode }) {
+export function InspectProvider({ children, strings }: { children: ReactNode; strings: { title: string; dev: string } }) {
   const [active, setActive] = useState(false);
   const timer = useRef<number | null>(null);
   const pointer = useRef({ x: 0, y: 0 });
@@ -117,7 +117,7 @@ export function InspectProvider({ children }: { children: ReactNode }) {
   return (
     <InspectCtx.Provider value={{ active }}>
       {children}
-      {active && <InspectLayer />}
+      {active && <InspectLayer strings={strings} />}
     </InspectCtx.Provider>
   );
 }

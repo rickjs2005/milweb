@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { DIAGNOSTICO, PROFILE, SITE_URL, UI } from "@/lib/content";
-import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
+import { pageMetadata } from "@/lib/seo";
+import { getDict } from "@/i18n";
 import { Dependency } from "@/components/dependency";
 import { Google } from "@/components/google";
 import { FairPrice } from "@/components/fair-price";
@@ -29,26 +31,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/diagnostico`;
-  const title = t({ pt: "Diagnóstico do seu negócio", en: "Your business audit" });
+  const title = t({ pt: "Diagnóstico do seu negócio", en: "Your business audit", es: "Diagnóstico de tu negocio" });
   const description = t({
     pt: "Quanto custa depender só de rede social, como sua empresa aparece no Google e como eu calculo o orçamento. Tudo numa página, com diagnóstico gratuito.",
     en: "What depending on social media really costs, how your company shows up on Google and how I price projects fairly. One page, with a free audit at the end.",
+    es: "Cuánto cuesta depender solo de redes sociales, cómo aparece tu empresa en Google y cómo calculo el presupuesto. Todo en una página, con diagnóstico gratuito.",
   });
-  return {
-    title,
-    description,
-    alternates: {
-      canonical,
-      languages: {
-        "pt-BR": "/diagnostico",
-        en: "/en/diagnostico",
-        "x-default": "/diagnostico",
-      },
-    },
-    openGraph: { type: "website", title: `${title} | MilWeb`, description, url: `${SITE_URL}${canonical}` },
-    twitter: { card: "summary_large_image", title: `${title} | MilWeb`, description },
-  };
+  return pageMetadata({ locale, internalPath: "/diagnostico", title, description });
 }
 
 const waHref = (text: string) =>
@@ -57,19 +46,21 @@ const waHref = (text: string) =>
 export default async function DiagnosticoPage({ params }: { params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
   const t = makeT(locale);
+  const d = getDict(locale);
 
   return (
     <>
       <main>
         <div className="container-page pt-nav">
-          <div className="rule mt-8 flex items-center justify-between pt-3 t-mono md:mt-12"><span>DIAGNOSTICO</span><span className="tnum text-ink-3">05 / STEPS</span></div>
+          <div className="rule mt-8 flex items-center justify-between pt-3 t-mono md:mt-12"><span>{d.pages.diagnostic}</span><span className="tnum text-ink-3">{d.pages.diagnosticSteps}</span></div>
           <h1 className="t-display t-display-md mt-10 max-w-6xl text-ink">
-            {t({ pt: "Diagnóstico do seu negócio na internet", en: "An audit of your business online" })}
+            {t({ pt: "Diagnóstico do seu negócio na internet", en: "An audit of your business online", es: "Diagnóstico de tu negocio en internet" })}
           </h1>
           <p className="t-lead mt-10 max-w-3xl text-ink-2">
             {t({
               pt: "Do problema ao preço, na ordem certa: o risco de viver só de rede social, o que o Google mostra de você, como eu calculo o orçamento e o que vem dentro do projeto. No final, um diagnóstico gratuito.",
               en: "From problem to price, in the right order: the risk of living on social media alone, what Google shows about you, how I price the work and what comes inside the project. At the end, a free audit.",
+              es: "Del problema al precio, en el orden correcto: el riesgo de vivir solo de redes sociales, lo que Google muestra de ti, cómo calculo el presupuesto y qué viene dentro del proyecto. Al final, un diagnóstico gratuito.",
             })}
           </p>
         </div>

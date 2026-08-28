@@ -72,6 +72,14 @@
     text-wrap: balance;
   }
   .t-display-xl { font-size: var(--step-6); }
+  /* Headline que cabe na linha em qualquer idioma: escala pelo número de
+     caracteres da linha mais longa (--chars), nunca acima do tamanho normal.
+     0.97em ≈ largura média do caractere em Archivo expandida 900 caixa alta. */
+  .t-fit { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) / (var(--chars, 12) * 0.97))); }
+  /* Só a partir de md — no mobile a linha pode quebrar, então mantém o tamanho normal. */
+  @media (min-width: 768px) {
+    .t-fit-md { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) / (var(--chars, 12) * 0.97))); }
+  }
   .t-display-lg { font-size: var(--step-5); }
   .t-display-md { font-size: var(--step-4); }
   .t-display-sm { font-size: var(--step-3); }

@@ -9,7 +9,7 @@ import { gsap, EASE, MQ, ScrollTrigger, useGSAP } from "@/animations/gsap";
    progresso do ScrollTrigger; "damped" persegue o target por rAF, exatamente
    a mecânica descrita na engenharia do projeto (world.ts + damping).
    --------------------------------------------------------------------- */
-export function VertexPipeline({ labels }: { labels: { scroll: string; progress: string; damped: string; time: string } }) {
+export function VertexPipeline({ labels }: { labels: { scroll: string; day: string } }) {
   const root = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLSpanElement>(null);
   const dampedRef = useRef<HTMLSpanElement>(null);
@@ -29,7 +29,7 @@ export function VertexPipeline({ labels }: { labels: { scroll: string; progress:
         const d = world.damped;
         if (targetRef.current) targetRef.current.textContent = t.toFixed(3);
         if (dampedRef.current) dampedRef.current.textContent = d.toFixed(3);
-        if (timeRef.current) timeRef.current.textContent = `DIA ${String(Math.round(d * DURATION)).padStart(3, "0")} / ${DURATION}`;
+        if (timeRef.current) timeRef.current.textContent = `${labels.day} ${String(Math.round(d * DURATION)).padStart(3, "0")} / ${DURATION}`;
         if (barT.current) barT.current.style.transform = `scaleX(${t})`;
         if (barD.current) barD.current.style.transform = `scaleX(${d})`;
       };
@@ -55,12 +55,12 @@ export function VertexPipeline({ labels }: { labels: { scroll: string; progress:
   );
 
   return (
-    <div ref={root} className="grid gap-3 md:grid-cols-5" data-inspect="PIPELINE / VERTEX" aria-label="Scroll pipeline">
+    <div ref={root} className="grid gap-3 md:grid-cols-5" data-inspect="PIPELINE / VERTEX" aria-label={labels.scroll}>
       <Box k="SCROLL" v={labels.scroll} />
       <Box k="ScrollTrigger" v={<span>progress = <span ref={targetRef}>0.000</span></span>} bar={barT} />
       <Box k="world.ts" v="{ scene, progress }" />
       <Box k="rAF + damping" v={<span>damped = <span ref={dampedRef}>0.000</span></span>} bar={barD} />
-      <Box k="video.currentTime" v={<span ref={timeRef}>DIA 000 / 132</span>} />
+      <Box k="video.currentTime" v={<span ref={timeRef}>{labels.day} 000 / 132</span>} />
     </div>
   );
 }
@@ -72,13 +72,13 @@ export function VertexPipeline({ labels }: { labels: { scroll: string; progress:
    cascata para visualizar o mecanismo — os valores exatos vivem em cada
    <Part> do código original.
    --------------------------------------------------------------------- */
-const PARTS = ["CAIXA", "BEZEL", "COROA", "MOSTRADOR", "PONTEIROS", "TREM DE ENGRENAGENS", "MOLA ESPIRAL", "ESCAPE", "ROTOR", "TOURBILLON"];
+const PARTS_COUNT = 10;
 const smoothstep = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
 };
 
-export function AurexExplosion({ label }: { label: string }) {
+export function AurexExplosion({ label, parts }: { label: string; parts: readonly string[] }) {
   const root = useRef<HTMLDivElement>(null);
   const rows = useRef<(HTMLLIElement | null)[]>([]);
   const progRef = useRef<HTMLSpanElement>(null);
@@ -95,7 +95,7 @@ export function AurexExplosion({ label }: { label: string }) {
           if (progRef.current) progRef.current.textContent = p.toFixed(2);
           rows.current.forEach((row, i) => {
             if (!row) return;
-            const delay = (i / PARTS.length) * 0.6;
+            const delay = (i / PARTS_COUNT) * 0.6;
             const span = 0.4;
             const v = smoothstep(delay, delay + span, p);
             row.style.setProperty("--v", v.toFixed(3));
@@ -118,7 +118,7 @@ export function AurexExplosion({ label }: { label: string }) {
         <span className="text-ink-3">v = smoothstep(delay, delay + span, progress)</span>
       </div>
       <ol className="divide-y divide-neutral">
-        {PARTS.map((p, i) => (
+        {parts.map((p, i) => (
           <li key={p} ref={(n) => {
               rows.current[i] = n;
             }} className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-4 py-2 t-mono" style={{ "--v": 0 } as React.CSSProperties}>
@@ -148,7 +148,7 @@ export function AurexExplosion({ label }: { label: string }) {
 const CHAPTERS = ["CAPARAÓ", "TERREIRO", "TAMBOR", "MOENDA", "XÍCARA"];
 const HOLD_MS = 6000;
 
-export function TerralHold({ labels }: { labels: { hold: string; holding: string; done: string; reset: string } }) {
+export function TerralHold({ labels }: { labels: { hold: string; holding: string; done: string; reset: string; message: string } }) {
   const [state, setState] = useState<"idle" | "holding" | "done">("idle");
   const meter = useRef<HTMLSpanElement>(null);
   const tween = useRef<gsap.core.Tween | null>(null);
@@ -220,7 +220,7 @@ export function TerralHold({ labels }: { labels: { hold: string; holding: string
         )}
       </div>
       <p className={"t-lead mt-6 max-w-xl text-ink transition-opacity duration-slow " + (state === "done" ? "opacity-100" : "opacity-0")} aria-live="polite">
-        {state === "done" ? "Você segurou. É o que a Terral pede de um café: que alguém espere o tempo dele." : ""}
+        {state === "done" ? labels.message : ""}
       </p>
     </div>
   );

@@ -1,35 +1,29 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp } from "@/lib/csp";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, PREFIX, isLocale } from "@/i18n/config";
+import { internalizePath, isKnownInternalPath, localizePath } from "@/i18n/routing";
 
 const CSP = buildCsp({ dev: process.env.NODE_ENV === "development" });
 
 /**
- * i18n por URL, com o locale vivendo no SEGMENTO da rota (app/[lang]/...).
+ * i18n por URL com rotas LOCALIZADAS, locale vivendo no segmento interno
+ * app/[lang]/…:
  *
- * As URLs públicas não mudaram: PT na raiz (`/`, `/work`) e EN em `/en`.
- * O que mudou é como o servidor descobre o idioma. Antes era um cookie lido
- * com `cookies()` dentro das Server Components — e ler cookie opta a rota
- * por render dinâmico, o que impedia qualquer página de ser pré-renderizada
- * (ver a nota longa em src/lib/csp.ts). Agora o idioma é parâmetro de rota,
- * então as duas versões saem prontas do build e são servidas da CDN.
+ *   /                 → rewrite /pt
+ *   /projetos/terral  → rewrite /pt/work/terral
+ *   /en/work/terral   → rewrite /en/work/terral   (segmento já interno)
+ *   /es/proyectos/x   → rewrite /es/work/x
+ *   /pt, /pt/…        → 308 para a URL pública sem prefixo (endereço interno)
  *
- *   /            → reescreve para /pt          (invisível pro visitante)
- *   /work    → reescreve para /pt/work
- *   /en, /en/... → passa direto (já casa com [lang])
- *   /pt, /pt/... → REDIRECIONA para a URL sem prefixo
+ * URLs antigas já publicadas (/work, /studio, /services, /contact, /en/diagnostico,
+ * /en/criacao-de-sites…) recebem 308 DIRETO para a canônica — sem cadeia.
  *
- * O último caso existe pra não criar conteúdo duplicado: o prefixo `/pt` é
- * detalhe interno, e sem o redirect toda página teria dois endereços
- * públicos idênticos.
+ * Preferência de idioma: o seletor grava o cookie `milweb_locale`. Só a raiz
+ * exata "/" honra esse cookie (reabrir o site volta ao idioma escolhido);
+ * qualquer link direto com /en ou /es sempre respeita a URL. Não há
+ * redirecionamento por Accept-Language.
  */
-/**
- * Imagens de metadados (og/twitter) são geradas pelo Next a partir do
- * segmento, então saem no HTML como /pt/... — e essas URLs vão pra fora, em
- * preview de link do WhatsApp, LinkedIn e afins. Ficam de fora do redirect
- * abaixo pra que o crawler pegue a imagem direto, sem depender de seguir
- * redirect.
- */
-const METADATA_IMAGE = /\/(opengraph-image|twitter-image)$/;
+const METADATA_IMAGE = /\/(opengraph-image|twitter-image)(\?.*)?$/;
 
 function withCsp(res: NextResponse) {
   res.headers.set("Content-Security-Policy", CSP);
@@ -40,27 +34,55 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const segment = pathname.split("/")[1];
 
-  // Já vem com idioma no path: entrega direto, sem reescrever de novo
-  // (reescrever aqui produziria /pt/pt/... e 404).
-  if (segment === "en") return withCsp(NextResponse.next());
-
-  if (segment === "pt") {
-    // Imagem de metadado: é a URL que sai no og:image e vai pra fora.
-    if (METADATA_IMAGE.test(pathname)) return withCsp(NextResponse.next());
-    // Página: /pt é endereço interno, volta pra URL pública.
+  // Imagens de metadado: o Next as gera em /pt/… e essa URL sai no og:image.
+  if (METADATA_IMAGE.test(pathname)) {
+    if (isLocale(segment)) return withCsp(NextResponse.next());
     const url = req.nextUrl.clone();
-    url.pathname = pathname.slice("/pt".length) || "/";
+    url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
+    return withCsp(NextResponse.rewrite(url));
+  }
+
+  // /pt é endereço interno: volta para a URL pública.
+  if (segment === "pt") {
+    const url = req.nextUrl.clone();
+    url.pathname = localizePath("pt", pathname.slice("/pt".length) || "/");
     return withCsp(NextResponse.redirect(url, 308));
   }
 
-  // Sem prefixo = português: ganha o /pt invisível.
+  // Raiz exata: honra a preferência manual salva pelo seletor.
+  if (pathname === "/") {
+    const pref = req.cookies.get(LOCALE_COOKIE)?.value;
+    if (isLocale(pref) && pref !== DEFAULT_LOCALE) {
+      const url = req.nextUrl.clone();
+      url.pathname = PREFIX[pref];
+      return withCsp(NextResponse.redirect(url, 307));
+    }
+  }
+
+  const { locale, internal, legacy } = internalizePath(pathname);
+
+  // URL antiga → canônica final, num único salto.
+  if (legacy) {
+    const url = req.nextUrl.clone();
+    url.pathname = localizePath(locale, internal);
+    return withCsp(NextResponse.redirect(url, 308));
+  }
+
   const url = req.nextUrl.clone();
-  url.pathname = pathname === "/" ? "/pt" : `/pt${pathname}`;
+
+  // Rota desconhecida → catch-all de [lang] com status 404 real. O 404 sai
+  // com a identidade do site dentro do layout do idioma (<html lang> certo).
+  if (!isKnownInternalPath(internal)) {
+    url.pathname = `/${locale}/__not-found${internal}`;
+    return withCsp(NextResponse.rewrite(url, { status: 404 }));
+  }
+
+  url.pathname = `/${locale}${internal === "/" ? "" : internal}`;
   return withCsp(NextResponse.rewrite(url));
 }
 
 export const config = {
   // Ignora assets estáticos (_next, arquivos com extensão) — o resto passa
-  // pelo middleware pra ganhar o prefixo de idioma e o CSP.
+  // pelo middleware pra ganhar o segmento de idioma e o CSP.
   matcher: ["/((?!_next/|.*\\..*).*)"],
 };

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { SITE_URL, UI } from "@/lib/content";
+import { UI } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
+import { getDict } from "@/i18n";
 import { PROJECT_INDEX, TOTAL_LABEL } from "@/data/projects";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { fitLines } from "@/lib/fit";
 import { CASE_UI } from "@/data/case-extras";
 import { Footer } from "@/components/footer";
 import { WorkIndex, type WorkRow } from "@/sections/work/work-index";
@@ -14,31 +17,23 @@ import { WorkIndex, type WorkRow } from "@/sections/work/work-index";
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/work`;
-  const title = t(UI.sections.projectsAllTitle);
-  const description = t(UI.sections.projectsAllSub);
-  return {
-    title,
-    description,
-    alternates: { canonical, languages: { "pt-BR": "/work", en: "/en/work", "x-default": "/work" } },
-    openGraph: { type: "website", title: `${title} | MilWeb`, description, url: `${SITE_URL}${canonical}` },
-    twitter: { card: "summary_large_image", title: `${title} | MilWeb`, description },
-  };
+  return pageMetadata({ locale, internalPath: "/work", title: t(UI.sections.projectsAllTitle), description: t(UI.sections.projectsAllSub) });
 }
 
 export default async function WorkPage({ params }: { params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
   const t = makeT(locale);
+  const d = getDict(locale);
   const rows: WorkRow[] = PROJECT_INDEX.map((p) => ({
     n: p.n,
     slug: p.slug,
     title: p.title,
     tagline: t(p.tagline),
-    displayType: p.displayType,
+    displayType: d.displayType[p.displayType],
     year: p.year ?? null,
     image: p.image ?? null,
     href: withLocale(locale, `/work/${p.slug}`),
-    client: p.clientWork ? (p.clientName ?? "CLIENT") : null,
+    client: p.clientWork ? (p.clientName ?? d.archive.filters.client) : null,
     webgl: p.displayType === "WEBGL EXPERIENCE",
     scroll: p.displayType === "SCROLL EXPERIENCE",
     product: p.displayType === "DIGITAL PRODUCT",
@@ -49,13 +44,13 @@ export default async function WorkPage({ params }: { params: Promise<LangParams>
       <main className="container-page pt-nav" data-inspect="WORK_ARCHIVE">
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>WORK / ARCHIVE</span>
+            <span>{d.archive.label}</span>
             <span className="tnum text-ink-3">
               {TOTAL_LABEL} {t(CASE_UI.archiveSub).toUpperCase()}
             </span>
           </div>
-          <h1 className="t-display t-display-xl mt-10 text-ink">
-            {CASE_UI.archiveTitle.map((l) => (
+          <h1 className="t-display t-display-xl t-fit mt-10 text-ink" style={fitLines(d.archive.title)}>
+            {d.archive.title.map((l) => (
               <span key={l} className="block">
                 {l}
               </span>
@@ -65,18 +60,7 @@ export default async function WorkPage({ params }: { params: Promise<LangParams>
 
         <WorkIndex
           rows={rows}
-          labels={{
-            all: "ALL",
-            client: "CLIENT",
-            scroll: "SCROLL EXPERIENCES",
-            webgl: "WEBGL / 3D",
-            product: "DIGITAL PRODUCTS",
-            index: "INDEX",
-            project: "PROJECT",
-            type: "TYPE",
-            year: "YEAR",
-            studio: "STUDIO",
-          }}
+          labels={{ ...d.archive.filters, ...d.archive.columns }}
         />
       </main>
       <Footer locale={locale} />

@@ -5,31 +5,27 @@ import { Reveal } from "@/animations/reveal";
 import { Footer } from "@/components/footer";
 import { BRAND } from "@/data/brand";
 import { STUDIO } from "@/data/studio";
-import { SITE_URL } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
+import { getDict } from "@/i18n";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/studio`;
-  return {
-    title: t(STUDIO.meta.title),
-    description: t(STUDIO.meta.description),
-    alternates: { canonical, languages: { "pt-BR": "/studio", en: "/en/studio", "x-default": "/studio" } },
-    openGraph: { type: "website", title: `${t(STUDIO.meta.title)} | MilWeb`, description: t(STUDIO.meta.description), url: `${SITE_URL}${canonical}` },
-  };
+  return pageMetadata({ locale, internalPath: "/studio", title: t(STUDIO.meta.title), description: t(STUDIO.meta.description) });
 }
 
 /** /studio — manifesto, princípios, processo, fundador. */
 export default async function StudioPage({ params }: { params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
   const t = makeT(locale);
+  const d = getDict(locale);
   return (
     <>
       <main className="container-page pt-nav" data-inspect="STUDIO">
         <header className="flex min-h-[80svh] flex-col justify-between pb-10 pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>STUDIO</span>
+            <span>{d.pages.studio}</span>
             <span className="tnum text-ink-3">{BRAND.index}</span>
           </div>
           <h1 className="t-display t-display-xl text-ink">
@@ -95,7 +91,7 @@ export default async function StudioPage({ params }: { params: Promise<LangParam
             {t(STUDIO.cta).toUpperCase()} →
           </Link>
           <Link href={withLocale(locale, "/contact")} className="link-rule text-ink">
-            CONTACT →
+            {d.nav.contact.toUpperCase()} →
           </Link>
         </div>
       </main>

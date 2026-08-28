@@ -45,6 +45,7 @@ export function FairPrice({ locale }: { locale: Locale }) {
                 alt={t({
                   pt: "Calculadora de orçamento do MilLead com horas por etapa e painel de preço",
                   en: "MilLead quote calculator with hours per stage and the price panel",
+                  es: "Calculadora de presupuesto de MilLead con horas por etapa y panel de precio",
                 })}
                 width={1600}
                 height={1000}
@@ -58,6 +59,7 @@ export function FairPrice({ locale }: { locale: Locale }) {
                 alt={t({
                   pt: "Painel do cálculo: custo real e os preços mínimo, recomendado e premium",
                   en: "Calculation panel: real cost plus minimum, recommended and premium prices",
+                  es: "Panel del cálculo: costo real y los precios mínimo, recomendado y premium",
                 })}
                 width={1600}
                 height={1000}

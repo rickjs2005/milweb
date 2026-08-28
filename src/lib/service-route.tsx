@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SERVICES } from "./services";
 import { localeFrom, type LangParams } from "./i18n";
+import { pageMetadata } from "./seo";
 import { ServicePage } from "@/components/service-page";
 
 /**
@@ -13,24 +14,7 @@ export function serviceRoute(slug: string) {
 
   async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
     const locale = await localeFrom(params);
-    const canonical = `${locale === "en" ? "/en" : ""}/${service!.slug}`;
-    return {
-      title: service!.metaTitle[locale],
-      description: service!.metaDescription[locale],
-      alternates: {
-        canonical,
-        languages: {
-          "pt-BR": `/${service!.slug}`,
-          en: `/en/${service!.slug}`,
-          "x-default": `/${service!.slug}`,
-        },
-      },
-      openGraph: {
-        title: service!.metaTitle[locale],
-        description: service!.metaDescription[locale],
-        type: "website",
-      },
-    };
+    return pageMetadata({ locale, internalPath: `/${service!.slug}`, title: service!.metaTitle[locale], description: service!.metaDescription[locale] });
   }
 
   async function Page({ params }: { params: Promise<LangParams> }) {

@@ -1,0 +1,55 @@
+import type { Dictionary } from "./types";
+
+export const es: Dictionary = {
+  meta: {
+    langName: "Español",
+    selectLanguage: "Seleccionar idioma",
+    siteTitle: "MilWeb | Estudio de desarrollo creativo",
+    siteDescription: "MilWeb es un estudio de desarrollo creativo en Brasil: sitios, sistemas y experiencias digitales con diseño, código, motion y WebGL — del primer wireframe al deploy.",
+  },
+  nav: { work: "Proyectos", lab: "Lab", studio: "Estudio", services: "Servicios", contact: "Contacto", menu: "Menú", close: "Cerrar", primary: "Navegación principal" },
+  acts: { build: "ACTO 02 / CONSTRUCCIÓN", work: "ACTO 03 / PROYECTOS", capabilities: "ACTO 04 / CAPACIDADES", lab: "ACTO 05 / LAB", brk: "ACTO 06 / RUPTURA", human: "ACTO 07 / HUMANO", builtWith: "ACTO 08 / HECHO CON", contact: "ACTO 09 / CONTACTO" },
+  boot: { tagline: "ESTUDIO DE DESARROLLO CREATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiencia", "cargando estructura", "cargando motion", "cargando interacción"], skip: "saltar" },
+  hero: {
+    headline: ["EL CÓDIGO DEBE", "MOVER PERSONAS."],
+    stages: ["ESTRUCTURA", "DISEÑO", "MOTION", "INTERACCIÓN", "EXPERIENCIA", "ENTREGA"],
+    support: ["DESARROLLO CREATIVO", "EXPERIENCIAS DIGITALES", "BRASIL — MUNDO"],
+    inspect: "MANTÉN PRESIONADO PARA INSPECCIONAR",
+    scroll: "DESPLAZA PARA CONSTRUIR",
+  },
+  inspect: { title: "MODO INSPECCIÓN — VISTA ESTRUCTURAL", dev: "MW / DEV" },
+  work: {
+    eyebrow: "PROYECTOS SELECCIONADOS",
+    enter: "ENTRAR A LA EXPERIENCIA",
+    all: "TODOS LOS PROYECTOS",
+    clientWork: "TRABAJO PARA CLIENTE",
+    labels: {
+      kavita: ["T25P · T70P · T100", "26 ÍTEMS · 05 CATEGORÍAS", "04 SUCURSALES · MG / ES / RJ"],
+      terral: ["LA CASA DEL TOSTADOR — MANTÉN 6S", "05 CAPÍTULOS", "03 BLENDS"],
+      vertex: ["ESC 1:75 · REV 03", "11,50 M", "GOP 1 — CADA FRAME ES KEYFRAME"],
+      aurex: ["CALIBRE AX-01 TOURBILLON", "15 ESCENAS", "10 PIEZAS · 05 ENGRANAJES"],
+    },
+  },
+  displayType: { "CLIENT WORK": "TRABAJO PARA CLIENTE", "SCROLL EXPERIENCE": "EXPERIENCIA EN SCROLL", "WEBGL EXPERIENCE": "EXPERIENCIA WEBGL", "INTERACTIVE COMMERCE": "COMERCIO INTERACTIVO", "DIGITAL PRODUCT": "PRODUCTO DIGITAL", "CREATIVE DEVELOPMENT": "DESARROLLO CREATIVO", EXPERIMENTAL: "EXPERIMENTAL" },
+  capabilities: { eyebrow: "CAPACIDADES", items: ["Experiencias digitales", "Desarrollo creativo", "WebGL y 3D", "Sistemas de motion", "Productos digitales"], react: { depth: "PROFUNDIDAD", structure: "ESTRUCTURA", perspective: "PERSPECTIVA", type: "TIPOGRAFÍA", grid: "GRID" } },
+  lab: { eyebrow: "LAB / 001", title: "HORIZONTE DE EVENTOS", enter: "ENTRAR AL LAB", tech: "GLSL / WEBGL", pageTitle: ["HECHO DE", "CÓDIGO."], experiments: "EXPERIMENTOS" },
+  brk: { title: ["TODO EN", "SU LUGAR."], trigger: "NO PRESIONES", headline: ["ROMPISTE", "INTERNET."], sub: "RICK LO ARREGLA.", rebuild: "RECONSTRUIR", pieces: ["[SECCIÓN]", "[GRID 12]", "[H2]", "[CANVAS]", "[GSAP]"] },
+  human: { headline: ["DETRÁS DE", "TODO ESTE", "CÓDIGO"], tail: "HAY UNA PERSONA." },
+  builtWith: { eyebrow: "HECHO CON", big: ["IDEAS", "CÓDIGO", "MOTION", "DEMASIADO CAFÉ"] },
+  contact: { headline: ["¿TIENES ALGO QUE", "VALGA LA PENA CONSTRUIR?"], cta: "EMPEZAR UN PROYECTO", ctaWord: "PROYECTO", email: "E-MAIL", label: "CONTACTO" },
+  archive: {
+    label: "PROYECTOS / ARCHIVO",
+    title: ["TODOS LOS", "PROYECTOS."],
+    filters: { all: "TODOS", client: "CLIENTES", scroll: "EXPERIENCIAS EN SCROLL", webgl: "WEBGL / 3D", product: "PRODUCTOS DIGITALES" },
+    columns: { index: "ÍNDICE", project: "PROYECTO", type: "TIPO", year: "AÑO", studio: "ESTUDIO" },
+  },
+  caseUi: {
+    project: "PROYECTO", idea: "02 / LA IDEA", experience: "03 / EXPERIENCIA", hood: "04 / BAJO EL CAPÓ", details: "05 / DETALLES", result: "06 / RESULTADO", screens: "07 / PANTALLAS SELECCIONADAS", next: "SIGUIENTE EXPERIENCIA",
+    client: "CLIENTE", studio: "ESTUDIO", type: "TIPO", year: "AÑO", status: "ESTADO", live: "EN LÍNEA", visit: "VISITAR EL SITIO", code: "CÓDIGO", builtWith: "CONSTRUIDO CON", allWork: "TODOS LOS PROYECTOS", expand: "LEER EL DETALLE TÉCNICO", similar: "QUIERO ALGO PARECIDO", screen: "PANTALLA",
+    heroAlt: "pantalla inicial", day: "DÍA", scrollReverse: "DESPLAZAR / VOLVER", hold: "MANTÉN PRESIONADO SEIS SEGUNDOS", holding: "MANTENIENDO…", held: "LO MANTUVISTE.", again: "DE NUEVO", heldMessage: "Lo mantuviste. Es lo que Terral le pide a un café: que alguien espere su tiempo.", explode: "EXPLOSIÓN",
+    parts: ["CAJA", "BISEL", "CORONA", "ESFERA", "MANECILLAS", "TREN DE ENGRANAJES", "MUELLE REAL", "ESCAPE", "ROTOR", "TOURBILLON"],
+  },
+  pages: { studio: "ESTUDIO", services: "SERVICIOS", contact: "CONTACTO", diagnostic: "DIAGNÓSTICO", diagnosticSteps: "05 / ETAPAS", serviceContact: "04 / CONTACTO", serviceIncluded: "01 / QUÉ INCLUYE", serviceHow: "02 / CÓMO FUNCIONA", whatsapp: "WHATSAPP" },
+  errors: { notFound: ["404", "NO ENCONTRADA."], broke: ["ALGO", "SE ROMPIÓ."], err404: "ERROR / 404", err500: "ERROR / 500" },
+  footer: { email: "E-mail", year: "Brasil" },
+};
