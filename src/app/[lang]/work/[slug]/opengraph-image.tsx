@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getProject, TOTAL_LABEL } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
-import { SITE_URL } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 export const alt = "MilWeb — case study";
@@ -22,9 +21,16 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const title = sel ? sel.title[locale] : [p?.title ?? "MilWeb"];
   const font = await readFile(join(process.cwd(), "src/app/inter-700.ttf"));
   // Satori só decodifica PNG/JPEG: scripts/og-assets.mjs gera public/og/<slug>.jpg
-  // a partir do frame real de cada projeto. Por URL (não readFile): em
-  // produção o /public vive na CDN, não no filesystem da função.
-  const img = p ? `${SITE_URL}/og/${p.slug}.jpg` : null;
+  // a partir do frame real de cada projeto. Lido do disco (incluído no bundle
+  // da função via outputFileTracingIncludes no next.config) — buscar por
+  // URL falha quando o firewall da Vercel desafia o fetch da própria função.
+  let img: string | null = null;
+  if (p) {
+    try {
+      const buf = await readFile(join(process.cwd(), "public", "og", `${p.slug}.jpg`));
+      img = `data:image/jpeg;base64,${buf.toString("base64")}`;
+    } catch {}
+  }
 
   return new ImageResponse(
     (

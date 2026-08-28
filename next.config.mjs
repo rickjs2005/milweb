@@ -2,6 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // As OG images dos cases leem public/og/<slug>.jpg do disco: o /public não
+  // entra no filesystem da função por padrão — só com tracing explícito.
+  outputFileTracingIncludes: {
+    "/[lang]/work/[slug]/opengraph-image": ["./public/og/**"],
+    "/[lang]/work/[slug]/twitter-image": ["./public/og/**"],
+  },
+
   // /raio-x foi a primeira casa do funil de diagnóstico (viveu algumas horas
   // no ar em 31/07/2026) antes de virar /diagnostico com o funil completo.
   // Redirect permanente preserva qualquer link já compartilhado.
