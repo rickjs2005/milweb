@@ -68,6 +68,8 @@ export function buildCsp({ dev }: { dev: boolean }): string {
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
+    // Fora só em teste local por HTTP (MW_LOCAL_HTTP=1): o WebKit aplica o
+    // upgrade até em 127.0.0.1 e o site fica sem CSS/JS. Produção mantém.
+    ...(process.env.MW_LOCAL_HTTP === "1" ? [] : [`upgrade-insecure-requests`]),
   ].join("; ");
 }
