@@ -2,13 +2,26 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, TrendingUp } from "lucide-react";
-import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI, type Project, type Locale } from "@/lib/content";
+import { PROJECTS, PROFILE, QUOTE, SITE_URL, UI, type Project, type Locale, type Localized } from "@/lib/content";
+
+const FILTER_CATEGORIES = [
+  "landing-essencial",
+  "landing-premium",
+  "institucional",
+  "institucional-premium",
+  "sistema-saas",
+] as const;
+const FILTER_LABELS: Record<Project["category"], Localized> = {
+  "landing-essencial": UI.sections.projectsFilterLandingEssencial,
+  "landing-premium": UI.sections.projectsFilterLandingPremium,
+  institucional: UI.sections.projectsFilterInstitucional,
+  "institucional-premium": UI.sections.projectsFilterInstitucionalPremium,
+  "sistema-saas": UI.sections.projectsFilterSistemaSaas,
+};
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { Logo } from "@/components/logo";
 import { Contact, Footer } from "@/components/contact";
 import { ArchiveFilter } from "@/components/archive-filter";
-import { FILTER_CATEGORIES, FILTER_LABELS } from "@/components/projects";
-import { DiagnosticBanner } from "@/components/diagnostic-banner";
 
 /**
  * O acervo completo, fora da home.
@@ -229,12 +242,6 @@ export default async function ProjectsIndexPage({ params }: { params: Promise<La
           ]}
         />
       </main>
-
-      {/* Acervo standalone: quem chega direto aqui (Google, link
-          compartilhado) pode nunca passar pela home, então nunca veria o
-          DiagnosticBanner que existe lá entre Projetos e Lab. Mesmo
-          componente, sem copy nova. */}
-      <DiagnosticBanner locale={locale} />
 
       <Contact locale={locale} />
       <Footer locale={locale} />

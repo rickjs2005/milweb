@@ -11,6 +11,7 @@
  * fica fora do bundle do client e o HTML sai monolíngue.
  */
 import type { Locale, Localized } from "./content";
+export type { Locale, Localized };
 
 /** Os dois idiomas viram os dois valores possíveis de [lang]. */
 export const LOCALES = ["pt", "en"] as const;

@@ -1,0 +1,62 @@
+/* =====================================================================
+   MilWeb design tokens — fonte única para CSS, Tailwind e GSAP.
+   Cores em canais RGB (sem rgb()) pra Tailwind compor alpha:
+   rgb(var(--ink) / 0.4).
+   ===================================================================== */
+:root {
+  /* ---- color ------------------------------------------------------ */
+  --paper: 242 240 234;      /* #F2F0EA  superfície principal */
+  --paper-2: 234 232 226;    /* #EAE8E2  superfície secundária */
+  --ink: 17 17 17;           /* #111111  tinta */
+  --ink-2: 58 58 58;         /* #3A3A3A  corpo */
+  --ink-3: 110 110 105;      /* #6E6E69  discreto (4.6:1 no papel) */
+  --neutral: 218 216 209;    /* #DAD8D1  grades, réguas */
+  --signal: 183 255 55;      /* #B7FF37  estado ativo — 5–10% da composição */
+  --signal-ink: 17 17 17;    /* texto sobre signal */
+
+  /* ---- layout ----------------------------------------------------- */
+  --margin: clamp(20px, 4vw, 64px);
+  --gutter: clamp(12px, 1.5vw, 24px);
+  --nav-h: 64px;
+  --cols: 12;
+
+  /* ---- type scale (fluid) ---------------------------------------- */
+  --step--1: clamp(0.72rem, 0.7rem + 0.15vw, 0.8rem);
+  --step-0: clamp(0.95rem, 0.9rem + 0.25vw, 1.1rem);
+  --step-1: clamp(1.15rem, 1.05rem + 0.5vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.2rem + 1.4vw, 2.5rem);
+  --step-3: clamp(2.25rem, 1.6rem + 3.2vw, 4.5rem);
+  --step-4: clamp(3rem, 1.8rem + 6vw, 7.5rem);
+  --step-5: clamp(4rem, 2rem + 10vw, 12rem);
+  --step-6: clamp(3.6rem, 0.4rem + 9.9vw, 14rem);
+
+  /* ---- motion ----------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-snap: cubic-bezier(0.9, 0, 0.1, 1);
+  --dur-fast: 200ms;
+  --dur-medium: 480ms;
+  --dur-slow: 900ms;
+  --dur-cinematic: 1600ms;
+
+  /* ---- z-index ---------------------------------------------------- */
+  --z-content: 1;
+  --z-inspect: 40;
+  --z-nav: 50;
+  --z-overlay: 60;
+  --z-transition: 80;
+  --z-boot: 100;
+}
+
+/* DEV MODE (HOLD TO INSPECT): a paleta inverte — papel vira tinta,
+   a régua vira Signal Green. Tudo que usa token acompanha. */
+:root[data-mode="dev"] {
+  --paper: 17 17 17;
+  --paper-2: 24 24 24;
+  --ink: 242 240 234;
+  --ink-2: 200 200 195;
+  --ink-3: 140 140 135;
+  --neutral: 52 52 50;
+}
