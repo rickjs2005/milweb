@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PROJECTS, PROFILE, SITE_URL, searchDescription } from "@/lib/content";
+import { PROFILE, SITE_URL, searchDescription } from "@/lib/content";
+import { ALL_SLUGS, getProject } from "@/data/projects";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 import { CaseStudy } from "@/sections/case/case-study";
 import { Footer } from "@/components/footer";
@@ -8,12 +9,12 @@ import { NAV } from "@/data/brand";
 
 /** Um case por projeto — o segmento [lang] pai já enumera os dois idiomas. */
 export function generateStaticParams() {
-  return PROJECTS.map((p) => ({ slug: p.slug }));
+  return ALL_SLUGS.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<LangParams & { slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const p = PROJECTS.find((x) => x.slug === slug);
+  const p = getProject(slug);
   if (!p) return {};
   const locale = await localeFrom(params);
   const description = searchDescription(p.result[locale]);
@@ -23,10 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<LangParams 
   return {
     title,
     description,
-    alternates: {
-      canonical,
-      languages: { "pt-BR": `/work/${p.slug}`, en: `/en/work/${p.slug}`, "x-default": `/work/${p.slug}` },
-    },
+    alternates: { canonical, languages: { "pt-BR": `/work/${p.slug}`, en: `/en/work/${p.slug}`, "x-default": `/work/${p.slug}` } },
     openGraph: { type: "article", title: `${p.title} | MilWeb`, description, url },
     twitter: { card: "summary_large_image", title: `${p.title} | MilWeb`, description },
   };
@@ -36,11 +34,9 @@ export default async function ProjectPage({ params }: { params: Promise<LangPara
   const { slug } = await params;
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const idx = PROJECTS.findIndex((p) => p.slug === slug);
-  if (idx === -1) notFound();
-
-  const project = PROJECTS[idx];
-  const next = PROJECTS[(idx + 1) % PROJECTS.length];
+  const project = getProject(slug);
+  if (!project) notFound();
+  const next = getProject(project.nextSlug)!;
   const url = `${SITE_URL}${withLocale(locale, `/work/${project.slug}`)}`;
   const jsonLd = {
     "@context": "https://schema.org",
@@ -71,7 +67,7 @@ export default async function ProjectPage({ params }: { params: Promise<LangPara
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <main>
-        <CaseStudy project={project} next={{ slug: next.slug, title: next.title }} index={idx} total={PROJECTS.length} locale={locale} />
+        <CaseStudy project={project} next={next} locale={locale} />
       </main>
       <Footer locale={locale} />
     </>

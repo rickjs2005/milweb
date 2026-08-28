@@ -218,3 +218,33 @@ html.booted .boot { display: none; }
 @keyframes boot-show { to { opacity: 1; } }
 @keyframes boot-blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .boot { display: none; } }
+
+/* =====================================================================
+   SELECTED WORK — os quatro mundos (ACT 03). A estrutura MilWeb é a
+   mesma; muda a atmosfera: fundo, textura, cor do texto, temperatura.
+   ===================================================================== */
+.world { background: rgb(var(--paper)); color: rgb(var(--ink)); }
+.world[data-world="terral"] { background: #E9E0CF; color: #1F1710; }
+.world[data-world="terral"] .t-display { letter-spacing: -0.02em; }
+.world[data-world="atelier-vertex"] { background: rgb(var(--paper)); }
+.world[data-world="aurex-timepieces"] { background: #0F0F0F; color: #F2F0EA; }
+.world[data-world="aurex-timepieces"] .bg-neutral { background: #1A1A1A; }
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* =====================================================================
+   CASE — direção de arte por mundo (hero) e transição compartilhada.
+   ===================================================================== */
+.case[data-world="terral"] .case-hero { background: #E9E0CF; padding-block: 1.5rem; }
+.case[data-world="aurex-timepieces"] .case-hero { background: #0F0F0F; padding-block: 1.5rem; }
+.case-step.is-active { color: rgb(var(--ink)); }
+.case-step:not(.is-active) .t-lead { color: rgb(var(--ink-3)); transition: color var(--dur-medium) var(--ease-smooth); }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) { animation-duration: 0.7s; animation-timing-function: var(--ease-in-out-quart); }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.45s; }
+  /* a mídia viaja; o título só cruza */
+  ::view-transition-old(case-media-kavita-drones), ::view-transition-old(case-media-terral), ::view-transition-old(case-media-atelier-vertex), ::view-transition-old(case-media-aurex-timepieces) { animation: none; opacity: 0; }
+}

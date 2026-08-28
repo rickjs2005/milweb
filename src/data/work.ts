@@ -45,6 +45,6 @@ export const SELECTED_WORK: SelectedWork[] = [
     name: "AUREX",
     title: { pt: ["O TEMPO,", "DESMONTADO."], en: ["TIME,", "DISASSEMBLED."] },
     kind: { pt: "Relógio 3D procedural · R3F", en: "Procedural 3D watch · R3F" },
-    image: "/shots/aurex-timepieces/colecao.webp",
+    image: "/shots/aurex-timepieces.webp",
   },
 ];

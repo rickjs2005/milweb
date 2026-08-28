@@ -28,6 +28,15 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
       const wire = el.querySelectorAll<HTMLElement>("[data-wire]");
       const mm = gsap.matchMedia();
 
+      // MECHANISM → SYSTEM: ao sair dos quatro mundos, as 12 colunas do grid
+      // MilWeb se acendem e assentam — a página volta ao sistema.
+      mm.add(MQ.noReduce, () => {
+        gsap
+          .timeline({ scrollTrigger: { trigger: el, start: "top 90%", end: "top 25%", scrub: 0.6 }, defaults: { ease: EASE.outQuint } })
+          .fromTo(grid.children, { autoAlpha: 0, scaleY: 0, transformOrigin: "top" }, { autoAlpha: 1, scaleY: 1, stagger: 0.02, duration: 0.6 }, 0)
+          .to(grid, { autoAlpha: 0, duration: 0.3 }, 0.8);
+      });
+
       mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
         gsap.set(list, { transformPerspective: 1200, transformOrigin: "50% 50%" });
         gsap.set(grid, { autoAlpha: 0 });

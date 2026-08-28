@@ -1,104 +1,59 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { ImageResponse } from 'next/og';
-import { PROJECTS } from '@/lib/content';
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { ImageResponse } from "next/og";
+import { getProject, TOTAL_LABEL } from "@/data/projects";
+import { SELECTED_WORK } from "@/data/work";
 
-// Renderiza sob demanda (cacheado pela Vercel). Pula o prerender no build, que
-// dispara o bug do @vercel/og no Windows (fileURLToPath → "Invalid URL").
-export const dynamic = 'force-dynamic';
-export const alt = 'MilWeb — case do projeto';
+export const dynamic = "force-dynamic";
+export const alt = "MilWeb — case study";
 export const size = { width: 1200, height: 630 };
-export const contentType = 'image/png';
+export const contentType = "image/png";
 
-export default async function Image({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const p = PROJECTS.find((x) => x.slug === slug);
-  const title = p?.title ?? 'MilWeb';
-  const tagline = p?.tagline.pt ?? 'Sites, sistemas e SaaS sob medida';
-
-  // Fonte embutida no repo, lida do disco (sem rede em runtime).
-  const fontData = await readFile(join(process.cwd(), 'src/app/inter-700.ttf'));
+/**
+ * OG do case na identidade nova: papel, tinta, régua, índice e o frame REAL
+ * do projeto à direita (lido do /public — nunca stock).
+ */
+export default async function Image({ params }: { params: Promise<{ slug: string; lang: string }> }) {
+  const { slug, lang } = await params;
+  const locale = lang === "en" ? "en" : "pt";
+  const p = getProject(slug);
+  const sel = SELECTED_WORK.find((w) => w.slug === slug);
+  const title = sel ? sel.title[locale] : [p?.title ?? "MilWeb"];
+  const font = await readFile(join(process.cwd(), "src/app/inter-700.ttf"));
+  // Satori só decodifica PNG/JPEG: scripts/og-assets.mjs gera public/og/<slug>.jpg
+  // a partir do frame real de cada projeto.
+  let img: string | null = null;
+  if (p) {
+    try {
+      const buf = await readFile(join(process.cwd(), "public", "og", `${p.slug}.jpg`));
+      img = `data:image/jpeg;base64,${buf.toString("base64")}`;
+    } catch {}
+  }
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          backgroundColor: '#000000',
-          backgroundImage:
-            'none',
-          padding: '72px 88px',
-          fontFamily: 'Inter',
-        }}
-      >
-        {/* Brand row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '52px',
-              height: '52px',
-              borderRadius: '14px',
-              backgroundColor: '#D9D9DE',
-              color: '#101014',
-              fontSize: '32px',
-              fontWeight: 800,
-            }}
-          >
-            M
+      <div style={{ width: "100%", height: "100%", display: "flex", backgroundColor: "#F2F0EA", color: "#111111", fontFamily: "Inter", padding: "56px 64px" }}>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "58%", paddingRight: "40px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #111", paddingTop: "12px", fontSize: "20px", letterSpacing: "0.1em" }}>
+            <span>MILWEB®</span>
+            <span style={{ color: "#5F5F5A" }}>MW / {p?.n ?? "—"} / {TOTAL_LABEL}</span>
           </div>
-          <div style={{ display: 'flex', fontSize: '34px', fontWeight: 800, color: '#F46A34' }}>
-            MilWeb
+          <div style={{ display: "flex", flexDirection: "column", fontSize: "72px", lineHeight: 0.92, letterSpacing: "-0.04em", fontWeight: 700 }}>
+            {title.map((l) => (
+              <span key={l}>{l.toUpperCase()}</span>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "20px", letterSpacing: "0.1em", color: "#5F5F5A" }}>
+            <span>{p?.title.toUpperCase()}</span>
+            <span>{p?.displayType}</span>
           </div>
         </div>
-
-        {/* Title + tagline */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div
-            style={{
-              display: 'flex',
-              fontSize: '88px',
-              lineHeight: 1.02,
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
-              color: '#F46A34',
-              maxWidth: '1000px',
-            }}
-          >
-            {title}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              marginTop: '24px',
-              fontSize: '32px',
-              color: '#EFEFF4',
-              maxWidth: '980px',
-            }}
-          >
-            {tagline}
-          </div>
+        <div style={{ display: "flex", width: "42%", backgroundColor: "#DAD8D1", overflow: "hidden" }}>
+          {img && <img src={img} alt="" width={720} height={450} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />}
         </div>
-
-        {/* Footer line */}
-        <div style={{ display: 'flex', fontSize: '24px', fontWeight: 600, color: '#CD6942' }}>
-          Case · MilWeb
-        </div>
+        <div style={{ position: "absolute", left: "64px", bottom: "40px", width: "10px", height: "10px", backgroundColor: "#B7FF37" }} />
       </div>
     ),
-    {
-      ...size,
-      fonts: [{ name: 'Inter', data: fontData, style: 'normal', weight: 700 }],
-    },
+    { ...size, fonts: [{ name: "Inter", data: font, weight: 700, style: "normal" }] },
   );
 }
