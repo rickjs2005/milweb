@@ -51,7 +51,7 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
           gsap.to(rows, { z: 0, x: 0, duration: 0.6, ease: EASE.outExpo, overwrite: "auto" });
           gsap.to(grid, { autoAlpha: 0, duration: 0.3, overwrite: "auto" });
           gsap.to(wire, { autoAlpha: 0, duration: 0.3, overwrite: "auto" });
-          if (typeRow) gsap.to(typeRow, { fontStretch: "125%", duration: 0.5, ease: EASE.outExpo, overwrite: "auto" });
+          if (typeRow) gsap.to(typeRow, { fontStretch: "125%", "--wdth": 125, duration: 0.5, ease: EASE.outExpo, overwrite: "auto" });
           typeRow = null;
         };
 
@@ -81,7 +81,7 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
           if (!typeRow) return;
           const r = typeRow.getBoundingClientRect();
           const p = gsap.utils.clamp(0, 1, (e.clientX - r.left) / r.width);
-          gsap.to(typeRow, { fontStretch: `${Math.round(62 + p * 63)}%`, duration: 0.25, ease: EASE.outQuint, overwrite: "auto" });
+          gsap.to(typeRow, { fontStretch: `${Math.round(62 + p * 63)}%`, "--wdth": Math.round(62 + p * 63), duration: 0.25, ease: EASE.outQuint, overwrite: "auto" });
           stretch(p);
         };
 

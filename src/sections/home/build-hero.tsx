@@ -54,7 +54,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
         gsap.set(q("[data-layer=wire] > *"), { scaleX: 0, transformOrigin: "left center" });
         gsap.set(q("[data-layer=grid] > *"), { scaleY: 0, transformOrigin: "top" });
         gsap.set(split.chars, { yPercent: 110 });
-        gsap.set(h1, { fontStretch: "62%", fontWeight: 400 });
+        gsap.set(h1, { fontStretch: "62%", fontWeight: 400, "--wdth": 62, "--wght": 400 });
         gsap.set(q("[data-layer=images] figure"), { autoAlpha: 0, yPercent: 30 });
         gsap.set(q("[data-ship]"), { autoAlpha: 0 });
         gsap.set(q("[data-layer=scan]"), { scaleX: 0, transformOrigin: "left" });
@@ -86,7 +86,7 @@ export function BuildHero({ s }: { s: BuildHeroStrings }) {
         tl.to(q("[data-layer=code]"), { scale: 0.55, autoAlpha: 0.35, transformOrigin: "left top", duration: 0.12 }, 0.2);
         // 2 MOTION — letras sobem e a fonte se EXPANDE (62% → 125%)
         tl.to(split.chars, { yPercent: 0, stagger: 0.006, duration: 0.14, ease: EASE.outExpo }, 0.34);
-        tl.to(h1, { fontStretch: "125%", fontWeight: 900, duration: 0.18, ease: EASE.smooth }, 0.38);
+        tl.to(h1, { fontStretch: "125%", fontWeight: 900, "--wdth": 125, "--wght": 900, duration: 0.18, ease: EASE.smooth }, 0.38);
         tl.to(q("[data-layer=wire] > *"), { autoAlpha: 0.25, duration: 0.1 }, 0.44);
         // 3 INTERACTION — imagens entram nas células
         tl.to(q("[data-layer=images] figure"), { autoAlpha: 1, yPercent: 0, stagger: 0.04, duration: 0.14, ease: EASE.outExpo }, 0.52);

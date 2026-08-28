@@ -124,7 +124,7 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
                     <Image src={r.image} alt="" fill sizes="96px" className="object-cover object-top" />
                   </span>
                 )}
-                <span className="col-span-3 font-display text-[clamp(1.5rem,2.6vw,2.6rem)] font-black uppercase leading-[0.9] tracking-[-0.03em] text-ink [font-stretch:125%] md:col-span-4 lg:col-span-5">{r.title}</span>
+                <span className="t-display col-span-3 text-[clamp(1.5rem,2.6vw,2.6rem)] text-ink md:col-span-4 lg:col-span-5">{r.title}</span>
                 <span className="t-mono col-span-4 text-ink-2 md:col-span-2 lg:col-span-4">
                   <span className="tnum text-ink-3 md:hidden">{r.n} · </span>
                   {r.displayType}

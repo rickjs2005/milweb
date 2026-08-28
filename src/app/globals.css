@@ -39,6 +39,7 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display), system-ui, sans-serif;
     font-weight: 900;
+    font-variation-settings: "wdth" var(--wdth, 125), "wght" var(--wght, 900);
     letter-spacing: -0.04em;
     line-height: 0.9;
   }
@@ -62,6 +63,9 @@
     font-family: var(--font-display), system-ui, sans-serif;
     font-weight: 900;
     font-stretch: 125%;
+    /* Eixos explícitos: WebKit não mapeia font-stretch/weight para wdth/wght
+       da variável de forma confiável. --wdth/--wght são animáveis (GSAP). */
+    font-variation-settings: "wdth" var(--wdth, 125), "wght" var(--wght, 900);
     line-height: 0.86;
     letter-spacing: -0.035em;
     text-transform: uppercase;
