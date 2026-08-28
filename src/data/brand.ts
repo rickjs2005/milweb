@@ -71,10 +71,10 @@ export const HOME = {
     enter: { pt: "Entrar no Lab", en: "Enter the Lab" } as Localized,
   },
   brk: {
-    trigger: { pt: "NÃO APERTE", en: "DO NOT PRESS" } as Localized,
+    trigger: { pt: "DO NOT PRESS", en: "DO NOT PRESS" } as Localized,
     headline: ["YOU BROKE", "THE INTERNET."],
-    sub: { pt: "O Rick conserta.", en: "Rick can fix it." } as Localized,
-    rebuild: { pt: "Reconstruir", en: "Rebuild" } as Localized,
+    sub: { pt: "Rick can fix it.", en: "Rick can fix it." } as Localized,
+    rebuild: { pt: "Rebuild", en: "Rebuild" } as Localized,
   },
   human: {
     headline: ["BEHIND", "ALL THIS", "CODE"],
@@ -88,7 +88,7 @@ export const HOME = {
   },
   contact: {
     headline: ["HAVE SOMETHING", "WORTH BUILDING?"],
-    cta: { pt: "Começar um projeto", en: "Start a project" } as Localized,
+    cta: { pt: "Start a project", en: "Start a project" } as Localized,
     email: { pt: "E-mail", en: "Email" } as Localized,
     whatsapp: "WhatsApp",
   },
