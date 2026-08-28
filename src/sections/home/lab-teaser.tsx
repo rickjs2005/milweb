@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap, EASE, MQ, SplitText, useGSAP } from "@/animations/gsap";
+import { onIdle } from "@/animations/idle";
 
 /**
  * ACT 05 — MILWEB LAB. O experimento assume a interface: a seção inverte
@@ -53,7 +54,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster }: { eyebr
       const el = root.current!;
       const h2 = el.querySelector<HTMLElement>("h2")!;
       const mm = gsap.matchMedia();
-      mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
+      const cancel = onIdle(() => mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
         const split = SplitText.create(h2, { type: "chars", aria: "none" });
         const chars = split.chars as HTMLElement[];
         let mx = 0.5;
@@ -98,8 +99,11 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster }: { eyebr
           el.removeEventListener("pointermove", move);
           split.revert();
         };
-      });
-      return () => mm.revert();
+      }));
+      return () => {
+        cancel();
+        mm.revert();
+      };
     },
     { scope: root },
   );

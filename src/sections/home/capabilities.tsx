@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
+import { onIdle } from "@/animations/idle";
 
 export type Capability = { n: string; label: string; react: "depth" | "structure" | "perspective" | "type" | "grid" };
 
@@ -27,7 +28,8 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
       const grid = el.querySelector<HTMLElement>("[data-grid]")!;
       const wire = el.querySelectorAll<HTMLElement>("[data-wire]");
       const mm = gsap.matchMedia();
-
+      // Abaixo da dobra: configura no idle, fora da tarefa de hidratação.
+      const cancel = onIdle(() => {
       // MECHANISM → SYSTEM: ao sair dos quatro mundos, as 12 colunas do grid
       // MilWeb se acendem e assentam — a página volta ao sistema.
       mm.add(MQ.noReduce, () => {
@@ -93,7 +95,11 @@ export function Capabilities({ items, eyebrow }: { items: Capability[]; eyebrow:
           list.removeEventListener("pointermove", move);
         };
       });
-      return () => mm.revert();
+      });
+      return () => {
+        cancel();
+        mm.revert();
+      };
     },
     { scope: root },
   );

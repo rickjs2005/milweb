@@ -247,7 +247,7 @@ function WorldLayers({ slug }: { slug: string }) {
         <span data-grain className="grain absolute inset-0 opacity-0" />
         <svg data-dots className="absolute inset-0 h-full w-full opacity-0" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid slice">
           {Array.from({ length: 12 * 8 }).map((_, k) => (
-            <circle key={k} cx={5 + (k % 12) * 10} cy={5 + Math.floor(k / 12) * 10} r="0.45" fill="currentColor" />
+            <circle key={k} cx={5 + (k % 12) * 10} cy={5 + Math.floor(k / 12) * 10} r="0.3" fill="currentColor" />
           ))}
         </svg>
       </div>

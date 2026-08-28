@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import Lenis from "lenis";
+import type Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/animations/gsap";
 
 type Ctx = {
@@ -40,21 +40,24 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (reduce || coarse) return;
 
-    const instance = new Lenis({
-      duration: 1.05,
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      autoRaf: false,
+    // Lenis só existe em ponteiro fino: carregado sob demanda para não pesar
+    // no bundle do mobile (onde o scroll é nativo).
+    let raf: ((t: number) => void) | null = null;
+    let disposed = false;
+    import("lenis").then(({ default: LenisCtor }) => {
+      if (disposed) return;
+      const instance = new LenisCtor({ duration: 1.05, smoothWheel: true, wheelMultiplier: 1, autoRaf: false });
+      lenis.current = instance;
+      instance.on("scroll", ScrollTrigger.update);
+      raf = (time: number) => instance.raf(time * 1000);
+      gsap.ticker.add(raf);
+      gsap.ticker.lagSmoothing(0);
     });
-    lenis.current = instance;
-    instance.on("scroll", ScrollTrigger.update);
-    const raf = (time: number) => instance.raf(time * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
 
     return () => {
-      gsap.ticker.remove(raf);
-      instance.destroy();
+      disposed = true;
+      if (raf) gsap.ticker.remove(raf);
+      lenis.current?.destroy();
       lenis.current = null;
     };
   }, []);
