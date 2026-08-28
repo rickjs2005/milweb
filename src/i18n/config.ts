@@ -19,3 +19,6 @@ export const LOCALE_COOKIE = "milweb_locale";
 export function isLocale(v: string | undefined | null): v is Locale {
   return v === "pt" || v === "en" || v === "es";
 }
+
+/** Header interno que o middleware anexa ao request reescrito (lido pelo 404 global). */
+export const LOCALE_HEADER = "x-milweb-locale";

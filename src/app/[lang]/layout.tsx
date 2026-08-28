@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProvider } from "@/components/scroll-provider";
@@ -12,15 +11,8 @@ import { PROFILE, SITE_URL } from "@/lib/content";
 import { localeFrom, type LangParams } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
-import "../globals.css";
+import { FONT_CLASS } from "@/lib/fonts";
 
-/**
- * Root layout = [lang]: o <html lang> sai correto do servidor (pt-BR / en / es)
- * sem depender de script. Duas famílias, poucos pesos: Archivo variável (eixo
- * de largura) e JetBrains Mono para a camada técnica.
- */
-const display = Archivo({ subsets: ["latin"], variable: "--font-display", axes: ["wdth"], display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400"], display: "swap" });
 
 /** As três versões saem prontas do build; o segmento mais externo enumera os idiomas. */
 export function generateStaticParams() {
@@ -57,7 +49,7 @@ export default async function LangLayout({ children, params }: { children: React
   const locale = await localeFrom(params);
   const d = getDict(locale);
   return (
-    <html lang={HTML_LANG[locale]} className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang={HTML_LANG[locale]} className={FONT_CLASS} suppressHydrationWarning>
       <body>
     <ScrollProvider>
       <InspectProvider strings={{ title: d.inspect.title, dev: d.inspect.dev }}>

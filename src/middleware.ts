@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp } from "@/lib/csp";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, PREFIX, isLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALE_HEADER, PREFIX, isLocale } from "@/i18n/config";
 import { internalizePath, isKnownInternalPath, localizePath } from "@/i18n/routing";
 
 const CSP = buildCsp({ dev: process.env.NODE_ENV === "development" });
@@ -69,16 +69,16 @@ export function middleware(req: NextRequest) {
   }
 
   const url = req.nextUrl.clone();
+  const headers = new Headers(req.headers);
+  headers.set(LOCALE_HEADER, locale);
 
-  // Rota desconhecida → catch-all de [lang] com status 404 real. O 404 sai
-  // com a identidade do site dentro do layout do idioma (<html lang> certo).
-  if (!isKnownInternalPath(internal)) {
-    url.pathname = `/${locale}/__not-found${internal}`;
-    return withCsp(NextResponse.rewrite(url, { status: 404 }));
-  }
-
-  url.pathname = `/${locale}${internal === "/" ? "" : internal}`;
-  return withCsp(NextResponse.rewrite(url));
+  // Rota desconhecida → caminho interno que nenhuma página atende: o Next
+  // responde com o 404 global (app/not-found.tsx), que lê o idioma do header.
+  // Sem `status: 404` no rewrite: a Vercel interceptaria e serviria o 404
+  // estático dela; e notFound() sob o layout raiz dinâmico renderiza só o
+  // shell genérico no servidor.
+  url.pathname = isKnownInternalPath(internal) ? `/${locale}${internal === "/" ? "" : internal}` : `/${locale}/__not-found${internal}`;
+  return withCsp(NextResponse.rewrite(url, { request: { headers } }));
 }
 
 export const config = {
