@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getProject, TOTAL_LABEL } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
-import { SITE_URL } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 export const alt = "MilWeb — case study";
@@ -25,24 +24,15 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   // a partir do frame real de cada projeto. Lido do disco (incluído no bundle
   // da função via outputFileTracingIncludes no next.config) — buscar por
   // URL falha quando o firewall da Vercel desafia o fetch da própria função.
+  // Satori só decodifica PNG/JPEG de forma confiável como PNG com tamanho
+  // fixo em px: scripts/og-assets.mjs gera public/og/<slug>.png (720×450) a
+  // partir do frame real; o arquivo entra no bundle via outputFileTracingIncludes.
   let img: string | null = null;
-  let diag = "";
   if (p) {
-    const file = join(process.cwd(), "public", "og", `${p.slug}.jpg`);
     try {
-      const buf = await readFile(file);
-      img = `data:image/jpeg;base64,${buf.toString("base64")}`;
-    } catch (e) {
-      diag = `fs:${(e as Error).message.slice(0, 60)}`;
-      // Fallback: busca pela CDN (pode ser barrado pelo firewall; melhor que nada).
-      try {
-        const res = await fetch(`${SITE_URL}/og/${p.slug}.jpg`);
-        diag += ` | http:${res.status} ${res.headers.get("content-type")}`;
-        if (res.ok && (res.headers.get("content-type") ?? "").startsWith("image/")) img = `data:image/jpeg;base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
-      } catch (e) {
-        diag += ` | fetch:${(e as Error).message.slice(0, 60)}`;
-      }
-    }
+      const buf = await readFile(join(process.cwd(), "public", "og", `${p.slug}.png`));
+      img = `data:image/png;base64,${buf.toString("base64")}`;
+    } catch {}
   }
 
   return new ImageResponse(
@@ -63,11 +53,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             <span>{p?.displayType}</span>
           </div>
         </div>
-        <div style={{ display: "flex", width: "42%", backgroundColor: "#DAD8D1", overflow: "hidden" }}>
-          {img && <img src={img} alt="" width={720} height={450} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />}
+        <div style={{ display: "flex", width: "450px", height: "518px", backgroundColor: "#DAD8D1", overflow: "hidden" }}>
+          {img && <img src={img} alt="" width={829} height={518} style={{ width: "829px", height: "518px" }} />}
         </div>
         <div style={{ position: "absolute", left: "64px", bottom: "40px", width: "10px", height: "10px", backgroundColor: "#B7FF37" }} />
-        {diag && <div style={{ position: "absolute", right: "64px", bottom: "12px", fontSize: "11px", color: "#5F5F5A" }}>{diag}</div>}
       </div>
     ),
     { ...size, fonts: [{ name: "Inter", data: font, weight: 700, style: "normal" }] },
