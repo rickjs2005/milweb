@@ -76,9 +76,9 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
           y(r.top + r.height / 2 - pv.offsetHeight / 2);
           showFor(row.dataset.slug!);
         };
+        const leave = () => gsap.to(pv, { autoAlpha: 0, scale: 0.92, duration: 0.3, ease: EASE.outQuint, overwrite: true });
         el.addEventListener("focusin", focus);
         el.addEventListener("focusout", leave);
-        const leave = () => gsap.to(pv, { autoAlpha: 0, scale: 0.92, duration: 0.3, ease: EASE.outQuint, overwrite: true });
         el.addEventListener("pointerover", over);
         el.addEventListener("pointerleave", leave);
         el.addEventListener("pointermove", move);
