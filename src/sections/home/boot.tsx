@@ -12,7 +12,7 @@ import { BootController } from "./boot-controller";
  * Total ≈ 1,9 s. Clique/tecla pulam.
  */
 const SKIP_SCRIPT =
-  "(function(){try{var b=document.getElementById('mw-boot');if(!b)return;if(sessionStorage.getItem('mw:booted')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches){b.remove();}else{document.documentElement.classList.add('booting');}}catch(e){}})();";
+  "(function(){try{var h=document.documentElement;if(sessionStorage.getItem('mw:booted')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches){h.classList.add('booted');}else{h.classList.add('booting');}}catch(e){}})();";
 
 export function Boot({ mark, tagline, origin, lines, skip }: { mark: string; tagline: string; origin: string; lines: string[]; skip: string }) {
   return (

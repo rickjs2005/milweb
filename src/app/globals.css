@@ -207,6 +207,7 @@ html.inspecting, html.inspecting * { user-select: none; cursor: crosshair !impor
    BOOT (ACT 01) — animação inteira em CSS, HTML vindo do servidor.
    ===================================================================== */
 html.booting { overflow: hidden; }
+html.booted .boot { display: none; }
 .boot { clip-path: inset(0 0 0 0); animation: boot-exit 0.7s var(--ease-in-out-quart) 1.2s both; }
 .boot.is-skipped { animation: boot-exit 0.45s var(--ease-in-out-quart) 0s both; }
 .boot-id { opacity: 0; transform: translateY(40%); animation: boot-rise 0.55s var(--ease-out-expo) both; }

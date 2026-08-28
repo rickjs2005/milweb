@@ -9,7 +9,7 @@ export function BootController() {
   useEffect(() => {
     const el = document.getElementById("mw-boot");
     const root = document.documentElement;
-    if (!el) {
+    if (!el || root.classList.contains("booted")) {
       root.classList.remove("booting");
       return;
     }
