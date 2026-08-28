@@ -72,14 +72,14 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   return (
     <>
       <header
-        className="fixed inset-x-0 top-0 z-nav flex h-nav items-center justify-between px-margin t-mono text-paper mix-blend-difference"
+        className="fixed inset-x-0 top-0 z-nav flex h-nav items-center justify-between px-margin t-mono text-[#F2F0EA] mix-blend-difference"
         data-inspect="NAV"
       >
         <Link href={withLocale(locale, "/")} className="link-rule font-display text-[15px] font-black tracking-tight" aria-label="MilWeb">
           {BRAND.mark}
         </Link>
 
-        <span className="hidden tnum text-ink-3 md:block" aria-live="polite">
+        <span className="hidden tnum opacity-60 md:block" aria-live="polite">
           {act ? act : BRAND.index}
         </span>
 
@@ -89,7 +89,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
               {l.label}
             </Link>
           ))}
-          <Link href={switchHref} className="link-rule text-ink-3" hrefLang={otherLocale === "en" ? "en" : "pt-BR"}>
+          <Link href={switchHref} className="link-rule opacity-60" hrefLang={otherLocale === "en" ? "en" : "pt-BR"}>
             {otherLocale.toUpperCase()}
           </Link>
         </nav>

@@ -170,3 +170,35 @@
   .btn-metal, .cta-shine, .cta-pulse, .cta-border { background: rgb(var(--ink)); color: rgb(var(--paper)); }
   .bg-grid { background: transparent; }
 }
+
+/* =====================================================================
+   INSPECT MODE — caixas da InspectLayer
+   ===================================================================== */
+.ib {
+  position: absolute;
+  left: 0;
+  top: 0;
+  outline: 1px solid rgb(var(--signal) / 0.55);
+  outline-offset: -1px;
+}
+.ib-named {
+  outline-color: rgb(var(--signal));
+}
+.ib-label,
+.ib-dim {
+  position: absolute;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 3px 4px;
+  background: rgb(var(--signal));
+  color: rgb(var(--signal-ink));
+  white-space: nowrap;
+}
+.ib-label { left: 0; top: 0; }
+.ib-dim { right: 0; bottom: 0; background: transparent; color: rgb(var(--signal)); }
+.ib:not(.ib-named) .ib-label { background: transparent; color: rgb(var(--signal) / 0.8); }
+
+/* Enquanto segura: sem seleção de texto, cursor de mira. */
+html.inspecting, html.inspecting * { user-select: none; cursor: crosshair !important; }

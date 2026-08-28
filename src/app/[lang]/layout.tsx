@@ -5,6 +5,7 @@ import { ScrollProvider } from "@/components/scroll-provider";
 import { TrackConversions } from "@/components/track-conversions";
 import { ViewTransitions } from "@/components/view-transitions";
 import { Nav } from "@/components/nav/nav";
+import { InspectProvider } from "@/features/inspect/inspect-provider";
 import { NAV } from "@/data/brand";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { localeFrom, LOCALES, makeT, type LangParams } from "@/lib/i18n";
@@ -66,6 +67,7 @@ export default async function LangLayout({ children, params }: { children: React
   const t = makeT(locale);
   return (
     <ScrollProvider>
+      <InspectProvider>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
       <TrackConversions />
       <ViewTransitions />
@@ -83,6 +85,7 @@ export default async function LangLayout({ children, params }: { children: React
       {children}
       <Analytics />
       <SpeedInsights />
+      </InspectProvider>
     </ScrollProvider>
   );
 }
