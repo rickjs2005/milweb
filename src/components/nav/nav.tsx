@@ -72,7 +72,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   return (
     <>
       <header
-        className="fixed inset-x-0 top-0 z-nav flex h-nav items-center justify-between px-margin t-mono text-ink"
+        className="fixed inset-x-0 top-0 z-nav flex h-nav items-center justify-between px-margin t-mono text-paper mix-blend-difference"
         data-inspect="NAV"
       >
         <Link href={withLocale(locale, "/")} className="link-rule font-display text-[15px] font-black tracking-tight" aria-label="MilWeb">
