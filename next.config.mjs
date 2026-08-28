@@ -9,6 +9,12 @@ const nextConfig = {
     return [
       { source: "/raio-x", destination: "/diagnostico", permanent: true },
       { source: "/en/raio-x", destination: "/en/diagnostico", permanent: true },
+      // O acervo e os cases mudaram de /projetos para /work na reconstrução
+      // de 08/2026. Links antigos (WhatsApp, LinkedIn, Google) continuam.
+      { source: "/projetos", destination: "/work", permanent: true },
+      { source: "/projetos/:slug", destination: "/work/:slug", permanent: true },
+      { source: "/en/projetos", destination: "/en/work", permanent: true },
+      { source: "/en/projetos/:slug", destination: "/en/work/:slug", permanent: true },
 
       // www servia o site inteiro com 200, ou seja, cada página tinha dois
       // endereços públicos. O canonical já apontava pro apex e segurava a

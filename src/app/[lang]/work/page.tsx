@@ -42,7 +42,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = await localeFrom(params);
   const t = makeT(locale);
-  const canonical = `${locale === "en" ? "/en" : ""}/projetos`;
+  const canonical = `${locale === "en" ? "/en" : ""}/work`;
   const title = t(UI.sections.projectsAllTitle);
   const description = t(UI.sections.projectsAllSub);
   return {
@@ -51,9 +51,9 @@ export async function generateMetadata({
     alternates: {
       canonical,
       languages: {
-        "pt-BR": "/projetos",
-        en: "/en/projetos",
-        "x-default": "/projetos",
+        "pt-BR": "/work",
+        en: "/en/work",
+        "x-default": "/work",
       },
     },
     openGraph: { type: "website", title: `${title} | MilWeb`, description, url: `${SITE_URL}${canonical}` },
@@ -134,7 +134,7 @@ function Card({ p, locale }: { p: Project; locale: Locale }) {
         {/* O ::after estica o link do case por cima do card inteiro, então o
             card todo é clicável sem aninhar links. */}
         <Link
-          href={withLocale(locale, `/projetos/${p.slug}`)}
+          href={withLocale(locale, `/work/${p.slug}`)}
           className="text-sm font-semibold text-accent after:absolute after:inset-0 after:content-['']"
         >
           {t(UI.labels.caseStudy)}

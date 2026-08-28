@@ -231,7 +231,7 @@ export function CaseStudy({
         <nav className="mt-16 grid gap-4 border-t border-line/10 pt-8 sm:grid-cols-2">
           {prev ? (
             <Link
-              href={withLocale(locale, `/projetos/${prev.slug}`)}
+              href={withLocale(locale, `/work/${prev.slug}`)}
               className="group flex flex-col gap-1 rounded-xl border border-line/10 p-5 transition-colors hover:border-accent/40"
             >
               <span className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-fg-subtle">
@@ -246,7 +246,7 @@ export function CaseStudy({
           )}
           {next ? (
             <Link
-              href={withLocale(locale, `/projetos/${next.slug}`)}
+              href={withLocale(locale, `/work/${next.slug}`)}
               className="group flex flex-col items-end gap-1 rounded-xl border border-line/10 p-5 text-right transition-colors hover:border-accent/40"
             >
               <span className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-fg-subtle">

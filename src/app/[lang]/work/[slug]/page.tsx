@@ -25,7 +25,7 @@ export async function generateMetadata({
   // `result` é escrito para ser lido na página; para o resultado de busca
   // vale a versão que cabe sem truncar no meio da frase.
   const description = searchDescription(p.result[locale]);
-  const canonical = `${locale === "en" ? "/en" : ""}/projetos/${p.slug}`;
+  const canonical = `${locale === "en" ? "/en" : ""}/work/${p.slug}`;
   const url = `${SITE_URL}${canonical}`;
   // "MilLead | MilWeb" nao dizia o que o projeto e. A tagline ja resume em
   // uma linha e o layout ainda acrescenta o sufixo da marca.
@@ -36,9 +36,9 @@ export async function generateMetadata({
     alternates: {
       canonical,
       languages: {
-        "pt-BR": `/projetos/${p.slug}`,
-        en: `/en/projetos/${p.slug}`,
-        "x-default": `/projetos/${p.slug}`,
+        "pt-BR": `/work/${p.slug}`,
+        en: `/en/work/${p.slug}`,
+        "x-default": `/work/${p.slug}`,
       },
     },
     openGraph: { type: "article", title: `${p.title} | MilWeb`, description, url },
@@ -67,7 +67,7 @@ export default async function ProjectPage({
   // O grafo tem de falar da MESMA página que o canonical aponta. Enquanto a
   // url era montada sem o locale, a versão /en declarava a URL pt e os dois
   // sinais se contradiziam.
-  const url = `${SITE_URL}${withLocale(locale, `/projetos/${project.slug}`)}`;
+  const url = `${SITE_URL}${withLocale(locale, `/work/${project.slug}`)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -86,13 +86,13 @@ export default async function ProjectPage({
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "MilWeb", item: `${SITE_URL}${withLocale(locale, "/")}` },
-          // O acervo é uma página de verdade (/projetos). Apontar pro
+          // O acervo é uma página de verdade (/work). Apontar pro
           // fragmento /#projects dava ao degrau um endereço que não existe.
           {
             "@type": "ListItem",
             position: 2,
             name: t(UI.nav.projects),
-            item: `${SITE_URL}${withLocale(locale, "/projetos")}`,
+            item: `${SITE_URL}${withLocale(locale, "/work")}`,
           },
           { "@type": "ListItem", position: 3, name: project.title, item: url },
         ],

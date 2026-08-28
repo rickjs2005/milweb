@@ -39,14 +39,21 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
       setAct("");
       return;
     }
+    const ratios = new Map<Element, number>();
     const io = new IntersectionObserver(
       (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setAct((visible.target as HTMLElement).dataset.act ?? "");
+        entries.forEach((e) => ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0));
+        let best: Element | null = null;
+        let max = 0;
+        ratios.forEach((r, el) => {
+          if (r > max) {
+            max = r;
+            best = el;
+          }
+        });
+        if (best) setAct((best as HTMLElement).dataset.act ?? "");
       },
-      { threshold: [0.25, 0.5], rootMargin: "-20% 0px -40% 0px" },
+      { threshold: [0, 0.1, 0.25, 0.5, 0.75], rootMargin: "-10% 0px -30% 0px" },
     );
     acts.forEach((a) => io.observe(a));
     return () => io.disconnect();

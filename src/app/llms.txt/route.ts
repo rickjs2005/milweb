@@ -48,16 +48,16 @@ ${line(
   `${SITE_URL}/diagnostico`,
   "Funil em cinco atos: o risco de depender só de rede social (com calculadora de prejuízo), como a empresa aparece no Google, como o orçamento é calculado, o que vem dentro do projeto e o convite pra conversa.",
 )}
-${line("Projetos", `${SITE_URL}/projetos`, "Acervo completo: entregas para cliente e projetos autorais, cada um com página de case.")}
+${line("Projetos", `${SITE_URL}/work`, "Acervo completo: entregas para cliente e projetos autorais, cada um com página de case.")}
 ${line("Lab", `${SITE_URL}/lab`, "Vídeos e animações feitos inteiramente em código.")}
 
 ## Entregas para cliente
 
-${clientWork.map((p) => line(p.title, `${SITE_URL}/projetos/${p.slug}`, `${p.tagline.pt} — ${p.result.pt}`)).join("\n")}
+${clientWork.map((p) => line(p.title, `${SITE_URL}/work/${p.slug}`, `${p.tagline.pt} — ${p.result.pt}`)).join("\n")}
 
 ## Projetos autorais
 
-${own.map((p) => line(p.title, `${SITE_URL}/projetos/${p.slug}`, `${p.tagline.pt} — ${p.result.pt}`)).join("\n")}
+${own.map((p) => line(p.title, `${SITE_URL}/work/${p.slug}`, `${p.tagline.pt} — ${p.result.pt}`)).join("\n")}
 
 ## Contato
 
