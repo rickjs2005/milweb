@@ -9,7 +9,7 @@ export const es: Dictionary = {
   },
   nav: { work: "Proyectos", lab: "Lab", studio: "Estudio", services: "Servicios", contact: "Contacto", menu: "Menú", close: "Cerrar", primary: "Navegación principal" },
   acts: { build: "ACTO 02 / CONSTRUCCIÓN", work: "ACTO 03 / PROYECTOS", capabilities: "ACTO 04 / CAPACIDADES", lab: "ACTO 05 / LAB", brk: "ACTO 06 / RUPTURA", human: "ACTO 07 / HUMANO", builtWith: "ACTO 08 / HECHO CON", contact: "ACTO 09 / CONTACTO" },
-  boot: { tagline: "ESTUDIO DE DESARROLLO CREATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiencia", "cargando estructura", "cargando motion", "cargando interacción"], skip: "saltar" },
+  boot: { tagline: "ESTUDIO DE DESARROLLO CREATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiencia", "cargando estructura", "cargando motion", "cargando interacción"], skip: "saltar", compile: "compilando realidad" },
   hero: {
     headline: ["EL CÓDIGO DEBE", "MOVER PERSONAS."],
     stages: ["ESTRUCTURA", "DISEÑO", "MOTION", "INTERACCIÓN", "EXPERIENCIA", "ENTREGA"],

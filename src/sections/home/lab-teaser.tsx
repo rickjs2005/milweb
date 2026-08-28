@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { gsap, EASE, MQ, SplitText, useGSAP } from "@/animations/gsap";
 import { onIdle } from "@/animations/idle";
@@ -15,38 +15,8 @@ import { onIdle } from "@/animations/idle";
  */
 export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech }: { eyebrow: string; title: string; body: string; enter: string; href: string; poster: string; act: string; tech: string }) {
   const root = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const el = root.current;
-    if (!canvas || !el) return;
-    if (window.matchMedia(MQ.reduce).matches) return;
-    let ctl: Awaited<ReturnType<typeof import("@/webgl/event-horizon")["mountEventHorizon"]>> | null = null;
-    let io: IntersectionObserver | null = null;
-    let cancelled = false;
-
-    import("@/webgl/event-horizon").then(({ mountEventHorizon }) => {
-      if (cancelled) return;
-      ctl = mountEventHorizon(canvas);
-      if (!ctl) return;
-      canvas.dataset.ready = "1";
-      io = new IntersectionObserver(([e]) => (e.isIntersecting ? ctl!.start() : ctl!.stop()), { threshold: 0.05 });
-      io.observe(el);
-    });
-
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      ctl?.setPointer(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
-    };
-    el.addEventListener("pointermove", move, { passive: true });
-    return () => {
-      cancelled = true;
-      io?.disconnect();
-      ctl?.destroy();
-      el.removeEventListener("pointermove", move);
-    };
-  }, []);
+  // O Event Horizon é desenhado pelo canvas compartilhado (features/compiler):
+  // o CompilerScrollDirector mistura o horizonte enquanto esta seção passa.
 
   // Tipografia atraída pela massa.
   useGSAP(
@@ -110,20 +80,19 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech
 
   return (
     <section ref={root} id="lab" data-act={act} data-inspect="LAB_TEASER" className="relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden bg-ink px-margin pb-8 pt-nav text-paper">
-      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 -z-10 h-full w-full opacity-0 transition-opacity duration-slow data-[ready]:opacity-100" data-inspect="CANVAS / GLSL" />
-      {/* fallback estático (sem WebGL / reduced-motion): o poster do experimento */}
-      <div aria-hidden="true" className="absolute inset-0 -z-20 bg-cover bg-center opacity-40" style={{ backgroundImage: `url(${poster})` }} />
+      {/* fallback estático (LOW / reduced-motion): o poster do experimento */}
+      <div aria-hidden="true" className="lab-poster absolute inset-0 -z-20 bg-cover bg-center opacity-40" style={{ backgroundImage: `url(${poster})` }} />
 
-      <div className="flex items-center justify-between border-t border-paper/40 pt-3 t-mono">
+      <div className="relative z-10 flex items-center justify-between border-t border-paper/40 pt-3 t-mono">
         <span>{eyebrow}</span>
         <span className="tnum text-paper/60">{tech}</span>
       </div>
 
-      <h2 className="t-display t-display-xl relative text-paper [&_div]:inline-block" data-inspect="LAB_TITLE">
+      <h2 className="t-display t-display-xl relative z-10 text-paper [&_div]:inline-block" data-inspect="LAB_TITLE">
         {title}
       </h2>
 
-      <div className="grid-12 items-end gap-y-6 t-mono">
+      <div className="grid-12 relative z-10 items-end gap-y-6 t-mono">
         <p className="col-span-4 max-w-sm normal-case tracking-normal text-paper/80 md:col-span-4" style={{ fontFamily: "var(--font-display)", fontSize: "var(--step-0)", letterSpacing: 0, textTransform: "none" }}>
           {body}
         </p>

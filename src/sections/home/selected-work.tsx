@@ -137,7 +137,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
   const total = String(items.length).padStart(2, "0");
 
   return (
-    <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative">
+    <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative isolate">
       {items.map((w, i) => (
         <article
           key={w.slug}

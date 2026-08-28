@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { fitLines } from "@/lib/fit";
+import { CompilerFallback } from "@/features/compiler/fallback";
 import { gsap, EASE, MQ, ScrollTrigger, SplitText, useGSAP } from "@/animations/gsap";
 
 export type BuildHeroStrings = {
@@ -54,7 +55,13 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
 
         gsap.set(q("[data-layer=wire] > *"), { scaleX: 0, transformOrigin: "left center" });
         gsap.set(q("[data-layer=grid] > *"), { scaleY: 0, transformOrigin: "top" });
-        gsap.set(split.chars, { yPercent: 110 });
+        // A headline sobe no fim da introdução (evento do Boot) — ou já está
+        // visível se a sessão já bootou.
+        const reveal = () => gsap.to(split.chars, { yPercent: 0, stagger: 0.012, duration: 0.9, ease: EASE.outExpo, overwrite: true });
+        if (document.documentElement.classList.contains("booting")) {
+          gsap.set(split.chars, { yPercent: 110 });
+          window.addEventListener("mw:headline", reveal, { once: true });
+        }
         gsap.set(h1, { fontStretch: "62%", fontWeight: 400, "--wdth": 62, "--wght": 400 });
         gsap.set(q("[data-layer=images] figure"), { autoAlpha: 0, yPercent: 30 });
         gsap.set(q("[data-ship]"), { autoAlpha: 0 });
@@ -86,7 +93,6 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
         tl.to(q("[data-layer=grid] > *"), { scaleY: 1, stagger: 0.008, duration: 0.12 }, 0.2);
         tl.to(q("[data-layer=code]"), { scale: 0.55, autoAlpha: 0.35, transformOrigin: "left top", duration: 0.12 }, 0.2);
         // 2 MOTION — letras sobem e a fonte se EXPANDE (62% → 125%)
-        tl.to(split.chars, { yPercent: 0, stagger: 0.006, duration: 0.14, ease: EASE.outExpo }, 0.34);
         tl.to(h1, { fontStretch: "125%", fontWeight: 900, "--wdth": 125, "--wght": 900, duration: 0.18, ease: EASE.smooth }, 0.38);
         tl.to(q("[data-layer=wire] > *"), { autoAlpha: 0.25, duration: 0.1 }, 0.44);
         // 3 INTERACTION — imagens entram nas células
@@ -99,7 +105,10 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
         tl.to(q("[data-layer=images] figure"), { autoAlpha: 0, yPercent: -10, stagger: 0.02, duration: 0.1 }, 0.84);
         tl.to(q("[data-ship]"), { autoAlpha: 1, stagger: 0.02, duration: 0.1 }, 0.9);
 
-        return () => split.revert();
+        return () => {
+          window.removeEventListener("mw:headline", reveal);
+          split.revert();
+        };
       });
 
       // ---------- MOBILE / REDUCED: sem pin ----------
@@ -188,7 +197,10 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
       </div>
 
       {/* TIPOGRAFIA (o LCP) */}
-      <div className="relative z-10 mt-auto pt-[18svh] md:pt-[22svh]">
+      {/* A ESCULTURA (fallback SVG em LOW/reduced; em HIGH/MEDIUM o canvas fixo desenha no mesmo lugar) */}
+      <CompilerFallback className="pointer-events-none absolute right-margin top-[24%] z-[1] w-[38%] max-w-[520px] md:top-[18%]" />
+
+      <div className="relative z-10 mt-auto pt-[18svh] md:z-[1] md:pt-[22svh]">
         <h1 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(s.headline)} data-inspect="HERO_TITLE">
           {s.headline.map((line) => (
             <span key={line} data-line className="block md:whitespace-nowrap">

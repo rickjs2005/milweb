@@ -9,11 +9,8 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap } from "@/animations/gsap";
 import { REVEAL_VARIANTS, SCRUB_VARS, type RevealVariant } from "./reveal-variants";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 

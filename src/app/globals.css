@@ -220,16 +220,49 @@ html.inspecting, html.inspecting * { user-select: none; cursor: crosshair !impor
    ===================================================================== */
 html.booting { overflow: hidden; }
 html.booted .boot { display: none; }
-.boot { clip-path: inset(0 0 0 0); animation: boot-exit 0.7s var(--ease-in-out-quart) 1.2s both; }
+/* Saída em clip-path: por padrão em --boot-exit (2,6 s, primeira visita); o
+   controller antecipa (visita recorrente) ou dispara na hora (skip). */
+.boot { --boot-exit: 2.6s; clip-path: inset(0 0 0 0); animation: boot-exit 0.8s var(--ease-in-out-quart) var(--boot-exit) both; }
+.boot.is-exiting { animation: boot-exit 0.8s var(--ease-in-out-quart) 0s both; }
 .boot.is-skipped { animation: boot-exit 0.45s var(--ease-in-out-quart) 0s both; }
+.boot-signal { opacity: 0; animation: boot-show 0.01s linear both; }
 .boot-id { opacity: 0; transform: translateY(40%); animation: boot-rise 0.55s var(--ease-out-expo) both; }
 .boot-line { opacity: 0; animation: boot-show 0.01s linear both; }
-.boot-cursor { animation: boot-blink 0.18s steps(1) 0.45s 6; }
+.boot-bar-fill { width: 0; animation: boot-fill 0.28s var(--ease-out-expo) both; }
+.boot-cursor { animation: boot-blink 0.18s steps(1) 2.4s 5; }
+.boot-frag { opacity: 0; stroke-dasharray: 1; stroke-dashoffset: 1; animation: boot-frag 0.55s var(--ease-out-expo) both; color: rgb(var(--paper) / 0.45); }
+.boot.is-quick .boot-id { animation-delay: 0.05s !important; }
+.boot.is-quick .boot-line, .boot.is-quick .boot-bar-fill, .boot.is-quick .boot-frag { animation-delay: 0.1s !important; }
 @keyframes boot-exit { to { clip-path: inset(0 0 100% 0); visibility: hidden; } }
 @keyframes boot-rise { to { opacity: 1; transform: none; } }
 @keyframes boot-show { to { opacity: 1; } }
+@keyframes boot-fill { to { width: 100%; } }
 @keyframes boot-blink { 50% { opacity: 0; } }
+@keyframes boot-frag { 0% { opacity: 0; stroke-dashoffset: 1; } 30% { opacity: 1; } 100% { opacity: 1; stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { .boot { display: none; } }
+
+/* =====================================================================
+   THE COMPILER — a escultura (um canvas fixo entre os fundos das seções e
+   o texto) e sua anomalia. O fallback SVG só existe em LOW/reduced.
+   ===================================================================== */
+.compiler-canvas { z-index: 2; }
+html[data-quality="low"] .compiler-canvas, html[data-quality="reduced"] .compiler-canvas { display: none; }
+.compiler-fallback { display: none; }
+html[data-quality="low"] .compiler-fallback, html[data-quality="reduced"] .compiler-fallback { display: block; }
+.compiler-fallback-ring { animation: compiler-ring 9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .compiler-fallback-ring { animation: none; } }
+@keyframes compiler-ring { to { transform: rotate(360deg); } }
+/* anomalia: a interface perde a rigidez por ~450 ms (nav, régua, grid) */
+html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [data-layer="wire"], html.anomaly [data-layer="stages"], html.anomaly [data-layer="code"] { animation: anomaly 0.45s steps(6) both; }
+@keyframes anomaly {
+  0% { transform: translate(0, 0) skewX(0); }
+  20% { transform: translate(-6px, 2px) skewX(-1.5deg); }
+  40% { transform: translate(5px, -3px) skewX(1deg); }
+  60% { transform: translate(-3px, 1px) skewX(-0.6deg); }
+  80% { transform: translate(2px, 0) skewX(0.3deg); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { html.anomaly * { animation: none !important; } }
 
 /* =====================================================================
    SELECTED WORK — os quatro mundos (ACT 03). A estrutura MilWeb é a

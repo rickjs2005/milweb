@@ -16,7 +16,7 @@ export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act,
         <span className="tnum text-ink-3">MW/009</span>
       </div>
 
-      <h2 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(headline)} data-inspect="H2">
+      <h2 className="t-display t-display-xl t-fit-md relative z-10 text-ink" style={fitLines(headline)} data-inspect="H2">
         {headline.map((l) => (
           <span key={l} className="block">
             {l}
@@ -24,7 +24,7 @@ export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act,
         ))}
       </h2>
 
-      <div className="grid-12 items-end gap-y-8">
+      <div className="grid-12 relative z-10 items-end gap-y-8">
         <Link href={href} className="group col-span-4 md:col-span-8 lg:col-span-8" data-inspect="CTA / START_A_PROJECT">
           <span className="t-display t-display-md inline-block text-ink">
             {before}

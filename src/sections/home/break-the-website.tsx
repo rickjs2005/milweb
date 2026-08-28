@@ -124,9 +124,14 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
     });
   };
 
+  // Unmount com a página quebrada: mata o loop, os listeners no window e o SplitText.
   useGSAP(
     () => () => {
       cancelAnimationFrame(rafRef.current);
+      (root.current as (HTMLElement & { _cleanup?: () => void }) | null)?._cleanup?.();
+      splitRef.current?.revert();
+      splitRef.current = null;
+      worldRef.current = null;
     },
     { scope: root },
   );
@@ -135,7 +140,7 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
 
   return (
     <section ref={root} id="break" data-act={act} data-inspect="BREAK" className="relative isolate overflow-hidden bg-paper">
-      <div ref={stage} className="container-page relative flex min-h-[100svh] flex-col justify-between pb-8 pt-nav" data-inspect="PHYSICS_STAGE">
+      <div ref={stage} className="container-page relative z-10 flex min-h-[100svh] flex-col justify-between pb-8 pt-nav" data-inspect="PHYSICS_STAGE">
         <div data-piece className="rule flex items-center justify-between pt-3 t-mono">
           <span data-piece>{pieces[0]}</span>
           <span data-piece className="tnum text-ink-3">

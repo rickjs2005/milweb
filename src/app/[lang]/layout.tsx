@@ -11,6 +11,7 @@ import { PROFILE, SITE_URL } from "@/lib/content";
 import { localeFrom, type LangParams } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
+import { QUALITY_SCRIPT } from "@/lib/quality";
 import { FONT_CLASS } from "@/lib/fonts";
 
 
@@ -53,6 +54,7 @@ export default async function LangLayout({ children, params }: { children: React
       <body>
     <ScrollProvider>
       <InspectProvider strings={{ title: d.inspect.title, dev: d.inspect.dev }}>
+        <script dangerouslySetInnerHTML={{ __html: QUALITY_SCRIPT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
         <TrackConversions />
         <ViewTransitions />
