@@ -4,7 +4,9 @@ import { useRef } from "react";
 import Image from "next/image";
 import { fitLines } from "@/lib/fit";
 import { CompilerFallback } from "@/features/compiler/fallback";
-import { gsap, EASE, MQ, ScrollTrigger, SplitText, useGSAP } from "@/animations/gsap";
+import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
+import { loadSplitText } from "@/animations/split-text";
+import { onIdle } from "@/animations/idle";
 
 export type BuildHeroStrings = {
   headline: readonly string[];
@@ -41,6 +43,7 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
 
   useGSAP(
     () => {
+      let SplitText: Awaited<ReturnType<typeof loadSplitText>>;
       const el = root.current!;
       const q = gsap.utils.selector(el);
       const stage = q<HTMLElement>("[data-stage]");
@@ -48,17 +51,22 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
       const setStage = (i: number) => stage.forEach((n, k) => n.classList.toggle("is-active", k === i));
 
       const mm = gsap.matchMedia();
+      let disposed = false;
 
       // ---------- DESKTOP: pin + scrub ----------
-      mm.add(`${MQ.fine} and ${MQ.noReduce} and (min-width: 720px)`, () => {
+      // O SplitText chega sob demanda; até lá a headline está no DOM e legível.
+      const desktop = () =>
+        mm.add(`${MQ.fine} and ${MQ.noReduce} and (min-width: 720px)`, () => {
         const split = SplitText.create(h1.querySelectorAll("[data-line]"), { type: "chars", mask: "chars", aria: "none" });
 
         gsap.set(q("[data-layer=wire] > *"), { scaleX: 0, transformOrigin: "left center" });
         gsap.set(q("[data-layer=grid] > *"), { scaleY: 0, transformOrigin: "top" });
-        // A headline sobe no fim da introdução (evento do Boot) — ou já está
-        // visível se a sessão já bootou.
+        // A headline sobe no fim da introdução (evento do Boot). Se o Boot já
+        // liberou (data-headline) — possível, porque este setup espera o
+        // SplitText —, ela entra na hora, sem depender de um evento passado.
         const reveal = () => gsap.to(split.chars, { yPercent: 0, stagger: 0.012, duration: 0.9, ease: EASE.outExpo, overwrite: true });
-        if (document.documentElement.classList.contains("booting")) {
+        const root2 = document.documentElement;
+        if (root2.classList.contains("booting") && root2.dataset.headline !== "1") {
           gsap.set(split.chars, { yPercent: 110 });
           window.addEventListener("mw:headline", reveal, { once: true });
         }
@@ -110,6 +118,16 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
           split.revert();
         };
       });
+      // O download + registro do plugin sai do caminho da hidratação: espera o
+      // navegador ficar ocioso. Até lá a headline está no DOM, legível e sem
+      // animação — nada depende deste chunk para o conteúdo existir.
+      const cancelIdle = onIdle(() => {
+        void loadSplitText().then((St) => {
+          if (disposed) return;
+          SplitText = St;
+          desktop();
+        });
+      }, 900);
 
       // ---------- MOBILE / REDUCED: sem pin ----------
       mm.add(`(max-width: 719px), ${MQ.coarse}, ${MQ.reduce}`, () => {
@@ -121,7 +139,11 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
         // muda a altura do bloco (CLS) e repinta o LCP depois da hidratação.
       });
 
-      return () => mm.revert();
+      return () => {
+        disposed = true;
+        cancelIdle();
+        mm.revert();
+      };
     },
     { scope: root },
   );

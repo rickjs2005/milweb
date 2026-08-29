@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { gsap, EASE, SplitText, useGSAP } from "@/animations/gsap";
+import { gsap, EASE, useGSAP } from "@/animations/gsap";
+import { loadSplitText, prefetchSplitText, type SplitTextInstance } from "@/animations/split-text";
 import { addBody, createWorld, hit, render, settled, step, type World } from "@/features/break/physics";
 import { compiler } from "@/features/compiler/store";
 import { compileTo } from "@/features/compiler/compiler";
@@ -26,11 +27,14 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
   const stage = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"idle" | "breaking" | "broken" | "rebuilding">("idle");
   const worldRef = useRef<World | null>(null);
-  const splitRef = useRef<SplitText | null>(null);
+  const splitRef = useRef<SplitTextInstance | null>(null);
   const rafRef = useRef(0);
 
-  const breakIt = () => {
+  const breakIt = async () => {
     if (state !== "idle") return;
+    // o plugin chega antes do primeiro corpo cair (já pré-carregado no hover)
+    const SplitText = await loadSplitText();
+    if (!root.current || !stage.current) return;
     const el = root.current!;
     const st = stage.current!;
     setState("breaking");
@@ -74,22 +78,33 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
       return;
     }
     let last = performance.now();
+    const t0 = last;
     let calm = 0;
     let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      setState("broken");
+    };
     const loop = (now: number) => {
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
       step(world, dt);
       render(world);
-      if (settled(world)) calm++;
+      // Assentou (tolerância folgada — são dezenas de corpos) ou já deu tempo
+      // demais: a tela de "quebrou" nunca pode depender de sorte física, senão
+      // o REBUILD fica inalcançável.
+      if (settled(world, 0.8)) calm++;
       else calm = 0;
-      if (calm > 45 && !done) {
-        done = true;
-        setState("broken");
-      }
+      if (calm > 24 || now - t0 > 4200) finish();
       rafRef.current = requestAnimationFrame(loop);
     };
-    world.pointer.active = true;
+    // A repulsão do cursor só entra depois que a queda acaba: com ela ligada
+    // desde o início, um cursor parado no palco impede o repouso para sempre.
+    world.pointer.active = false;
+    window.setTimeout(() => {
+      if (worldRef.current === world) world.pointer.active = true;
+    }, 1800);
     rafRef.current = requestAnimationFrame(loop);
 
     // interação: cursor empurra; arrastar move (não em LOW)
@@ -174,7 +189,12 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
         {/* as 12 colunas do grid também se desprendem (não em LOW) */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-0 hidden md:grid" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
           {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i} data-column className="block h-full w-px justify-self-start bg-neutral" />
+            <span key={i} className="flex h-full flex-col justify-between">
+              {/* segmentos: uma coluna inteira é um corpo alto demais para assentar */}
+              {Array.from({ length: 4 }).map((_, k) => (
+                <span key={k} data-column className="block h-1/4 w-px bg-neutral" />
+              ))}
+            </span>
           ))}
         </div>
 
@@ -199,6 +219,8 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
           <button
             type="button"
             onClick={breakIt}
+            onPointerEnter={prefetchSplitText}
+            onFocus={prefetchSplitText}
             disabled={state !== "idle"}
             data-no-inspect
             className="link-rule t-mono text-ink disabled:opacity-40"

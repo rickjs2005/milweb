@@ -38,7 +38,13 @@ export function BootController() {
   useEffect(() => {
     const el = document.getElementById("mw-boot");
     const root = document.documentElement;
-    const headline = () => window.dispatchEvent(new Event("mw:headline"));
+    // `data-headline` no <html> é a memória do evento: o hero pode chegar
+    // depois (o SplitText é carregado sob demanda) e ainda saber que já pode
+    // mostrar a headline — nunca fica escondida por corrida de carregamento.
+    const headline = () => {
+      root.dataset.headline = "1";
+      window.dispatchEvent(new Event("mw:headline"));
+    };
 
     if (!el || root.classList.contains("booted")) {
       root.classList.remove("booting");

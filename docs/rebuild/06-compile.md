@@ -142,6 +142,7 @@ rodar o raymarch consome a thread. As correções, em ordem de impacto:
 | Textura da interface enxuta: 1024 px, ≤ 12 nós, leitura em bloco, texto numa segunda tarefa | tarefa de 4 s eliminada |
 | Teto de FPS + menos passos (72 → 56/34) e loop 96 → 64 | metade do custo por frame |
 | Intro curta no mobile (1,5 s) e overlay saindo em 2,1 s no desktop | LCP 3,6 → 2,4 s |
+| **SplitText sob demanda** (`animations/split-text.ts`): sai do bundle inicial, carrega no idle (hero/Lab) e no hover do botão (Break) | −2,6 KB gzip · TBT desktop 60 → 20 ms |
 | Altura fixa nas linhas do boot | CLS de fonte estabilizado |
 
 ### Antes × depois (Lighthouse 13, Edge headless, build de produção local, máquina sem carga)
@@ -154,10 +155,24 @@ rodar o raymarch consome a thread. As correções, em ordem de impacto:
 | /lab mobile | — | **91** · LCP 3,3 s · TBT 140 ms |
 | /contato mobile | — | **90** · LCP 2,8 s · TBT 240 ms |
 | a11y (todas) | 100 | **100** |
-| JS inicial da home (gzip) | 237,5 KB | **248,7 KB** (limite: 250) |
+| JS inicial da home (gzip) | 237,5 KB | **246,2 KB** (limite: 250) |
 
 Metas do briefing: mobile ≥ 85 ✔ (média 86; a variância entre execuções é de ±3) · desktop ≥ 95 ✔ ·
 LCP < 2,5 s ✔ na home (nos cases o LCP é o hero em imagem: 3,2 s) · CLS < 0,1 ✔ · JS < 250 KB ✔.
+
+### SplitText sob demanda
+
+O plugin só é usado em três telas (headline do hero no desktop, tipografia gravitacional do Lab e a
+quebra do Break) e em nenhuma delas no primeiro paint. Saiu do registro central (`animations/gsap.ts`)
+para `animations/split-text.ts`, que faz `import()` memorizado e registra o plugin uma vez:
+
+- **hero e Lab** carregam no `requestIdleCallback` — a primeira tentativa foi carregar na hidratação
+  e custou 7 pontos no mobile (79 vs 86): o round-trip caía dentro da janela de hidratação;
+- **Break** carrega no clique, com prefetch por intenção no `pointerenter`/`focus` do botão;
+- a headline nunca depende do chunk para existir: o `<html data-headline>` guarda que a introdução já
+  liberou, então se o plugin chega depois do evento, o texto entra na hora em vez de ficar escondido.
+
+Resultado: 7,1 KB (2,6 KB gzip) fora do bundle inicial, TBT desktop 60 → 20 ms, mesma nota no mobile.
 
 ## 10. Orçamento de performance
 
@@ -177,6 +192,14 @@ de Lighthouse documentado lá.
   o dicionário; só os nomes próprios dos experimentos ficam em inglês).
 - `scripts/i18n-visual.mjs`: 4 viewports × 3 idiomas, sem overflow, seletor e menu OK.
 - `.audit/routes.sh`: rotas 200, legadas 308, cookie, 404 — inalterados.
+
+### Correção no Break (achada pelo teste do SplitText)
+
+Com as colunas do grid virando corpos, a física nunca "assentava" (uma coluna inteira é um corpo alto
+demais, e a repulsão do cursor parado impedia o repouso) — a tela **RICK CAN FIX IT** podia nunca
+aparecer, deixando o REBUILD inalcançável. Agora: cada coluna cai em 4 segmentos, a tolerância de
+repouso é mais folgada, a repulsão do cursor só entra 1,8 s depois da queda e existe um teto de 4,2 s
+que declara o repouso de qualquer forma. O estado quebrado deixou de depender de sorte física.
 
 ## 12. Limitações honestas
 

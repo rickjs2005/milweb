@@ -5,11 +5,12 @@
  */
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
 import { CustomEase } from "gsap/CustomEase";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger, SplitText, CustomEase, useGSAP);
+// SplitText NÃO entra aqui: é carregado sob demanda em animations/split-text.ts
+// (só três telas o usam e nenhuma no primeiro paint).
+gsap.registerPlugin(ScrollTrigger, CustomEase, useGSAP);
 
 /**
  * Easings oficiais (equivalentes 1:1 aos --ease-* do CSS). Sistema, não
@@ -49,4 +50,4 @@ export const MQ = {
 
 gsap.defaults({ ease: EASE.outExpo, duration: DUR.medium });
 
-export { gsap, ScrollTrigger, SplitText, useGSAP };
+export { gsap, ScrollTrigger, useGSAP };

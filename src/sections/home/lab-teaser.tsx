@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { gsap, EASE, MQ, SplitText, useGSAP } from "@/animations/gsap";
+import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
+import { loadSplitText } from "@/animations/split-text";
 import { onIdle } from "@/animations/idle";
 
 /**
@@ -24,7 +25,11 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech
       const el = root.current!;
       const h2 = el.querySelector<HTMLElement>("h2")!;
       const mm = gsap.matchMedia();
-      const cancel = onIdle(() => mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
+      let disposed = false;
+      const cancel = onIdle(() => {
+        void loadSplitText().then((SplitText) => {
+          if (disposed) return;
+          mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
         const split = SplitText.create(h2, { type: "chars", aria: "none" });
         const chars = split.chars as HTMLElement[];
         let mx = 0.5;
@@ -69,8 +74,11 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech
           el.removeEventListener("pointermove", move);
           split.revert();
         };
-      }));
+          });
+        });
+      });
       return () => {
+        disposed = true;
         cancel();
         mm.revert();
       };
