@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { vtOfSlug } from "@/lib/route-transition";
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
 
 export type WorkRow = {
@@ -117,7 +118,7 @@ export function WorkIndex({ rows, labels }: { rows: WorkRow[]; labels: Record<"a
         <ul>
           {visible.map((r) => (
             <li key={r.slug} className="border-b border-neutral">
-              <Link href={r.href} data-slug={r.slug} className="grid-12 group items-baseline gap-y-1 py-4 transition-colors duration-fast hover:bg-paper-2 md:py-5">
+              <Link href={r.href} data-vt={vtOfSlug(r.slug)} data-slug={r.slug} className="grid-12 group items-baseline gap-y-1 py-4 transition-colors duration-fast hover:bg-paper-2 md:py-5">
                 <span className="t-mono col-span-1 hidden tnum text-ink-3 md:block">{r.n}</span>
                 {r.image && (
                   <span className="relative col-span-1 block aspect-[16/10] w-full overflow-hidden bg-neutral md:hidden">

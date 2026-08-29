@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import { gsap, EASE, ScrollTrigger } from "@/animations/gsap";
 import { onIdle } from "@/animations/idle";
-import { getQuality } from "@/lib/quality";
+import { getQuality, probeGpu } from "@/lib/quality";
 import { compiler, PRESETS, type CompilerStateName } from "./store";
 import { heroPlacement } from "@/sections/home/boot-controller";
+import { sound, type SoundName } from "@/features/sound/sound";
 
 /**
  * O único canvas da Home. Fixo atrás do conteúdo (z-index entre os fundos
@@ -28,11 +29,32 @@ export function Compiler() {
     let disposed = false;
     let cleanup: (() => void) | null = null;
 
-    const cancel = onIdle(async () => {
+    // A compilação do shader e o upload da textura custam uma tarefa longa —
+    // pagá-la durante o carregamento seria trocar performance por efeito. Ela
+    // acontece na PRIMEIRA INTERAÇÃO (mover o mouse, rolar, tocar, teclar),
+    // quando a página já está pronta e o custo não entra no caminho crítico.
+    // Até lá a silhueta em SVG ocupa o lugar — e em quem nunca interage
+    // (crawler, auditoria) ela é a versão final.
+    let armed = false;
+    const EVENTS = ["pointermove", "wheel", "touchstart", "keydown", "scroll"] as const;
+    const disarm = () => EVENTS.forEach((e) => window.removeEventListener(e, arm));
+    function arm() {
+      if (armed || disposed) return;
+      armed = true;
+      disarm();
+      cancelIdle = onIdle(boot, 400);
+    }
+    EVENTS.forEach((e) => window.addEventListener(e, arm, { passive: true }));
+    let cancelIdle: () => void = () => {};
+
+    const boot = async () => {
       if (disposed) return;
+      // agora sim: o teste de GPU (compila um shader curto) — fora do caminho crítico
+      const gq = probeGpu();
+      if (!gq.webgl) return;
       const [{ createRenderer }, { COMPILER_FRAG }, { createInterfaceTexture }] = await Promise.all([import("@/webgl/renderer"), import("@/webgl/compiler-frag"), import("@/webgl/interface-texture")]);
       if (disposed) return;
-      const r = createRenderer(canvas, { dpr: q.dpr, alpha: true });
+      const r = createRenderer(canvas, { dpr: gq.dpr, alpha: true });
       if (!r) return;
       try {
         r.addProgram("compiler", COMPILER_FRAG);
@@ -43,8 +65,14 @@ export function Compiler() {
       }
       const iface = createInterfaceTexture();
       r.texture("iface", iface.canvas);
+      // o texto atrás do vidro entra numa tarefa separada (nunca uma tarefa longa)
+      const paintText = () => {
+        iface.drawText();
+        r.texture("iface", iface.canvas);
+      };
+      setTimeout(paintText, 0);
       const v = compiler.values;
-      let steps = q.steps;
+      let steps = gq.steps;
       const sm = { x: 0, y: 0 };
       let heldRelease: (() => void) | null = null;
 
@@ -78,12 +106,49 @@ export function Compiler() {
           [{ name: "uTex", tex: r.getTexture("iface")!, unit: 0 }],
         );
       });
+      // ---- PROBE DE CUSTO (antes de qualquer pixel visível) ----------------
+      // Um frame do shader REAL num buffer minúsculo (DPR 0.12 ≈ 170×100 px),
+      // medido com gl.finish. Em GPU real custa frações de ms; sem GPU (driver
+      // em software, headless, aparelho muito fraco) custa dezenas. É o que
+      // decide, em ~1 frame, se a escultura roda ou se o SVG assume — antes de
+      // consumir a thread principal.
+      const probe = () => {
+        const before = r.dpr;
+        r.setDpr(0.12);
+        r.resize();
+        const t0 = performance.now();
+        r.draw("compiler", { uRes: [canvas.width, canvas.height], uTime: 0, uPointer: [0, 0], uCenter: [0.5, 0.5], uScale: 0.4, uAssemble: 1, uSpread: 0.3, uFlatten: 0, uWarm: 0, uRingSpd: 0.3, uScan: 0, uCollapse: 0, uAnomaly: 0, uLab: 0, uInk: 0, uSteps: steps, uHorizonK: 1 }, [{ name: "uTex", tex: r.getTexture("iface")!, unit: 0 }]);
+        r.gl.finish();
+        const ms = performance.now() - t0;
+        r.setDpr(before);
+        return ms;
+      };
+      const cost = probe();
+      if (cost > 4) {
+        // Sem GPU utilizável: silhueta em SVG, zero custo contínuo.
+        document.documentElement.setAttribute("data-quality", "low");
+        r.destroy();
+        return;
+      }
+      if (cost > 1.2) {
+        steps = Math.max(24, Math.round(steps * 0.6));
+        r.setDpr(1);
+        document.documentElement.setAttribute("data-quality", "medium");
+      }
+
+      // Teto de quadros: a escultura tem movimento lento (anel + deriva), 30 fps
+      // bastam e cortam metade do custo de GPU. Tweens continuam suaves porque
+      // o GSAP interpola por tempo, não por frame.
+      r.setFpsCap(gq.tier === "high" && cost < 0.6 ? 40 : 30);
+
       // Degradação em runtime: frames lentos → menos passos e DPR menor, uma vez.
       r.onSlow(() => {
-        steps = Math.max(28, Math.round(steps * 0.6));
+        steps = Math.max(24, Math.round(steps * 0.6));
         r.setDpr(Math.max(1, r.dpr - 0.25));
         document.documentElement.setAttribute("data-quality", "medium");
       });
+
+
 
       compiler.invalidate = () => r.invalidate();
       compiler.hold = () => r.hold();
@@ -108,12 +173,13 @@ export function Compiler() {
       const redraw = () => {
         iface.draw();
         r.texture("iface", iface.canvas);
+        setTimeout(paintText, 0);
       };
-      document.fonts?.ready.then(() => !disposed && redraw());
+      document.fonts?.ready.then(() => !disposed && setTimeout(paintText, 0));
       let rt = 0;
       const onResize = () => {
         clearTimeout(rt);
-        rt = window.setTimeout(redraw, 120);
+        rt = window.setTimeout(redraw, 300);
       };
       window.addEventListener("resize", onResize);
       const mo = new MutationObserver(() => {
@@ -127,9 +193,11 @@ export function Compiler() {
         compiler.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
         compiler.pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
       };
-      if (q.fine) window.addEventListener("pointermove", onMove, { passive: true });
+      if (gq.fine) window.addEventListener("pointermove", onMove, { passive: true });
 
       canvas.dataset.ready = "1";
+      document.documentElement.setAttribute("data-compiler", "on");
+      // a silhueta SVG sai e o canvas entra no mesmo lugar: sem salto
       compiler.notify();
       r.invalidate();
 
@@ -142,13 +210,15 @@ export function Compiler() {
         compiler.mounted = false;
         compiler.invalidate = () => {};
         compiler.hold = () => () => {};
+        document.documentElement.removeAttribute("data-compiler");
         r.destroy();
       };
-    }, 800);
+    };
 
     return () => {
       disposed = true;
-      cancel();
+      disarm();
+      cancelIdle();
       cleanup?.();
     };
   }, []);
@@ -207,7 +277,7 @@ export function CompilerScrollDirector() {
               end: "bottom top",
               onUpdate: (st) => {
                 const p = st.progress;
-                if (compiler.state === "boot") return;
+                if (compiler.state !== "assembled") return;
                 const h = heroPlacement();
                 v.cx = gsap.utils.interpolate(h.cx, wide ? 0.82 : 0.78, p);
                 v.cy = gsap.utils.interpolate(h.cy, wide ? 0.28 : 0.8, p);
@@ -220,17 +290,24 @@ export function CompilerScrollDirector() {
         }
         // MUNDOS: cada painel muda as leis da escultura.
         const stateOf: Record<string, CompilerStateName> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex" };
+        // A escultura ocupa a coluna vazia à esquerda, na meia-altura: nunca
+        // sobre a headline (que vive embaixo) nem sobre a mídia (à direita).
+        const placeWorld = (name: CompilerStateName) => ({
+          cx: wide ? 0.21 : 0.5,
+          cy: wide ? 0.58 : 0.86,
+          scale: wide ? (name === "kavita" ? 0.21 : 0.17) : 0.1,
+          opacity: 1,
+          ink: name === "aurex" ? 1 : 0,
+        });
+        const cue: Partial<Record<CompilerStateName, SoundName>> = { kavita: "scan", terral: "paper", aurex: "mech", lab: "horizon" };
         worlds.forEach((panel) => {
           const name = stateOf[panel.dataset.world ?? ""] ?? "assembled";
-          triggers.push(
-            ScrollTrigger.create({
-              trigger: panel,
-              start: "top 60%",
-              end: "bottom 40%",
-              onEnter: () => compileTo(name, { cx: wide ? 0.2 : 0.8, cy: name === "aurex" ? 0.55 : 0.3, scale: name === "kavita" ? 0.2 : 0.14, opacity: 1, ink: name === "aurex" ? 1 : 0 }, { duration: 1.4 }),
-              onEnterBack: () => compileTo(name, { cx: wide ? 0.2 : 0.8, cy: name === "aurex" ? 0.55 : 0.3, scale: name === "kavita" ? 0.2 : 0.14, opacity: 1, ink: name === "aurex" ? 1 : 0 }, { duration: 1.4 }),
-            }),
-          );
+          const place = () => {
+            compileTo(name, placeWorld(name), { duration: 1.4 });
+            const c = cue[name];
+            if (c) sound.play(c);
+          };
+          triggers.push(ScrollTrigger.create({ trigger: panel, start: "top 60%", end: "bottom 40%", onEnter: place, onEnterBack: place }));
         });
         if (worlds[0]) {
           triggers.push(ScrollTrigger.create({ trigger: worlds[0], start: "top 60%", onLeaveBack: () => compileTo("assembled", { cx: wide ? 0.82 : 0.78, cy: wide ? 0.28 : 0.8, scale: wide ? 0.16 : 0.1, opacity: 1, ink: 0 }) }));
@@ -252,7 +329,10 @@ export function CompilerScrollDirector() {
                 compiler.notify();
                 compiler.invalidate();
               },
-              onEnter: () => compileTo("lab", { opacity: 1, ink: 1 }, { duration: 1 }),
+              onEnter: () => {
+                compileTo("lab", { opacity: 1, ink: 1 }, { duration: 1 });
+                sound.play("horizon");
+              },
               onEnterBack: () => compileTo("lab", { opacity: 1, ink: 1 }, { duration: 1 }),
               onLeave: () => compileTo("assembled", { opacity: 0, lab: 0, ink: 0 }, { duration: 0.6 }),
               onLeaveBack: () => compileTo("aurex", { cx: wide ? 0.2 : 0.8, cy: 0.55, scale: 0.14, opacity: 1, lab: 0, ink: 1 }, { duration: 1 }),

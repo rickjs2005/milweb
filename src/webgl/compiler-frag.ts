@@ -76,7 +76,7 @@ vec2 map(vec3 p){
   vec3 r=p;r.xy*=rot(.42);r.yz*=rot(-.55);r.xz*=rot(t*(.35+uRingSpd*2.2));
   float ring=sdTorus(r,vec2(.27,.018));
   float teeth=1e3;
-  for(int i=0;i<6;i++){vec3 g=r;g.xz*=rot(float(i)*1.0472);g.x-=.27;teeth=min(teeth,sdBox(g,vec3(.035,.05,.02)));}
+  for(int i=0;i<4;i++){vec3 g=r;g.xz*=rot(float(i)*1.5708);g.x-=.27;teeth=min(teeth,sdBox(g,vec3(.035,.05,.02)));}
   float mech=min(ring,teeth);
   if(mech<d){d=mech;id=1.;}
   // --- colapso: tudo vira uma linha horizontal
@@ -127,7 +127,7 @@ void main(){
   if(disc<0.){gl_FragColor=out0;return;}
   float tmin=-bb-sqrt(disc);float tmax=-bb+sqrt(disc);
   float t=max(tmin,0.);vec2 h=vec2(0.);float hit=0.;
-  for(int i=0;i<96;i++){
+  for(int i=0;i<64;i++){
     if(float(i)>=uSteps||t>tmax)break;
     h=map(ro+rd*t);
     if(h.x<.0012){hit=1.;break;}

@@ -70,6 +70,7 @@ export default async function LangLayout({ children, params }: { children: React
             primary: d.nav.primary,
             selectLanguage: d.meta.selectLanguage,
             langNames: { pt: getDict("pt").meta.langName, en: getDict("en").meta.langName, es: getDict("es").meta.langName },
+            sound: d.sound,
           }}
         />
         {children}

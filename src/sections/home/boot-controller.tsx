@@ -5,6 +5,7 @@ import { gsap } from "@/animations/gsap";
 import { compiler } from "@/features/compiler/store";
 import { compileTo } from "@/features/compiler/compiler";
 import { getQuality } from "@/lib/quality";
+import { sound } from "@/features/sound/sound";
 
 /** Onde a escultura vive no hero: à direita no desktop, acima do manifesto no mobile. */
 export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 0.48, scale: 0.34, opacity: 1 } : window.innerWidth >= 720 ? { cx: 0.7, cy: 0.55, scale: 0.26, opacity: 1 } : { cx: 0.62, cy: 0.68, scale: 0.19, opacity: 1 });
@@ -22,13 +23,15 @@ export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 
  * Linha do tempo (primeira visita):
  *  0.0  tela quase vazia · sinais de inicialização
  *  0.9  estrutura / design / motion / interação "carregam"
- *  2.4  fragmentos: a escultura começa a montar (canvas atrás do overlay)
- *  2.6  overlay sai → hero visível, escultura terminando de montar
- *  4.2  anomalia: a escultura distorce a interface (html.anomaly + uAnomaly)
- *  4.7  headline sobe (evento mw:headline, o hero escuta)
- *  5.4  controle total
+ *  1.9  fragmentos: a escultura começa a montar
+ *  2.1  overlay sai → hero visível (é o LCP: quanto antes, melhor)
+ *  3.6  anomalia: a escultura distorce a interface (html.anomaly + uAnomaly)
+ *  4.2  headline sobe (evento mw:headline, o hero escuta)
+ *  5.1  controle total
  */
-const FIRST = { exit: 2.6, assemble: 2.4, anomaly: 4.2, headline: 4.7, done: 5.4 };
+const FIRST = { exit: 2.1, assemble: 1.9, anomaly: 3.6, headline: 4.2, done: 5.1 };
+/** Mobile: a introdução existe, mas curta — no celular o conteúdo vem antes do espetáculo. */
+const SHORT = { exit: 1.5, assemble: 1.2, anomaly: 2.4, headline: 2.7, done: 3.3 };
 const QUICK = { exit: 0.5, assemble: 0.3, anomaly: -1, headline: 0.9, done: 1.6 };
 
 export function BootController() {
@@ -53,12 +56,15 @@ export function BootController() {
       visits = Number(localStorage.getItem("mw:visits") || 0);
       localStorage.setItem("mw:visits", String(visits + 1));
     } catch {}
-    const T = visits > 0 ? QUICK : FIRST;
-    if (visits > 0) el.classList.add("is-quick");
+    const small = window.innerWidth < 900 || window.matchMedia("(pointer: coarse)").matches;
+    const T = visits > 0 ? QUICK : small ? SHORT : FIRST;
+    if (visits > 0 || small) el.classList.add("is-quick");
     el.style.setProperty("--boot-exit", `${T.exit}s`);
 
     window.scrollTo(0, 0);
     const q = getQuality();
+    sound.restore();
+    sound.play("boot");
     const tl = gsap.timeline();
     let done = false;
 

@@ -51,5 +51,19 @@ export const es: Dictionary = {
   },
   pages: { studio: "ESTUDIO", services: "SERVICIOS", contact: "CONTACTO", diagnostic: "DIAGNÓSTICO", diagnosticSteps: "05 / ETAPAS", serviceContact: "04 / CONTACTO", serviceIncluded: "01 / QUÉ INCLUYE", serviceHow: "02 / CÓMO FUNCIONA", whatsapp: "WHATSAPP" },
   errors: { notFound: ["404", "NO ENCONTRADA."], broke: ["ALGO", "SE ROMPIÓ."], err404: "ERROR / 404", err500: "ERROR / 500" },
+  sound: { label: "Activar o desactivar el sonido del sitio", on: "SONIDO ON", off: "SONIDO OFF" },
+  experiments: {
+    eyebrow: "EXPERIMENTOS EN VIVO",
+    intro: "Tres anomalías que escaparon del laboratorio. Solo cargan cuando las pides.",
+    close: "TERMINAR",
+    running: "EN CURSO",
+    unsupported: "Este dispositivo no puede correr el experimento — el resto del Lab sigue disponible.",
+    items: [
+      { id: "tear", name: "Reality Tear", desc: "La interfaz es una superficie. Rásgala y mira lo que hay debajo.", hint: "Arrastra sobre la superficie para rasgar" },
+      { id: "gravity", name: "Gravity Type", desc: "Las palabras ganan peso, chocan y se apilan — y siguen legibles.", hint: "Arrastra las palabras · caen y chocan" },
+      { id: "time", name: "Time Distortion", desc: "Cada franja de la composición vive a una velocidad de tiempo distinta.", hint: "Mueve el cursor en horizontal para doblar el tiempo" },
+    ],
+    stage: { under: "DEBAJO / 02", title: "DEBAJO DE LA SUPERFICIE", surfaceLabel: "SUPERFICIE / 01", surface: "SUPERFICIE", tension: "TENSIÓN", idle: "EN PAUSA", words: ["EL", "CÓDIGO", "DEBE", "MOVER", "PERSONAS", "PESO", "MASA", "IMPACTO", "MILWEB"], timeWords: ["EL", "TIEMPO", "ES", "MATERIA", "AQUÍ"] },
+  },
   footer: { email: "E-mail", year: "Brasil" },
 };

@@ -43,7 +43,7 @@ const ALLOW = [
   /Studio Sound/gi, /Open Source/gi, /Nova Serrana/gi, /Minas Gerais/gi, /Brasil/gi, /Full[- ]stack/gi, /Firebase/gi, /Cloudinary/gi, /Vite/gi, /Zustand/gi, /Docker/gi, /Express/gi, /MySQL/gi, /MongoDB/gi,
   /Instagram/gi, /Facebook/gi, /TikTok/gi, /YouTube/gi, /LinkedIn/gi, /Wi-?Fi/gi, /ScrollTrigger/gi, /View Transitions?/gi, /Satori/gi, /Playwright/gi, /Puppeteer/gi, /Redis/gi, /JWT/gi, /REST/gi, /GraphQL/gi,
   /Core Web Vitals/gi, /Web Vitals/gi, /Vercel Analytics/gi, /Speed Insights/gi, /Search Console/gi, /Google Analytics/gi, /Tag Manager/gi, /ISR/gi, /SSR/gi, /CSR/gi, /API/gi, /CMS/gi, /CRM/gi, /ERP/gi,
-  /Dev/gi, /Hover/gi, /Reset/gi, /Skip to content/gi, /Loja de iPhone( Premium)?/gi, /NEXUS Loja Geek/gi, /\band \(pointer/g, /The Age of Dragons/gi, /Client Components?/g, /client[- ]side/gi, /Prisma ?Client/gi, /Supabase ?Client/gi, /[a-z@\/.-]+\.(com|br|dev|app)\b/gi, /(em|en) AND\b/g, /(de|del|do|o) Client\b/g,
+  /Reality Tear/gi, /Gravity Type/gi, /Time Distortion/gi, /Event Horizon/gi, /Dev/gi, /Hover/gi, /Reset/gi, /Skip to content/gi, /Loja de iPhone( Premium)?/gi, /NEXUS Loja Geek/gi, /\band \(pointer/g, /The Age of Dragons/gi, /Client Components?/g, /client[- ]side/gi, /Prisma ?Client/gi, /Supabase ?Client/gi, /[a-z@\/.-]+\.(com|br|dev|app)\b/gi, /(em|en) AND\b/g, /(de|del|do|o) Client\b/g,
 ];
 
 const decode = (s) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n));

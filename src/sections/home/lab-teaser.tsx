@@ -79,7 +79,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech
   );
 
   return (
-    <section ref={root} id="lab" data-act={act} data-inspect="LAB_TEASER" className="relative isolate flex min-h-[100svh] flex-col justify-between overflow-hidden bg-ink px-margin pb-8 pt-nav text-paper">
+    <section ref={root} id="lab" data-act={act} data-inspect="LAB_TEASER" className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden bg-ink px-margin pb-8 pt-nav text-paper">
       {/* fallback estático (LOW / reduced-motion): o poster do experimento */}
       <div aria-hidden="true" className="lab-poster absolute inset-0 -z-20 bg-cover bg-center opacity-40" style={{ backgroundImage: `url(${poster})` }} />
 
@@ -98,7 +98,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, poster, act, tech
         </p>
         <p className="col-span-4 text-paper/50 md:col-span-4 md:text-center">MW/006</p>
         <p className="col-span-4 md:col-span-4 md:text-right">
-          <Link href={href} className="link-rule text-paper" data-inspect="CTA">
+          <Link href={href} data-vt="horizon" className="link-rule text-paper" data-inspect="CTA">
             [ {enter} ]
           </Link>
         </p>

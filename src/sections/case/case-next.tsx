@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap, MQ, useGSAP } from "@/animations/gsap";
+import { vtOfSlug } from "@/lib/route-transition";
 
 /**
  * NEXT EXPERIENCE. Não é rodapé: a mídia do próximo projeto começa a
@@ -39,7 +40,7 @@ export function CaseNext({ label, title, name, n, image, href, slug, allHref, al
           {n} / {name.toUpperCase()}
         </span>
       </div>
-      <Link href={href} className="group block pb-12 pt-8 md:pt-12" data-inspect="CTA / NEXT">
+      <Link href={href} data-vt={vtOfSlug(slug)} className="group block pb-12 pt-8 md:pt-12" data-inspect="CTA / NEXT">
         <h2 data-next-text className="t-display t-display-lg text-ink transition-colors duration-medium group-hover:text-ink-3" style={{ viewTransitionName: `case-title-${slug}` }}>
           {title.map((l) => (
             <span key={l} className="block">

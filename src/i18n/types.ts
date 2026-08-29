@@ -32,5 +32,16 @@ export type Dictionary = {
   };
   pages: { studio: string; services: string; contact: string; diagnostic: string; diagnosticSteps: string; serviceContact: string; serviceIncluded: string; serviceHow: string; whatsapp: string };
   errors: { notFound: [string, string]; broke: [string, string]; err404: string; err500: string };
+  sound: { label: string; on: string; off: string };
+  experiments: {
+    eyebrow: string;
+    intro: string;
+    close: string;
+    running: string;
+    unsupported: string;
+    items: { id: "tear" | "gravity" | "time"; name: string; desc: string; hint: string }[];
+    /** Textos DENTRO do palco (canvas/DOM dos experimentos) — nada em inglês decorativo. */
+    stage: { under: string; title: string; surfaceLabel: string; surface: string; tension: string; idle: string; words: string[]; timeWords: [string, string, string, string, string] };
+  };
   footer: { email: string; year: string };
 };

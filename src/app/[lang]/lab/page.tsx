@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Reveal } from "@/animations/reveal";
 import { Footer } from "@/components/footer";
 import { LabPlayer } from "@/components/lab-player";
+import { ExperimentStage } from "@/features/lab/experiment-stage";
 import { LAB, LAB_PAGE, PROFILE } from "@/lib/content";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
@@ -36,6 +37,8 @@ export default async function LabPage({ params }: { params: Promise<LangParams> 
           </h1>
           <p className="t-lead mt-10 max-w-3xl text-ink-2">{t(LAB_PAGE.sub)}</p>
         </header>
+
+        <ExperimentStage eyebrow={d.experiments.eyebrow} intro={d.experiments.intro} close={d.experiments.close} running={d.experiments.running} unsupported={d.experiments.unsupported} items={d.experiments.items} stage={d.experiments.stage} />
 
         <ol className="mt-16 md:mt-24">
           {LAB.map((clip, i) => (

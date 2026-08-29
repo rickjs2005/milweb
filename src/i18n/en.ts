@@ -51,5 +51,19 @@ export const en: Dictionary = {
   },
   pages: { studio: "STUDIO", services: "SERVICES", contact: "CONTACT", diagnostic: "BUSINESS AUDIT", diagnosticSteps: "05 / STEPS", serviceContact: "04 / CONTACT", serviceIncluded: "01 / WHAT'S INCLUDED", serviceHow: "02 / HOW IT WORKS", whatsapp: "WHATSAPP" },
   errors: { notFound: ["404", "NOT FOUND."], broke: ["SOMETHING", "BROKE."], err404: "ERR / 404", err500: "ERR / 500" },
+  sound: { label: "Turn the site sound on or off", on: "SOUND ON", off: "SOUND OFF" },
+  experiments: {
+    eyebrow: "LIVE EXPERIMENTS",
+    intro: "Three anomalies that escaped the lab. They only load when you ask.",
+    close: "END",
+    running: "RUNNING",
+    unsupported: "This device can't run the experiment — the rest of the Lab still works.",
+    items: [
+      { id: "tear", name: "Reality Tear", desc: "The interface is a surface. Tear it open and see what lives underneath.", hint: "Drag across the surface to tear it" },
+      { id: "gravity", name: "Gravity Type", desc: "Words gain weight, collide and stack — and stay readable.", hint: "Drag the words · they fall and collide" },
+      { id: "time", name: "Time Distortion", desc: "Every band of the composition lives at a different speed of time.", hint: "Move the cursor horizontally to bend time" },
+    ],
+    stage: { under: "UNDER / 02", title: "UNDER THE SURFACE", surfaceLabel: "SURFACE / 01", surface: "SURFACE", tension: "TENSION", idle: "IDLE", words: ["CODE", "SHOULD", "MOVE", "PEOPLE", "WEIGHT", "MASS", "IMPACT", "FALL", "MILWEB"], timeWords: ["TIME", "IS", "A", "MATERIAL", "HERE"] },
+  },
   footer: { email: "Email", year: "Brazil" },
 };

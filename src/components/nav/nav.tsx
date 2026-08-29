@@ -7,6 +7,7 @@ import { BRAND } from "@/data/brand";
 import { alternatesOf, internalizePath, localizePath } from "@/i18n/routing";
 import type { Locale } from "@/i18n/config";
 import { LanguageSwitch } from "./language-switch";
+import { SoundToggle } from "@/features/sound/sound-toggle";
 
 export type NavStrings = {
   work: string;
@@ -17,7 +18,7 @@ export type NavStrings = {
   close: string;
   primary: string;
   selectLanguage: string;
-  langNames: Record<Locale, string>;
+  langNames: Record<Locale, string>; sound: { label: string; on: string; off: string };
 };
 
 /**
@@ -99,6 +100,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
               </Link>
             ))}
           </nav>
+          <SoundToggle label={strings.sound.label} on={strings.sound.on} off={strings.sound.off} />
           <LanguageSwitch current={locale} hrefs={alternates} label={strings.selectLanguage} names={strings.langNames} />
         </div>
 
@@ -127,7 +129,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
           ))}
         </ul>
         <div className="mt-8 flex items-center justify-between t-mono text-ink-3">
-          <span>{BRAND.index}</span>
+          <SoundToggle label={strings.sound.label} on={strings.sound.on} off={strings.sound.off} tabbable={open} className="text-ink" />
           <LanguageSwitch current={locale} hrefs={alternates} label={strings.selectLanguage} names={strings.langNames} tabbable={open} className="text-ink" />
         </div>
       </div>

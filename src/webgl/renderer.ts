@@ -39,6 +39,11 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
   let frameCount = 0;
   let slowFrames = 0;
   let onSlow: (() => void) | null = null;
+  let fpsCap = 0; // 0 = livre
+  let nextAllowed = 0;
+  let cost = 0; // média móvel do custo de um frame (ms)
+  let costed = 0;
+  let onCost: ((ms: number, frames: number) => void) | null = null;
 
   const compile = (type: number, src: string) => {
     const s = gl!.createShader(type)!;
@@ -103,9 +108,19 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
     if (document.hidden) return; // volta no visibilitychange
     const dt = last ? Math.min((t - last) / 1000, 0.1) : 0.016;
     last = t;
-    if (dirty || holds > 0) {
+    if ((dirty || holds > 0) && t >= nextAllowed) {
+      if (fpsCap > 0) nextAllowed = t + 1000 / fpsCap - 1;
       resize();
+      const t0 = performance.now();
       onFrame?.(t / 1000, dt);
+      // gl é assíncrono: finish() mede o custo REAL do frame (só no warmup).
+      if (onCost) {
+        gl!.finish();
+        const ms = performance.now() - t0;
+        cost = costed ? cost * 0.8 + ms * 0.2 : ms;
+        costed++;
+        onCost(cost, costed);
+      }
       dirty = false;
       // Degradação: frames > 34 ms de forma consistente sinalizam para baixar a qualidade.
       if (dt > 0.034) slowFrames++;
@@ -226,6 +241,16 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
     /** Callback quando o frame time degrada de forma consistente. */
     onSlow(cb: () => void) {
       onSlow = cb;
+    },
+    /** Custo real por frame durante o warmup (gl.finish). Passe null para parar de medir. */
+    onCost(cb: ((ms: number, frames: number) => void) | null) {
+      onCost = cb;
+      cost = 0;
+      costed = 0;
+    },
+    /** Teto de quadros por segundo (0 = livre). */
+    setFpsCap(v: number) {
+      fpsCap = v;
     },
     /** Um frame. */
     invalidate() {

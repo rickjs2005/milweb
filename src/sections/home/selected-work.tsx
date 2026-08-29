@@ -4,6 +4,9 @@ import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap, EASE, MQ, ScrollTrigger, useGSAP } from "@/animations/gsap";
+import { WorldLayers } from "./world-layers";
+import { WORLD_LAWS } from "./world-laws";
+import { vtOfSlug } from "@/lib/route-transition";
 
 export type WorkItem = {
   n: string;
@@ -52,6 +55,9 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
 
       const setup = () => mm.add(MQ.noReduce, () => {
         const desktop = window.matchMedia("(min-width: 1080px)").matches;
+        // Leis de cada mundo (cursor/scroll): só com ponteiro fino.
+        const fine = window.matchMedia(MQ.fine).matches;
+        const laws = fine ? panels.map((panel) => WORLD_LAWS[panel.dataset.world ?? ""]?.(panel)).filter(Boolean) : [];
 
         panels.forEach((panel, i) => {
           const world = panel.dataset.world!;
@@ -73,17 +79,29 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             enterTl.fromTo(q("[data-scan]"), { left: "0%" }, { left: "100%", duration: 0.7, ease: "none" }, 0);
             enterTl.to(q("[data-scan]"), { autoAlpha: 0, duration: 0.1 }, 0.7);
             enterTl.fromTo(q("[data-coord]"), { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, stagger: 0.08, duration: 0.3 }, 0.4);
+            // a varredura lê a interface: a estrutura da seção aparece atrás da linha
+            enterTl.fromTo(q("[data-scan-reveal]"), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "none" }, 0);
+            enterTl.to(q("[data-scan-reveal]"), { autoAlpha: 0, duration: 0.2 }, 0.75);
+            // contornos topográficos e rotas se desenham
+            enterTl.fromTo(q("[data-contour]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.03, duration: 0.6, ease: "none" }, 0.1);
+            enterTl.fromTo(q("[data-route]"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.1, duration: 0.5, ease: "none" }, 0.35);
           }
           if (world === "terral") {
             // calor: entra devagar, escala lenta, grão sobe
             enterTl.fromTo(media, { scale: 1.12, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 1, ease: EASE.smooth }, 0);
             enterTl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.5, duration: 0.6 }, 0.2);
             enterTl.fromTo(q("[data-second]"), { yPercent: 20, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6 }, 0.5);
+            // a interface ganha matéria: entra dobrada como papel e vira imagem viva (impressão → foto)
+            enterTl.fromTo(q("[data-fold]"), { rotationX: -18, transformOrigin: "50% 100%", transformPerspective: 1400 }, { rotationX: 0, duration: 0.9, ease: EASE.smooth }, 0);
+            enterTl.fromTo(q("[data-print]"), { filter: "grayscale(1) contrast(1.25)", opacity: 0.85 }, { filter: "grayscale(0) contrast(1)", opacity: 1, duration: 0.8, ease: "none" }, 0.2);
           }
           if (world === "atelier-vertex") {
             // blueprint: guias se desenham, a imagem sobe em 4 fatias verticais
             enterTl.fromTo(q("[data-guide]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.6, ease: "none" }, 0);
-            enterTl.fromTo(q("[data-strip]"), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", stagger: 0.08, duration: 0.5 }, 0.15);
+            enterTl.fromTo(q("[data-strip]"), { clipPath: "inset(0% 0 0 0)" }, { clipPath: "inset(100% 0 0 0)", stagger: 0.08, duration: 0.5 }, 0.15);
+            // a planta técnica evolui para perspectiva; as cotas aparecem
+            enterTl.fromTo(q("[data-guides]"), { rotationX: 0, transformPerspective: 1400 }, { rotationX: 46, duration: 0.8, ease: EASE.smooth }, 0.25);
+            enterTl.fromTo(q("[data-dims]"), { autoAlpha: 0, y: -6 }, { autoAlpha: 1, y: 0, duration: 0.3 }, 0.55);
           }
           if (world === "aurex-timepieces") {
             // mecanismo: anéis giram e escalam do centro, a imagem abre em círculo
@@ -113,7 +131,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             if (world === "atelier-vertex") {
               // STRUCTURE → MECHANISM: as guias convergem em rotação para o centro
               exitTl.to(q("[data-guides]"), { rotate: 38, scale: 0.45, autoAlpha: 0, transformOrigin: "50% 50%", duration: 1 }, 0);
-              exitTl.to(q("[data-strip]"), { yPercent: (k) => -10 - k * 6, autoAlpha: 0.3, stagger: 0.04, duration: 0.8 }, 0.1);
+              exitTl.fromTo(q("[data-strip]"), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", stagger: 0.04, duration: 0.8 }, 0.1);
             }
           } else {
             // AUREX → SISTEMA: o mecanismo desacelera e some; a página volta ao grid.
@@ -124,6 +142,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           }
 
         });
+        return () => laws.forEach((off) => off?.());
       });
 
       return () => {
@@ -137,7 +156,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
   const total = String(items.length).padStart(2, "0");
 
   return (
-    <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative isolate">
+    <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative">
       {items.map((w, i) => (
         <article
           key={w.slug}
@@ -145,7 +164,6 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           data-world={w.slug}
           data-inspect={`WORLD_${w.n} / ${w.name}`}
           className="world sticky top-0 flex h-[100svh] flex-col overflow-hidden px-margin pb-6 pt-nav md:pb-8"
-          style={{ zIndex: i + 1 }}
         >
           {/* ===== camadas do mundo ===== */}
           <WorldLayers slug={w.slug} />
@@ -175,11 +193,27 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             <div className="col-span-4 md:col-span-8 lg:col-span-9 md:flex md:items-start md:justify-end">
               <div
                 data-media
+                data-fold={w.slug === "terral" ? "" : undefined}
                 className="relative aspect-[16/10] w-full overflow-hidden bg-neutral"
                 style={{ viewTransitionName: `case-media-${w.slug}`, width: "min(100%, calc(50svh * 1.6))" }}
                 data-inspect="MEDIA"
               >
-                <Image src={w.image} alt={w.name} fill loading="lazy" sizes="(min-width: 1080px) 60vw, 100vw" className="object-cover object-top" />
+                <Image src={w.image} alt={w.name} fill loading="lazy" sizes="(min-width: 1080px) 60vw, 100vw" className="object-cover object-top" data-print={w.slug === "terral" ? "" : undefined} />
+                {w.slug === "terral" && (
+                  /* mancha-portal: a casa do torrador aparece dentro de uma mancha de café que segue o cursor */
+                  <span data-portal aria-hidden="true" className="world-portal absolute inset-0 hidden md:block" style={{ backgroundImage: `url(${w.detail})` }} />
+                )}
+                {w.slug === "atelier-vertex" && (
+                  /* porta arquitetônica: dois batentes de papel que se abrem ao entrar no espaço */
+                  <span data-door aria-hidden="true" className="world-door absolute inset-0 hidden md:block">
+                    <span className="world-door-leaf left-0 origin-left" />
+                    <span className="world-door-leaf right-0 origin-right" />
+                  </span>
+                )}
+                {w.slug === "aurex-timepieces" &&
+                  [0, 1, 2].map((k) => (
+                    <span key={k} data-plane aria-hidden="true" className="absolute inset-x-0 hidden md:block" style={{ top: `${k * 33.34}%`, height: "33.4%", backgroundImage: `url(${w.image})`, backgroundSize: "100% 300%", backgroundPosition: `0 ${k * 50}%` }} />
+                  ))}
                 {w.slug === "kavita-drones" &&
                   [0, 1, 2].map((k) => (
                     <span key={k} data-band aria-hidden="true" className="absolute inset-x-0" style={{ top: `${k * 33.34}%`, height: "33.4%", backgroundImage: `url(${w.image})`, backgroundSize: "100% 300%", backgroundPosition: `0 ${k * 50}%`, opacity: 0 }} />
@@ -203,15 +237,33 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           {/* linha 2: título em largura total + meta + CTA */}
           <div className="relative z-10 grid grid-cols-4 items-end gap-x-gutter gap-y-3 pt-4 md:grid-cols-12">
             <h2 data-text className="t-display t-display-md col-span-4 md:col-span-9" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${w.slug}` }}>
-              <span className="block">{w.title[0]}</span>
-              <span className="block">{w.title[1]}</span>
+              {w.slug === "aurex-timepieces" ? (
+                /* tipografia alterada pelo tempo: cada letra responde ao scroll com atraso próprio (texto íntegro para leitores de tela) */
+                <>
+                  <span className="sr-only">{w.title.join(" ")}</span>
+                  {w.title.map((line) => (
+                    <span key={line} className="block" aria-hidden="true">
+                      {Array.from(line).map((ch, i) => (
+                        <span key={i} data-tchar className="inline-block will-change-transform">
+                          {ch === " " ? "\u00a0" : ch}
+                        </span>
+                      ))}
+                    </span>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <span className="block">{w.title[0]}</span>
+                  <span className="block">{w.title[1]}</span>
+                </>
+              )}
             </h2>
             <div className="col-span-4 md:col-span-3 md:text-right">
               <p data-text className="t-mono opacity-80">
                 {w.client ? `${clientWork} — ${w.client.toUpperCase()}` : w.displayType}
                 {w.year ? ` — ${w.year}` : ""}
               </p>
-              <Link data-text href={w.href} className="link-rule t-mono mt-3 inline-block" data-inspect="CTA / ENTER">
+              <Link data-text href={w.href} data-vt={vtOfSlug(w.slug)} className="link-rule t-mono mt-3 inline-block" data-inspect="CTA / ENTER">
                 [ {enter} ]
               </Link>
             </div>
@@ -231,61 +283,4 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
       ))}
     </section>
   );
-}
-
-/** Camadas de atmosfera por mundo — todas decorativas (aria-hidden, sem pointer). */
-function WorldLayers({ slug }: { slug: string }) {
-  if (slug === "kavita-drones")
-    return (
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <span data-scan className="absolute top-0 h-full w-px bg-signal" style={{ left: "0%" }} />
-      </div>
-    );
-  if (slug === "terral")
-    return (
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <span data-grain className="grain absolute inset-0 opacity-0" />
-        <svg data-dots className="absolute inset-0 h-full w-full opacity-0" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid slice">
-          {Array.from({ length: 12 * 8 }).map((_, k) => (
-            <circle key={k} cx={5 + (k % 12) * 10} cy={14 + Math.floor(k / 12) * 9} r="0.3" fill="currentColor" />
-          ))}
-        </svg>
-      </div>
-    );
-  if (slug === "atelier-vertex")
-    return (
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <svg data-guides className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.5" vectorEffect="non-scaling-stroke">
-          {[120, 360, 600, 840, 1080, 1320].map((x) => (
-            <line key={x} data-guide x1={x} y1="0" x2={x} y2="900" pathLength="1" />
-          ))}
-          {[150, 450, 750].map((y) => (
-            <line key={y} data-guide x1="0" y1={y} x2="1440" y2={y} pathLength="1" />
-          ))}
-        </svg>
-      </div>
-    );
-  if (slug === "aurex-timepieces")
-    return (
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-paper">
-        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor">
-          <g data-ring opacity="0.35">
-            <circle cx="900" cy="450" r="420" strokeWidth="0.75" strokeDasharray="2 10" />
-          </g>
-          <g data-ring opacity="0.5">
-            <circle cx="900" cy="450" r="330" strokeWidth="0.75" />
-            {Array.from({ length: 60 }).map((_, k) => {
-              const a = (k / 60) * Math.PI * 2;
-              const r1 = k % 5 === 0 ? 316 : 324;
-              const f = (v: number) => v.toFixed(1);
-              return <line key={k} x1={f(900 + Math.cos(a) * r1)} y1={f(450 + Math.sin(a) * r1)} x2={f(900 + Math.cos(a) * 330)} y2={f(450 + Math.sin(a) * 330)} strokeWidth="0.75" />;
-            })}
-          </g>
-          <g data-ring opacity="0.7">
-            <circle cx="900" cy="450" r="240" strokeWidth="1" strokeDasharray="40 24" />
-          </g>
-        </svg>
-      </div>
-    );
-  return null;
 }
