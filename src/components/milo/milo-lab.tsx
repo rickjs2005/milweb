@@ -46,6 +46,8 @@ export function MiloLab() {
     const tier: MiloQuality = coarse || small ? "low" : q.tier === "high" ? "high" : "medium";
     setQuality(tier);
     setMode("webgl");
+    // gancho de QA (só em desenvolvimento): window.__milo.getState().setState("touch")
+    if (process.env.NODE_ENV === "development") (window as unknown as { __milo: typeof useMiloStore }).__milo = useMiloStore;
     const onResize = () => setMobile(window.innerWidth < 720 || coarse);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -60,7 +62,7 @@ export function MiloLab() {
       {/* painel preto flutuante — HTML de verdade; a distorção acontece no fundo, atrás dele */}
       <div
         ref={panelRef}
-        className="milo-panel pointer-events-none absolute left-0 top-0 w-[min(240px,44vw)] border border-ink bg-ink p-4 text-paper t-mono text-[11px] leading-relaxed will-change-transform"
+        className="milo-panel pointer-events-none absolute left-0 top-0 w-[min(232px,44vw)] border border-ink bg-ink p-4 text-paper t-mono text-[11px] leading-relaxed will-change-transform"
         style={{ transform: "translate(70vw, 45vh) translate(-12%, -50%)" }}
         aria-hidden={mode !== "webgl"}
       >
@@ -83,8 +85,8 @@ export function MiloLab() {
 
       {/* headline HTML, lado esquerdo */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-full container-page pt-nav">
-        <div className="grid-12 h-full items-center">
-          <div className="col-span-4 md:col-span-5 lg:col-span-6">
+        <div className="grid-12 h-full items-start pt-[8svh] md:items-center md:pt-0">
+          <div className="col-span-4 md:col-span-5 lg:col-span-7">
             <p className="t-mono text-ink-3">LAB / MILO NULL · PROTÓTIPO 01</p>
             <h1 className="t-display t-display-xl mt-6 text-ink">
               <span className="block">CÓDIGO DEVE</span>

@@ -1,27 +1,35 @@
+// Captura do Milo Null: 5 estados × 3 viewports, sem o painel de debug (recolhido por padrão).
+// Requer `pnpm dev -p 3001` (o gancho window.__milo só existe em desenvolvimento).
 import { chromium } from "playwright";
 const base = "http://127.0.0.1:3001/lab/milo-null";
+const tag = process.argv[2] ?? "v2";
 const browser = await chromium.launch({ headless: false });
-const shoot = async (ctxOpts, name, actions) => {
-  const ctx = await browser.newContext(ctxOpts);
+const VIEWPORTS = [
+  { name: "desktop", viewport: { width: 1920, height: 1080 } },
+  { name: "notebook", viewport: { width: 1440, height: 900 } },
+  { name: "mobile", viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 },
+];
+const STATES = ["dormant", "observe", "touch", "full", "dissolve"];
+for (const vp of VIEWPORTS) {
+  const ctx = await browser.newContext(vp);
   const page = await ctx.newPage();
   const errs = [];
   page.on("console", (m) => { if (m.type() === "error") errs.push(m.text().slice(0, 200)); });
   page.on("pageerror", (e) => errs.push(String(e).slice(0, 200)));
   await page.goto(base);
-  await page.waitForTimeout(3000);
-  await actions?.(page);
-  await page.screenshot({ path: `scripts/.rsc-audit/milo-${name}.png` });
-  const fps = await page.evaluate(() => new Promise((r) => { let f = 0; const t0 = performance.now(); const loop = () => { f++; performance.now() - t0 < 1000 ? requestAnimationFrame(loop) : r(f); }; requestAnimationFrame(loop); }));
-  console.log(name, "fps", fps, "errors", errs.length ? errs : "none", "state:", await page.evaluate(() => document.querySelector("[aria-live]")?.textContent));
+  await page.waitForTimeout(3500);
+  for (const s of STATES) {
+    await page.evaluate((st) => window.__milo.getState().setState(st), s);
+    if (s === "observe") await page.mouse.move(vp.viewport.width * 0.3, vp.viewport.height * 0.35);
+    if (s === "touch" || s === "full") await page.mouse.move(vp.viewport.width * 0.5, vp.viewport.height * 0.5);
+    await page.waitForTimeout(s === "dissolve" ? 1100 : 3200);
+    await page.screenshot({ path: `scripts/.rsc-audit/milo-${tag}-${vp.name}-${s}.png` });
+  }
+  await page.evaluate(() => window.__milo.getState().setState("observe"));
+  await page.waitForTimeout(2500);
+  const back = await page.evaluate(() => ({ nav: !!document.querySelector("[data-nav-root]"), state: window.__milo.getState().state }));
+  const fps = await page.evaluate(() => new Promise((r) => { let f = 0; const t0 = performance.now(); const loop = () => { f++; performance.now() - t0 < 2000 ? requestAnimationFrame(loop) : r(f / 2); }; requestAnimationFrame(loop); }));
+  console.log(vp.name, "fps", fps, "errors", errs.length ? errs : "none", "after dissolve→observe:", JSON.stringify(back));
   await ctx.close();
-};
-const desk = { viewport: { width: 1440, height: 820 } };
-await shoot(desk, "observe", async (p) => { await p.getByRole("button", { name: "observe" }).click(); await p.mouse.move(300, 250); await p.waitForTimeout(2500); });
-await shoot(desk, "touch", async (p) => { await p.getByRole("button", { name: "touch" }).click(); await p.mouse.move(700, 400); await p.waitForTimeout(3200); });
-await shoot(desk, "full", async (p) => { await p.getByRole("button", { name: "full" }).click(); await p.mouse.move(500, 200); await p.waitForTimeout(3200); });
-await shoot(desk, "dissolve-mid", async (p) => { await p.getByRole("button", { name: "dissolve" }).click(); await p.waitForTimeout(900); });
-await shoot(desk, "dissolve-back", async (p) => { await p.getByRole("button", { name: "dissolve" }).click(); await p.waitForTimeout(2200); await p.getByRole("button", { name: "observe" }).click(); await p.waitForTimeout(2500); });
-await shoot({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, "mobile", async (p) => { await p.waitForTimeout(1500); });
-await shoot({ ...desk, reducedMotion: "reduce" }, "reduced", async (p) => { await p.waitForTimeout(500); });
-await shoot(desk, "resized", async (p) => { await p.setViewportSize({ width: 900, height: 700 }); await p.waitForTimeout(1500); });
+}
 await browser.close();

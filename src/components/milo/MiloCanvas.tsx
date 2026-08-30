@@ -114,7 +114,12 @@ function Pipeline({ quality, panelRef }: { quality: MiloQuality; panelRef: RefOb
     c.uResolution.value.set(W, H);
     c.uPointer.value.set(f.pointerUv.x, f.pointerUv.y);
     c.uTime.value = time;
-    c.uDistortionStrength.value = f.params.distortion;
+    c.uBody.value = f.params.bodyDistortion;
+    c.uMotion.value = f.params.motionDistortion;
+    c.uInteraction.value = f.params.interactionDistortion;
+    c.uGridBend.value = f.params.gridBend;
+    c.uEdgeComp.value = f.params.edgeCompression;
+    c.uFalloff.value = f.params.refractionFalloff;
     c.uEdgeStrength.value = f.params.edge;
     c.uNoiseScale.value = f.params.noiseScale;
     c.uNoiseSpeed.value = f.params.noiseSpeed;
@@ -122,6 +127,9 @@ function Pipeline({ quality, panelRef }: { quality: MiloQuality; panelRef: RefOb
     c.uVisibility.value = f.visibility;
     c.uEnergy.value = f.energy;
     c.uScrollProgress.value = f.scroll;
+    c.uMilo.value.set(f.milo.x, f.milo.y);
+    c.uMiloVel.value.set(f.milo.vx, f.milo.vy);
+    c.uHand.value.set(f.hand.x, f.hand.y);
     c.uPanel.value = f.panelInfluence;
     c.uPanelUv.value.set(f.panel.x, f.panel.y);
     c.uCell.value = MILO.grid.cell * dpr;
@@ -134,9 +142,14 @@ function Pipeline({ quality, panelRef }: { quality: MiloQuality; panelRef: RefOb
       // mobile: o painel vive no canto inferior direito, fora da headline
       const narrow = size.width < 720;
       const px = narrow ? size.width - pw * 0.88 - 12 : Math.min(Math.max(f.panel.x * size.width, pw * 0.12 + 12), size.width - pw * 0.88 - 12);
-      const py = narrow ? size.height * 0.5 : Math.min(Math.max((1 - f.panel.y) * size.height, ph * 0.5 + 72), size.height - ph * 0.5 - 72);
-      el.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-12%, -50%)`;
+      const py = narrow ? size.height * 0.62 : Math.min(Math.max((1 - f.panel.y) * size.height, ph * 0.5 + 72), size.height - ph * 0.5 - 72);
+      // o painel reage: recua alguns px na direção da mão conforme ela se aproxima
+      const shiftX = -f.panelInfluence * 6;
+      const shiftY = f.panelInfluence * 3;
+      el.style.transform = `translate(${(px + shiftX).toFixed(1)}px, ${(py + shiftY).toFixed(1)}px) translate(-12%, -50%)`;
       el.style.setProperty("--panel-influence", f.panelInfluence.toFixed(3));
+      const pulsing = f.pulse > 0 ? "1" : "";
+      if (el.dataset.pulse !== pulsing) el.dataset.pulse = pulsing;
     }
 
     const cam = camera;

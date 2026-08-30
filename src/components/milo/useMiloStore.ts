@@ -24,14 +24,16 @@ export const miloFrame: MiloFrame = {
   params: { ...MILO.shader },
   milo: { x: 0.6, y: 0.5, vx: 0, vy: 0 },
   panel: { x: 0.7, y: 0.45 },
+  hand: { x: 0.65, y: 0.4 },
+  coatWave: 0,
 };
 
 /** Alvos de cada estado — o que o GSAP interpola em miloFrame. */
 const TARGETS: Record<Exclude<MiloState, "transition">, { visibility: number; energy: number; touch: number; observe: number }> = {
-  dormant: { visibility: 1, energy: 0.18, touch: 0, observe: 0.35 },
-  observe: { visibility: 1, energy: 0.42, touch: 0, observe: 1 },
-  touch: { visibility: 1, energy: 0.72, touch: 1, observe: 0.55 },
-  full: { visibility: 1, energy: 1, touch: 1, observe: 1 },
+  dormant: { visibility: 0.92, energy: 0.12, touch: 0, observe: 0.25 },
+  observe: { visibility: 1, energy: 0.38, touch: 0, observe: 1 },
+  touch: { visibility: 1, energy: 0.66, touch: 1, observe: 0.5 },
+  full: { visibility: 1, energy: 0.92, touch: 1, observe: 1 },
   dissolve: { visibility: 0, energy: 0.12, touch: 0, observe: 0 },
 };
 

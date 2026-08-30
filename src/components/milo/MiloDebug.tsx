@@ -6,15 +6,25 @@ import { miloFrame, STATE_CYCLE, useMiloStore } from "./useMiloStore";
 import type { MiloQuality } from "./milo.types";
 
 const PARAMS: { key: keyof typeof miloFrame.params; label: string; min: number; max: number; step: number }[] = [
-  { key: "distortion", label: "uDistortionStrength", min: 0, max: 0.2, step: 0.001 },
+  { key: "bodyDistortion", label: "bodyDistortion", min: 0, max: 0.12, step: 0.001 },
+  { key: "motionDistortion", label: "motionDistortion", min: 0, max: 0.12, step: 0.001 },
+  { key: "interactionDistortion", label: "interactionDistortion", min: 0, max: 0.2, step: 0.001 },
+  { key: "gridBend", label: "gridBend", min: 0, max: 0.08, step: 0.001 },
+  { key: "edgeCompression", label: "edgeCompression", min: 0, max: 0.05, step: 0.001 },
+  { key: "refractionFalloff", label: "refractionFalloff", min: 0.2, max: 2, step: 0.01 },
   { key: "edge", label: "uEdgeStrength", min: 0, max: 1, step: 0.01 },
   { key: "noiseScale", label: "uNoiseScale", min: 0.5, max: 8, step: 0.1 },
   { key: "noiseSpeed", label: "uNoiseSpeed", min: 0, max: 1, step: 0.01 },
   { key: "glitch", label: "uGlitch", min: 0, max: 1, step: 0.01 },
 ];
 
-/** Controles de debug — só em desenvolvimento. Escreve direto em miloFrame (sem React por frame). */
+/**
+ * Controles de debug — só em desenvolvimento. Começa recolhido; `D`
+ * alterna. Fica no canto inferior esquerdo (acima do indicador de estado)
+ * para nunca cobrir o Milo nem o painel preto. Escreve direto em miloFrame.
+ */
 export function MiloDebug() {
+  const [open, setOpen] = useState(false);
   const [, tick] = useState(0);
   const quality = useMiloStore((s) => s.quality);
   const setQuality = useMiloStore((s) => s.setQuality);
@@ -23,6 +33,17 @@ export function MiloDebug() {
   const [fps, setFps] = useState(0);
 
   useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "d" || e.repeat) return;
+      if ((e.target as HTMLElement)?.closest?.("input, textarea, select")) return;
+      setOpen((v) => !v);
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
     let frames = 0;
     let last = performance.now();
     let raf = 0;
@@ -37,13 +58,26 @@ export function MiloDebug() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [open]);
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="fixed bottom-[calc(1.5rem+2.4rem)] left-margin z-nav border border-neutral bg-paper px-2 py-1 t-mono text-[10px] text-ink-3 hover:text-ink" aria-label="Abrir debug do Milo (tecla D)">
+        DEBUG [D]
+      </button>
+    );
+  }
 
   return (
-    <aside className="pointer-events-auto fixed bottom-4 right-4 z-nav w-64 border border-ink bg-paper p-3 t-mono text-[11px] text-ink" aria-label="Debug do Milo">
+    <aside className="pointer-events-auto fixed bottom-[calc(1.5rem+2.4rem)] left-margin z-nav w-64 border border-ink bg-paper p-3 t-mono text-[11px] text-ink" aria-label="Debug do Milo">
       <div className="flex items-center justify-between">
         <span>MILO / DEBUG</span>
-        <span className="tnum text-ink-3">{fps} FPS</span>
+        <span className="flex items-center gap-3">
+          <span className="tnum text-ink-3">{fps} FPS</span>
+          <button type="button" onClick={() => setOpen(false)} className="text-ink-3 hover:text-ink" aria-label="Recolher (D)">
+            [D]
+          </button>
+        </span>
       </div>
       <label className="mt-2 flex items-center justify-between gap-2">
         <span>tier</span>
@@ -56,7 +90,7 @@ export function MiloDebug() {
         </select>
       </label>
       {PARAMS.map((p) => (
-        <label key={p.key} className="mt-2 block">
+        <label key={p.key} className="mt-1.5 block">
           <span className="flex justify-between">
             <span>{p.label}</span>
             <span className="tnum text-ink-3">{miloFrame.params[p.key].toFixed(3)}</span>

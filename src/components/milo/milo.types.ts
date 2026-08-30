@@ -66,7 +66,22 @@ export type MiloFrame = {
   pulse: number;
   pulseAt: { x: number; y: number }; // uv
   scroll: number;
-  params: { distortion: number; edge: number; noiseScale: number; noiseSpeed: number; glitch: number };
+  params: {
+    bodyDistortion: number;
+    motionDistortion: number;
+    interactionDistortion: number;
+    gridBend: number;
+    edgeCompression: number;
+    refractionFalloff: number;
+    edge: number;
+    noiseScale: number;
+    noiseSpeed: number;
+    glitch: number;
+  };
+  /** Projeção da mão ativa em uv (interação com o painel). */
+  hand: { x: number; y: number };
+  /** Onda no casaco (0..1, disparada no contato). */
+  coatWave: number;
   /** Projeção do peito em uv e velocidade (deslocamento do fundo). */
   milo: { x: number; y: number; vx: number; vy: number };
   /** Projeção da âncora do painel em uv. */

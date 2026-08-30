@@ -3,12 +3,12 @@ import { createPointsMaterial } from "./materials/MiloEnergyMaterial";
 import { LAYER_OVERLAY } from "./MiloRig";
 
 /**
- * Partículas pretas e acid lime ancoradas nas articulações. Cada ponto
- * conhece a sua junta (aJoint) e o seu deslocamento; o vertex shader faz
- * o movimento (vagar, e o campo de fuga no dissolve). Só as posições das
- * juntas sobem por frame (uniform array).
+ * Partículas pretas e acid lime ancoradas nas articulações — concentradas
+ * nas juntas de energia (ombro/cotovelo/mão ativos, pescoço) por peso; o
+ * resto do corpo recebe poucas. O vertex shader faz o movimento (vagar e
+ * o campo de fuga no dissolve); só as posições das juntas sobem por frame.
  */
-export function buildParticles(count: number, jointCount: number) {
+export function buildParticles(count: number, jointWeights: number[]) {
   const n = Math.max(1, count);
   const joint = new Float32Array(n);
   const offset = new Float32Array(n * 3);
@@ -17,17 +17,27 @@ export function buildParticles(count: number, jointCount: number) {
   const pos = new Float32Array(n * 3);
   let s = 1234;
   const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const total = jointWeights.reduce((a, b) => a + b, 0) || 1;
+  const pick = () => {
+    let r = rnd() * total;
+    for (let i = 0; i < jointWeights.length; i++) {
+      r -= jointWeights[i];
+      if (r <= 0) return i;
+    }
+    return jointWeights.length - 1;
+  };
   for (let i = 0; i < n; i++) {
-    joint[i] = Math.floor(rnd() * jointCount);
-    // esfera não uniforme: mais denso perto da junta
-    const r = Math.pow(rnd(), 1.3) * 0.2 + 0.03;
+    const j = pick();
+    joint[i] = j;
+    const energy = jointWeights[j] > 0.5;
+    const r = Math.pow(rnd(), 1.3) * (energy ? 0.16 : 0.24) + 0.03;
     const th = rnd() * Math.PI * 2;
     const ph = Math.acos(rnd() * 2 - 1);
     offset[i * 3] = Math.sin(ph) * Math.cos(th) * r;
     offset[i * 3 + 1] = Math.sin(ph) * Math.sin(th) * r;
     offset[i * 3 + 2] = Math.cos(ph) * r;
     seed[i] = rnd();
-    lime[i] = rnd() < 0.16 ? 1 : 0;
+    lime[i] = energy && rnd() < 0.2 ? 1 : 0; // acid lime só nas juntas de energia (<5 % do total)
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
