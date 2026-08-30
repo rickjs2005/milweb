@@ -1,8 +1,9 @@
-// Captura do Milo Null (iteração 03): estados, modos de validação e viewports, sem debug.
+// Captura do Milo Null: estados, modos de validação, viewports e detalhes, sem debug.
 // Requer `pnpm dev -p 3001` (ganchos window.__milo / window.__miloFrame só existem em desenvolvimento).
+//   node scripts/.rsc-audit/states-milo.mjs v7
 import { chromium } from "playwright";
 const base = "http://127.0.0.1:3001/lab/milo-null";
-const tag = process.argv[2] ?? "v6";
+const tag = process.argv[2] ?? "v7";
 const browser = await chromium.launch({ headless: false });
 const VP = {
   desktop: { viewport: { width: 1920, height: 1080 } },
@@ -36,6 +37,11 @@ for (const vpName of ["desktop", "notebook", "mobile"]) {
     if (state === "touch" || state === "full") await page.mouse.move(vp.viewport.width * 0.5, vp.viewport.height * 0.5);
     await page.waitForTimeout(state === "dissolve" ? 1100 : 3200);
     await page.screenshot({ path: `scripts/.rsc-audit/milo-${tag}-${v}-${name ?? state}.png` });
+    if (v === "desktop" && state === "observe" && view === 0) {
+      // detalhes: pélvis e cabeça (recortes do mesmo frame, em resolução nativa)
+      await page.screenshot({ path: `scripts/.rsc-audit/milo-${tag}-desktop-pelvis-detail.png`, clip: { x: 1120, y: 480, width: 560, height: 360 } });
+      await page.screenshot({ path: `scripts/.rsc-audit/milo-${tag}-desktop-head-detail.png`, clip: { x: 1180, y: 110, width: 420, height: 300 } });
+    }
   }
   await page.evaluate(() => { window.__miloFrame.params.view = 0; window.__milo.getState().setState("observe"); });
   await page.waitForTimeout(2500);

@@ -7,7 +7,7 @@ import { MASK_VERT } from "../shaders/mask.vert.glsl";
  * `order` = ordem no dissolve, `zone` = quanto contorno pode revelar,
  * `fragment` = lado do torso parcialmente fragmentado, `coat` = balanço.
  */
-export function createMaskMaterial({ coat = false, fresnelPower = 2.2, order = 0.5, zone = 0.5, fragment = 0 }: { coat?: boolean; fresnelPower?: number; order?: number; zone?: number; fragment?: number } = {}) {
+export function createMaskMaterial({ coat = false, fresnelPower = 2.2, order = 0.5, zone = 0.5, fragment = 0, region = 0 }: { coat?: boolean; fresnelPower?: number; order?: number; zone?: number; fragment?: number; region?: number } = {}) {
   return new THREE.ShaderMaterial({
     vertexShader: MASK_VERT,
     fragmentShader: MASK_FRAG,
@@ -22,6 +22,7 @@ export function createMaskMaterial({ coat = false, fresnelPower = 2.2, order = 0
       uOrder: { value: order },
       uZone: { value: zone },
       uFragment: { value: fragment },
+      uRegion: { value: region },
       uRoot: { value: new THREE.Vector3() },
       uRootRight: { value: new THREE.Vector3(1, 0, 0) },
     },

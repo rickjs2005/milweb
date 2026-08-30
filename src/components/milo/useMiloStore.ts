@@ -26,15 +26,17 @@ export const miloFrame: MiloFrame = {
   panel: { x: 0.7, y: 0.45 },
   hand: { x: 0.65, y: 0.4 },
   coatWave: 0,
+  particles: 0.4,
+  head: { x: 0.7, y: 0.8 },
 };
 
 /** Alvos de cada estado — o que o GSAP interpola em miloFrame. */
-const TARGETS: Record<Exclude<MiloState, "transition">, { visibility: number; energy: number; touch: number; observe: number }> = {
-  dormant: { visibility: 0.92, energy: 0.12, touch: 0, observe: 0.25 },
-  observe: { visibility: 1, energy: 0.38, touch: 0, observe: 1 },
-  touch: { visibility: 1, energy: 0.66, touch: 1, observe: 0.5 },
-  full: { visibility: 1, energy: 0.92, touch: 1, observe: 1 },
-  dissolve: { visibility: 0, energy: 0.12, touch: 0, observe: 0 },
+const TARGETS: Record<Exclude<MiloState, "transition">, { visibility: number; energy: number; touch: number; observe: number; particles: number }> = {
+  dormant: { visibility: 0.92, energy: 0.12, touch: 0, observe: 0.25, particles: 0.35 },
+  observe: { visibility: 1, energy: 0.38, touch: 0, observe: 1, particles: 0.55 },
+  touch: { visibility: 1, energy: 0.66, touch: 1, observe: 0.5, particles: 0.75 },
+  full: { visibility: 1, energy: 0.92, touch: 1, observe: 1, particles: MILO.shader.fullParticleMultiplier },
+  dissolve: { visibility: 0, energy: 0.12, touch: 0, observe: 0, particles: 1 },
 };
 
 /** Ordem do botão "próximo estado". */
@@ -83,6 +85,7 @@ export const useMiloStore = create<MiloStore>((set, get) => ({
       energy: target.energy,
       touch: target.touch,
       observe: target.observe,
+      particles: target.particles,
       duration: reduce ? 0.01 : next === "dissolve" || get().visibility < 0.5 ? 1.6 : 1.1,
       ease: next === "dissolve" ? "power2.inOut" : "power3.out",
       overwrite: true,

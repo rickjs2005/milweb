@@ -180,6 +180,13 @@ export const MILO = {
     particleVisibility: 1,
     /** 0 composite · 1 distortion only · 2 wireframe only (só dev) */
     view: 0,
+    /** iteração 04 — multiplicadores regionais (os globais acima ficam) */
+    pelvisDensityMultiplier: 0.72,
+    torsoHatchingMultiplier: 0.8,
+    thighHatchingMultiplier: 0.78,
+    headDistortionMultiplier: 1.12,
+    coatFlapMultiplier: 1.1,
+    fullParticleMultiplier: 0.65,
   },
 
   /** Grid técnica do fundo (px de CSS). */

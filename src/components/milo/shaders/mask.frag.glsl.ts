@@ -19,6 +19,7 @@ uniform float uFresnelPower;
 uniform float uOrder;
 uniform float uZone;
 uniform float uFragment;
+uniform float uRegion;
 uniform vec3 uRoot;
 uniform vec3 uRootRight;
 varying vec3 vNormalView;
@@ -46,6 +47,9 @@ void main() {
 
   // âncoras: contorno só onde a zona e um ruído lento (quase estático) permitem
   float anchor = uZone * smoothstep(0.42, 0.7, fbm3n(vWorldPos * 1.7 + vec3(0.3, uTime * 0.015, 0.0)));
-  gl_FragColor = vec4(nv.xy * 0.5 + 0.5, max(fres, edge), 0.5 + 0.5 * max(anchor, edge));
+  // alpha: 0.5 + (região + reveal) / 16 — região (0 padrão, 1 tronco, 2 pélvis,
+  // 3 coxas, 4 cabeça/pescoço, 5 casaco); reveal = âncora/borda do dissolve
+  float reveal = clamp(max(anchor, edge), 0.0, 0.98);
+  gl_FragColor = vec4(nv.xy * 0.5 + 0.5, max(fres, edge), 0.5 + (uRegion + reveal) * 0.0625);
 }
 `;

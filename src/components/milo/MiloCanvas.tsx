@@ -24,7 +24,10 @@ function readTokens() {
 }
 
 const SCENE_RT = { depthBuffer: false, stencilBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } as const;
-const MASK_RT = { depthBuffer: true, stencilBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } as const;
+// Nearest: o alpha da máscara carrega a REGIÃO da parte (decodificada no composite);
+// interpolar entre regiões daria classes erradas nas costuras. O anti-alias das
+// bordas é feito no composite a partir da cobertura borrada (fwidth + smoothstep).
+const MASK_RT = { depthBuffer: true, stencilBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter } as const;
 
 /**
  * Pipeline de render targets (numa cena só, separada por layers):
@@ -129,6 +132,12 @@ function Pipeline({ quality, panelRef }: { quality: MiloQuality; panelRef: RefOb
     c.uMaskDilate.value = f.params.maskDilation * dpr;
     c.uInternalShadow.value = f.params.internalShadow;
     c.uView.value = f.params.view;
+    c.uHeadUv.value.set(f.head.x, f.head.y);
+    c.uPelvisDensity.value = f.params.pelvisDensityMultiplier;
+    c.uTorsoHatch.value = f.params.torsoHatchingMultiplier;
+    c.uThighHatch.value = f.params.thighHatchingMultiplier;
+    c.uHeadMul.value = f.params.headDistortionMultiplier;
+    c.uFlapMul.value = f.params.coatFlapMultiplier;
     c.uPulse.value = f.pulse;
     c.uVisibility.value = f.visibility;
     c.uEnergy.value = f.energy;

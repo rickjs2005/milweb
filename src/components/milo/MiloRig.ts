@@ -26,6 +26,8 @@ export const LAYER_OVERLAY = 2;
 
 /** Partes onde o acid lime pode aparecer nas linhas (braço/mão ativos). */
 const LIME: Partial<Record<BoneName, number>> = { rightForearm: 0.5, rightHand: 0.7, rightShoulder: 0.3 };
+/** Região por parte (decodificada no composite para os multiplicadores regionais). */
+const REGION: Partial<Record<BoneName | "coat", number>> = { chest: 1, spine: 1, pelvis: 2, leftLeg: 3, rightLeg: 3, head: 4, neck: 4, coat: 5 };
 /** Lado do torso parcialmente fragmentado (peito, coluna e casaco). */
 const FRAGMENT: Partial<Record<BoneName | "coat", number>> = { chest: 1, spine: 0.6, coat: 1 };
 
@@ -41,7 +43,7 @@ export function buildRig(): MiloRigHandle {
     parent.add(group);
     const zone = MILO.zones[name];
     const order = MILO.dissolveOrder[name];
-    const maskMat = createMaskMaterial({ order, zone, fragment: FRAGMENT[name] ?? 0 });
+    const maskMat = createMaskMaterial({ order, zone, fragment: FRAGMENT[name] ?? 0, region: REGION[name] ?? 0 });
     disposables.push(maskMat);
     if (geo) {
       const m = new THREE.Mesh(geo.mask, maskMat);
@@ -122,7 +124,7 @@ export function buildRig(): MiloRigHandle {
 
   // casaco: filho do peito
   const coatGeo = buildCoat();
-  const coatMat = createMaskMaterial({ coat: true, fresnelPower: 1.7, order: MILO.dissolveOrder.coat, zone: MILO.zones.coat, fragment: FRAGMENT.coat ?? 0 });
+  const coatMat = createMaskMaterial({ coat: true, fresnelPower: 1.7, order: MILO.dissolveOrder.coat, zone: MILO.zones.coat, fragment: FRAGMENT.coat ?? 0, region: REGION.coat ?? 0 });
   const coat = new THREE.Mesh(coatGeo, coatMat);
   coat.name = "coat";
   coat.layers.set(LAYER_MASK);

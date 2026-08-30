@@ -106,7 +106,7 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
     pm.uEnergy.value = f.energy;
     pm.uNoiseScale.value = p.noiseScale;
     pm.uDpr.value = st.gl.getPixelRatio();
-    pm.uParticles.value = p.view === 0 ? p.particleVisibility : 0;
+    pm.uParticles.value = p.view === 0 ? p.particleVisibility * f.particles : 0;
 
     // cálculos secundários com frequência reduzida nos níveis baixos
     if (frameCount.current % secondaryEvery === 0) {
@@ -128,6 +128,11 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
       rig.rightHandTip.getWorldPosition(tmp).project(camera);
       f.hand.x = tmp.x * 0.5 + 0.5;
       f.hand.y = tmp.y * 0.5 + 0.5;
+      rig.bones.head.group.getWorldPosition(tmp);
+      tmp.y += MILO.proportions.head.h * 0.5 * placement.scale;
+      tmp.project(camera);
+      f.head.x = tmp.x * 0.5 + 0.5;
+      f.head.y = tmp.y * 0.5 + 0.5;
     }
   });
 

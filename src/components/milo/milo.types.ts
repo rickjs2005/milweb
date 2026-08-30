@@ -84,7 +84,17 @@ export type MiloFrame = {
     internalShadow: number;
     particleVisibility: number;
     view: number;
+    pelvisDensityMultiplier: number;
+    torsoHatchingMultiplier: number;
+    thighHatchingMultiplier: number;
+    headDistortionMultiplier: number;
+    coatFlapMultiplier: number;
+    fullParticleMultiplier: number;
   };
+  /** Multiplicador de partículas do estado atual (interpolado pelo GSAP). */
+  particles: number;
+  /** Projeção da cabeça em uv (curvatura da grid ao redor dela). */
+  head: { x: number; y: number };
   /** Projeção da mão ativa em uv (interação com o painel). */
   hand: { x: number; y: number };
   /** Onda no casaco (0..1, disparada no contato). */

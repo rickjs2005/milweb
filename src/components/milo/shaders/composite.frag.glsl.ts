@@ -45,6 +45,12 @@ uniform float uMaskDilate;
 uniform float uInternalShadow;
 uniform float uView;
 uniform float uPulse;
+uniform vec2 uHeadUv;
+uniform float uPelvisDensity;
+uniform float uTorsoHatch;
+uniform float uThighHatch;
+uniform float uHeadMul;
+uniform float uFlapMul;
 uniform vec2 uMilo;
 uniform vec2 uMiloVel;
 uniform vec2 uHand;
@@ -78,7 +84,15 @@ void main() {
   vec2 texel = 1.0 / uResolution;
   vec4 m = texture2D(tMask, uv);
   float mask = step(0.25, m.a);
-  float reveal = clamp((m.a - 0.5) * 2.0, 0.0, 1.0);
+  // alpha = 0.5 + (região + reveal) / 16
+  float aq = max(m.a - 0.5, 0.0) * 16.0;
+  float region = floor(aq + 0.002);
+  float reveal = clamp(fract(aq), 0.0, 1.0) * mask;
+  float isTorso = step(0.5, region) * step(region, 1.5);
+  float isPelvis = step(1.5, region) * step(region, 2.5);
+  float isThigh = step(2.5, region) * step(region, 3.5);
+  float isHead = step(3.5, region) * step(region, 4.5);
+  float isCoat = step(4.5, region);
 
   if (uView > 1.5) { gl_FragColor = vec4(texture2D(tScene, uv).rgb, 1.0); return; }
 
@@ -145,18 +159,31 @@ void main() {
 
   // fundo (sempre): grid curva ao redor do corpo, compressão mão→painel, sombra no chão
   vec2 dirOut = normalize((uv - uMilo) * aspect + 1e-5);
-  vec3 bg = texture2D(tScene, uv + dirOut * uGridBend * wide * uVisibility + squeeze).rgb;
+  // a grid curva mais ao redor da cabeça (uHeadMul), sem tocar o gridBend global
+  vec2 dHead = (uv - uHeadUv) * aspect;
+  float headW = exp(-dot(dHead, dHead) * 140.0);
+  float bendMul = 1.0 + (uHeadMul - 1.0) * headW;
+  vec3 bg = texture2D(tScene, uv + dirOut * uGridBend * bendMul * wide * uVisibility + squeeze).rgb;
   bg *= 1.0 - sh * 0.06;
-  // peso da massa: borda suave (anti-alias da dilatação) em vez de degrau
-  float bodyW = max(mask, smoothstep(0.12, 0.42, soft));
+  // borda da massa: anti-alias adaptativo pela cobertura borrada (fwidth + smoothstep),
+  // sem termo duro da máscara → sem serrilhado; limiar um pouco mais alto abre a
+  // área negativa entre as pernas em vez de fundi-las
+  float aaW = max(fwidth(soft) * 1.5, 0.05);
+  float bodyW = smoothstep(0.34 - aaW, 0.34 + aaW, soft);
+  bodyW = max(bodyW, mask * smoothstep(0.18, 0.34, soft));
   vec3 col = bg;
   if (bodyW > 0.02) {
     float center = pow(1.0 - fres, uFalloff) * mix(0.6, 1.0, soft);
     float nz = fbm3(vec3(uv * uNoiseScale * 5.0, uTime * uNoiseSpeed));
 
-    vec2 off = n * uBody * (0.2 + center) * (0.92 + 0.16 * (nz - 0.5));
+    // cabeça: +10–15 % de distorção (perfil, mandíbula, nuca, topo — nunca a face)
+    float headBoost = 1.0 + (uHeadMul - 1.0) * isHead * (0.6 + 0.4 * fres);
+    vec2 off = n * uBody * headBoost * (0.2 + center) * (0.92 + 0.16 * (nz - 0.5));
     off -= n * uEdgeComp * fres;
     off.y += (nz - 0.5) * 0.006;
+    // aba longa do casaco: deslocamento vertical maior (ondas verticais suaves)
+    off.y -= isCoat * (uFlapMul - 1.0) * 0.06 * (0.5 + 0.5 * sin(uv.y * 90.0 + uTime * 0.8)) * center;
+    off *= 1.0 + isCoat * (uFlapMul - 1.0) * 0.5;
 
     float sp = length(uMiloVel);
     vec2 vdir = uMiloVel / max(sp, 1e-5);
@@ -177,14 +204,22 @@ void main() {
     vec2 px = suv * uResolution;
     float minor = lineMask(px, uCell, 0.6);
     float major = lineMask(px, uCell * uMajor, 0.8);
+    // hachura: contraste das linhas menores reduzido no tronco, pélvis e coxas
+    float hatch = mix(1.0, uTorsoHatch, isTorso) * mix(1.0, uTorsoHatch, isPelvis) * mix(1.0, uThighHatch, isThigh);
+    // mistura com a grid original (menos leitura de compressão nessas regiões)
+    float minorO = lineMask(uv * uResolution, uCell, 0.6);
+    minor = mix(minor, max(minor, minorO * 0.5), (1.0 - hatch) * 0.6);
     col = texture2D(tScene, uv).rgb;
-    col = mix(col, mix(uNeutral, uInk, 0.07 + 0.11 * center), minor * 0.92);
-    col = mix(col, mix(uNeutral, uInk, 0.55), major * 0.7);
+    col = mix(col, mix(uNeutral, uInk, (0.07 + 0.11 * center) * hatch), minor * 0.92 * mix(1.0, 0.85, 1.0 - hatch));
+    // pélvis: nada de linha horizontal contínua ligando as coxas
+    col = mix(col, mix(uNeutral, uInk, 0.55), major * 0.7 * mix(1.0, 0.45, isPelvis));
     float majorR = lineMask((suv + n * uBody * 0.06) * uResolution, uCell * uMajor, 0.8);
     col.r = mix(col.r, uInk.r, majorR * 0.2);
 
     // densidade: o volume adensa no centro; sombra interna vinda de cima/esquerda
-    col *= 1.0 - center * uDensity * uVisibility;
+    // densidade: pélvis −28 %, caindo para as laterais (soft) — concentração de espaço, não placa
+    float dens = uDensity * mix(1.0, uPelvisDensity * (0.55 + 0.45 * soft), isPelvis);
+    col *= 1.0 - center * dens * uVisibility;
     float above = (texture2D(tMask, uv + vec2(-0.004, 0.014)).a + texture2D(tMask, uv + vec2(-0.008, 0.026)).a + texture2D(tMask, uv + vec2(-0.012, 0.038)).a) / 3.0;
     above = smoothstep(0.05, 0.45, above);
     col *= 1.0 - uInternalShadow * (1.0 - above) * soft * uVisibility;

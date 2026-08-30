@@ -22,6 +22,12 @@ const PARAMS: { key: keyof typeof miloFrame.params; label: string; min: number; 
   { key: "maskDilation", label: "maskDilation (px)", min: 0, max: 12, step: 0.5 },
   { key: "internalShadow", label: "internalShadow", min: 0, max: 0.4, step: 0.005 },
   { key: "particleVisibility", label: "particleVisibility", min: 0, max: 1, step: 0.01 },
+  { key: "pelvisDensityMultiplier", label: "pelvisDensityMultiplier", min: 0.3, max: 1.2, step: 0.01 },
+  { key: "torsoHatchingMultiplier", label: "torsoHatchingMultiplier", min: 0.3, max: 1.2, step: 0.01 },
+  { key: "thighHatchingMultiplier", label: "thighHatchingMultiplier", min: 0.3, max: 1.2, step: 0.01 },
+  { key: "headDistortionMultiplier", label: "headDistortionMultiplier", min: 1, max: 1.3, step: 0.01 },
+  { key: "coatFlapMultiplier", label: "coatFlapMultiplier", min: 0.8, max: 1.4, step: 0.01 },
+  { key: "fullParticleMultiplier", label: "fullParticleMultiplier", min: 0.3, max: 1, step: 0.01 },
 ];
 const VIEWS: { v: number; label: string }[] = [
   { v: 0, label: "COMPOSITE" },
