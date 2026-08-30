@@ -23,7 +23,7 @@ export class TouchController {
   private pulseTween: gsap.core.Tween | null = null;
   private waveTween: gsap.core.Tween | null = null;
 
-  apply(rig: MiloRigHandle, frame: MiloFrame, anchor: [number, number, number], dt: number) {
+  apply(rig: MiloRigHandle, frame: MiloFrame, anchor: [number, number, number], dt: number, opts: { pulse?: boolean } = {}) {
     const w = this.weight.update(frame.touch, dt);
     if (w < 0.002) {
       frame.panelInfluence = Math.max(0, frame.panelInfluence - dt * 2);
@@ -31,12 +31,14 @@ export class TouchController {
       return;
     }
     // antecipação: o ombro recua e sobe um pouco antes de o braço partir
-    const antic = Math.sin(Math.min(w * 2.2, 1) * Math.PI) * (1 - w) * 0.16;
+    const antic = Math.sin(Math.min(w * 2.2, 1) * Math.PI) * (1 - w) * 0.16 * frame.anticipation;
     rig.bones.rightShoulder.group.rotation.z += antic;
     rig.bones.rightShoulder.group.rotation.y += -antic * 0.5;
     const reach = THREE.MathUtils.smoothstep(w, 0.18, 1);
 
-    anchorLocal.set(anchor[0] - MILO.touch.stopBefore, anchor[1], anchor[2] - MILO.touch.stopBefore * 0.4);
+    // a palma para um pouco ANTES do alvo, do lado do corpo (o alvo pode estar à esquerda ou à direita do Milo)
+    const side = anchor[0] < 0 ? -1 : 1;
+    anchorLocal.set(anchor[0] - side * MILO.touch.stopBefore, anchor[1], anchor[2] - MILO.touch.stopBefore * 0.4);
     target.copy(anchorLocal).applyMatrix4(rig.root.matrixWorld);
     pole.set(MILO.touch.pole[0], MILO.touch.pole[1], MILO.touch.pole[2]).add(anchorLocal).applyMatrix4(rig.root.matrixWorld);
     // a mão chega por baixo e desacelera (reach já é suave; o arco reforça)
@@ -46,6 +48,10 @@ export class TouchController {
     rig.bones.rightHand.group.rotation.z += 0.3 * reach;
     rig.bones.rightShoulder.group.rotation.z += -0.1 * reach;
     rig.bones.chest.group.rotation.y += -0.08 * reach;
+    // transferência de peso: o tronco inclina ~5° para o lado do alvo e a pélvis compensa
+    rig.bones.chest.group.rotation.z += -side * 0.09 * reach;
+    rig.bones.spine.group.rotation.z += -side * 0.05 * reach;
+    rig.bones.pelvis.group.rotation.z += side * 0.02 * reach;
 
     rig.rightHandTip.getWorldPosition(hand);
     const dist = hand.distanceTo(target);
@@ -53,7 +59,7 @@ export class TouchController {
     frame.panelInfluence += (infl - frame.panelInfluence) * Math.min(1, dt * 8);
 
     const touching = dist < MILO.touch.contact && reach > 0.92;
-    if (touching && !this.contact) this.fire(frame);
+    if (touching && !this.contact && opts.pulse !== false) this.fire(frame);
     if (!touching && dist > MILO.touch.contact * 2.5) this.contact = false;
   }
 

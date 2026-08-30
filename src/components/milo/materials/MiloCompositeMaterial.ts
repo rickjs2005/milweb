@@ -40,6 +40,7 @@ export function createCompositeMaterial() {
       uHeadMul: { value: s.headDistortionMultiplier },
       uFlapMul: { value: s.coatFlapMultiplier },
       uHero: { value: 0 },
+      uContact: { value: 0 },
       uGridOrigin: { value: new THREE.Vector2(0, 0) },
       uGridSize: { value: new THREE.Vector2(1, 1) },
       uGridColumns: { value: 12 },

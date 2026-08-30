@@ -72,15 +72,16 @@ export function MiloNull({ quality, mobile, environment = "lab", placement: plac
     const near = 1 - THREE.MathUtils.smoothstep(Math.sqrt(dpx * dpx + dpy * dpy), 0.05, MILO.observe.panelRadius);
     const panelNdcX = f.panel.x * 2 - 1;
     const panelNdcY = f.panel.y * 2 - 1;
-    attention.x = THREE.MathUtils.lerp(f.pointer.x, panelNdcX, near * 0.85);
-    attention.y = THREE.MathUtils.lerp(f.pointer.y, panelNdcY, near * 0.85);
+    const att = Math.max(near * 0.85, f.attention);
+    attention.x = THREE.MathUtils.lerp(f.pointer.x, panelNdcX, att);
+    attention.y = THREE.MathUtils.lerp(f.pointer.y, panelNdcY, att);
 
     resetPose(rig);
     applyIdle(rig, time, 0.2 + f.energy * 0.8);
-    observe.current.apply(rig, attention, f.pointerActive, f.observe, dt);
+    observe.current.apply(rig, attention, f.pointerActive || f.attention > 0.01, f.observe, dt);
     applyDissolve(rig, f.visibility);
     root.updateMatrixWorld(true);
-    touch.current.apply(rig, f, f.targetLocal ?? useMiloStore.getState().targetPosition, dt);
+    touch.current.apply(rig, f, f.targetLocal ?? useMiloStore.getState().targetPosition, dt, { pulse: environment !== "hero" });
     root.updateMatrixWorld(true);
 
     // juntas → partículas
@@ -131,7 +132,7 @@ export function MiloNull({ quality, mobile, environment = "lab", placement: plac
         // Hero: a célula-alvo (uv, escrita pela ponte) vira alvo do braço em coordenadas do root,
         // no plano um pouco à frente do corpo — a mão para antes da célula (stopBefore no touch)
         ray.set(f.panel.x * 2 - 1, f.panel.y * 2 - 1, 0.5).unproject(camera).sub(camera.position).normalize();
-        const planeZ = root.position.z + 0.35 * placement.scale;
+        const planeZ = root.position.z + (environment === "hero" ? 0.08 : 0.35) * placement.scale;
         const tRay = (planeZ - camera.position.z) / (ray.z || 1e-5);
         hit.copy(camera.position).addScaledVector(ray, tRay);
         localTarget.copy(hit);

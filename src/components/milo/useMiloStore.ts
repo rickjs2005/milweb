@@ -29,6 +29,9 @@ export const miloFrame: MiloFrame = {
   particles: 0.4,
   head: { x: 0.7, y: 0.8 },
   targetLocal: null,
+  attention: 0,
+  contact: 0,
+  anticipation: 1,
 };
 
 /** Alvos de cada estado — o que o GSAP interpola em miloFrame. */

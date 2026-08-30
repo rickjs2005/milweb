@@ -104,6 +104,14 @@ export function BuildHero({ s, act, visual = "compiler" }: { s: BuildHeroStrings
         tl.to(q("[data-layer=code]"), { scale: 0.55, autoAlpha: 0.35, transformOrigin: "left top", duration: 0.12 }, 0.2);
         // 2 MOTION — letras sobem e a fonte se EXPANDE (62% → 125%)
         tl.to(h1, { fontStretch: "125%", fontWeight: 900, "--wdth": 125, "--wght": 900, duration: 0.18, ease: EASE.smooth }, 0.38);
+        // Marcas conceituais da coreografia do Milo (variante milo lê; sem efeito no Compiler).
+        // A puxada (typeContact → typePullEnd) é exatamente o tween de wdth acima.
+        tl.addLabel("typeAnticipate", 0.24);
+        tl.addLabel("typeReach", 0.3);
+        tl.addLabel("typeContact", 0.38);
+        tl.addLabel("typePullEnd", 0.56);
+        tl.addLabel("typeRelease", 0.6);
+        tl.addLabel("typeSettle", 0.66);
         tl.to(q("[data-layer=wire] > *"), { autoAlpha: 0.25, duration: 0.1 }, 0.44);
         // 3 INTERACTION — imagens entram nas células
         tl.to(q("[data-layer=images] figure"), { autoAlpha: 1, yPercent: 0, stagger: 0.04, duration: 0.14, ease: EASE.outExpo }, 0.52);
@@ -205,7 +213,6 @@ export function BuildHero({ s, act, visual = "compiler" }: { s: BuildHeroStrings
         {s.images.map((im, i) => (
           <figure
             key={im.src}
-            data-milo-target={i === 0 ? "" : undefined}
             className="absolute aspect-[16/10] overflow-hidden bg-neutral"
             style={
               i === 0
@@ -227,8 +234,8 @@ export function BuildHero({ s, act, visual = "compiler" }: { s: BuildHeroStrings
 
       <div className="relative z-10 mt-auto pt-[18svh] md:z-[1] md:pt-[22svh]" style={visual === "milo" ? { zIndex: 4 } : undefined}>
         <h1 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(s.headline)} data-inspect="HERO_TITLE">
-          {s.headline.map((line) => (
-            <span key={line} data-line className="block md:whitespace-nowrap">
+          {s.headline.map((line, i) => (
+            <span key={line} data-line data-headline-line={i === 0 ? "primary" : undefined} className="block md:whitespace-nowrap">
               {line}
             </span>
           ))}

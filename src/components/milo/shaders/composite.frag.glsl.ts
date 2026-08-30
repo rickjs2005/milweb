@@ -53,6 +53,7 @@ uniform float uHeadMul;
 uniform float uFlapMul;
 // modo Hero: réplica da grid DOM (colunas verticais) e saída transparente fora do corpo
 uniform float uHero;
+uniform float uContact;
 uniform vec2 uGridOrigin;
 uniform vec2 uGridSize;
 uniform float uGridColumns;
@@ -264,6 +265,13 @@ void main() {
     col = mix(bg, col, bodyW);
   }
   col = mix(col, uSignal, limeLine);
+  // Hero: tick acid lime na palma enquanto a mão segura a frase (mínimo, sem glow)
+  if (uHero > 0.5 && uContact > 0.001) {
+    vec2 dh2 = (uv - uHand) * aspect;
+    float tick = smoothstep(0.0035, 0.0015, length(dh2)) * uContact;
+    col = mix(col, uSignal, tick);
+    limeLine = max(limeLine, tick);
+  }
   float alpha = 1.0;
   if (uHero > 0.5) {
     // só cobre a grid DOM onde a deforma: corpo + halo curvado, com borda suave

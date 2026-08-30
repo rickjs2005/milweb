@@ -151,6 +151,7 @@ function HeroPipeline({ quality, onReady, onFail }: { quality: MiloQuality; onRe
     c.uHeadUv.value.set(f.head.x, f.head.y);
     c.uPanel.value = f.panelInfluence;
     c.uPanelUv.value.set(f.panel.x, f.panel.y);
+    c.uContact.value = f.contact;
     c.uPelvisDensity.value = f.params.pelvisDensityMultiplier;
     c.uTorsoHatch.value = f.params.torsoHatchingMultiplier;
     c.uThighHatch.value = f.params.thighHatchingMultiplier;
