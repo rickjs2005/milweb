@@ -19,6 +19,12 @@ const anchor = new THREE.Vector3();
 const right = new THREE.Vector3();
 const rootPos = new THREE.Vector3();
 const attention = { x: 0, y: 0 };
+const ray = new THREE.Vector3();
+const hit = new THREE.Vector3();
+const localTarget = new THREE.Vector3();
+const targetTuple: [number, number, number] = [0, 0, 0];
+
+export type MiloPlacement = { x: number; y: number; z: number; scale: number; yaw: number };
 
 /**
  * O personagem: rig + casaco + partículas, e o loop de movimento
@@ -26,7 +32,7 @@ const attention = { x: 0, y: 0 };
  * repouso). Escreve por frame em uniforms e em `miloFrame`; nada aqui
  * passa pelo estado do React.
  */
-export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: boolean }) {
+export function MiloNull({ quality, mobile, environment = "lab", placement: placementProp }: { quality: MiloQuality; mobile: boolean; environment?: "lab" | "hero"; placement?: MiloPlacement }) {
   const camera = useThree((s) => s.camera);
   const rig = useMemo(() => buildRig(), []);
   const particles = useMemo(() => {
@@ -48,7 +54,7 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
     };
   }, [rig, particles]);
 
-  const placement = mobile ? MILO.placement.mobile : MILO.placement.desktop;
+  const placement: MiloPlacement = placementProp ?? (mobile ? MILO.placement.mobile : MILO.placement.desktop);
   const secondaryEvery = MILO.quality[quality].secondaryEvery;
 
   useFrame((st, dt) => {
@@ -74,7 +80,7 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
     observe.current.apply(rig, attention, f.pointerActive, f.observe, dt);
     applyDissolve(rig, f.visibility);
     root.updateMatrixWorld(true);
-    touch.current.apply(rig, f, useMiloStore.getState().targetPosition, dt);
+    touch.current.apply(rig, f, f.targetLocal ?? useMiloStore.getState().targetPosition, dt);
     root.updateMatrixWorld(true);
 
     // juntas → partículas
@@ -121,10 +127,25 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
       prev.current.y = uy;
       f.milo.x = ux;
       f.milo.y = uy;
-      const a = useMiloStore.getState().targetPosition;
-      anchor.set(a[0], a[1], a[2]).applyMatrix4(root.matrixWorld).project(camera);
-      f.panel.x = anchor.x * 0.5 + 0.5;
-      f.panel.y = anchor.y * 0.5 + 0.5;
+      if (environment === "hero") {
+        // Hero: a célula-alvo (uv, escrita pela ponte) vira alvo do braço em coordenadas do root,
+        // no plano um pouco à frente do corpo — a mão para antes da célula (stopBefore no touch)
+        ray.set(f.panel.x * 2 - 1, f.panel.y * 2 - 1, 0.5).unproject(camera).sub(camera.position).normalize();
+        const planeZ = root.position.z + 0.35 * placement.scale;
+        const tRay = (planeZ - camera.position.z) / (ray.z || 1e-5);
+        hit.copy(camera.position).addScaledVector(ray, tRay);
+        localTarget.copy(hit);
+        root.worldToLocal(localTarget);
+        targetTuple[0] = localTarget.x;
+        targetTuple[1] = localTarget.y;
+        targetTuple[2] = localTarget.z;
+        f.targetLocal = targetTuple;
+      } else {
+        const a = useMiloStore.getState().targetPosition;
+        anchor.set(a[0], a[1], a[2]).applyMatrix4(root.matrixWorld).project(camera);
+        f.panel.x = anchor.x * 0.5 + 0.5;
+        f.panel.y = anchor.y * 0.5 + 0.5;
+      }
       rig.rightHandTip.getWorldPosition(tmp).project(camera);
       f.hand.x = tmp.x * 0.5 + 0.5;
       f.hand.y = tmp.y * 0.5 + 0.5;

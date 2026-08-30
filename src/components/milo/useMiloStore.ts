@@ -28,6 +28,7 @@ export const miloFrame: MiloFrame = {
   coatWave: 0,
   particles: 0.4,
   head: { x: 0.7, y: 0.8 },
+  targetLocal: null,
 };
 
 /** Alvos de cada estado — o que o GSAP interpola em miloFrame. */

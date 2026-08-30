@@ -95,6 +95,8 @@ export type MiloFrame = {
   particles: number;
   /** Projeção da cabeça em uv (curvatura da grid ao redor dela). */
   head: { x: number; y: number };
+  /** Alvo do braço em coordenadas do MiloRoot (Hero: derivado da célula-alvo); null = âncora do store. */
+  targetLocal: [number, number, number] | null;
   /** Projeção da mão ativa em uv (interação com o painel). */
   hand: { x: number; y: number };
   /** Onda no casaco (0..1, disparada no contato). */

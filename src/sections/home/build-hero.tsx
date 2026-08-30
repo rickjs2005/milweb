@@ -4,6 +4,8 @@ import { useRef } from "react";
 import Image from "next/image";
 import { fitLines } from "@/lib/fit";
 import { CompilerFallback } from "@/features/compiler/fallback";
+import { MiloHeroFallback } from "@/features/milo/hero/MiloHeroFallback";
+import type { HeroVisualVariant } from "@/features/hero-visual/hero-visual.types";
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
 import { loadSplitText } from "@/animations/split-text";
 import { onIdle } from "@/animations/idle";
@@ -38,7 +40,7 @@ const CODE = [
  * expansão tipográfica roda amarrada ao scroll normal (barata) — o conceito
  * sobrevive, o custo não.
  */
-export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
+export function BuildHero({ s, act, visual = "compiler" }: { s: BuildHeroStrings; act: string; visual?: HeroVisualVariant }) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -187,7 +189,7 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
       </p>
 
       {/* VARREDURA (experience) */}
-      <span data-layer="scan" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-px bg-signal" />
+      <span data-layer="scan" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-px bg-signal" style={visual === "milo" ? { zIndex: 5 } : undefined} />
 
       {/* ESTÁGIOS */}
       <ol data-layer="stages" aria-hidden="true" className="t-mono absolute right-margin top-[calc(var(--nav-h)+1.25rem)] z-10 hidden text-right text-ink-3 md:block md:top-[calc(var(--nav-h)+3rem)]">
@@ -199,10 +201,11 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
       </ol>
 
       {/* IMAGENS (interaction) — passam pela composição e somem no SHIP */}
-      <div data-layer="images" aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 hidden md:block">
+      <div data-layer="images" aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 hidden md:block" style={visual === "milo" ? { zIndex: 3 } : undefined}>
         {s.images.map((im, i) => (
           <figure
             key={im.src}
+            data-milo-target={i === 0 ? "" : undefined}
             className="absolute aspect-[16/10] overflow-hidden bg-neutral"
             style={
               i === 0
@@ -220,9 +223,9 @@ export function BuildHero({ s, act }: { s: BuildHeroStrings; act: string }) {
 
       {/* TIPOGRAFIA (o LCP) */}
       {/* A ESCULTURA (fallback SVG em LOW/reduced; em HIGH/MEDIUM o canvas fixo desenha no mesmo lugar) */}
-      <CompilerFallback className="pointer-events-none absolute right-margin top-[24%] z-[1] w-[38%] max-w-[520px] md:top-[18%]" />
+      {visual === "milo" ? <MiloHeroFallback /> : <CompilerFallback className="pointer-events-none absolute right-margin top-[24%] z-[1] w-[38%] max-w-[520px] md:top-[18%]" />}
 
-      <div className="relative z-10 mt-auto pt-[18svh] md:z-[1] md:pt-[22svh]">
+      <div className="relative z-10 mt-auto pt-[18svh] md:z-[1] md:pt-[22svh]" style={visual === "milo" ? { zIndex: 4 } : undefined}>
         <h1 className="t-display t-display-xl t-fit-md text-ink" style={fitLines(s.headline)} data-inspect="HERO_TITLE">
           {s.headline.map((line) => (
             <span key={line} data-line className="block md:whitespace-nowrap">

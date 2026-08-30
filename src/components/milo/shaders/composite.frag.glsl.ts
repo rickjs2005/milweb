@@ -51,6 +51,17 @@ uniform float uTorsoHatch;
 uniform float uThighHatch;
 uniform float uHeadMul;
 uniform float uFlapMul;
+// modo Hero: réplica da grid DOM (colunas verticais) e saída transparente fora do corpo
+uniform float uHero;
+uniform vec2 uGridOrigin;
+uniform vec2 uGridSize;
+uniform float uGridColumns;
+uniform float uGridColumnWidth;
+uniform float uGridGutter;
+uniform float uGridLineWidth;
+uniform vec3 uGridLineColor;
+uniform float uGridOpacity;
+uniform vec3 uHeroBackground;
 uniform vec2 uMilo;
 uniform vec2 uMiloVel;
 uniform vec2 uHand;
@@ -70,6 +81,18 @@ float lineMask(vec2 px, float cell, float width) {
   vec2 g = mod(px, cell);
   vec2 d = min(g, cell - g);
   return 1.0 - smoothstep(width - 0.6, width + 0.6, min(d.x, d.y));
+}
+/** colunas da grid DOM do Hero em px de tela (y para baixo) */
+float heroLines(vec2 px) {
+  vec2 g = px - uGridOrigin;
+  if (g.x < -1.0 || g.x > uGridSize.x + 1.0 || g.y < 0.0 || g.y > uGridSize.y) return 0.0;
+  float pitch = uGridColumnWidth + uGridGutter;
+  float local = mod(g.x, pitch);
+  float w = max(uGridLineWidth, 1.0);
+  float left = 1.0 - smoothstep(w * 0.5, w * 0.5 + 0.8, abs(local - w * 0.5));
+  float right = 1.0 - smoothstep(w * 0.5, w * 0.5 + 0.8, abs(local - uGridColumnWidth + w * 0.5));
+  right *= step(uGridColumns - 1.0, floor(g.x / pitch));
+  return max(left, right);
 }
 /** distância e parâmetro t de p ao segmento ab */
 vec2 segDT(vec2 p, vec2 a, vec2 b) {
@@ -109,7 +132,7 @@ void main() {
       float ll = (1.0 - smoothstep(0.0, 0.0022, dtF.x)) * headF * (1.0 - uPulse * uPulse);
       c0 = mix(c0, uSignal, ll);
     }
-    gl_FragColor = vec4(c0, 1.0);
+    gl_FragColor = uHero > 0.5 ? vec4(0.0) : vec4(c0, 1.0);
     return;
   }
 
@@ -204,25 +227,35 @@ void main() {
     vec2 px = suv * uResolution;
     float minor = lineMask(px, uCell, 0.6);
     float major = lineMask(px, uCell * uMajor, 0.8);
+    if (uHero > 0.5) {
+      // Hero: as colunas reais da grid DOM deslocadas + a estrutura fina que o corpo
+      // adensa (a grid do laboratório, só dentro da silhueta) — sem isso a densidade
+      // vira preenchimento cinza e o corpo lê como mancha
+      float cols = heroLines(vec2(suv.x, 1.0 - suv.y) * uResolution) * uGridOpacity;
+      float fine = lineMask(px, uCell, 0.6) * (0.3 + 0.35 * center) * (0.55 + 0.45 * uGridOpacity);
+      minor = max(cols, fine);
+      major = 0.0;
+    }
     // hachura: contraste das linhas menores reduzido no tronco, pélvis e coxas
     float hatch = mix(1.0, uTorsoHatch, isTorso) * mix(1.0, uTorsoHatch, isPelvis) * mix(1.0, uThighHatch, isThigh);
     // mistura com a grid original (menos leitura de compressão nessas regiões)
-    float minorO = lineMask(uv * uResolution, uCell, 0.6);
+    float minorO = uHero > 0.5 ? heroLines(vec2(uv.x, 1.0 - uv.y) * uResolution) * uGridOpacity : lineMask(uv * uResolution, uCell, 0.6);
     minor = mix(minor, max(minor, minorO * 0.5), (1.0 - hatch) * 0.6);
     col = texture2D(tScene, uv).rgb;
-    col = mix(col, mix(uNeutral, uInk, (0.07 + 0.11 * center) * hatch), minor * 0.92 * mix(1.0, 0.85, 1.0 - hatch));
+    vec3 lineCol = uHero > 0.5 ? mix(uGridLineColor, uInk, (0.18 + 0.22 * center) * hatch) : mix(uNeutral, uInk, (0.07 + 0.11 * center) * hatch);
+    col = mix(col, lineCol, minor * 0.92 * mix(1.0, 0.85, 1.0 - hatch));
     // pélvis: nada de linha horizontal contínua ligando as coxas
     col = mix(col, mix(uNeutral, uInk, 0.55), major * 0.7 * mix(1.0, 0.45, isPelvis));
-    float majorR = lineMask((suv + n * uBody * 0.06) * uResolution, uCell * uMajor, 0.8);
+    float majorR = uHero > 0.5 ? 0.0 : lineMask((suv + n * uBody * 0.06) * uResolution, uCell * uMajor, 0.8);
     col.r = mix(col.r, uInk.r, majorR * 0.2);
 
     // densidade: o volume adensa no centro; sombra interna vinda de cima/esquerda
     // densidade: pélvis −28 %, caindo para as laterais (soft) — concentração de espaço, não placa
-    float dens = uDensity * mix(1.0, uPelvisDensity * (0.55 + 0.45 * soft), isPelvis);
+    float dens = uDensity * mix(1.0, uPelvisDensity * (0.55 + 0.45 * soft), isPelvis) * mix(1.0, 0.5, uHero);
     col *= 1.0 - center * dens * uVisibility;
     float above = (texture2D(tMask, uv + vec2(-0.004, 0.014)).a + texture2D(tMask, uv + vec2(-0.008, 0.026)).a + texture2D(tMask, uv + vec2(-0.012, 0.038)).a) / 3.0;
     above = smoothstep(0.05, 0.45, above);
-    col *= 1.0 - uInternalShadow * (1.0 - above) * soft * uVisibility;
+    col *= 1.0 - uInternalShadow * mix(1.0, 0.55, uHero) * (1.0 - above) * soft * uVisibility;
 
     // âncoras: contorno de tinta só onde revelado; lime só como sinal de atividade
     float edge = smoothstep(0.45, 0.92, fres) * uEdgeStrength * reveal * mask;
@@ -231,6 +264,12 @@ void main() {
     col = mix(bg, col, bodyW);
   }
   col = mix(col, uSignal, limeLine);
-  gl_FragColor = vec4(col, 1.0);
+  float alpha = 1.0;
+  if (uHero > 0.5) {
+    // só cobre a grid DOM onde a deforma: corpo + halo curvado, com borda suave
+    float halo = smoothstep(0.02, 0.45, wide) * uVisibility;
+    alpha = max(bodyW, max(halo, limeLine));
+  }
+  gl_FragColor = vec4(col, alpha);
 }
 `;

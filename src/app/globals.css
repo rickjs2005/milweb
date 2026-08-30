@@ -367,3 +367,9 @@ html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [da
   100% { transform: scaleX(1); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .milo-panel[data-pulse="1"]::after { animation: none; } }
+
+/* ---- Hero / Milo Null (variante NEXT_PUBLIC_HERO_VISUAL=milo) ------------ */
+.milo-hero-fallback { opacity: 1; transition: opacity var(--dur-slow) var(--ease-in-out-quart); }
+html[data-milo="on"] .milo-hero-fallback { opacity: 0; }
+.milo-hero-canvas { opacity: 0; transition: opacity var(--dur-slow) var(--ease-in-out-quart); }
+.milo-hero-canvas[data-ready] { opacity: 1; }

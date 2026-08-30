@@ -12,7 +12,8 @@ import { BuiltWith } from "@/sections/home/built-with";
 import { ContactCta } from "@/sections/home/contact-cta";
 import { BRAND } from "@/data/brand";
 import { getDict } from "@/i18n";
-import { Compiler, CompilerScrollDirector } from "@/features/compiler/compiler";
+import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisual";
+import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 
 const WORLD_DETAIL: Record<string, string> = { terral: "/shots/terral/casa-do-torrador.webp" };
@@ -31,11 +32,12 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
   return (
     <>
       <Boot mark={BRAND.mark} tagline={d.boot.tagline} origin={d.boot.origin} lines={d.boot.lines} skip={d.boot.skip} compile={d.boot.compile} />
-      <Compiler />
-      <CompilerScrollDirector />
+      <HeroVisual />
+      <HeroVisualDirector />
       <main>
         <BuildHero
           act={d.acts.build}
+          visual={getHeroVisualVariant()}
           s={{
             headline: d.hero.headline,
             support: [...d.hero.support],

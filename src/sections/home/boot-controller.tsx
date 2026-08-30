@@ -63,6 +63,8 @@ export function BootController() {
       compiler.values.opacity = 1;
       compiler.state = "assembled";
       compiler.notify();
+      window.dispatchEvent(new Event("mw:visual-assemble"));
+      window.dispatchEvent(new Event("mw:visual-ready"));
       return;
     }
 
@@ -89,6 +91,8 @@ export function BootController() {
         compiler.values.opacity = 1;
         compiler.notify();
         compileTo("assembled", heroPlacement(), { duration: visits > 0 ? 0.9 : 1.8 });
+        // ponte genérica de visual (o Milo escuta; o Compiler segue pelo compileTo acima)
+        window.dispatchEvent(new Event("mw:visual-assemble"));
       },
       [],
       T.assemble,
@@ -127,6 +131,7 @@ export function BootController() {
       } catch {}
       root.classList.remove("booting", "anomaly");
       el.classList.add("is-exiting");
+      window.dispatchEvent(new Event("mw:visual-ready"));
       // NUNCA el.remove(): o <div id="mw-boot"> é renderizado pelo React. Tirá-lo
       // do DOM por fora deixa a fiber apontando para um nó solto e, na próxima
       // navegação que desmonta a Home, o React chama body.removeChild(el) →
