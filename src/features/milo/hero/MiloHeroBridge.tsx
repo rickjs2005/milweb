@@ -48,7 +48,7 @@ export const heroFrame = {
 };
 
 /** Labels padrão (as da timeline do BuildHero têm prioridade quando existem). */
-const LABELS = { walkStart: 0.15, walkEnd: 0.45, armStart: 0.55, contact: 0.6, pullEnd: 0.76, settle: 0.78, outro: 0.9 };
+const LABELS = { walkStart: 0.15, walkEnd: 0.45, armStart: 0.56, contact: 0.6, pullEnd: 0.76, settle: 0.78, outro: 0.9 };
 type Labels = typeof LABELS;
 
 const smooth = (a: number, b: number, x: number) => {

@@ -25,16 +25,16 @@ export const MILO_HERO = {
   heightSvh: 0.78,
   scale: (0.78 * VIEW_H) / 1.9,
   /** mobile: só tronco, cabeça e braço ativo importam — maior e com os pés abaixo da dobra */
-  scaleMobile: 0.82,
+  scaleMobile: 0.72,
   /** y do root (pés): borda inferior da viewport no plano z=0 é 1 − VIEW_H/2; + respiro. Mobile: pés abaixo da dobra, cabeça a ~50 % */
   y: 1 - VIEW_H / 2 + 0.08,
-  yMobile: -0.56,
+  yMobile: -0.5,
   /** rotação do corpo: andando (perfil, de frente para a headline) e parado (três quartos) */
   yawWalk: -1.15,
   yawRest: -0.36,
   /** distância (mundo, × escala) entre a extremidade da palavra e o root enquanto a mão a segura */
   holdOffset: 0.72,
-  holdOffsetMobile: 0.66,
+  holdOffsetMobile: 0.78,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
   stride: 1.35, // um ciclo = dois passos de ~0,68 (≈ 0,75 × perna de 0,9) — passo humano, não passinho
   /** folga além da borda para o corpo (e o braço em balanço) começar totalmente fora da tela */

@@ -38,7 +38,7 @@ const CODE = [
  *   0.00–0.15  ESTRUTURA     headline estável, Milo fora da tela, grid em repouso
  *   0.15–0.45  DESIGN        grid desce; Milo entra ANDANDO (pernas pela distância)
  *   0.45–0.55  MOTION        desacelera, fecha o passo, firma os pés, olha a frase
- *   0.55–0.78  INTERAÇÃO     ombro → cotovelo → mão encontra "PESSOAS."; no contato
+ *   0.56–0.78  INTERAÇÃO     ombro → cotovelo → mão chega em "PESSOAS." (0.56–0.60); no toque
  *                            (0.60) a frase e a mão se movem JUNTAS até assentar (0.76)
  *   0.78–0.90  EXPERIÊNCIA   braço conclui, grid guarda memória da deformação, energia cai
  *   0.90–1.00  ENTREGA       descrição comercial + VER PROJETOS ↓
@@ -46,7 +46,7 @@ const CODE = [
 export const HERO_SCENE = {
   walkStart: 0.15,
   walkEnd: 0.45,
-  armStart: 0.55,
+  armStart: 0.56,
   contact: 0.6,
   pullEnd: 0.76,
   settle: 0.78,
@@ -170,6 +170,10 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
         tl.to([q("[data-layer=wire]"), q("[data-layer=code]")], { autoAlpha: 0, duration: 0.06 }, S.settle);
         // 06 ENTREGA — descrição comercial e CTA, discretos, alinhados ao grid
         tl.to(q("[data-outro]"), { autoAlpha: 1, y: 0, stagger: 0.02, duration: 0.06, ease: EASE.outExpo }, S.outro);
+        // saída: a grid e o rodapé técnico abaixam um pouco antes do pin soltar — o Selected Work
+        // entra sobre um Hero já em repouso, sem corte seco
+        if (!small) tl.to(q("[data-layer=grid]"), { autoAlpha: 0.45, duration: 0.04 }, 0.96);
+        tl.to(q("[data-layer=stages]"), { autoAlpha: 0.35, duration: 0.04 }, 0.96);
         // duração exatamente 1 → labels/posições == progresso
         tl.to({}, { duration: 0.001 }, 0.999);
 
