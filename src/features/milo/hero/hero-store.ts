@@ -1,6 +1,11 @@
 "use client";
 
 import { create } from "zustand";
+import type { MiloPlacement } from "@/components/milo/MiloNull";
+import { MILO_HERO } from "@/features/hero-visual/hero-visual.config";
+
+/** Colocação do Milo no mundo — MUTADA por frame pela ponte, lida por frame pelo MiloNull (nunca passa pelo React). */
+export const heroPlacement: MiloPlacement = { x: 6, y: MILO_HERO.y, z: 0, scale: MILO_HERO.scale, yaw: MILO_HERO.yawWalk, stride: MILO_HERO.stride * MILO_HERO.scale };
 
 /**
  * Estado de baixa frequência do Milo no Hero (muda poucas vezes por sessão):

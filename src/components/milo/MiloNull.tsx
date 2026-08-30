@@ -7,6 +7,7 @@ import { MILO } from "./milo.config";
 import { buildRig, eachRigMaterial, resetPose } from "./MiloRig";
 import { buildParticles } from "./MiloParticles";
 import { applyIdle } from "./animation/idle";
+import { applyHeroBody, applyWalk } from "./animation/walk";
 import { ObserveController } from "./animation/observe";
 import { TouchController } from "./animation/touch";
 import { applyDissolve } from "./animation/dissolve";
@@ -24,7 +25,7 @@ const hit = new THREE.Vector3();
 const localTarget = new THREE.Vector3();
 const targetTuple: [number, number, number] = [0, 0, 0];
 
-export type MiloPlacement = { x: number; y: number; z: number; scale: number; yaw: number };
+export type MiloPlacement = { x: number; y: number; z: number; scale: number; yaw: number; /** passo da caminhada (mundo, já × escala) */ stride?: number };
 
 /**
  * O personagem: rig + casaco + partículas, e o loop de movimento
@@ -78,6 +79,10 @@ export function MiloNull({ quality, mobile, environment = "lab", placement: plac
 
     resetPose(rig);
     applyIdle(rig, time, 0.2 + f.energy * 0.8);
+    if (environment === "hero") {
+      applyWalk(rig, f, placement.stride ?? 0.6);
+      applyHeroBody(rig, f);
+    }
     observe.current.apply(rig, attention, f.pointerActive || f.attention > 0.01, f.observe, dt);
     applyDissolve(rig, f.visibility);
     root.updateMatrixWorld(true);

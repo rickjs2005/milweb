@@ -1,6 +1,7 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useFBO } from "@react-three/drei";
@@ -14,7 +15,7 @@ import { MILO_HERO } from "@/features/hero-visual/hero-visual.config";
 import { createHeroGridMaterial } from "./MiloHeroGrid";
 import { heroFrame } from "./MiloHeroBridge";
 import { heroMetrics } from "./useMiloHeroMetrics";
-import { useMiloHeroStore } from "./hero-store";
+import { heroPlacement, useMiloHeroStore } from "./hero-store";
 
 function readTokens() {
   const cs = getComputedStyle(document.documentElement);
@@ -217,23 +218,20 @@ function CameraRig() {
   return null;
 }
 
-/** Colocação do Milo no mundo a partir do cx desejado na viewport (câmera fixa a 5,6 de z=0). */
-function heroPlacement(aspect: number) {
-  const halfH = MILO.camera.position[2] * Math.tan((MILO.camera.fov * Math.PI) / 360);
-  const halfW = halfH * aspect;
-  return { x: (MILO_HERO.cx * 2 - 1) * halfW, y: MILO_HERO.y, z: 0, scale: MILO_HERO.scale, yaw: MILO_HERO.yaw };
-}
-
+/** A colocação vem da ponte (heroPlacement, mutado por frame): a cena inteira é função do progresso. */
 function Placed({ quality }: { quality: MiloQuality }) {
-  const size = useThree((s) => s.size);
-  const placement = useMemo(() => heroPlacement(size.width / Math.max(1, size.height)), [size.width, size.height]);
-  return <MiloNull quality={quality} mobile={false} environment="hero" placement={placement} />;
+  return <MiloNull quality={quality} mobile={false} environment="hero" placement={heroPlacement} />;
 }
 
 export const MiloHeroCanvas = memo(function MiloHeroCanvas({ quality, onReady, onFail }: { quality: MiloQuality; onReady: () => void; onFail: () => void }) {
   const heroVisible = useMiloHeroStore((s) => s.heroVisible);
   const ready = useMiloHeroStore((s) => s.ready);
   const holder = useRef<HTMLDivElement>(null);
+  // O canvas vive DENTRO da section pinada (#top): a section pinada é position:fixed
+  // (contexto de empilhamento próprio), então só aqui dentro a ordem grid (0) < Milo (2)
+  // < headline (4) < SHIP (10) vale de verdade — e o canvas sai da tela junto com o Hero.
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setHost(document.getElementById("top")), []);
 
   useEffect(() => {
     let docVisible = !document.hidden;
@@ -260,8 +258,9 @@ export const MiloHeroCanvas = memo(function MiloHeroCanvas({ quality, onReady, o
   }, []);
 
   const dpr = MILO.quality[quality].dpr;
-  return (
-    <div ref={holder} className="milo-hero-canvas pointer-events-none fixed inset-0 z-[2] h-[100dvh] w-full" data-ready={ready && heroVisible ? "1" : undefined} aria-hidden="true" data-inspect="CANVAS / MILO NULL">
+  if (!host) return null;
+  return createPortal(
+    <div ref={holder} data-milo-canvas className="milo-hero-canvas pointer-events-none absolute inset-0 z-[2]" data-ready={ready && heroVisible ? "1" : undefined} aria-hidden="true" data-inspect="CANVAS / MILO NULL">
       <Canvas
         dpr={[1, dpr]}
         frameloop={heroVisible ? "always" : "never"}
@@ -273,6 +272,7 @@ export const MiloHeroCanvas = memo(function MiloHeroCanvas({ quality, onReady, o
         <HeroPipeline quality={quality} onReady={onReady} onFail={onFail} />
         <Placed quality={quality} />
       </Canvas>
-    </div>
+    </div>,
+    host,
   );
 });

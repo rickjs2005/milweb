@@ -13,8 +13,8 @@ const MiloHeroCanvas = dynamic(() => import("./MiloHeroCanvas").then((m) => m.Mi
  * Controlador de montagem do Milo no Hero — a mesma política do Compiler:
  * o HTML entrega o <MiloHeroFallback/> (SVG, dentro do BuildHero); o canvas
  * só monta depois da PRIMEIRA INTERAÇÃO real, com documento visível, Hero
- * perto da viewport, ponteiro fino ≥ 720 px, sem reduced-motion e com GPU
- * aprovada pelo probe. Três/R3F chegam por import dinâmico. Se o frame
+ * perto da viewport, sem reduced-motion e com GPU aprovada pelo probe
+ * (mobile/touch entra em qualidade baixa — a narrativa é a mesma). Três/R3F chegam por import dinâmico. Se o frame
  * medido depois do aquecimento estourar o orçamento, desmonta e volta ao SVG.
  * Nunca há dois canvases: o Compiler não é montado nesta variante.
  */
@@ -25,8 +25,9 @@ export function MiloHero() {
   useEffect(() => {
     if (failed) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (reduce || !fine || window.innerWidth < 720) return;
+    const small = !fine || window.innerWidth < 720;
     const q = getQuality();
     if (!q.webgl) return;
 
@@ -49,7 +50,7 @@ export function MiloHero() {
       }
       const gq = probeGpu();
       if (!gq.webgl) return;
-      setTier(gq.tier === "high" ? "high" : "medium");
+      setTier(small ? "low" : gq.tier === "high" ? "high" : "medium");
     };
     function arm() {
       if (armed) return;

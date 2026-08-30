@@ -44,11 +44,6 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
             stages: d.hero.stages,
             inspect: d.hero.inspect,
             scroll: d.hero.scroll,
-            images: [
-              { src: "/shots/kavita-drones/hero.webp", alt: "Kavita", n: "01 / KAVITA" },
-              { src: "/shots/terral/sol.webp", alt: "Terral", n: "02 / TERRAL" },
-              { src: "/shots/atelier-vertex/entregue.webp", alt: "Atelier Vertex", n: "03 / VERTEX" },
-            ],
           }}
         />
         <SelectedWork

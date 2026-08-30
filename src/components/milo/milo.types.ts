@@ -102,6 +102,12 @@ export type MiloFrame = {
   contact: number;
   /** multiplicador da antecipação do ombro no touch (debug) */
   anticipation: number;
+  /** Caminhada procedural (Hero): fase em ciclos (assinada, derivada da distância), peso 0..1 e velocidade normalizada (−1..1). */
+  walk: { phase: number; amount: number; speed: number };
+  /** Inclinação do tronco (rad, + = para a frente), recuo curto após o impacto (0..1) e solidez da presença (0..1). */
+  lean: number;
+  recoil: number;
+  solid: number;
   /** Projeção da mão ativa em uv (interação com o painel). */
   hand: { x: number; y: number };
   /** Onda no casaco (0..1, disparada no contato). */

@@ -32,6 +32,10 @@ export const miloFrame: MiloFrame = {
   attention: 0,
   contact: 0,
   anticipation: 1,
+  walk: { phase: 0, amount: 0, speed: 0 },
+  lean: 0,
+  recoil: 0,
+  solid: 0,
 };
 
 /** Alvos de cada estado — o que o GSAP interpola em miloFrame. */

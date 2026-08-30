@@ -19,8 +19,6 @@ export type HeroGridMetrics = {
   gutter: number;
   rowHeight: number;
   lineWidth: number;
-  /** figura-alvo da mão ([data-milo-target]) em px de CSS, se existir */
-  target: { x: number; y: number; w: number; h: number } | null;
 };
 
 export const heroMetrics: HeroGridMetrics = {
@@ -33,7 +31,6 @@ export const heroMetrics: HeroGridMetrics = {
   gutter: 0,
   rowHeight: 0,
   lineWidth: 1,
-  target: null,
 };
 
 export function measureHeroGrid(hero: HTMLElement | null) {
@@ -60,11 +57,6 @@ export function measureHeroGrid(hero: HTMLElement | null) {
   heroMetrics.gutter = gutter;
   heroMetrics.lineWidth = first ? parseFloat(getComputedStyle(first).borderLeftWidth) || 1 : 1;
   heroMetrics.ready = true;
-  const target = hero?.querySelector<HTMLElement>("[data-milo-target]");
-  if (target) {
-    const t = target.getBoundingClientRect();
-    heroMetrics.target = { x: t.left, y: t.top, w: t.width, h: t.height };
-  } else heroMetrics.target = null;
 }
 
 /** Instala os observadores; devolve o objeto mutável (mesmo `heroMetrics`). */
