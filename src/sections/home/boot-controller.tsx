@@ -151,7 +151,11 @@ export function BootController() {
     };
     el.addEventListener("pointerdown", skip);
     window.addEventListener("keydown", skip);
+    // FAILSAFE fora do GSAP: se a timeline morrer por qualquer motivo (aba suspensa,
+    // erro, kill), o html.booting (overflow:hidden) não pode prender o site inteiro.
+    const failsafe = window.setTimeout(() => finish(), (T.done + 2) * 1000);
     return () => {
+      window.clearTimeout(failsafe);
       tl.kill();
       el.removeEventListener("pointerdown", skip);
       window.removeEventListener("keydown", skip);

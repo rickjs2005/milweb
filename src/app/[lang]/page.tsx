@@ -47,7 +47,7 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
             sub: d.hero.sub,
             cta: d.hero.cta,
           }}
-          workHref={withLocale(locale, "/#work")}
+          workHref="#work"
         />
         <SelectedWork
           act={d.acts.work}

@@ -350,7 +350,7 @@ export function MiloHeroBridge() {
     gsap.ticker.add(tick);
     let debugCleanup: (() => void) | null = null;
     if (process.env.NODE_ENV === "development") {
-      (window as unknown as { __miloHero: unknown }).__miloHero = { frame: miloFrame, store: useMiloStore, heroStore: useMiloHeroStore, heroFrame, pullTarget, placement: heroPlacement, geom: g, labels: () => labels, st: () => st };
+      (window as unknown as { __miloHero: unknown }).__miloHero = { frame: miloFrame, store: useMiloStore, heroStore: useMiloHeroStore, heroFrame, pullTarget, placement: heroPlacement, geom: g, labels: () => labels, st: () => st, gsap, ScrollTrigger };
       debugCleanup = mountHeroDebug();
     }
     return () => {

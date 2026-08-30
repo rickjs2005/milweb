@@ -74,6 +74,9 @@ bash .audit/routes.sh                               # rotas 200 · legadas 308 �
 
 Os scripts em `.audit/` são locais (ignorados pelo git); os de `scripts/` estão versionados.
 
+## Investigação aberta (31/08): travamento total relatado pelo Rick
+Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em produção parado no painel Terral em estado fantasma) e só volta ao clicar numa língua (remonta o layout [lang] → ScrollProvider/Lenis novos). NÃO reproduzido por script apesar de: trocas de língua (topo/meio/fundo, rápidas), varreduras de wheel na página inteira (dev e prod), timings de boot/Esc variados, case → back (bfcache), forward/back, aba oculta, resize. Único congelamento local coincidiu com hot-reload do dev (artefato). Assinatura quando travado: wheel engolido sem movimento, `lenis-scrolling` preso, rAF vivo, scroll nativo ok. Guards embarcados (commit local): failsafe do Boot fora do GSAP (o `html.booting{overflow:hidden}` não pode ficar preso), watchdog do Lenis no ScrollProvider (isScrolling sem deslocamento por 3 s → stop/start + refresh; `pageshow` também recompõe) e CTA "VER PROJETOS ↓" corrigido (era `/#work`, não interceptado — clique não fazia nada; agora `#work` via Lenis). Aguardando do Rick: quando trava, a barra de rolagem morre?, F5 resolve?, em que momento começa. Hipótese não descartada: aba do Edge instrumentada pela extensão Claude-in-Chrome congela a ~1 FPS (memória do projeto).
+
 ## Bloqueios / armadilhas (ler antes de mexer)
 
 - **A escultura só monta na primeira interação e só com GPU acelerada.** É decisão de performance, não bug: pagar a compilação do shader no carregamento levava o TBT mobile de 290 ms para 9.850 ms. Até lá vale a silhueta SVG. Ver `docs/rebuild/06-compile.md` §9.

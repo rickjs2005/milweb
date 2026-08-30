@@ -43,6 +43,8 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
     // Lenis só existe em ponteiro fino: carregado sob demanda para não pesar
     // no bundle do mobile (onde o scroll é nativo).
     let raf: ((t: number) => void) | null = null;
+    let watchdog = 0;
+    let onShow: (() => void) | null = null;
     let disposed = false;
     import("lenis").then(({ default: LenisCtor }) => {
       if (disposed) return;
@@ -52,11 +54,39 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
       raf = (time: number) => instance.raf(time * 1000);
       gsap.ticker.add(raf);
       gsap.ticker.lagSmoothing(0);
+
+      // WATCHDOG: se o Lenis ficar "rolando" sem a página sair do lugar (estado
+      // encunhado — sintoma real visto em produção: wheel engolido, nada anda,
+      // só uma re-renderização resolvia), recompõe o estado interno. Barato:
+      // uma checagem por segundo, zero efeito no caminho normal.
+      let lastY = window.scrollY;
+      let stuckFor = 0;
+      watchdog = window.setInterval(() => {
+        const y = window.scrollY;
+        const moved = Math.abs(y - lastY) > 1;
+        lastY = y;
+        if (instance.isScrolling && !moved) stuckFor += 1;
+        else stuckFor = 0;
+        if (stuckFor >= 3) {
+          stuckFor = 0;
+          instance.stop();
+          instance.start();
+          ScrollTrigger.refresh();
+        }
+      }, 1000);
+      // volta de bfcache / aba oculta: garante o loop vivo e as medidas certas
+      onShow = () => {
+        instance.start();
+        ScrollTrigger.refresh();
+      };
+      window.addEventListener("pageshow", onShow);
     });
 
     return () => {
       disposed = true;
       if (raf) gsap.ticker.remove(raf);
+      window.clearInterval(watchdog);
+      if (onShow) window.removeEventListener("pageshow", onShow);
       lenis.current?.destroy();
       lenis.current = null;
     };
