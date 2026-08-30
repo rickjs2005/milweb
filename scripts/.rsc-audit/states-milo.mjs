@@ -1,0 +1,27 @@
+import { chromium } from "playwright";
+const base = "http://127.0.0.1:3001/lab/milo-null";
+const browser = await chromium.launch({ headless: false });
+const shoot = async (ctxOpts, name, actions) => {
+  const ctx = await browser.newContext(ctxOpts);
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("console", (m) => { if (m.type() === "error") errs.push(m.text().slice(0, 200)); });
+  page.on("pageerror", (e) => errs.push(String(e).slice(0, 200)));
+  await page.goto(base);
+  await page.waitForTimeout(3000);
+  await actions?.(page);
+  await page.screenshot({ path: `scripts/.rsc-audit/milo-${name}.png` });
+  const fps = await page.evaluate(() => new Promise((r) => { let f = 0; const t0 = performance.now(); const loop = () => { f++; performance.now() - t0 < 1000 ? requestAnimationFrame(loop) : r(f); }; requestAnimationFrame(loop); }));
+  console.log(name, "fps", fps, "errors", errs.length ? errs : "none", "state:", await page.evaluate(() => document.querySelector("[aria-live]")?.textContent));
+  await ctx.close();
+};
+const desk = { viewport: { width: 1440, height: 820 } };
+await shoot(desk, "observe", async (p) => { await p.getByRole("button", { name: "observe" }).click(); await p.mouse.move(300, 250); await p.waitForTimeout(2500); });
+await shoot(desk, "touch", async (p) => { await p.getByRole("button", { name: "touch" }).click(); await p.mouse.move(700, 400); await p.waitForTimeout(3200); });
+await shoot(desk, "full", async (p) => { await p.getByRole("button", { name: "full" }).click(); await p.mouse.move(500, 200); await p.waitForTimeout(3200); });
+await shoot(desk, "dissolve-mid", async (p) => { await p.getByRole("button", { name: "dissolve" }).click(); await p.waitForTimeout(900); });
+await shoot(desk, "dissolve-back", async (p) => { await p.getByRole("button", { name: "dissolve" }).click(); await p.waitForTimeout(2200); await p.getByRole("button", { name: "observe" }).click(); await p.waitForTimeout(2500); });
+await shoot({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, "mobile", async (p) => { await p.waitForTimeout(1500); });
+await shoot({ ...desk, reducedMotion: "reduce" }, "reduced", async (p) => { await p.waitForTimeout(500); });
+await shoot(desk, "resized", async (p) => { await p.setViewportSize({ width: 900, height: 700 }); await p.waitForTimeout(1500); });
+await browser.close();

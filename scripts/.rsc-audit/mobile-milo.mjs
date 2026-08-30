@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ headless: false });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+const page = await ctx.newPage();
+await page.goto("http://127.0.0.1:3001/lab/milo-null");
+await page.waitForTimeout(3500);
+await page.evaluate(() => document.querySelector('aside[aria-label="Debug do Milo"]')?.remove());
+await page.getByRole("button", { name: /PRÓXIMO ESTADO/ }).click();
+await page.waitForTimeout(2500);
+await page.screenshot({ path: "scripts/.rsc-audit/milo-mobile.png" });
+await browser.close();

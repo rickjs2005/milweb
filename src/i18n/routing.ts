@@ -23,6 +23,9 @@ export const ROUTES = {
 
 export type RouteKey = keyof typeof ROUTES;
 
+/** Subrotas de /lab que existem como página (fora do sitemap, noindex). */
+export const LAB_PROTOTYPES = new Set(["milo-null"]);
+
 /** Segmento público → chave interna, por idioma (tabela invertida). */
 const PUBLIC_TO_INTERNAL: Record<Locale, Record<string, RouteKey>> = { pt: {}, en: {}, es: {} };
 for (const key of Object.keys(ROUTES) as RouteKey[]) {
@@ -86,5 +89,7 @@ export function isKnownInternalPath(internal: string): boolean {
   const [, first = "", second, ...rest] = internal.split("/");
   if (!(first in ROUTES)) return false;
   if (first === "work") return second === undefined || (isProjectSlug(second) && rest.length === 0);
+  // Protótipos do Lab (subrotas explícitas; "lab" é igual nos três idiomas).
+  if (first === "lab") return second === undefined || (LAB_PROTOTYPES.has(second) && rest.length === 0);
   return second === undefined;
 }
