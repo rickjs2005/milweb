@@ -51,10 +51,11 @@ export function ViewTransitions() {
       if (url.origin !== location.origin) return;
       if (url.pathname === location.pathname) return; // âncora/mesma rota: deixa pro Lenis
 
-      // stopPropagation: o onClick do <Link> do Next (bubble) faria o push
-      // próprio antes de nós — assumimos a navegação aqui, na captura.
+      // Só preventDefault, sem stopPropagation: o <Link> do Next chama o onClick
+      // do consumidor (ex.: o seletor de idioma grava o cookie) e em seguida
+      // desiste do push próprio quando vê e.defaultPrevented — a navegação
+      // fica conosco sem sequestrar o resto da cadeia de handlers.
       e.preventDefault();
-      e.stopPropagation();
       const root = document.documentElement;
       const kind = link.dataset.vt;
       if (kind) root.dataset.vt = kind;

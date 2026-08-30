@@ -50,6 +50,9 @@ export function middleware(req: NextRequest) {
   }
 
   // Raiz exata: honra a preferência manual salva pelo seletor.
+  // (O middleware não enxerga `RSC: 1` nem `?_rsc=` — o Next os remove antes —
+  // então este redirect vale igualmente para requests RSC; o seletor de idioma
+  // não faz prefetch por causa disso, ver nav/language-switch.tsx.)
   if (pathname === "/") {
     const pref = req.cookies.get(LOCALE_COOKIE)?.value;
     if (isLocale(pref) && pref !== DEFAULT_LOCALE) {

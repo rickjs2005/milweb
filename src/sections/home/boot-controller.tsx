@@ -46,7 +46,16 @@ export function BootController() {
       window.dispatchEvent(new Event("mw:headline"));
     };
 
-    if (!el || root.classList.contains("booted")) {
+    // Sessão já bootada: o inline script só roda no HTML do servidor e o
+    // <html className> é reaplicado pelo React na troca de idioma, então numa
+    // revisita client-side a classe `booted` não existe — lemos o sessionStorage
+    // direto e escondemos o overlay (sem removê-lo: o nó é do React).
+    let booted = root.classList.contains("booted");
+    try {
+      booted ||= sessionStorage.getItem("mw:booted") === "1";
+    } catch {}
+    if (!el || booted) {
+      if (el) el.style.display = "none";
       root.classList.remove("booting");
       headline();
       // sem intro (reduced / sessão já bootada): escultura já montada
@@ -118,7 +127,14 @@ export function BootController() {
       } catch {}
       root.classList.remove("booting", "anomaly");
       el.classList.add("is-exiting");
-      window.setTimeout(() => el.remove(), 900);
+      // NUNCA el.remove(): o <div id="mw-boot"> é renderizado pelo React. Tirá-lo
+      // do DOM por fora deixa a fiber apontando para um nó solto e, na próxima
+      // navegação que desmonta a Home, o React chama body.removeChild(el) →
+      // NotFoundError → "Application error" (bug reproduzido em Chromium e
+      // WebKit, local e produção). Esconder resolve; o React remove ao desmontar.
+      window.setTimeout(() => {
+        el.style.display = "none";
+      }, 900);
     };
     const skip = (e?: Event) => {
       if (e instanceof KeyboardEvent && !["Escape", "Enter", " "].includes(e.key)) return;

@@ -24,6 +24,12 @@ export function LanguageSwitch({ current, hrefs, label, names, className = "", t
           <Link
             key={l}
             href={hrefs[l]}
+            // Sem prefetch: o middleware redireciona "/" pelo cookie e não
+            // distingue request RSC de documento. Um prefetch de "/" feito
+            // enquanto o cookie ainda era "en" guardava o payload de /en e o
+            // clique em PT ficava preso no inglês. Sem prefetch, o fetch só
+            // acontece no clique, depois de `remember(l)` gravar o cookie.
+            prefetch={false}
             hrefLang={l === "pt" ? "pt-BR" : l}
             lang={l === "pt" ? "pt-BR" : l}
             aria-current={active ? "page" : undefined}
