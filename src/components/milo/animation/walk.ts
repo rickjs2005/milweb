@@ -140,5 +140,12 @@ export function applyHeroBody(rig: MiloRigHandle, frame: MiloFrame) {
     b.leftShoulder.group.rotation.z += -0.03 * s;
     b.rightShoulder.group.rotation.z += 0.03 * s;
     b.chest.group.rotation.x += -0.02 * s;
+    // o braço ativo, de volta ao repouso, recua um pouco (mão atrás da linha do quadril, punho
+    // solto) — assim não pende sobre a headline no estado final
+    const back = s * (1 - frame.touch);
+    b.rightArm.group.rotation.x += -0.5 * back;
+    b.rightArm.group.rotation.z += 0.12 * back;
+    b.rightForearm.group.rotation.x += -0.3 * back;
+    b.rightHand.group.rotation.x += 0.2 * back;
   }
 }

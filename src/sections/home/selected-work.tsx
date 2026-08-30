@@ -63,6 +63,9 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           const world = panel.dataset.world!;
           const q = gsap.utils.selector(panel);
           const media = q<HTMLElement>("[data-media]")[0];
+          // escala sempre na imagem interna: a caixa [data-media] é o clip (overflow-hidden) e
+          // alinha à coluna — escalar a caixa a faria passar da largura da viewport
+          const mediaImg = (media.querySelector("img") as HTMLElement | null) ?? media;
           const text = q<HTMLElement>("[data-text]");
           const next = panels[i + 1];
 
@@ -88,7 +91,8 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           }
           if (world === "terral") {
             // calor: entra devagar, escala lenta, grão sobe
-            enterTl.fromTo(media, { scale: 1.12, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 1, ease: EASE.smooth }, 0);
+            enterTl.fromTo(media, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1, ease: EASE.smooth }, 0);
+            enterTl.fromTo(mediaImg, { scale: 1.12 }, { scale: 1, duration: 1, ease: EASE.smooth }, 0);
             enterTl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.5, duration: 0.6 }, 0.2);
             enterTl.fromTo(q("[data-second]"), { yPercent: 20, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6 }, 0.5);
             // a interface ganha matéria: entra dobrada como papel e vira imagem viva (impressão → foto)
@@ -118,7 +122,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             exitTl.to(text, { autoAlpha: 0.15, duration: 0.5 }, 0);
             if (world === "kavita-drones") {
               // LAND → ORIGIN: a imagem amplia, ganha grão e se parte em faixas
-              exitTl.to(media, { scale: 1.18, duration: 1 }, 0);
+              exitTl.to(mediaImg, { scale: 1.18, duration: 1 }, 0);
               exitTl.to(q("[data-grain]"), { autoAlpha: 0.7, duration: 0.8 }, 0);
               exitTl.to(q("[data-band]"), { xPercent: (k) => (k % 2 ? 14 : -14), autoAlpha: 0, stagger: 0.06, duration: 0.7 }, 0.3);
             }
@@ -126,7 +130,8 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
               // ORGANIC → STRUCTURE: o grão vira pontos; os pontos viram grade
               exitTl.to(q("[data-grain]"), { autoAlpha: 0, duration: 0.4 }, 0);
               exitTl.fromTo(q("[data-dots]"), { autoAlpha: 0, scale: 0.92, transformOrigin: "50% 50%" }, { autoAlpha: 1, scale: 1, duration: 0.6 }, 0.1);
-              exitTl.to(media, { autoAlpha: 0.25, scale: 0.96, duration: 0.8 }, 0.2);
+              exitTl.to(media, { autoAlpha: 0.25, duration: 0.8 }, 0.2);
+              exitTl.to(mediaImg, { scale: 0.96, duration: 0.8 }, 0.2);
             }
             if (world === "atelier-vertex") {
               // STRUCTURE → MECHANISM: as guias convergem em rotação para o centro

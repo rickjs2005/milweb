@@ -165,7 +165,8 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
         if (fallback && visual === "milo") tl.to(fallback, { xPercent: 0, x: 0, duration: S.walkEnd - S.walkStart, ease: EASE.smooth }, S.walkStart);
         // 04 INTERAÇÃO — no CONTATO a frase começa a se mover com a mão: wdth/wght
         // sobem do estado estável ao peso total (contact → pullEnd).
-        tl.to(axes, { wdth: A.to.wdth, wght: A.to.wght, duration: S.pullEnd - S.contact, ease: EASE.smooth, onUpdate: applyAxes }, S.contact);
+        // power2.out: a frase reage desde o primeiro frame do empurrão e desacelera junto com o braço
+        tl.to(axes, { wdth: A.to.wdth, wght: A.to.wght, duration: S.pullEnd - S.contact, ease: "power2.out", onUpdate: applyAxes }, S.contact);
         // 05 EXPERIÊNCIA — a estrutura recua de vez; a grid fica (é o papel do Milo)
         tl.to([q("[data-layer=wire]"), q("[data-layer=code]")], { autoAlpha: 0, duration: 0.06 }, S.settle);
         // 06 ENTREGA — descrição comercial e CTA, discretos, alinhados ao grid

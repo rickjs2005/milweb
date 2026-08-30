@@ -36,12 +36,13 @@ export const heroFrame = {
   /** progresso real do eixo wdth (62 % → 125 %) */
   fontWidth: 0,
   contact: 0,
-  /** 0..1 dentro da caminhada de entrada e do arrasto */
+  /** 0..1 dentro da caminhada; pushProgress do empurrão (0 antes de `contact`) */
   walk: 0,
+  push: 0,
   pull: 0,
   /** ajustes (debug): deslocamento da mão em relação à extremidade (px) e distância corpo↔palavra (mundo) */
   pullOffsetX: -22,
-  pullOffsetY: 24,
+  pullOffsetY: 0,
   holdOffset: MILO_HERO.holdOffset,
   shoulderAnticipation: 1,
   contactStrength: 1,
@@ -57,6 +58,8 @@ const smooth = (a: number, b: number, x: number) => {
 };
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const HALF_H = MILO.camera.position[2] * Math.tan((MILO.camera.fov * Math.PI) / 360);
+/** quanto a linha da headline cresce entre HEADLINE_AXES.from e .to (medido: 1057/850 px a 1920) */
+const HEADLINE_GROWTH = 1.243;
 
 export type HeadlinePullTarget = { x: number; y: number; active: boolean; contact: number; pull: number; release: number };
 export const pullTarget: HeadlinePullTarget = { x: 0.5, y: 0.5, active: false, contact: 0, pull: 0, release: 0 };
@@ -110,11 +113,15 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   const small = window.innerWidth < 720;
   const walkIn = smooth(L.walkStart, L.walkEnd, p); // ease in/out: acelera e desacelera
   const settleStep = smooth(L.walkEnd, L.walkEnd + 0.05, p); // fecha o último passo, firma os pés
-  // ombro → cotovelo → mão: o alcance sobe do armStart ao contato (a mola do IK dá a cadeia)
-  const reach = smooth(L.armStart, L.contact, p);
-  // segurando: do contato ao assentamento; solta devagar depois (pose final natural)
-  const holding = p >= L.contact - 0.004 ? 1 - smooth(L.settle, L.settle + 0.08, p) : 0;
+  // 0.56 → 0.60: SÓ antecipação corporal (peso, tronco, ombro, olhar) — braço parado
+  const antic = smooth(L.armStart, L.contact, p);
+  // pushProgress: a ÚNICA fonte do empurrão — braço, mão, contato, grid, onda e partículas
+  // saem de zero neste mesmo instante (0.60); a frase sai junto (o tween de wdth começa em `contact`)
+  const push = Math.min(1, Math.max(0, (p - L.contact) / (L.pullEnd - L.contact)));
+  const release = smooth(L.settle, L.settle + 0.08, p);
+  const holding = p >= L.contact ? 1 - release : 0;
   const settled = smooth(L.pullEnd, L.settle + 0.06, p);
+  heroFrame.push = push;
   heroFrame.walk = walkIn;
   heroFrame.pull = fontWidth;
   heroFrame.fontWidth = fontWidth;
@@ -126,14 +133,16 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   let x: number;
   if (p < L.walkStart) x = xOff;
   else if (p < L.walkEnd) x = lerp(xOff, stopX, walkIn);
-  else x = stopX + 0.04 * S * reach * (1 - settled) - 0.03 * S * holding * fontWidth; // peso vai à frente no alcance, absorve na puxada
+  else x = stopX + 0.006 * S * antic * (1 - settled) - 0.03 * S * holding * fontWidth; // peso vai à frente na antecipação (mão parada), absorve na puxada
   heroPlacement.x = x;
   heroPlacement.y = small ? MILO_HERO.yMobile : MILO_HERO.y;
   heroPlacement.scale = S;
   heroPlacement.stride = g.stride;
   // corpo: de perfil andando; ao parar gira cabeça/tronco para a frase (três quartos)
   const turn = smooth(L.walkEnd - 0.06, L.armStart, p);
-  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.12 * holding * fontWidth;
+  // antecipação: rotação mínima do tronco para a frase; ao assentar, o corpo vira um pouco mais de
+  // frente (a mão ativa, de volta ao repouso, pende ao lado do corpo — não sobre "AS.")
+  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.03 * antic - 0.12 * holding * fontWidth + 0.14 * settled;
 
   // ---- pernas: fase pela distância percorrida (assinada → andar de ré inverte o ciclo)
   f.walk.phase = (xOff - x) / g.stride;
@@ -148,10 +157,12 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   const targetAmount = inWalk * smooth(L.walkStart, L.walkStart + 0.02, p) * (1 - settleStep);
   f.walk.amount += (targetAmount - f.walk.amount) * Math.min(1, dt * 10);
 
-  // ---- braço: parado até armStart; alcança; segura enquanto a frase se move; conclui e volta
-  const armW = p < L.contact ? reach : holding;
+  // ---- braço: ZERO até 0.60; o peso do IK sobe com o push (ombro → cotovelo → mão), segura
+  // enquanto a frase se move, conclui e volta ao repouso — tudo do mesmo pushProgress
+  const reachW = smooth(0, 0.12, push); // a mão lidera: o IK fecha os ~60 px até a extremidade nos primeiros 12 % do empurrão
+  const armW = reachW * (1 - release);
   f.touch = armW;
-  const contact = (p >= L.contact - 0.004 ? 1 : 0) * smooth(L.contact - 0.01, L.contact + 0.006, p) * (1 - smooth(L.pullEnd, L.settle + 0.02, p)) * heroFrame.contactStrength;
+  const contact = smooth(0, 0.12, push) * (1 - smooth(L.pullEnd, L.settle + 0.02, p)) * heroFrame.contactStrength;
   heroFrame.contact = contact;
   f.contact = contact;
   f.attention = smooth(L.walkEnd, L.walkEnd + 0.06, p) * (1 - smooth(L.outro, L.outro + 0.05, p));
@@ -161,7 +172,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   pullTarget.release = settled;
 
   // ---- tronco: peso à frente para alcançar; absorve a força no contato; recua curto ao assentar
-  f.lean = 0.12 * reach * (1 - settled) - 0.06 * holding * fontWidth + 0.05 * f.walk.speed;
+  f.lean = 0.015 * antic * (1 - settled) + 0.07 * reachW * (1 - settled) - 0.06 * holding * fontWidth + 0.05 * f.walk.speed;
   f.recoil = Math.sin(Math.PI * smooth(L.pullEnd, L.settle + 0.04, p)) * 0.8;
   f.solid = settled;
   // refração momentânea + distorção localizada no ponto de força (cai com o assentamento)
@@ -179,7 +190,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   f.pulse = 0;
   heroFrame.gridOpacity = smooth(L.walkStart, L.walkStart + 0.12, p);
   // grid: comprime/dobra no contato e guarda uma pequena memória da deformação depois
-  heroFrame.bendMul = lerp(0.5, 1, smooth(L.walkStart, L.walkStart + 0.1, p)) + 0.6 * Math.sin(Math.PI * smooth(L.contact - 0.01, L.contact + 0.08, p)) + 0.12 * settled;
+  heroFrame.bendMul = lerp(0.5, 1, smooth(L.walkStart, L.walkStart + 0.1, p)) + 0.6 * Math.sin(Math.PI * smooth(0, 0.5, push)) * (1 - 0.8 * settled) + 0.12 * settled;
   heroFrame.scan = 0;
   f.energy = Math.max(0.08, lerp(0.14, 0.32, walkIn) + 0.3 * contact - 0.08 * settled);
 }
@@ -197,7 +208,7 @@ function makeAnchorReader(hero: HTMLElement) {
   const h1 = hero.querySelector<HTMLElement>("h1");
   if (!line || !h1) return null;
   const range = document.createRange();
-  const out = { x: 0, y: 0, ok: false };
+  const out = { x: 0, y: 0, lineLeft: 0, ok: false };
   return {
     h1,
     read() {
@@ -206,6 +217,7 @@ function makeAnchorReader(hero: HTMLElement) {
       if (r.width > 0) {
         out.x = r.right;
         out.y = r.top + r.height * 0.5;
+        out.lineLeft = h1.getBoundingClientRect().left;
         out.ok = true;
       }
       return out;
@@ -274,8 +286,14 @@ export function MiloHeroBridge() {
       g.anchorOk = true;
       miloFrame.panel.x = ax / g.W;
       miloFrame.panel.y = 1 - ay / g.H;
-      if (fontWidth < 0.01) {
-        g.anchorX0 = g.anchorX;
+      if (fontWidth < 0.01) g.anchorX0 = g.anchorX;
+      else {
+        // refresh no meio do empurrão (resize): estima a extremidade condensada a partir da atual —
+        // a linha cresce por um fator constante da fonte entre os eixos (Archivo 105→125 ≈ 1,243×)
+        const left = pxToWorldX(a.lineLeft - box.left, g);
+        g.anchorX0 = left + (g.anchorX - left) / Math.pow(HEADLINE_GROWTH, fontWidth);
+      }
+      {
         // a entrada fecha em ciclos inteiros: passo = distância / round(distância / passo nominal)
         const small = window.innerWidth < 720;
         const dist = g.halfW + (small ? MILO_HERO.offscreenPadMobile : MILO_HERO.offscreenPad) * g.scale - (g.anchorX0 + (small ? MILO_HERO.holdOffsetMobile : heroFrame.holdOffset) * g.scale);
@@ -396,7 +414,7 @@ function mountHeroDebug() {
   const loop = () => {
     if (open) {
       const f = miloFrame;
-      read.textContent = `progress ${f.scroll.toFixed(3)}  walk ${heroFrame.walk.toFixed(2)}\nphase ${f.walk.phase.toFixed(2)}  amount ${f.walk.amount.toFixed(2)}  speed ${f.walk.speed.toFixed(2)}\nx ${heroPlacement.x.toFixed(2)}  yaw ${heroPlacement.yaw.toFixed(2)}\nfontWidth (wdth) ${heroFrame.fontWidth.toFixed(3)}\ncontact ${heroFrame.contact.toFixed(2)}  touch ${f.touch.toFixed(2)}  lean ${f.lean.toFixed(2)}\nstate ${useMiloStore.getState().state}\nanchor uv ${f.panel.x.toFixed(3)} ${f.panel.y.toFixed(3)}\nhand uv ${f.hand.x.toFixed(3)} ${f.hand.y.toFixed(3)}`;
+      read.textContent = `progress ${f.scroll.toFixed(3)}  walk ${heroFrame.walk.toFixed(2)}  push ${heroFrame.push.toFixed(2)}\nphase ${f.walk.phase.toFixed(2)}  amount ${f.walk.amount.toFixed(2)}  speed ${f.walk.speed.toFixed(2)}\nx ${heroPlacement.x.toFixed(2)}  yaw ${heroPlacement.yaw.toFixed(2)}\nfontWidth (wdth) ${heroFrame.fontWidth.toFixed(3)}\ncontact ${heroFrame.contact.toFixed(2)}  touch ${f.touch.toFixed(2)}  lean ${f.lean.toFixed(2)}\nstate ${useMiloStore.getState().state}\nanchor uv ${f.panel.x.toFixed(3)} ${f.panel.y.toFixed(3)}\nhand uv ${f.hand.x.toFixed(3)} ${f.hand.y.toFixed(3)}`;
       const box = document.getElementById("top")?.getBoundingClientRect() ?? { left: 0, top: 0, width: innerWidth, height: innerHeight };
       const ax = box.left + f.panel.x * box.width, ay = box.top + (1 - f.panel.y) * box.height;
       const hx = box.left + f.hand.x * box.width, hy = box.top + (1 - f.hand.y) * box.height;

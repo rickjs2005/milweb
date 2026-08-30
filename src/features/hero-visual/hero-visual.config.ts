@@ -33,7 +33,7 @@ export const MILO_HERO = {
   yawWalk: -1.15,
   yawRest: -0.36,
   /** distância (mundo, × escala) entre a extremidade da palavra e o root enquanto a mão a segura */
-  holdOffset: 0.72,
+  holdOffset: 0.68, // a mão direita em repouso pende ~0,5·escala à esquerda do root: fica logo à direita da extremidade, sem cobrir letras
   holdOffsetMobile: 0.78,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
   stride: 1.35, // um ciclo = dois passos de ~0,68 (≈ 0,75 × perna de 0,9) — passo humano, não passinho
