@@ -3,11 +3,11 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **28/08/2026 · `ae234f5`**
+Último deploy verificado: **29/08/2026 · `334d541`** (correção do crash de navegação validada em produção: dwell Chromium+WebKit, PT→EN→ES→PT, cookie+PT)
 
 ## 29/08/2026 — bug de navegação ("RSC bruto") investigado e corrigido
 
-Relatório completo em `docs/rsc-bug-investigation.md`. Não era RSC/middleware/View Transitions: o Boot removia do DOM (`el.remove()`) um nó renderizado pelo React e a navegação seguinte saindo da Home caía em `NotFoundError: removeChild` → página de erro global do Next. Reproduzido em Chromium e WebKit, local e produção; corrigido em `boot-controller.tsx` (esconder, não remover). De carona: `ViewTransitions` sem `stopPropagation` (o cookie de idioma voltou a ser gravado) e `LanguageSwitch` com `prefetch={false}` (o prefetch de "/" seguia o redirect do cookie e prendia o clique em PT no inglês). Teste automatizado: `node scripts/rsc-navigation-audit.mjs --base http://127.0.0.1:3000` (`--only dwell` reproduz o crash antigo). **Pendente: deploy dessa correção em produção.**
+Relatório completo em `docs/rsc-bug-investigation.md`. Não era RSC/middleware/View Transitions: o Boot removia do DOM (`el.remove()`) um nó renderizado pelo React e a navegação seguinte saindo da Home caía em `NotFoundError: removeChild` → página de erro global do Next. Reproduzido em Chromium e WebKit, local e produção; corrigido em `boot-controller.tsx` (esconder, não remover). De carona: `ViewTransitions` sem `stopPropagation` (o cookie de idioma voltou a ser gravado) e `LanguageSwitch` com `prefetch={false}` (o prefetch de "/" seguia o redirect do cookie e prendia o clique em PT no inglês). Teste automatizado: `node scripts/rsc-navigation-audit.mjs --base http://127.0.0.1:3000` (`--only dwell` reproduz o crash antigo). Deploy `334d541` no ar e validado em produção (sondas dwell, lang-swap e cookie).
 
 ## Onde paramos (28/08/2026, fim do dia)
 
