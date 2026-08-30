@@ -124,6 +124,12 @@ function Pipeline({ quality, panelRef }: { quality: MiloQuality; panelRef: RefOb
     c.uNoiseScale.value = f.params.noiseScale;
     c.uNoiseSpeed.value = f.params.noiseSpeed;
     c.uGlitch.value = f.params.glitch;
+    c.uDensity.value = f.params.bodyDensity;
+    c.uMaskBlur.value = f.params.maskBlur * dpr;
+    c.uMaskDilate.value = f.params.maskDilation * dpr;
+    c.uInternalShadow.value = f.params.internalShadow;
+    c.uView.value = f.params.view;
+    c.uPulse.value = f.pulse;
     c.uVisibility.value = f.visibility;
     c.uEnergy.value = f.energy;
     c.uScrollProgress.value = f.scroll;

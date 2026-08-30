@@ -3,9 +3,9 @@ import { MILO } from "./milo.config";
 
 /**
  * Geometrias procedurais do Milo. Cada parte devolve o par
- * { mask, wire }: a malha lisa (silhueta/máscara) e LINHAS ESTRUTURAIS
- * (não uma malha triangulada): longitudinais + anéis que revelam a
- * anatomia sem preencher a silhueta como croqui.
+ * { mask, wire }: a malha lisa (silhueta/máscara) e POUCAS linhas
+ * estruturais parciais — nunca anéis, nunca o contorno completo de uma
+ * cápsula. O corpo é revelado pela distorção; as linhas são detalhe.
  * Convenção: o osso desce pelo -Y a partir da origem (a articulação).
  */
 export type PartGeometry = { mask: THREE.BufferGeometry; wire: THREE.BufferGeometry };
@@ -17,33 +17,28 @@ function capsuleAlongBone(length: number, radius: number, scaleX = 1, scaleZ = 1
   return g;
 }
 
-/** Linhas estruturais de um membro: `longs` longitudinais + `rings` anéis, afinando. */
-function limbWire(length: number, radius: number, taper: number, longs = 3, rings = 2, scaleX = 1, scaleZ = 1): THREE.BufferGeometry {
-  const out: number[] = [];
-  const rAt = (t: number) => radius * THREE.MathUtils.lerp(1, taper, t);
-  const segs = 8;
-  for (let l = 0; l < longs; l++) {
-    const a = (l / longs) * Math.PI * 2 + 0.4;
-    for (let s = 0; s < segs; s++) {
-      const t0 = s / segs, t1 = (s + 1) / segs;
-      out.push(Math.cos(a) * rAt(t0) * scaleX, -t0 * length, Math.sin(a) * rAt(t0) * scaleZ, Math.cos(a) * rAt(t1) * scaleX, -t1 * length, Math.sin(a) * rAt(t1) * scaleZ);
-    }
-  }
-  const rs = 14;
-  for (let r = 0; r < rings; r++) {
-    const t = (r + 1) / (rings + 1);
-    for (let s = 0; s < rs; s++) {
-      const a0 = (s / rs) * Math.PI * 2, a1 = ((s + 1) / rs) * Math.PI * 2;
-      out.push(Math.cos(a0) * rAt(t) * scaleX, -t * length, Math.sin(a0) * rAt(t) * scaleZ, Math.cos(a1) * rAt(t) * scaleX, -t * length, Math.sin(a1) * rAt(t) * scaleZ);
-    }
-  }
+function lines(points: number[]): THREE.BufferGeometry {
   const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  g.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
   return g;
 }
+export const EMPTY_WIRE = () => lines([]);
 
-/** Membro genérico (braço, antebraço, coxa, canela). */
-export function limb(length: number, radius: number, taper = 0.88, longs = 3, rings = 2): PartGeometry {
+/** Uma linha longitudinal PARCIAL num membro (de `from` a `to` do comprimento, ângulo `a`). */
+function partialLong(length: number, radius: number, taper: number, a: number, from: number, to: number, scaleX = 1, scaleZ = 1): number[] {
+  const out: number[] = [];
+  const rAt = (t: number) => radius * THREE.MathUtils.lerp(1, taper, t) * 1.02;
+  const segs = 6;
+  for (let s = 0; s < segs; s++) {
+    const t0 = THREE.MathUtils.lerp(from, to, s / segs);
+    const t1 = THREE.MathUtils.lerp(from, to, (s + 1) / segs);
+    out.push(Math.cos(a) * rAt(t0) * scaleX, -t0 * length, Math.sin(a) * rAt(t0) * scaleZ, Math.cos(a) * rAt(t1) * scaleX, -t1 * length, Math.sin(a) * rAt(t1) * scaleZ);
+  }
+  return out;
+}
+
+/** Membro genérico. `detail`: lista de linhas parciais [ângulo, de, até]. */
+export function limb(length: number, radius: number, taper = 0.88, detail: [number, number, number][] = []): PartGeometry {
   const g = capsuleAlongBone(length, radius);
   const pos = g.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < pos.count; i++) {
@@ -53,10 +48,12 @@ export function limb(length: number, radius: number, taper = 0.88, longs = 3, ri
     pos.setZ(i, pos.getZ(i) * s);
   }
   g.computeVertexNormals();
-  return { mask: g, wire: limbWire(length, radius, taper, longs, rings) };
+  const w: number[] = [];
+  for (const [a, from, to] of detail) w.push(...partialLong(length, radius, taper, a, from, to));
+  return { mask: g, wire: lines(w) };
 }
 
-/** Torso: cápsula larga e rasa, esterno à frente, costas planas; linhas = clavícula + 2 anéis. */
+/** Torso: cápsula larga e rasa; linhas = meia clavícula + um traço curto assimétrico. Sem placa. */
 export function torso(length: number, radius: number, wx: number, wz: number): PartGeometry {
   const g = capsuleAlongBone(length, radius, wx, wz);
   const pos = g.attributes.position as THREE.BufferAttribute;
@@ -68,20 +65,19 @@ export function torso(length: number, radius: number, wx: number, wz: number): P
     pos.setZ(i, z > 0 ? z * (1 + 0.12 * (1 - t)) : z * 0.9);
   }
   g.computeVertexNormals();
-  const wire = limbWire(length, radius, 0.78, 0, 2, wx, wz);
-  // clavícula: linha frontal suave de ombro a ombro
-  const cl: number[] = [];
-  const n = 10;
+  const w: number[] = [];
+  const n = 6;
   for (let s = 0; s < n; s++) {
-    const a0 = -1 + (2 * s) / n, a1 = -1 + (2 * (s + 1)) / n;
+    // clavícula: só do centro para o ombro direito (−x)
+    const a0 = -0.95 + (0.8 * s) / n, a1 = -0.95 + (0.8 * (s + 1)) / n;
     const f = (a: number) => [a * radius * wx * 0.95, -0.03 - Math.abs(a) * 0.02, radius * wz * (0.9 - a * a * 0.25)];
-    cl.push(...f(a0), ...f(a1));
+    w.push(...f(a0), ...f(a1));
   }
-  const merged = mergeLines(wire, cl);
-  return { mask: g, wire: merged };
+  w.push(...partialLong(length, radius, 0.78, 2.6, 0.35, 0.6, wx, wz)); // traço curto na lateral esquerda
+  return { mask: g, wire: lines(w) };
 }
 
-/** Pélvis: bloco arredondado; linha = cinto. */
+/** Pélvis: bloco arredondado, sem linhas. */
 export function pelvis(w: number, h: number, d: number): PartGeometry {
   const g = new THREE.SphereGeometry(1, 20, 14);
   const pos = g.attributes.position as THREE.BufferAttribute;
@@ -90,14 +86,15 @@ export function pelvis(w: number, h: number, d: number): PartGeometry {
     pos.setXYZ(i, sq(pos.getX(i)) * w * 0.5, sq(pos.getY(i)) * h * 0.5 - h * 0.5, sq(pos.getZ(i)) * d * 0.5);
   }
   g.computeVertexNormals();
-  return { mask: g, wire: limbWire(h, w * 0.5, 0.95, 0, 1, 1, d / w) };
+  return { mask: g, wire: EMPTY_WIRE() };
 }
 
 /**
  * Cabeça — nunca uma esfera: laterais estreitas e mais planas, topo
  * ligeiramente alongado, mandíbula por planos angulares, região frontal
  * inclinada para trás, nuca alongada, coroa aplanada, assimetria mínima.
- * Sem rosto: a personalidade vem da forma e da inclinação.
+ * Sem rosto: nada atravessa a face — só uma linha lateral parcial, uma
+ * indicação curta da mandíbula e um plano curto no topo.
  */
 function deformHead(x: number, y: number, z: number): [number, number, number] {
   x = Math.sign(x) * Math.pow(Math.abs(x), 0.55);
@@ -105,10 +102,8 @@ function deformHead(x: number, y: number, z: number): [number, number, number] {
   const jaw = THREE.MathUtils.clamp((-y - 0.05) / 0.95, 0, 1);
   x *= 1 - 0.5 * jaw * jaw;
   z *= 1 - 0.26 * jaw;
-  // planos da mandíbula
   if (jaw > 0.25 && Math.abs(x) > 0.34) x = Math.sign(x) * (0.34 + (Math.abs(x) - 0.34) * 0.5);
   if (y < -0.86) y = -0.86 - (y + 0.86) * 0.4;
-  // testa inclinada para trás; plano frontal
   if (z > 0.3 && y > -0.1) z -= 0.14 * Math.max(0, y);
   if (z > 0.55) z = 0.55 + (z - 0.55) * 0.5;
   if (z < 0 && y > 0) z *= 1.1;
@@ -128,7 +123,6 @@ export function head(w: number, h: number, d: number): PartGeometry {
   g.translate(0, h * 0.5 + 0.012, 0.012);
   g.computeVertexNormals();
 
-  // linhas: perfil lateral (um lado só), linha da mandíbula, coroa
   const out: number[] = [];
   const pt = (x: number, y: number, z: number) => {
     const [a, b, c] = deformHead(x, y, z);
@@ -137,30 +131,26 @@ export function head(w: number, h: number, d: number): PartGeometry {
   const poly = (pts: number[][]) => {
     for (let i = 0; i < pts.length - 1; i++) out.push(...pts[i], ...pts[i + 1]);
   };
+  // lateral parcial (lado −x, da têmpora ao maxilar)
   const side: number[][] = [];
-  for (let i = 0; i <= 14; i++) {
-    const a = -Math.PI * 0.5 + (i / 14) * Math.PI; // de baixo a cima, lado -x
+  for (let i = 3; i <= 10; i++) {
+    const a = -Math.PI * 0.5 + (i / 14) * Math.PI;
     side.push(pt(-0.999, Math.sin(a), Math.cos(a) * 0.15));
   }
   poly(side);
-  const jawL: number[][] = [];
-  for (let i = 0; i <= 10; i++) {
-    const a = (i / 10) * Math.PI; // de -x a +x pela frente
-    jawL.push(pt(-Math.cos(a) * 0.95, -0.55, Math.sin(a) * 0.95));
+  // mandíbula: só um trecho lateral, nunca a frente inteira
+  const jaw: number[][] = [];
+  for (let i = 0; i <= 3; i++) {
+    const a = (i / 10) * Math.PI;
+    jaw.push(pt(-Math.cos(a) * 0.95, -0.55, Math.sin(a) * 0.95));
   }
-  poly(jawL);
-  const crown: number[][] = [];
-  for (let i = 0; i <= 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    crown.push(pt(Math.cos(a) * 0.7, 0.72, Math.sin(a) * 0.7));
-  }
-  poly(crown);
-  const wire = new THREE.BufferGeometry();
-  wire.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
-  return { mask: g, wire };
+  poly(jaw);
+  // plano curto no topo: um traço só, atrás (nunca um aro)
+  poly([pt(-0.55, 0.74, -0.35), pt(-0.15, 0.8, -0.55)]);
+  return { mask: g, wire: lines(out) };
 }
 
-/** Pescoço: mais longo, mais fino, transição definida para a cabeça e trapézio atrás. */
+/** Pescoço: mais longo e fino, trapézio atrás; uma única linha de transição. */
 export function neck(length: number, radius: number): PartGeometry {
   const g = new THREE.CylinderGeometry(radius * 0.88, radius * 1.2, length, 18, 2, false);
   g.translate(0, -length / 2, 0);
@@ -172,17 +162,17 @@ export function neck(length: number, radius: number): PartGeometry {
     if (Math.abs(pos.getX(i)) > 0) pos.setX(i, pos.getX(i) * (1 + 0.25 * t));
   }
   g.computeVertexNormals();
-  return { mask: g, wire: limbWire(length, radius, 1.15, 2, 1) };
+  return { mask: g, wire: lines(partialLong(length, radius, 1.15, 2.4, 0.1, 1)) };
 }
 
-/** Articulação: esfera achatada ao longo do osso. */
+/** Articulação: esfera achatada ao longo do osso — sem linhas (nunca círculos visíveis). */
 export function joint(radius: number): PartGeometry {
   const g = new THREE.SphereGeometry(radius, 16, 12);
   g.scale(1, 0.82, 1);
-  return { mask: g, wire: limbWire(radius * 1.6, radius, 1, 0, 1) };
+  return { mask: g, wire: EMPTY_WIRE() };
 }
 
-/** Mão estilizada: palma achatada + polegar curto; linhas = contorno da palma + 3 dedos sugeridos. */
+/** Mão estilizada: palma achatada + polegar; linhas = meia palma + 3 dedos sugeridos. */
 export function hand(length: number, radius: number, side: 1 | -1): PartGeometry {
   const palm = capsuleAlongBone(length, radius, 1.25, 0.5);
   const thumb = new THREE.CapsuleGeometry(radius * 0.45, length * 0.28, 4, 10);
@@ -191,28 +181,17 @@ export function hand(length: number, radius: number, side: 1 | -1): PartGeometry
   const merged = mergeGeometries([palm, thumb]);
   merged.computeVertexNormals();
   const out: number[] = [];
-  // contorno da palma (elipse) + dedos: 3 traços a partir do fim da palma
-  for (let s = 0; s < 12; s++) {
-    const a0 = (s / 12) * Math.PI * 2, a1 = ((s + 1) / 12) * Math.PI * 2;
-    out.push(Math.cos(a0) * radius * 1.2, -length * 0.55 + Math.sin(a0) * length * 0.3, 0, Math.cos(a1) * radius * 1.2, -length * 0.55 + Math.sin(a1) * length * 0.3, 0);
+  for (let s = 0; s < 6; s++) {
+    const a0 = Math.PI + (s / 12) * Math.PI * 2, a1 = Math.PI + ((s + 1) / 12) * Math.PI * 2;
+    out.push(Math.cos(a0) * radius * 1.2, -length * 0.55 + Math.sin(a0) * length * 0.3, 0.004, Math.cos(a1) * radius * 1.2, -length * 0.55 + Math.sin(a1) * length * 0.3, 0.004);
   }
   for (const fx of [-0.6, 0, 0.6]) out.push(fx * radius, -length * 0.82, 0, fx * radius * 1.15, -length * 1.05, 0.004);
-  const wire = new THREE.BufferGeometry();
-  wire.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
-  return { mask: merged, wire };
+  return { mask: merged, wire: lines(out) };
 }
 
-/** Pé: cápsula deitada; linhas = uma aresta lateral. */
+/** Pé: cápsula deitada; uma aresta curta no peito do pé. */
 export function foot(length: number, radius: number): PartGeometry {
-  return { mask: capsuleAlongBone(length, radius, 1.15, 0.85), wire: limbWire(length, radius, 0.85, 1, 1, 1.15, 0.85) };
-}
-
-function mergeLines(a: THREE.BufferGeometry, extra: number[]): THREE.BufferGeometry {
-  const base = Array.from(a.attributes.position.array as Float32Array);
-  a.dispose();
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(base.concat(extra), 3));
-  return g;
+  return { mask: capsuleAlongBone(length, radius, 1.15, 0.85), wire: lines(partialLong(length, radius, 0.85, 1.2, 0.3, 0.8, 1.15, 0.85)) };
 }
 
 /** Une geometrias não indexadas (posição/normal/uv) — evita importar examples/. */

@@ -60,7 +60,7 @@ export const MILO = {
   /** Colocação em cena por largura de viewport. `yaw` = rotação do corpo (três quartos). */
   placement: {
     desktop: { x: 1.0, y: -0.05, z: 0, scale: 1.06, yaw: -0.36 },
-    mobile: { x: 0.12, y: -0.5, z: 0, scale: 0.86, yaw: -0.32 },
+    mobile: { x: 0.12, y: -0.66, z: 0, scale: 0.8, yaw: -0.32 },
   },
   camera: { fov: 27, position: [0, 1.0, 5.6] as [number, number, number], target: [0, 1.0, 0] as [number, number, number] },
 
@@ -98,26 +98,26 @@ export const MILO = {
 
   /** Zonas de informação (0 = vazio, 1 = máximo): wireframe, bordas reveladas e partículas por parte. */
   zones: {
-    head: 0.35,
-    neck: 0.5,
-    chest: 0.08,
-    spine: 0.1,
-    pelvis: 0.28,
-    coat: 0.3,
-    leftShoulder: 0.85,
-    rightShoulder: 1.0,
-    leftArm: 0.22,
-    leftForearm: 0.25,
-    leftHand: 0.3,
-    rightArm: 0.75,
-    rightForearm: 0.9,
-    rightHand: 1.0,
-    leftLeg: 0.6,
-    leftShin: 0.7,
-    leftFoot: 0.5,
-    rightLeg: 0.15,
-    rightShin: 0.12,
-    rightFoot: 0.2,
+    head: 0.32,
+    neck: 0.35,
+    chest: 0.06,
+    spine: 0,
+    pelvis: 0.05,
+    coat: 0.45,
+    leftShoulder: 0.45,
+    rightShoulder: 0.9,
+    leftArm: 0.08,
+    leftForearm: 0.06,
+    leftHand: 0.1,
+    rightArm: 0.4,
+    rightForearm: 0.55,
+    rightHand: 0.9,
+    leftLeg: 0.3,
+    leftShin: 0.4,
+    leftFoot: 0.3,
+    rightLeg: 0.04,
+    rightShin: 0.06,
+    rightFoot: 0.08,
   } satisfies Record<BoneName | "coat", number>,
 
   /** Ordem do dissolve (0 some primeiro, 1 por último). */
@@ -145,12 +145,14 @@ export const MILO = {
   } satisfies Record<BoneName | "coat", number>,
 
   /** Juntas com energia (acid lime/partículas): pesos relativos. */
-  energyJoints: { rightShoulder: 1, rightForearm: 0.9, rightHand: 1, neck: 0.5, leftShoulder: 0.25, pelvis: 0.15, leftShin: 0.15 } as Partial<Record<BoneName, number>>,
+  energyJoints: { rightShoulder: 1, rightForearm: 0.9, rightHand: 1, neck: 0.3, leftShoulder: 0.15, head: 0.1 } as Partial<Record<BoneName, number>>,
+  /** Juntas onde o acid lime pode nascer (ombro, cotovelo e palma do braço ativo). */
+  limeJoints: { rightShoulder: 1, rightForearm: 1, rightHand: 1 } as Partial<Record<BoneName, number>>,
 
   quality: {
-    high: { dpr: 1.75, scene: 1, mask: 1, particles: 260, noise: 2, secondaryEvery: 1 },
-    medium: { dpr: 1.25, scene: 0.5, mask: 0.6, particles: 160, noise: 1, secondaryEvery: 2 },
-    low: { dpr: 1, scene: 0.5, mask: 0.6, particles: 90, noise: 0, secondaryEvery: 3 },
+    high: { dpr: 1.75, scene: 1, mask: 1, particles: 200, noise: 2, secondaryEvery: 1 },
+    medium: { dpr: 1.25, scene: 0.5, mask: 0.75, particles: 120, noise: 1, secondaryEvery: 2 },
+    low: { dpr: 1, scene: 0.5, mask: 0.75, particles: 70, noise: 0, secondaryEvery: 3 },
   } satisfies Record<MiloQuality, { dpr: number; scene: number; mask: number; particles: number; noise: number; secondaryEvery: number }>,
 
   /**
@@ -159,16 +161,25 @@ export const MILO = {
    * isso viram borrão e o corpo passa a parecer vidro.
    */
   shader: {
-    bodyDistortion: 0.034,
+    bodyDistortion: 0.04,
     motionDistortion: 0.03,
-    interactionDistortion: 0.06,
-    gridBend: 0.036,
+    interactionDistortion: 0.07,
+    gridBend: 0.052,
     edgeCompression: 0.012,
     refractionFalloff: 0.65,
-    edge: 0.35,
+    edge: 0.28,
     noiseScale: 2.6,
     noiseSpeed: 0.2,
-    glitch: 0.25,
+    glitch: 0.2,
+    /** iteração 03 — massa contínua */
+    wireframeVisibility: 1,
+    bodyDensity: 0.07,
+    maskBlur: 7, // px (CSS) do borrão da máscara composta
+    maskDilation: 3, // px de dilatação antes do borrão (une volumes vizinhos)
+    internalShadow: 0.09,
+    particleVisibility: 1,
+    /** 0 composite · 1 distortion only · 2 wireframe only (só dev) */
+    view: 0,
   },
 
   /** Grid técnica do fundo (px de CSS). */

@@ -14,6 +14,8 @@ uniform float uEnergy;
 uniform float uNoiseScale;
 uniform float uZone;
 uniform float uOrder;
+uniform float uWire;
+uniform float uParticles;
 uniform vec3 uInk;
 uniform vec3 uSignal;
 varying vec3 vWorldPos;
@@ -30,10 +32,19 @@ void main() {
   float thr = mix(0.96, 0.5, uZone) - 0.12 * uEnergy + gone * 0.6;
   #ifdef POINTS
   thr -= 0.4;
+  if (uParticles <= 0.001) discard;
+  #else
+  if (uWire <= 0.001) discard;
+  thr += (1.0 - uWire) * 0.5;
   #endif
   if (n < thr) discard;
   vec3 c3 = mix(uInk, uSignal, vLime * (0.25 + 0.75 * uEnergy));
   float a = smoothstep(thr, thr + 0.1, n) * vFade * 0.72;
+  #ifdef POINTS
+  a *= uParticles;
+  #else
+  a *= uWire;
+  #endif
   gl_FragColor = vec4(c3, a);
 }
 `;

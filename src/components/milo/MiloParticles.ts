@@ -8,7 +8,7 @@ import { LAYER_OVERLAY } from "./MiloRig";
  * resto do corpo recebe poucas. O vertex shader faz o movimento (vagar e
  * o campo de fuga no dissolve); só as posições das juntas sobem por frame.
  */
-export function buildParticles(count: number, jointWeights: number[]) {
+export function buildParticles(count: number, jointWeights: number[], limeAllowed: boolean[] = []) {
   const n = Math.max(1, count);
   const joint = new Float32Array(n);
   const offset = new Float32Array(n * 3);
@@ -37,7 +37,7 @@ export function buildParticles(count: number, jointWeights: number[]) {
     offset[i * 3 + 1] = Math.sin(ph) * Math.sin(th) * r;
     offset[i * 3 + 2] = Math.cos(ph) * r;
     seed[i] = rnd();
-    lime[i] = energy && rnd() < 0.2 ? 1 : 0; // acid lime só nas juntas de energia (<5 % do total)
+    lime[i] = limeAllowed[j] && rnd() < 0.22 ? 1 : 0; // acid lime só em ombro/cotovelo/palma do braço ativo
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pos, 3));

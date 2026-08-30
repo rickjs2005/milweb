@@ -6,6 +6,8 @@ const shared = () => ({
   uVisibility: { value: 1 },
   uEnergy: { value: 0 },
   uNoiseScale: { value: 2.6 },
+  uWire: { value: 1 },
+  uParticles: { value: 1 },
   uInk: { value: new THREE.Color("#111111") },
   uSignal: { value: new THREE.Color("#B7FF37") },
 });

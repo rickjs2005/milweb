@@ -77,6 +77,13 @@ export type MiloFrame = {
     noiseScale: number;
     noiseSpeed: number;
     glitch: number;
+    wireframeVisibility: number;
+    bodyDensity: number;
+    maskBlur: number;
+    maskDilation: number;
+    internalShadow: number;
+    particleVisibility: number;
+    view: number;
   };
   /** Projeção da mão ativa em uv (interação com o painel). */
   hand: { x: number; y: number };

@@ -30,8 +30,9 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
   const camera = useThree((s) => s.camera);
   const rig = useMemo(() => buildRig(), []);
   const particles = useMemo(() => {
-    const weights = rig.joints.slice(0, 24).map((j) => MILO.energyJoints[j.name as BoneName] ?? 0.04);
-    return buildParticles(MILO.quality[quality].particles, weights);
+    const weights = rig.joints.slice(0, 24).map((j) => MILO.energyJoints[j.name as BoneName] ?? 0.02);
+    const lime = rig.joints.slice(0, 24).map((j) => !!MILO.limeJoints[j.name as BoneName]);
+    return buildParticles(MILO.quality[quality].particles, weights, lime);
   }, [quality, rig]);
   const observe = useRef(new ObserveController());
   const touch = useRef(new TouchController());
@@ -91,6 +92,7 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
       u.uVisibility.value = f.visibility;
       u.uNoiseScale.value = p.noiseScale;
       if (u.uEnergy) u.uEnergy.value = f.energy;
+      if (u.uWire) u.uWire.value = p.view === 1 ? 0 : p.wireframeVisibility;
       if (u.uSway) u.uSway.value = MILO.idle.coat * (0.5 + f.energy * 0.6);
       if (u.uWave) u.uWave.value = f.coatWave;
       if (u.uRoot) {
@@ -104,6 +106,7 @@ export function MiloNull({ quality, mobile }: { quality: MiloQuality; mobile: bo
     pm.uEnergy.value = f.energy;
     pm.uNoiseScale.value = p.noiseScale;
     pm.uDpr.value = st.gl.getPixelRatio();
+    pm.uParticles.value = p.view === 0 ? p.particleVisibility : 0;
 
     // cálculos secundários com frequência reduzida nos níveis baixos
     if (frameCount.current % secondaryEvery === 0) {

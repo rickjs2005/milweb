@@ -56,15 +56,12 @@ export function buildRig(): MiloRigHandle {
       disposables.push(geo.mask, geo.wire, wireMat);
     }
     if (jointR > 0) {
+      // articulação: só volume (une os membros na máscara) — nunca círculos visíveis
       const jg = G.joint(jointR);
       const jm = new THREE.Mesh(jg.mask, maskMat);
       jm.layers.set(LAYER_MASK);
       group.add(jm);
-      const jw = new THREE.LineSegments(jg.wire, createWireMaterial({ zone: zone * 0.8, lime: LIME[name] ?? 0, order }));
-      jw.layers.set(LAYER_OVERLAY);
-      jw.frustumCulled = false;
-      group.add(jw);
-      disposables.push(jg.mask, jg.wire, jw.material as THREE.Material);
+      disposables.push(jg.mask, jg.wire);
     }
     const e = MILO.pose[name];
     const rest = new THREE.Quaternion().setFromEuler(new THREE.Euler(e[0], e[1], e[2], "XYZ"));
@@ -81,7 +78,7 @@ export function buildRig(): MiloRigHandle {
   const pelvisG = part(root, "pelvis", P.pelvis.h, G.pelvis(P.pelvis.w, P.pelvis.h, P.pelvis.d));
   pelvisG.position.set(0, legLen + P.pelvis.h * 0.55, 0);
 
-  const spineG = part(pelvisG, "spine", P.spine.len, G.limb(P.spine.len, P.spine.r, 1.05, 0, 1));
+  const spineG = part(pelvisG, "spine", P.spine.len, G.limb(P.spine.len, P.spine.r, 1.05));
   spineG.position.set(0, P.spine.len - P.pelvis.h * 0.1, 0);
   const chestG = part(spineG, "chest", P.chest.len, G.torso(P.chest.len, P.chest.r, P.chest.wx, P.chest.wz));
   chestG.position.set(0, P.chest.len - 0.02, 0);
@@ -95,9 +92,10 @@ export function buildRig(): MiloRigHandle {
     const pre = side > 0 ? "left" : "right";
     const sh = part(chestG, `${pre}Shoulder` as BoneName, 0.05, null, P.upperArm.r * 1.35);
     sh.position.set(side * P.shoulderHalf, 0, -0.01);
-    const up = part(sh, `${pre}Arm` as BoneName, P.upperArm.len, G.limb(P.upperArm.len, P.upperArm.r, 0.86, 2, 1), 0);
+    // braço ativo (direito): linha parcial no ombro/braço; secundário: quase nada
+    const up = part(sh, `${pre}Arm` as BoneName, P.upperArm.len, G.limb(P.upperArm.len, P.upperArm.r, 0.86, side < 0 ? [[2.2, 0.05, 0.45]] : [[2.2, 0.2, 0.35]]), 0);
     up.position.set(side * 0.02, -0.02, 0);
-    const fo = part(up, `${pre}Forearm` as BoneName, P.forearm.len, G.limb(P.forearm.len, P.forearm.r, 0.8, 3, 2), P.forearm.r * 1.15);
+    const fo = part(up, `${pre}Forearm` as BoneName, P.forearm.len, G.limb(P.forearm.len, P.forearm.r, 0.8, side < 0 ? [[0.6, 0.0, 0.22], [3.6, 0.55, 0.9]] : []), P.forearm.r * 1.15);
     fo.position.set(0, -P.upperArm.len, 0);
     const ha = part(fo, `${pre}Hand` as BoneName, P.hand.len, G.hand(P.hand.len, P.hand.r, side), P.hand.r * 1.05);
     ha.position.set(0, -P.forearm.len, 0);
@@ -111,11 +109,12 @@ export function buildRig(): MiloRigHandle {
 
   const leg = (side: 1 | -1) => {
     const pre = side > 0 ? "left" : "right";
-    const th = part(pelvisG, `${pre}Leg` as BoneName, P.thigh.len, G.limb(P.thigh.len, P.thigh.r, 0.78, 2, 1), P.thigh.r * 1.05);
+    // perna de apoio (esquerda): fragmento no joelho + traço na canela; perna livre: nada
+    const th = part(pelvisG, `${pre}Leg` as BoneName, P.thigh.len, G.limb(P.thigh.len, P.thigh.r, 0.78, side > 0 ? [[1.1, 0.8, 1.0]] : []), P.thigh.r * 1.05);
     th.position.set(side * P.pelvis.w * P.stance, -P.pelvis.h * 0.45, 0);
-    const sh = part(th, `${pre}Shin` as BoneName, P.shin.len, G.limb(P.shin.len, P.shin.r, 0.72, 2, 2), P.shin.r * 1.25);
+    const sh = part(th, `${pre}Shin` as BoneName, P.shin.len, G.limb(P.shin.len, P.shin.r, 0.72, side > 0 ? [[1.3, 0.15, 0.5]] : []), P.shin.r * 1.25);
     sh.position.set(0, -P.thigh.len, 0);
-    const ft = part(sh, `${pre}Foot` as BoneName, P.foot.len, G.foot(P.foot.len, P.foot.r), 0);
+    const ft = part(sh, `${pre}Foot` as BoneName, P.foot.len, side > 0 ? G.foot(P.foot.len, P.foot.r) : { ...G.foot(P.foot.len, P.foot.r), wire: G.EMPTY_WIRE() }, 0);
     ft.position.set(0, -P.shin.len + 0.02, 0.01);
   };
   leg(1);

@@ -16,6 +16,17 @@ const PARAMS: { key: keyof typeof miloFrame.params; label: string; min: number; 
   { key: "noiseScale", label: "uNoiseScale", min: 0.5, max: 8, step: 0.1 },
   { key: "noiseSpeed", label: "uNoiseSpeed", min: 0, max: 1, step: 0.01 },
   { key: "glitch", label: "uGlitch", min: 0, max: 1, step: 0.01 },
+  { key: "wireframeVisibility", label: "wireframeVisibility", min: 0, max: 1, step: 0.01 },
+  { key: "bodyDensity", label: "bodyDensity", min: 0, max: 0.3, step: 0.005 },
+  { key: "maskBlur", label: "maskBlur (px)", min: 0, max: 24, step: 0.5 },
+  { key: "maskDilation", label: "maskDilation (px)", min: 0, max: 12, step: 0.5 },
+  { key: "internalShadow", label: "internalShadow", min: 0, max: 0.4, step: 0.005 },
+  { key: "particleVisibility", label: "particleVisibility", min: 0, max: 1, step: 0.01 },
+];
+const VIEWS: { v: number; label: string }[] = [
+  { v: 0, label: "COMPOSITE" },
+  { v: 1, label: "DISTORTION ONLY" },
+  { v: 2, label: "WIREFRAME ONLY" },
 ];
 
 /**
@@ -69,7 +80,7 @@ export function MiloDebug() {
   }
 
   return (
-    <aside className="pointer-events-auto fixed bottom-[calc(1.5rem+2.4rem)] left-margin z-nav w-64 border border-ink bg-paper p-3 t-mono text-[11px] text-ink" aria-label="Debug do Milo">
+    <aside className="pointer-events-auto fixed bottom-[calc(1.5rem+2.4rem)] left-margin z-nav max-h-[80svh] w-64 overflow-y-auto border border-ink bg-paper p-3 t-mono text-[11px] text-ink" aria-label="Debug do Milo">
       <div className="flex items-center justify-between">
         <span>MILO / DEBUG</span>
         <span className="flex items-center gap-3">
@@ -109,7 +120,22 @@ export function MiloDebug() {
           />
         </label>
       ))}
-      <div className="mt-3 flex flex-wrap gap-1">
+      <div className="mt-2 flex flex-wrap gap-1">
+        {VIEWS.map((v) => (
+          <button
+            key={v.v}
+            type="button"
+            onClick={() => {
+              miloFrame.params.view = v.v;
+              tick((n) => n + 1);
+            }}
+            className={"border px-1.5 py-0.5 " + (miloFrame.params.view === v.v ? "border-ink bg-ink text-paper" : "border-neutral")}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1">
         {STATE_CYCLE.map((s) => (
           <button key={s} type="button" onClick={() => setState(s)} className={"border px-1.5 py-0.5 uppercase " + (state === s ? "border-ink bg-ink text-paper" : "border-neutral")}>
             {s}

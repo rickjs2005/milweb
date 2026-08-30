@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { getQuality } from "@/lib/quality";
 import { MiloFallback } from "./MiloFallback";
-import { useMiloStore } from "./useMiloStore";
+import { miloFrame, useMiloStore } from "./useMiloStore";
 import type { MiloQuality } from "./milo.types";
 
 const MiloCanvas = dynamic(() => import("./MiloCanvas").then((m) => m.MiloCanvas), { ssr: false });
@@ -47,7 +47,11 @@ export function MiloLab() {
     setQuality(tier);
     setMode("webgl");
     // gancho de QA (só em desenvolvimento): window.__milo.getState().setState("touch")
-    if (process.env.NODE_ENV === "development") (window as unknown as { __milo: typeof useMiloStore }).__milo = useMiloStore;
+    if (process.env.NODE_ENV === "development") {
+      const w = window as unknown as { __milo: typeof useMiloStore; __miloFrame: typeof miloFrame };
+      w.__milo = useMiloStore;
+      w.__miloFrame = miloFrame;
+    }
     const onResize = () => setMobile(window.innerWidth < 720 || coarse);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -70,17 +74,24 @@ export function MiloLab() {
           <span>MILO_NULL</span>
           <span className="milo-panel-dot inline-block h-1.5 w-1.5 bg-signal" />
         </div>
-        <div className="mt-3 flex justify-between text-paper/60">
-          <span>PRESENÇA</span>
-          <span className="tnum text-paper">{visibility.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-paper/60">
-          <span>ENERGIA</span>
-          <span className="tnum text-paper">{energy.toFixed(2)}</span>
-        </div>
-        <div className="milo-panel-bar mt-3 h-px w-full bg-paper/20">
-          <div className="h-px bg-signal" style={{ width: `${Math.round(energy * 100)}%` }} />
-        </div>
+        {/* dormant: painel silencioso — só o nome e o sinal */}
+        {state !== "dormant" || pending ? (
+          <>
+            <div className="mt-3 flex justify-between text-paper/60">
+              <span>PRESENÇA</span>
+              <span className="tnum text-paper">{visibility.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-paper/60">
+              <span>ENERGIA</span>
+              <span className="tnum text-paper">{energy.toFixed(2)}</span>
+            </div>
+            <div className="milo-panel-bar mt-3 h-px w-full bg-paper/20">
+              <div className="h-px bg-signal" style={{ width: `${Math.round(energy * 100)}%` }} />
+            </div>
+          </>
+        ) : (
+          <div className="mt-3 h-px w-full bg-paper/20" />
+        )}
       </div>
 
       {/* headline HTML, lado esquerdo */}

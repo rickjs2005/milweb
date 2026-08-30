@@ -76,7 +76,7 @@ function smoothT(t: number) {
   return t * t * (3 - 2 * t) * 0.6 + t * 0.4;
 }
 
-/** Linhas do casaco: só as estruturais — gola, uma costura, bainha e as bordas das abas. */
+/** Linhas do casaco: três, longas e limpas — gola, borda da aba longa e um trecho da bainha. Sem subdivisões. */
 export function buildCoatWire(coat: THREE.BufferGeometry): THREE.BufferGeometry {
   const c = MILO.coat;
   const pos = coat.attributes.position as THREE.BufferAttribute;
@@ -88,15 +88,19 @@ export function buildCoatWire(coat: THREE.BufferGeometry): THREE.BufferGeometry 
       out.push(pos.getX(a), pos.getY(a), pos.getZ(a), pos.getX(a + 1), pos.getY(a + 1), pos.getZ(a + 1));
     }
   };
-  row(0);
-  row(Math.round(c.rows * 0.38));
-  row(c.rows);
-  for (const k of [0, c.cols]) {
-    for (let r = 0; r < c.rows; r++) {
+  const rowRange = (r: number, k0: number, k1: number) => {
+    for (let k = k0; k < k1; k++) {
       const a = r * stride + k;
-      const d = a + stride;
-      out.push(pos.getX(a), pos.getY(a), pos.getZ(a), pos.getX(d), pos.getY(d), pos.getZ(d));
+      out.push(pos.getX(a), pos.getY(a), pos.getZ(a), pos.getX(a + 1), pos.getY(a + 1), pos.getZ(a + 1));
     }
+  };
+  void row;
+  rowRange(0, Math.round(c.cols * 0.3), c.cols); // gola (do meio das costas ao lado direito)
+  rowRange(c.rows, Math.round(c.cols * 0.62), c.cols); // bainha só na aba longa
+  for (let r = Math.round(c.rows * 0.15); r < c.rows; r++) {
+    const a = r * stride + c.cols; // borda da aba longa
+    const d = a + stride;
+    out.push(pos.getX(a), pos.getY(a), pos.getZ(a), pos.getX(d), pos.getY(d), pos.getZ(d));
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
