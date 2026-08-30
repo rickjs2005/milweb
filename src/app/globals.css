@@ -267,8 +267,8 @@ html[data-compiler="on"] .compiler-fallback { display: none; }
    flex — foi corrigida): clip não cria contexto de rolagem, o sticky continua funcionando. */
 html, body { overflow-x: clip; }
 /* Hero: estágios com hierarquia (atual → passado → futuro) e saída comercial */
-[data-stage] { opacity: 0.28; transition: opacity var(--dur-medium) var(--ease-in-out-quart), color var(--dur-fast); }
-[data-stage].is-past { opacity: 0.45; }
+[data-stage] { opacity: 0.16; transition: opacity var(--dur-medium) var(--ease-in-out-quart), color var(--dur-fast); }
+[data-stage].is-past { opacity: 0.28; }
 [data-stage].is-active { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .milo-hero-fallback { animation: milo-hero-arrive 0.6s var(--ease-out-expo) both; }

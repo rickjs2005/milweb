@@ -248,8 +248,10 @@ void main() {
     float minorO = uHero > 0.5 ? heroLines(vec2(uv.x, 1.0 - uv.y) * uResolution) * uGridOpacity : lineMask(uv * uResolution, uCell, 0.6);
     minor = mix(minor, max(minor, minorO * 0.5), (1.0 - hatch) * 0.6);
     col = texture2D(tScene, uv).rgb;
-    // Hero: linhas mais escuras, e mais ainda na cabeça/tronco (presença sem virar modelo sólido)
-    float core = isHead * 0.35 + isTorso * 0.25;
+    // Hero: linhas mais escuras, e mais ainda na cabeça/tronco (presença sem virar modelo sólido).
+    // Reforçado numa 2ª rodada: em produção o Milo ainda lia como boneco técnico apagado contra
+    // o fundo off-white — este é o multiplicador que resolve isso, sem novo mecanismo.
+    float core = isHead * 0.55 + isTorso * 0.4;
     vec3 lineCol = uHero > 0.5 ? mix(uGridLineColor, uInk, (0.26 + 0.3 * center) * hatch * (1.0 + core)) : mix(uNeutral, uInk, (0.07 + 0.11 * center) * hatch);
     col = mix(col, lineCol, minor * 0.92 * mix(1.0, 0.85, 1.0 - hatch));
     // pélvis: nada de linha horizontal contínua ligando as coxas
@@ -259,14 +261,14 @@ void main() {
 
     // densidade: o volume adensa no centro; sombra interna vinda de cima/esquerda
     // densidade: pélvis −28 %, caindo para as laterais (soft) — concentração de espaço, não placa
-    float dens = uDensity * mix(1.0, uPelvisDensity * (0.55 + 0.45 * soft), isPelvis) * mix(1.0, 0.72 + 0.4 * isHead + 0.3 * isTorso, uHero);
+    float dens = uDensity * mix(1.0, uPelvisDensity * (0.55 + 0.45 * soft), isPelvis) * mix(1.0, 0.85 + 0.5 * isHead + 0.4 * isTorso, uHero);
     col *= 1.0 - center * dens * uVisibility;
     float above = (texture2D(tMask, uv + vec2(-0.004, 0.014)).a + texture2D(tMask, uv + vec2(-0.008, 0.026)).a + texture2D(tMask, uv + vec2(-0.012, 0.038)).a) / 3.0;
     above = smoothstep(0.05, 0.45, above);
-    col *= 1.0 - uInternalShadow * mix(1.0, 0.78, uHero) * (1.0 - above) * soft * uVisibility;
+    col *= 1.0 - uInternalShadow * mix(1.0, 0.92, uHero) * (1.0 - above) * soft * uVisibility;
 
     // âncoras: contorno de tinta só onde revelado; lime só como sinal de atividade
-    float edge = smoothstep(0.45, 0.92, fres) * uEdgeStrength * reveal * mask * mix(1.0, 1.3, uHero);
+    float edge = smoothstep(0.45, 0.92, fres) * uEdgeStrength * reveal * mask * mix(1.0, 1.55, uHero);
     col = mix(col, uInk, edge * 0.7);
     if (uView < 0.5) col = mix(col, uSignal, edge * uEnergy * uEnergy * 0.3);
     col = mix(bg, col, bodyW);

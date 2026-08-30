@@ -44,8 +44,12 @@ export class TouchController {
     // a mão chega por baixo e desacelera (reach já é suave; o arco reforça)
     target.y -= (1 - reach) * 0.14;
     solveTwoBoneIK(rig.bones.rightArm, rig.bones.rightForearm, target, pole, reach);
-    rig.bones.rightHand.group.rotation.x += -0.4 * reach;
-    rig.bones.rightHand.group.rotation.z += 0.3 * reach;
+    // a dobra do punho era grande demais (−0,4/+0,3 rad): sobre uma alavanca de ~0,17 m até a
+    // ponta dos dedos, isso jogava a mão ~20–25 px para longe do alvo que o IK mirou — no Hero,
+    // onde a mão precisa encostar visualmente na palavra, essa folga é o que sobrava do "≤50 px"
+    // aceito antes. Reduzida para manter a dobra natural sem competir com a precisão do contato.
+    rig.bones.rightHand.group.rotation.x += -0.14 * reach;
+    rig.bones.rightHand.group.rotation.z += 0.1 * reach;
     rig.bones.rightShoulder.group.rotation.z += -0.1 * reach;
     rig.bones.chest.group.rotation.y += -0.08 * reach;
     // transferência de peso: o tronco inclina ~5° para o lado do alvo e a pélvis compensa

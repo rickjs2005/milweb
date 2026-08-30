@@ -76,7 +76,9 @@ export const MILO = {
   touch: {
     anchor: [0.66, 1.16, 0.34] as [number, number, number],
     pole: [0.3, -0.6, 0.5] as [number, number, number],
-    stopBefore: 0.07,
+    // a mão para MUITO perto do alvo — no Hero (fora do painel 3D) é isso que faz a
+    // ponta dos dedos ficar visualmente sobre a extremidade da palavra, não a ~25 px dela
+    stopBefore: 0.02,
     contact: 0.11,
   },
 

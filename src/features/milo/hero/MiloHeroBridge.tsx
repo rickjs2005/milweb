@@ -40,16 +40,21 @@ export const heroFrame = {
   walk: 0,
   push: 0,
   pull: 0,
-  /** ajustes (debug): deslocamento da mão em relação à extremidade (px) e distância corpo↔palavra (mundo) */
-  pullOffsetX: -22,
-  pullOffsetY: 0,
+  /** ajustes (debug): deslocamento do alvo do braço em FRAÇÃO da caixa do Hero (não px fixos —
+   * ver comentário em remeasure()). Calibrado por varredura ao vivo cobrindo 1920/1440/1366/1363
+   * (compromisso: minimiza o PIOR caso entre eles — 18–42 px conforme a largura; ver o relatório
+   * da investigação para a causa restante: a tipografia do H1 escala por regras CSS próprias
+   * (clamp em vw), não pela mesma razão do mundo 3D/câmera, então nenhuma fração única fecha o
+   * contato a <20 px em toda largura — 1440/1363 chegam a ~18 px, 1920/1366 ficam em ~40 px). */
+  pullOffsetX: -0.007,
+  pullOffsetY: 0.06,
   holdOffset: MILO_HERO.holdOffset,
   shoulderAnticipation: 1,
   contactStrength: 1,
 };
 
 /** Labels padrão (as da timeline do BuildHero têm prioridade quando existem). */
-const LABELS = { walkStart: 0.15, walkEnd: 0.45, armStart: 0.56, contact: 0.6, pullEnd: 0.76, settle: 0.78, outro: 0.9 };
+const LABELS = { design: 0.1, walkStart: 0.2, walkEnd: 0.45, armStart: 0.55, contact: 0.6, pullEnd: 0.76, settle: 0.78, outro: 0.9 };
 type Labels = typeof LABELS;
 
 const smooth = (a: number, b: number, x: number) => {
@@ -66,7 +71,7 @@ export const pullTarget: HeadlinePullTarget = { x: 0.5, y: 0.5, active: false, c
 
 export function deriveHeroInput(progress: number, pointer: { x: number; y: number }, headlineReleased: boolean, heroVisible: boolean, L: Labels = LABELS): MiloHeroInput {
   const p = Math.min(1, Math.max(0, progress));
-  const bounds = [L.walkStart, L.walkEnd, L.armStart, L.settle, L.outro, 1.0001];
+  const bounds = [L.design, L.walkStart, L.armStart, L.settle, L.outro, 1.0001];
   let stage = 0;
   while (stage < 5 && p >= bounds[stage]) stage++;
   const lo = stage === 0 ? 0 : bounds[stage - 1];
@@ -188,7 +193,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   f.particles = lerp(0.22, 0.4, walkIn) + 0.35 * contact * (1 - settled) - 0.1 * settled;
   f.scroll = p;
   f.pulse = 0;
-  heroFrame.gridOpacity = smooth(L.walkStart, L.walkStart + 0.12, p);
+  heroFrame.gridOpacity = smooth(L.design, L.design + 0.1, p); // a grid WebGL acompanha a grid DOM, que desce ANTES da caminhada
   // grid: comprime/dobra no contato e guarda uma pequena memória da deformação depois
   heroFrame.bendMul = lerp(0.5, 1, smooth(L.walkStart, L.walkStart + 0.1, p)) + 0.6 * Math.sin(Math.PI * smooth(0, 0.5, push)) * (1 - 0.8 * settled) + 0.12 * settled;
   heroFrame.scan = 0;
@@ -277,10 +282,14 @@ export function MiloHeroBridge() {
       if (!anchor) return;
       const a = anchor.read();
       if (!a.ok) return;
-      // px da viewport → px do canvas (a section pinada está em 0,0 durante a cena; fora dela desconta o topo)
+      // px da viewport → px do canvas (a section pinada está em 0,0 durante a cena; fora dela desconta o topo).
+      // pullOffsetX/Y são FRAÇÕES da caixa do Hero, não px fixos: o alvo do braço é lido via
+      // panel.x/y (UV 0..1) e desprojetado pela câmera — um deslocamento em px fixo encolhe
+      // relativo à tela conforme a viewport cresce (testado: 60 px "acerta" a 936 px de altura
+      // e erra por 30–70 px a 1080 e a 768). Em fração, o deslocamento em NDC fica constante.
       const box = hero.getBoundingClientRect();
-      const ax = a.x - box.left + heroFrame.pullOffsetX;
-      const ay = a.y - box.top + heroFrame.pullOffsetY;
+      const ax = a.x - box.left + heroFrame.pullOffsetX * g.W;
+      const ay = a.y - box.top + heroFrame.pullOffsetY * g.H;
       g.anchorX = pxToWorldX(ax, g);
       g.anchorY = pxToWorldY(ay, g);
       g.anchorOk = true;
@@ -377,27 +386,32 @@ function mountHeroDebug() {
   const box = document.createElement("div");
   box.style.cssText = "position:fixed;left:16px;bottom:16px;z-index:70;background:#F2F0EA;border:1px solid #111;padding:8px 10px;font:11px/1.5 ui-monospace,monospace;color:#111;display:none;pointer-events:auto;width:270px";
   box.innerHTML = `<div><b>MILO / HERO SCENE [H]</b></div><pre id="mh-read" style="margin:6px 0;white-space:pre-wrap"></pre>
-    <label><input type="checkbox" id="mh-anchor"> headlineAnchorVisible</label><br>
-    <label><input type="checkbox" id="mh-target"> armIkTargetVisible</label><br>
-    <label>pullOffset x <input id="mh-ox" type="range" min="-40" max="60" step="1" value="${heroFrame.pullOffsetX}"></label><br>
-    <label>pullOffset y <input id="mh-oy" type="range" min="-40" max="40" step="1" value="${heroFrame.pullOffsetY}"></label><br>
+    <label><input type="checkbox" id="mh-anchor" checked> anchor (azul) / hand (vermelho) visíveis</label><br>
+    <label>pullOffset x (fração) <input id="mh-ox" type="range" min="-0.05" max="0.05" step="0.001" value="${heroFrame.pullOffsetX}"></label><br>
+    <label>pullOffset y (fração) <input id="mh-oy" type="range" min="-0.05" max="0.12" step="0.001" value="${heroFrame.pullOffsetY}"></label><br>
     <label>holdOffset <input id="mh-ho" type="range" min="0.2" max="1.2" step="0.01" value="${heroFrame.holdOffset}"></label><br>
     <label>shoulderAnticipation <input id="mh-sa" type="range" min="0" max="2" step="0.05" value="${heroFrame.shoulderAnticipation}"></label><br>
     <label>contactStrength <input id="mh-cs" type="range" min="0" max="1" step="0.05" value="${heroFrame.contactStrength}"></label>`;
+  // diagnóstico visual (só dev, nunca em produção): azul = extremidade real da palavra
+  // (o mesmo Range que a ponte lê); vermelho = mão ativa (rightHandTip, projetada por
+  // câmera) — os dois já em coordenadas de tela, no frame final renderizado.
   const dotA = document.createElement("div");
-  dotA.style.cssText = "position:fixed;z-index:69;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#B7FF37;outline:1px solid #111;display:none;pointer-events:none";
+  dotA.style.cssText = "position:fixed;z-index:69;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#2563EB;outline:2px solid #fff;display:none;pointer-events:none";
   const dotT = document.createElement("div");
-  dotT.style.cssText = "position:fixed;z-index:69;width:10px;height:10px;margin:-5px 0 0 -5px;border:1px solid #111;display:none;pointer-events:none";
+  dotT.style.cssText = "position:fixed;z-index:69;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#EF4444;outline:2px solid #fff;display:none;pointer-events:none";
+  const label = document.createElement("div");
+  label.style.cssText = "position:fixed;z-index:69;transform:translate(8px,-22px);font:11px/1.3 ui-monospace,monospace;color:#111;background:#F2F0EA;border:1px solid #111;padding:1px 4px;display:none;pointer-events:none;white-space:nowrap";
+  const wordBox = document.createElement("div");
+  wordBox.style.cssText = "position:fixed;z-index:67;border:1px dashed #2563EB;display:none;pointer-events:none";
   const line = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   line.setAttribute("style", "position:fixed;inset:0;width:100%;height:100%;z-index:68;pointer-events:none;display:none");
   const seg = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  seg.setAttribute("stroke", "#111");
+  seg.setAttribute("stroke", "#EF4444");
   seg.setAttribute("stroke-dasharray", "4 4");
   line.appendChild(seg);
-  document.body.append(box, dotA, dotT, line);
+  document.body.append(box, dotA, dotT, label, wordBox, line);
   const read = box.querySelector<HTMLElement>("#mh-read")!;
   const cbA = box.querySelector<HTMLInputElement>("#mh-anchor")!;
-  const cbT = box.querySelector<HTMLInputElement>("#mh-target")!;
   const bind = (id: string, key: keyof typeof heroFrame) => box.querySelector<HTMLInputElement>(id)!.addEventListener("input", (e) => ((heroFrame as Record<string, number>)[key] = Number((e.target as HTMLInputElement).value)));
   bind("#mh-ox", "pullOffsetX");
   bind("#mh-oy", "pullOffsetY");
@@ -414,19 +428,33 @@ function mountHeroDebug() {
   const loop = () => {
     if (open) {
       const f = miloFrame;
-      read.textContent = `progress ${f.scroll.toFixed(3)}  walk ${heroFrame.walk.toFixed(2)}  push ${heroFrame.push.toFixed(2)}\nphase ${f.walk.phase.toFixed(2)}  amount ${f.walk.amount.toFixed(2)}  speed ${f.walk.speed.toFixed(2)}\nx ${heroPlacement.x.toFixed(2)}  yaw ${heroPlacement.yaw.toFixed(2)}\nfontWidth (wdth) ${heroFrame.fontWidth.toFixed(3)}\ncontact ${heroFrame.contact.toFixed(2)}  touch ${f.touch.toFixed(2)}  lean ${f.lean.toFixed(2)}\nstate ${useMiloStore.getState().state}\nanchor uv ${f.panel.x.toFixed(3)} ${f.panel.y.toFixed(3)}\nhand uv ${f.hand.x.toFixed(3)} ${f.hand.y.toFixed(3)}`;
-      const box = document.getElementById("top")?.getBoundingClientRect() ?? { left: 0, top: 0, width: innerWidth, height: innerHeight };
-      const ax = box.left + f.panel.x * box.width, ay = box.top + (1 - f.panel.y) * box.height;
-      const hx = box.left + f.hand.x * box.width, hy = box.top + (1 - f.hand.y) * box.height;
-      dotA.style.display = cbA.checked ? "block" : "none";
+      const heroEl = document.getElementById("top");
+      const box2 = heroEl?.getBoundingClientRect() ?? { left: 0, top: 0, width: innerWidth, height: innerHeight };
+      const ax = box2.left + f.panel.x * box2.width, ay = box2.top + (1 - f.panel.y) * box2.height;
+      const hx = box2.left + f.hand.x * box2.width, hy = box2.top + (1 - f.hand.y) * box2.height;
+      const distPx = Math.hypot(hx - ax, hy - ay);
+      read.textContent = `progress ${f.scroll.toFixed(3)}  walk ${heroFrame.walk.toFixed(2)}  push ${heroFrame.push.toFixed(2)}\nphase ${f.walk.phase.toFixed(2)}  amount ${f.walk.amount.toFixed(2)}  speed ${f.walk.speed.toFixed(2)}\nx ${heroPlacement.x.toFixed(2)}  yaw ${heroPlacement.yaw.toFixed(2)}\nfontWidth (wdth) ${heroFrame.fontWidth.toFixed(3)}\ncontact ${heroFrame.contact.toFixed(2)}  touch ${f.touch.toFixed(2)}  lean ${f.lean.toFixed(2)}\nstate ${useMiloStore.getState().state}\nmão medida: rightHandTip (braço ativo)\nDISTÂNCIA mão↔palavra: ${distPx.toFixed(1)} px`;
+      const on = cbA.checked;
+      dotA.style.display = on ? "block" : "none";
       dotA.style.transform = `translate(${ax}px, ${ay}px)`;
-      dotT.style.display = cbT.checked ? "block" : "none";
+      dotT.style.display = on ? "block" : "none";
       dotT.style.transform = `translate(${hx}px, ${hy}px)`;
-      line.style.display = cbT.checked ? "block" : "none";
+      label.style.display = on ? "block" : "none";
+      label.style.transform = `translate(${hx}px, ${hy}px)`;
+      label.textContent = `${distPx.toFixed(0)} px`;
+      line.style.display = on ? "block" : "none";
       seg.setAttribute("x1", String(hx));
       seg.setAttribute("y1", String(hy));
       seg.setAttribute("x2", String(ax));
       seg.setAttribute("y2", String(ay));
+      const wordEl = heroEl?.querySelector<HTMLElement>("[data-headline-word=last]");
+      if (on && wordEl) {
+        const r = wordEl.getBoundingClientRect();
+        wordBox.style.display = "block";
+        wordBox.style.transform = `translate(${r.left}px, ${r.top}px)`;
+        wordBox.style.width = `${r.width}px`;
+        wordBox.style.height = `${r.height}px`;
+      } else wordBox.style.display = "none";
     }
   };
   gsap.ticker.add(loop);
@@ -434,6 +462,8 @@ function mountHeroDebug() {
     gsap.ticker.remove(loop);
     window.removeEventListener("keydown", key);
     box.remove();
+    wordBox.remove();
+    label.remove();
     dotA.remove();
     dotT.remove();
     line.remove();

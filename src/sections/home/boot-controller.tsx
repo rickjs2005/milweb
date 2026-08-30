@@ -25,14 +25,17 @@ export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 
  *  0.9  estrutura / design / motion / interação "carregam"
  *  1.9  fragmentos: a escultura começa a montar
  *  2.1  overlay sai → hero visível (é o LCP: quanto antes, melhor)
- *  3.6  anomalia: a escultura distorce a interface (html.anomaly + uAnomaly)
- *  4.2  headline sobe (evento mw:headline, o hero escuta)
+ *  2.2  headline sobe (evento mw:headline, o hero escuta) — logo depois do overlay sair,
+ *       não 2 s depois: senão o visitante que já rolou vê grid + código + lista de estágios
+ *       vazios por um tempo perceptível antes da manchete existir (bug real, corrigido aqui)
+ *  3.6  anomalia: a escultura distorce a interface (html.anomaly + uAnomaly) — a headline
+ *       não está nessa lista de seletores, então já pode estar em tela sem conflito
  *  5.1  controle total
  */
-const FIRST = { exit: 2.1, assemble: 1.9, anomaly: 3.6, headline: 4.2, done: 5.1 };
+const FIRST = { exit: 2.1, assemble: 1.9, anomaly: 3.6, headline: 2.2, done: 5.1 };
 /** Mobile: a introdução existe, mas curta — no celular o conteúdo vem antes do espetáculo. */
-const SHORT = { exit: 1.5, assemble: 1.2, anomaly: 2.4, headline: 2.7, done: 3.3 };
-const QUICK = { exit: 0.5, assemble: 0.3, anomaly: -1, headline: 0.9, done: 1.6 };
+const SHORT = { exit: 1.5, assemble: 1.2, anomaly: 2.4, headline: 1.6, done: 3.3 };
+const QUICK = { exit: 0.5, assemble: 0.3, anomaly: -1, headline: 0.6, done: 1.6 };
 
 export function BootController() {
   useEffect(() => {

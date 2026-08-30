@@ -35,18 +35,24 @@ const CODE = [
  * ScrollTrigger) e recebe estas marcas como labels; a ponte do Milo lê as
  * labels da própria timeline. Sem números soltos em mais nenhum lugar.
  *
- *   0.00–0.15  ESTRUTURA     headline estável, Milo fora da tela, grid em repouso
- *   0.15–0.45  DESIGN        grid desce; Milo entra ANDANDO (pernas pela distância)
- *   0.45–0.55  MOTION        desacelera, fecha o passo, firma os pés, olha a frase
- *   0.56–0.78  INTERAÇÃO     ombro → cotovelo → mão chega em "PESSOAS." (0.56–0.60); no toque
+ *   0.00–0.10  ESTRUTURA     headline estável, Milo fora da tela, grid em repouso
+ *   0.10–0.20  DESIGN        grid desce, código recua — ANTES de Milo entrar
+ *   0.20–0.55  MOTION        Milo entra ANDANDO (0.20–0.45), desacelera, fecha o
+ *                            passo e firma os pés (0.45–0.55) — tudo é "motion"
+ *   0.55–0.78  INTERAÇÃO     ombro → cotovelo → mão chega em "PESSOAS." (0.55–0.60); no toque
  *                            (0.60) a frase e a mão se movem JUNTAS até assentar (0.76)
  *   0.78–0.90  EXPERIÊNCIA   braço conclui, grid guarda memória da deformação, energia cai
  *   0.90–1.00  ENTREGA       descrição comercial + VER PROJETOS ↓
+ *
+ * (corrigido: antes o rótulo "MOTION" só acendia DEPOIS de Milo já ter parado
+ * de andar — o limite de DESIGN/MOTION agora é o mesmo instante em que a
+ * caminhada começa, e DESIGN vira uma janela curta e anterior a ela.)
  */
 export const HERO_SCENE = {
-  walkStart: 0.15,
+  design: 0.1,
+  walkStart: 0.2,
   walkEnd: 0.45,
-  armStart: 0.56,
+  armStart: 0.55,
   contact: 0.6,
   pullEnd: 0.76,
   settle: 0.78,
@@ -54,7 +60,7 @@ export const HERO_SCENE = {
 } as const;
 /** wdth/wght da headline: estável e legível antes do contato; peso total ao assentar */
 export const HEADLINE_AXES = { from: { wdth: 105, wght: 700 }, to: { wdth: 125, wght: 900 } } as const;
-const STAGE_BOUNDS = [HERO_SCENE.walkStart, HERO_SCENE.walkEnd, HERO_SCENE.armStart, HERO_SCENE.settle, HERO_SCENE.outro];
+const STAGE_BOUNDS = [HERO_SCENE.design, HERO_SCENE.walkStart, HERO_SCENE.armStart, HERO_SCENE.settle, HERO_SCENE.outro];
 const stageAt = (p: number) => {
   let i = 0;
   while (i < 5 && p >= STAGE_BOUNDS[i]) i++;
@@ -156,11 +162,14 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
         if (!small) {
           tl.to(q("[data-layer=wire] > *"), { scaleX: 1, stagger: 0.012, duration: 0.06, ease: EASE.outExpo }, 0.02);
           // 02 DESIGN — grid desce, código recua enquanto o Milo entra
-          tl.to(q("[data-layer=grid] > *"), { scaleY: 1, stagger: 0.006, duration: 0.1 }, S.walkStart);
-          tl.to(q("[data-layer=code]"), { scale: 0.55, autoAlpha: 0.2, transformOrigin: "left top", duration: 0.1 }, S.walkStart);
-          tl.to(q("[data-layer=wire] > *"), { autoAlpha: 0.18, duration: 0.1 }, S.walkStart + 0.08);
+          // DESIGN acontece ANTES da caminhada (0.10→0.20): grid desce, código recua
+          tl.to(q("[data-layer=grid] > *"), { scaleY: 1, stagger: 0.006, duration: 0.08 }, S.design);
+          tl.to(q("[data-layer=code]"), { scale: 0.55, autoAlpha: 0.12, transformOrigin: "left top", duration: 0.08 }, S.design);
+          tl.to(q("[data-layer=wire] > *"), { autoAlpha: 0.18, duration: 0.08 }, S.design + 0.06);
+          // durante a INTERAÇÃO o código recua mais um pouco — menos disputa com a mão/frase
+          tl.to(q("[data-layer=code]"), { autoAlpha: 0.05, duration: 0.06 }, S.armStart);
         } else {
-          tl.to(q("[data-layer=code]"), { autoAlpha: 0.2, duration: 0.1 }, S.walkStart);
+          tl.to(q("[data-layer=code]"), { autoAlpha: 0.12, duration: 0.1 }, S.design);
         }
         if (fallback && visual === "milo") tl.to(fallback, { xPercent: 0, x: 0, duration: S.walkEnd - S.walkStart, ease: EASE.smooth }, S.walkStart);
         // 04 INTERAÇÃO — no CONTATO a frase começa a se mover com a mão: wdth/wght

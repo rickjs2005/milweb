@@ -32,9 +32,11 @@ export const MILO_HERO = {
   /** rotação do corpo: andando (perfil, de frente para a headline) e parado (três quartos) */
   yawWalk: -1.15,
   yawRest: -0.36,
-  /** distância (mundo, × escala) entre a extremidade da palavra e o root enquanto a mão a segura */
-  holdOffset: 0.68, // a mão direita em repouso pende ~0,5·escala à esquerda do root: fica logo à direita da extremidade, sem cobrir letras
-  holdOffsetMobile: 0.78,
+  /** distância (mundo, × escala) entre a extremidade da palavra e o root enquanto a mão a segura —
+   * reduzida (era 0,68): o torso ficava livre demais da palavra (~1,5 coluna), um vão grande
+   * demais para o braço "ler" como alcançando-a; mais perto, o braço cobre a distância que falta */
+  holdOffset: 0.52,
+  holdOffsetMobile: 0.6,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
   stride: 1.35, // um ciclo = dois passos de ~0,68 (≈ 0,75 × perna de 0,9) — passo humano, não passinho
   /** folga além da borda para o corpo (e o braço em balanço) começar totalmente fora da tela */
