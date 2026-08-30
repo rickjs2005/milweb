@@ -5,6 +5,10 @@ Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (Scro
 Branch: `main` · produção em https://milweb.com.br (Vercel)
 Último deploy verificado: **28/08/2026 · `ae234f5`**
 
+## 29/08/2026 — bug de navegação ("RSC bruto") investigado e corrigido
+
+Relatório completo em `docs/rsc-bug-investigation.md`. Não era RSC/middleware/View Transitions: o Boot removia do DOM (`el.remove()`) um nó renderizado pelo React e a navegação seguinte saindo da Home caía em `NotFoundError: removeChild` → página de erro global do Next. Reproduzido em Chromium e WebKit, local e produção; corrigido em `boot-controller.tsx` (esconder, não remover). De carona: `ViewTransitions` sem `stopPropagation` (o cookie de idioma voltou a ser gravado) e `LanguageSwitch` com `prefetch={false}` (o prefetch de "/" seguia o redirect do cookie e prendia o clique em PT no inglês). Teste automatizado: `node scripts/rsc-navigation-audit.mjs --base http://127.0.0.1:3000` (`--only dwell` reproduz o crash antigo). **Pendente: deploy dessa correção em produção.**
+
 ## Onde paramos (28/08/2026, fim do dia)
 
 Quatro entregas grandes fecharam hoje, todas no ar e verificadas em produção:
@@ -29,7 +33,7 @@ Fase 09 — Performance           ✓  mobile 86 · desktop 96 · a11y 100 · JS
 Fase 10 — Acessibilidade        ✓  a11y 100; teclado, foco visível, reduced-motion, conteúdo sem canvas, controle de som com aria-pressed
 Fase 11 — Analytics e conversão ◐  track-conversions instalado; eventos reais ainda não confirmados em produção
 Fase 12 — Segurança             ✓  CSP estático, headers e redirects; strict mode
-Fase 13 — QA                    ◐  Chromium/WebKit automatizados OK; Safari e Firefox FÍSICOS pendentes
+Fase 13 — QA                    ◐  Chromium/WebKit automatizados OK (+ auditoria de navegação/RSC 29/08: 1285 passos Chromium, 0 falhas); Safari e Firefox FÍSICOS pendentes
 Fase 14 — Deploy                ✓  Vercel READY; rotas, redirects e 404 conferidos em produção
 Fase 15 — Indexação             ◐  falta reenviar o sitemap trilíngue no Search Console e pedir indexação
 Fase 16 — Entrega               ○  não iniciada
