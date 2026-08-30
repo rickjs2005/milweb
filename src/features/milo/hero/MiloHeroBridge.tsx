@@ -143,8 +143,10 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   f.walk.speed += (vN - f.walk.speed) * Math.min(1, dt * 10);
   const moving = Math.min(1, Math.abs(f.walk.speed) * 4);
   const inWalk = p >= L.walkStart && p < L.walkEnd + 0.05 ? 1 : 0;
-  const targetAmount = inWalk * Math.max(moving, Math.min(1, (1 - Math.abs(0.5 - walkIn) * 2) * 1.6)) * (1 - settleStep);
-  f.walk.amount += (targetAmount - f.walk.amount) * Math.min(1, dt * 8);
+  // a marcha vale 100 % da entrada até o último passo (a fase é distância: devagar = passos
+  // lentos, nunca pose congelada); só o fechamento do passo mistura de volta ao repouso
+  const targetAmount = inWalk * smooth(L.walkStart, L.walkStart + 0.02, p) * (1 - settleStep);
+  f.walk.amount += (targetAmount - f.walk.amount) * Math.min(1, dt * 10);
 
   // ---- braço: parado até armStart; alcança; segura enquanto a frase se move; conclui e volta
   const armW = p < L.contact ? reach : holding;

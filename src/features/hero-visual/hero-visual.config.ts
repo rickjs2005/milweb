@@ -36,7 +36,7 @@ export const MILO_HERO = {
   holdOffset: 0.72,
   holdOffsetMobile: 0.66,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
-  stride: 0.64,
+  stride: 1.35, // um ciclo = dois passos de ~0,68 (≈ 0,75 × perna de 0,9) — passo humano, não passinho
   /** folga além da borda para o corpo (e o braço em balanço) começar totalmente fora da tela */
   offscreenPad: 0.8,
   offscreenPadMobile: 0.5,
