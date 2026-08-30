@@ -38,3 +38,8 @@ shot-*.png
 *.log
 
 .vercel
+
+# Auditoria RSC/navegação: relatórios e capturas (as sondas .mjs ficam)
+scripts/.rsc-audit/*.json
+scripts/.rsc-audit/*.log
+scripts/.rsc-audit/*.png
