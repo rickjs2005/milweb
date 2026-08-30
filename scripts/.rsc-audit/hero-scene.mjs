@@ -59,7 +59,7 @@ async function run(w, h, opts = {}) {
   if (opts.mobile) { await page.touchscreen.tap(w / 2, h * 0.3); } else { await page.mouse.move(w * 0.3, h * 0.4); await page.mouse.move(w * 0.31, h * 0.41); }
   await page.waitForTimeout(5500); // montagem + SplitText + ScrollTrigger + probe
   const L = await page.evaluate(() => window.__miloHero.labels());
-  const seq = [["00-initial", 0.0], ["10-design", 0.14], ["30-walk-a", 0.3], ["40-walk-b", 0.42], ["55-stop", L.walkEnd], ["63-reach", (L.armStart + L.contact) / 2], ["68-contact", L.contact + 0.004], ["76-pull", (L.contact + L.pullEnd) / 2], ["84-pull-end", L.pullEnd], ["88-impact", L.pullEnd + 0.035], ["100-final", 0.985]];
+  const seq = [["00-initial", 0.0], ["10-initial-b", 0.1], ["25-walk-a", 0.25], ["35-walk-b", 0.35], ["45-stop", L.walkEnd], ["52-recognize", 0.52], ["58-reach", (L.armStart + L.contact) / 2], ["60-contact", L.contact + 0.004], ["68-pull", (L.contact + L.pullEnd) / 2], ["76-pull-end", L.pullEnd], ["84-settle", 0.84], ["100-final", 0.985]];
   const log = [];
   for (const [name, p] of seq) {
     await toProgress(page, p);
@@ -68,7 +68,7 @@ async function run(w, h, opts = {}) {
   }
   // deslizamento dos pés: durante a caminhada, o pé de apoio deve ficar (quase) parado na tela
   const slide = [];
-  for (let p = 0.26; p <= 0.5; p += 0.01) {
+  for (let p = 0.17; p <= 0.44; p += 0.01) {
     await toProgress(page, p, 120);
     slide.push(await page.evaluate(() => { const f = window.__miloHero.frame; return [f.scroll, f.walk.phase, window.__miloHero.placement.x]; }));
   }
@@ -95,9 +95,13 @@ async function run(w, h, opts = {}) {
   return log;
 }
 const d = await run(1920, 1080, { shoot: true });
-tag = tag0 + "-m";
 await run(1440, 900, { shoot: false });
-await run(1366, 768, { shoot: false });
+tag = tag0 + "-nb";
+await run(1366, 768, { shoot: true });
+tag = tag0 + "-t";
+await run(768, 1024, { shoot: true, mobile: true });
+tag = tag0 + "-m";
 await run(390, 844, { shoot: true, mobile: true });
+await run(360, 800, { shoot: false, mobile: true });
 writeFileSync(`scripts/.rsc-audit/${tag}.json`, JSON.stringify(d, null, 1));
 await browser.close();

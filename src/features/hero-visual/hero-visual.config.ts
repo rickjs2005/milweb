@@ -14,28 +14,32 @@ export function resolveHeroVisual(raw: string | undefined): HeroVisualVariant {
 export const HERO_VISUAL: HeroVisualVariant = resolveHeroVisual(process.env.NEXT_PUBLIC_HERO_VISUAL);
 
 /**
- * Cena do Milo no Hero (unidades do mundo three; a câmera olha (0,1,0) de z = 5,6).
- * Os pés ficam na borda inferior da viewport (y), o corpo entra pela direita,
- * para junto da extremidade condensada de "PESSOAS." e a arrasta para a
- * direita andando de ré. Tudo função do progresso do ScrollTrigger.
+ * Cena do Milo no Hero (unidades do mundo three; a câmera olha (0,1,0) de z = 5,6,
+ * a viewport tem 2·1,344 de altura no plano z = 0 em qualquer resolução).
+ * O corpo entra pela direita, para nas colunas 8–10 junto da extremidade de
+ * "PESSOAS." e a puxa ~1 coluna para si. Tudo função do progresso do ScrollTrigger.
  */
+const VIEW_H = 2 * 5.6 * Math.tan((27 * Math.PI) / 360);
 export const MILO_HERO = {
-  /** escala e altura do root (desktop / < 720 px) */
-  scale: 0.9,
-  scaleMobile: 0.5,
-  y: -0.35,
-  yMobile: -0.42,
+  /** altura do Milo como fração da viewport (desktop) → escala do root (altura nominal 1,9) */
+  heightSvh: 0.78,
+  scale: (0.78 * VIEW_H) / 1.9,
+  /** mobile: só tronco, cabeça e braço ativo importam — maior e com os pés abaixo da dobra */
+  scaleMobile: 0.82,
+  /** y do root (pés): borda inferior da viewport no plano z=0 é 1 − VIEW_H/2; + respiro. Mobile: pés abaixo da dobra, cabeça a ~50 % */
+  y: 1 - VIEW_H / 2 + 0.08,
+  yMobile: -0.56,
   /** rotação do corpo: andando (perfil, de frente para a headline) e parado (três quartos) */
   yawWalk: -1.15,
   yawRest: -0.36,
   /** distância (mundo, × escala) entre a extremidade da palavra e o root enquanto a mão a segura */
-  holdOffset: 0.62,
-  holdOffsetMobile: 0.5,
+  holdOffset: 0.72,
+  holdOffsetMobile: 0.66,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
   stride: 0.64,
   /** folga além da borda para o corpo (e o braço em balanço) começar totalmente fora da tela */
   offscreenPad: 0.8,
-  offscreenPadMobile: 0.7,
+  offscreenPadMobile: 0.5,
   /** custo máximo (ms) do frame medido depois do aquecimento; acima disso volta ao SVG */
   frameBudgetMs: 14,
 } as const;

@@ -44,7 +44,10 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
             stages: d.hero.stages,
             inspect: d.hero.inspect,
             scroll: d.hero.scroll,
+            sub: d.hero.sub,
+            cta: d.hero.cta,
           }}
+          workHref={withLocale(locale, "/#work")}
         />
         <SelectedWork
           act={d.acts.work}

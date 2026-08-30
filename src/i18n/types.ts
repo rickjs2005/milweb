@@ -7,7 +7,7 @@ export type Dictionary = {
   nav: { work: string; lab: string; studio: string; services: string; contact: string; menu: string; close: string; primary: string };
   acts: { build: string; work: string; capabilities: string; lab: string; brk: string; human: string; builtWith: string; contact: string };
   boot: { tagline: string; origin: string; lines: [string, string, string, string]; skip: string; compile: string };
-  hero: { headline: [string, string]; stages: [string, string, string, string, string, string]; support: [string, string, string]; inspect: string; scroll: string };
+  hero: { headline: [string, string]; stages: [string, string, string, string, string, string]; support: [string, string, string]; inspect: string; scroll: string; sub: string; cta: string };
   inspect: { title: string; dev: string };
   work: {
     eyebrow: string;

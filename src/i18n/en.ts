@@ -16,6 +16,8 @@ export const en: Dictionary = {
     support: ["CREATIVE DEVELOPMENT", "DIGITAL EXPERIENCES", "BRAZIL — WORLDWIDE"],
     inspect: "HOLD TO INSPECT",
     scroll: "SCROLL TO BUILD",
+    sub: "Digital experiences, websites and systems built to turn attention into results.",
+    cta: "VIEW WORK ↓",
   },
   inspect: { title: "INSPECT MODE — STRUCTURE VIEW", dev: "MW / DEV" },
   work: {

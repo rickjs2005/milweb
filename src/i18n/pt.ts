@@ -16,6 +16,8 @@ export const pt: Dictionary = {
     support: ["DESENVOLVIMENTO CRIATIVO", "EXPERIÊNCIAS DIGITAIS", "BRASIL — MUNDO"],
     inspect: "SEGURE PARA INSPECIONAR",
     scroll: "ROLE PARA CONSTRUIR",
+    sub: "Experiências digitais, sites e sistemas criados para transformar atenção em resultado.",
+    cta: "VER PROJETOS ↓",
   },
   inspect: { title: "MODO INSPEÇÃO — VISTA ESTRUTURAL", dev: "MW / DEV" },
   work: {

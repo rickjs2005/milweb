@@ -7,6 +7,7 @@ import { MILO } from "@/components/milo/milo.config";
 import type { MiloState } from "@/components/milo/milo.types";
 import type { MiloHeroInput } from "@/features/hero-visual/hero-visual.types";
 import { MILO_HERO } from "@/features/hero-visual/hero-visual.config";
+import { HEADLINE_AXES } from "@/sections/home/build-hero";
 import { heroPlacement, useMiloHeroStore } from "./hero-store";
 import { measureHeroGrid } from "./useMiloHeroMetrics";
 
@@ -47,7 +48,7 @@ export const heroFrame = {
 };
 
 /** Labels padrão (as da timeline do BuildHero têm prioridade quando existem). */
-const LABELS = { design: 0.08, walkStart: 0.2, walkEnd: 0.57, armStart: 0.57, contact: 0.68, pullEnd: 0.84, impactEnd: 0.92 };
+const LABELS = { walkStart: 0.15, walkEnd: 0.45, armStart: 0.55, contact: 0.6, pullEnd: 0.76, settle: 0.78, outro: 0.9 };
 type Labels = typeof LABELS;
 
 const smooth = (a: number, b: number, x: number) => {
@@ -62,13 +63,13 @@ export const pullTarget: HeadlinePullTarget = { x: 0.5, y: 0.5, active: false, c
 
 export function deriveHeroInput(progress: number, pointer: { x: number; y: number }, headlineReleased: boolean, heroVisible: boolean, L: Labels = LABELS): MiloHeroInput {
   const p = Math.min(1, Math.max(0, progress));
-  const bounds = [L.design, L.walkStart, L.armStart, L.pullEnd, L.impactEnd, 1.0001];
+  const bounds = [L.walkStart, L.walkEnd, L.armStart, L.settle, L.outro, 1.0001];
   let stage = 0;
   while (stage < 5 && p >= bounds[stage]) stage++;
   const lo = stage === 0 ? 0 : bounds[stage - 1];
   const hi = bounds[stage];
   const stageProgress = Math.min(1, Math.max(0, (p - lo) / (hi - lo)));
-  const scanProgress = p < L.pullEnd ? 0 : p < L.pullEnd + 0.05 ? (p - L.pullEnd) / 0.05 : p < L.pullEnd + 0.08 ? 1 - (p - L.pullEnd - 0.05) / 0.03 : 0;
+  const scanProgress = 0;
   return { stage: stage as MiloHeroInput["stage"], progress: p, stageProgress, scanProgress: Math.max(0, Math.min(1, scanProgress)), pointer, headlineReleased, heroVisible };
 }
 
@@ -106,79 +107,83 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   const p = input.progress;
   const gate = heroFrame.bootGate;
   const S = g.scale;
+  const small = window.innerWidth < 720;
   const walkIn = smooth(L.walkStart, L.walkEnd, p); // ease in/out: acelera e desacelera
+  const settleStep = smooth(L.walkEnd, L.walkEnd + 0.05, p); // fecha o último passo, firma os pés
+  // ombro → cotovelo → mão: o alcance sobe do armStart ao contato (a mola do IK dá a cadeia)
   const reach = smooth(L.armStart, L.contact, p);
-  const holding = p >= L.contact - 0.004 ? 1 - smooth(L.pullEnd, L.pullEnd + 0.05, p) : 0;
-  const impact = smooth(L.pullEnd, L.impactEnd, p);
+  // segurando: do contato ao assentamento; solta devagar depois (pose final natural)
+  const holding = p >= L.contact - 0.004 ? 1 - smooth(L.settle, L.settle + 0.08, p) : 0;
+  const settled = smooth(L.pullEnd, L.settle + 0.06, p);
   heroFrame.walk = walkIn;
   heroFrame.pull = fontWidth;
   heroFrame.fontWidth = fontWidth;
 
-  // ---- posição do corpo
-  const small = window.innerWidth < 720;
-  const xOff = g.halfW + (small ? MILO_HERO.offscreenPadMobile : MILO_HERO.offscreenPad) * S; // totalmente fora, à direita
+  // ---- posição do corpo: entra, para junto da extremidade (colunas 8–10) e FICA — a frase vem até ele
+  const xOff = g.halfW + (small ? MILO_HERO.offscreenPadMobile : MILO_HERO.offscreenPad) * S;
   const hold = (small ? MILO_HERO.holdOffsetMobile : heroFrame.holdOffset) * S;
-  const grabX = g.anchorX0 + hold; // onde a mão alcança a extremidade condensada
-  const maxX = g.halfW - (small ? 0.55 : 0.66) * S; // o corpo fica inteiro na tela; a mão continua na extremidade (IK)
+  const stopX = Math.min(g.halfW - (small ? 0.28 : 0.55) * S, g.anchorX0 + hold); // inteiro na tela (mobile: só tronco/cabeça/braço)
   let x: number;
   if (p < L.walkStart) x = xOff;
-  else if (p < L.armStart) x = lerp(xOff, grabX, walkIn);
-  else if (p < L.contact) x = grabX + 0.06 * S * reach; // antecipação: o peso vai para a frente
-  else x = Math.min(maxX, g.anchorX + hold); // arrasta: o corpo acompanha a extremidade medida
+  else if (p < L.walkEnd) x = lerp(xOff, stopX, walkIn);
+  else x = stopX + 0.04 * S * reach * (1 - settled) - 0.03 * S * holding * fontWidth; // peso vai à frente no alcance, absorve na puxada
   heroPlacement.x = x;
   heroPlacement.y = small ? MILO_HERO.yMobile : MILO_HERO.y;
   heroPlacement.scale = S;
   heroPlacement.stride = g.stride;
-  // corpo: de perfil andando, vira para a headline ao parar, inclina para trás ao puxar
-  const turn = smooth(L.walkEnd - 0.08, L.armStart + 0.03, p);
-  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.22 * holding * smooth(L.contact, L.contact + 0.05, p);
+  // corpo: de perfil andando; ao parar gira cabeça/tronco para a frase (três quartos)
+  const turn = smooth(L.walkEnd - 0.06, L.armStart, p);
+  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.12 * holding * fontWidth;
 
   // ---- pernas: fase pela distância percorrida (assinada → andar de ré inverte o ciclo)
   f.walk.phase = (xOff - x) / g.stride;
-  // velocidade normalizada (derivada numérica, suavizada): lean e peso da marcha
   const v = dt > 0 ? (g.lastX - x) / dt : 0; // + = andando para a esquerda (frente)
   g.lastX = x;
   const vN = Math.max(-1, Math.min(1, v / (2.2 * S)));
   f.walk.speed += (vN - f.walk.speed) * Math.min(1, dt * 10);
   const moving = Math.min(1, Math.abs(f.walk.speed) * 4);
-  const inWalk = p >= L.walkStart && p < L.armStart ? 1 : holding;
-  const targetAmount = inWalk * Math.max(moving, p < L.armStart ? Math.min(1, (1 - Math.abs(0.5 - walkIn) * 2) * 1.6) : 0);
+  const inWalk = p >= L.walkStart && p < L.walkEnd + 0.05 ? 1 : 0;
+  const targetAmount = inWalk * Math.max(moving, Math.min(1, (1 - Math.abs(0.5 - walkIn) * 2) * 1.6)) * (1 - settleStep);
   f.walk.amount += (targetAmount - f.walk.amount) * Math.min(1, dt * 8);
 
-  // ---- braço: só depois da caminhada; solta no impacto
-  const armW = p < L.contact ? reach : 1 - smooth(L.pullEnd, L.pullEnd + 0.06, p);
+  // ---- braço: parado até armStart; alcança; segura enquanto a frase se move; conclui e volta
+  const armW = p < L.contact ? reach : holding;
   f.touch = armW;
-  const contact = holding * smooth(L.contact - 0.012, L.contact + 0.006, p) * heroFrame.contactStrength;
+  const contact = (p >= L.contact - 0.004 ? 1 : 0) * smooth(L.contact - 0.01, L.contact + 0.006, p) * (1 - smooth(L.pullEnd, L.settle + 0.02, p)) * heroFrame.contactStrength;
   heroFrame.contact = contact;
   f.contact = contact;
-  f.attention = smooth(L.armStart - 0.04, L.armStart + 0.03, p) * (1 - smooth(L.impactEnd, L.impactEnd + 0.04, p));
+  f.attention = smooth(L.walkEnd, L.walkEnd + 0.06, p) * (1 - smooth(L.outro, L.outro + 0.05, p));
   pullTarget.active = armW > 0.001;
   pullTarget.contact = contact;
   pullTarget.pull = fontWidth;
-  pullTarget.release = smooth(L.pullEnd, L.impactEnd, p);
+  pullTarget.release = settled;
 
-  // ---- tronco: inclina para alcançar, pende para trás puxando, recua no impacto
-  f.lean = 0.16 * reach * (1 - holding) + -0.13 * holding * smooth(L.contact, L.contact + 0.04, p) + 0.05 * f.walk.speed;
-  f.recoil = Math.sin(Math.PI * smooth(L.pullEnd, L.pullEnd + 0.06, p));
-  f.solid = impact;
-  f.params.bodyDensity = MILO.shader.bodyDensity * (1 + 0.9 * impact);
-  f.params.internalShadow = MILO.shader.internalShadow * (1 + 0.5 * impact);
-  f.params.wireframeVisibility = MILO.shader.wireframeVisibility * (1 - 0.4 * impact);
+  // ---- tronco: peso à frente para alcançar; absorve a força no contato; recua curto ao assentar
+  f.lean = 0.12 * reach * (1 - settled) - 0.06 * holding * fontWidth + 0.05 * f.walk.speed;
+  f.recoil = Math.sin(Math.PI * smooth(L.pullEnd, L.settle + 0.04, p)) * 0.8;
+  f.solid = settled;
+  // refração momentânea + distorção localizada no ponto de força (cai com o assentamento)
+  const force = contact * (1 - 0.6 * settled);
+  f.params.interactionDistortion = MILO.shader.interactionDistortion * (1 + 1.2 * force);
+  f.params.bodyDensity = MILO.shader.bodyDensity * (1 + 0.45 * settled);
+  f.params.internalShadow = MILO.shader.internalShadow * (1 + 0.3 * settled);
 
   // ---- presença, energia, grid
-  f.visibility = smooth(L.walkStart - 0.005, L.walkStart + 0.02, p) * gate;
-  f.observe = (0.35 + 0.45 * smooth(L.walkEnd - 0.1, L.armStart, p) + heroFrame.headUp * 0.3) * (1 - 0.5 * inWalk * moving);
-  f.particles = lerp(0.25, 0.45, walkIn) + 0.2 * contact + 0.15 * impact;
+  f.visibility = smooth(L.walkStart - 0.005, L.walkStart + 0.02, p) * gate; // nunca < 1 depois de entrar: uVisibility < 1 dissolve as pernas primeiro
+  f.observe = (0.35 + 0.45 * turn + heroFrame.headUp * 0.3) * (1 - 0.5 * inWalk * moving);
+  // partículas: concentradas nas articulações; ganham energia no contato e perdem ao assentar
+  f.particles = lerp(0.22, 0.4, walkIn) + 0.35 * contact * (1 - settled) - 0.1 * settled;
   f.scroll = p;
   f.pulse = 0;
-  heroFrame.gridOpacity = smooth(L.design, L.walkStart, p);
-  heroFrame.bendMul = lerp(0.5, 1, smooth(L.walkStart, L.walkStart + 0.1, p)) + 0.8 * Math.sin(Math.PI * smooth(L.pullEnd, L.pullEnd + 0.06, p));
-  heroFrame.scan = input.scanProgress;
-  f.energy = Math.max(0.08, lerp(0.14, 0.34, walkIn) + 0.2 * contact + 0.25 * impact);
+  heroFrame.gridOpacity = smooth(L.walkStart, L.walkStart + 0.12, p);
+  // grid: comprime/dobra no contato e guarda uma pequena memória da deformação depois
+  heroFrame.bendMul = lerp(0.5, 1, smooth(L.walkStart, L.walkStart + 0.1, p)) + 0.6 * Math.sin(Math.PI * smooth(L.contact - 0.01, L.contact + 0.08, p)) + 0.12 * settled;
+  heroFrame.scan = 0;
+  f.energy = Math.max(0.08, lerp(0.14, 0.32, walkIn) + 0.3 * contact - 0.08 * settled);
 }
 
 function stateFor(p: number, L: Labels): Exclude<MiloState, "transition"> {
-  if (p >= L.impactEnd) return "full";
+  if (p >= L.settle) return "full";
   if (p >= L.armStart) return "touch";
   if (p >= L.walkStart) return "observe";
   return "dormant";
@@ -206,7 +211,7 @@ function makeAnchorReader(hero: HTMLElement) {
     /** 0..1 do eixo wdth, lido do inline style que o tween escreve (sem layout). */
     fontWidth() {
       const v = parseFloat(h1.style.getPropertyValue("--wdth"));
-      return Number.isFinite(v) ? Math.min(1, Math.max(0, (v - 62) / 63)) : 0;
+      return Number.isFinite(v) ? Math.min(1, Math.max(0, (v - HEADLINE_AXES.from.wdth) / (HEADLINE_AXES.to.wdth - HEADLINE_AXES.from.wdth))) : 0;
     },
   };
 }

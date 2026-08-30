@@ -72,6 +72,12 @@
     text-wrap: balance;
   }
   .t-display-xl { font-size: var(--step-6); }
+  /* Headline do Hero: no desktop cabe em ~8 das 12 colunas (as demais são do Milo);
+     no mobile cada palavra é uma linha e a maior palavra dita o tamanho. */
+  .t-fit-hero { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) * 0.98 / (var(--chars-m, 8) * 0.97))); }
+  @media (min-width: 768px) {
+    .t-fit-hero { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) * 0.7 / (var(--chars, 12) * 0.97))); }
+  }
   /* Headline que cabe na linha em qualquer idioma: escala pelo número de
      caracteres da linha mais longa (--chars), nunca acima do tamanho normal.
      0.97em ≈ largura média do caractere em Archivo expandida 900 caixa alta. */
@@ -257,6 +263,17 @@ html[data-compiler="on"] .compiler-fallback { display: none; }
 @media (prefers-reduced-motion: reduce) { .compiler-fallback-ring { animation: none; } }
 @keyframes compiler-ring { to { transform: rotate(360deg); } }
 /* anomalia: a interface perde a rigidez por ~450 ms (nav, régua, grid) */
+/* Proteção complementar (a origem real do overflow — rótulos display sem min-width no
+   flex — foi corrigida): clip não cria contexto de rolagem, o sticky continua funcionando. */
+html, body { overflow-x: clip; }
+/* Hero: estágios com hierarquia (atual → passado → futuro) e saída comercial */
+[data-stage] { opacity: 0.28; transition: opacity var(--dur-medium) var(--ease-in-out-quart), color var(--dur-fast); }
+[data-stage].is-past { opacity: 0.45; }
+[data-stage].is-active { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .milo-hero-fallback { animation: milo-hero-arrive 0.6s var(--ease-out-expo) both; }
+}
+@keyframes milo-hero-arrive { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [data-layer="wire"], html.anomaly [data-layer="stages"], html.anomaly [data-layer="code"] { animation: anomaly 0.45s steps(6) both; }
 @keyframes anomaly {
   0% { transform: translate(0, 0) skewX(0); }

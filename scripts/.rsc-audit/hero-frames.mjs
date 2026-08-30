@@ -21,6 +21,7 @@ async function shots(w, h, mobile, tag, states) {
   console.log(tag, JSON.stringify(after));
   await ctx.close();
 }
-await shots(1920, 1080, false, "final", [["00-initial", 0], ["76-pull", 0.76], ["100-final", 0.985]]);
-await shots(390, 844, true, "final-m", [["00-initial", 0], ["30-walk", 0.3], ["100-final", 0.985]]);
+await shots(1920, 1080, false, "final", [["00-initial", 0], ["30-walk", 0.3], ["61-contact", 0.61], ["100-final", 0.985]]);
+await shots(1366, 768, false, "final-nb", [["100-final", 0.985]]);
+await shots(390, 844, true, "final-m", [["00-initial", 0], ["30-walk", 0.3], ["61-contact", 0.61], ["100-final", 0.985]]);
 await b.close();
