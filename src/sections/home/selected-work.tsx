@@ -115,8 +115,13 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
 
           // ---------- SAÍDA (enquanto o próximo cobre) ----------
           if (next) {
+            // trigger: panel (não `next`) — medir a posição de um elemento sticky que
+            // ainda não "grudou" é instável nesse padrão de cases empilhados; como os
+            // painéis são contíguos (mesma altura, sem vão), o bottom deste painel
+            // cruza a tela exatamente junto com o top do próximo — mesmo timing, mas
+            // medido a partir de um elemento cuja própria entrada já prova ser confiável.
             const exitTl = gsap.timeline({
-              scrollTrigger: { trigger: next, start: "top bottom", end: "top 15%", scrub: 0.6 },
+              scrollTrigger: { trigger: panel, start: "bottom bottom", end: "bottom 15%", scrub: 0.6 },
               defaults: { ease: EASE.inOutQuart },
             });
             exitTl.to(text, { autoAlpha: 0.15, duration: 0.5 }, 0);
