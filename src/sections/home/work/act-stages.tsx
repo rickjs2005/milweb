@@ -118,11 +118,42 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
       {/* O EQUIPAMENTO — protagonista, isolado do frame de produtos. `multiply`
           no invólucro (e não na imagem: o z-index do invólucro cria contexto de
           empilhamento, e ali dentro a mistura não teria com o que se misturar)
-          dissolve o card claro no papel: o drone fica impresso na página. */}
-      <div data-media-b className="absolute right-[9%] top-[25%] z-[3] h-[22%] w-[26%] overflow-hidden mix-blend-multiply max-md:right-[6%] max-md:top-[31%] max-md:h-[17%] max-md:w-[58%]">
-        <Crop src={detail} region={[570, 445, 875, 590]} sizes="100vw" className="contrast-[1.18]" />
+          dissolve o card claro no papel: o drone fica impresso na página.
+
+          POSIÇÃO. O card nasce ABAIXO da faixa da lavoura (11 % + 25 % = 36 %),
+          e não por cima dela. `multiply` só "imprime" contra o papel: sobre a
+          fotografia ele multiplica o corpo claro da máquina pelo verde do campo
+          — o tanque virava oliva e o drone lia como camuflado, não como estando
+          à frente. Com o topo em 37 % a tinta visível (que começa 6,3 % caixa
+          adentro, o resto é hélice desfocada que o `contrast` já apaga) cai
+          inteira no papel.
+
+          ENQUADRAMENTO. A região está centrada no CENTROIDE de tinta da máquina
+          (718,5 / 497 na captura, medido depois do `contrast`, não no meio da
+          caixa envolvente): o drone é assimétrico — braços e trem de pouso
+          pesam para a direita e para baixo — e centrar a caixa envolvente
+          deixava a massa alta e à esquerda, com um vazio na diagonal oposta
+          exatamente onde a mira e a etiqueta ancoram. O recorte anterior ainda
+          cortava o rotor traseiro (começava 19 px abaixo do topo da hélice) e a
+          borda esquerda do rotor dianteiro.
+
+          ASPECTO TRAVADO. A caixa deriva a altura da LARGURA (`aspect`) em vez
+          de ler `h-[22%]`: com as duas medidas em porcentagens de eixos
+          diferentes, a proporção da caixa era a da viewport (2.10 em 16:9, 1.89
+          em 16:10, 1.58 a 390 px) e o `object-cover` comia as laterais — os dois
+          rotores externos saíam cortados em tudo que não fosse 16:9. Em 1920x1080
+          a altura resultante é a mesma de antes (238 px contra 237,6), então a
+          composição do desktop não muda; o que muda é ela passar a valer em
+          qualquer proporção de tela. A `[data-target]` repete as mesmas medidas
+          porque a mira precisa cair exatamente sobre a fotografia.
+
+          `sizes` descreve a imagem INTEIRA depois do recorte (1440/300 = 4,8x a
+          largura da caixa), não a caixa: declarando 100vw o Next servia uma
+          variante de 640–828 px para uma imagem exibida com ~2400 px. */}
+      <div data-media-b className="absolute right-[9%] top-[37%] z-[3] aspect-[300/143] w-[26%] overflow-hidden mix-blend-multiply max-md:right-[6%] max-md:top-[34%] max-md:w-[68%]">
+        <Crop src={detail} region={[568, 426, 868, 569]} sizes="(max-width: 768px) 330vw, 130vw" className="contrast-[1.18]" />
       </div>
-      <div data-target aria-hidden="true" className="absolute right-[9%] top-[25%] z-[4] h-[22%] w-[26%] opacity-0 max-md:right-[6%] max-md:top-[31%] max-md:h-[17%] max-md:w-[58%]">
+      <div data-target aria-hidden="true" className="absolute right-[9%] top-[37%] z-[4] aspect-[300/143] w-[26%] opacity-0 max-md:right-[6%] max-md:top-[34%] max-md:w-[68%]">
         <span className="absolute left-0 top-0 h-4 w-4 border-l border-t border-current opacity-70" />
         <span className="absolute right-0 top-0 h-4 w-4 border-r border-t border-current opacity-70" />
         <span className="absolute bottom-0 left-0 h-4 w-4 border-b border-l border-current opacity-70" />
@@ -130,8 +161,13 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
         <span className="t-mono absolute -bottom-5 right-0 text-[10px] tracking-[0.14em] opacity-60">DJI AGRAS T70P</span>
       </div>
 
-      {/* leituras técnicas: aparecem no scroll, ao longo da varredura */}
-      <div data-readout className="t-mono absolute right-[6%] top-[54%] z-[4] hidden text-right md:block">
+      {/* leituras técnicas: aparecem no scroll, abaixo do equipamento e alinhadas
+          à direita DELE (não à margem), então etiqueta e números leem como uma
+          coluna de instrumentos só. O `top` acompanha a base do card: a altura
+          dele agora vem da largura (26vw / 2,098 = 12,393vw), e um `top` em
+          porcentagem da ALTURA da tela descolaria em cada proporção — a 1366x768
+          a base do drone cai em 59 % e a 1024x768 em 53 %. */}
+      <div data-readout className="t-mono absolute right-[9%] top-[calc(37%+12.393vw+2.5rem)] z-[4] hidden text-right md:block">
         {["ALT 42 M", "SWATH 7,0 M", "COV 14,6 HA/H"].map((t) => (
           <p key={t} data-coord className="tnum opacity-0">
             {t}

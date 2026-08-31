@@ -5,6 +5,21 @@ Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (Scro
 Branch: `main` · produção em https://milweb.com.br (Vercel)
 Último deploy verificado: **31/08/2026 · `d3cb274`** — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
+## 31/08/2026 — ATO 01 KAVITA: o card do drone (local, sem push)
+
+Só o `[data-media-b]` do palco da Kavita (`work/act-stages.tsx`) — composição, sem tocar em timeline, em `[data-media]` (o `view-transition-name` do case) nem nos outros três atos.
+
+**Três defeitos, medidos na captura:**
+1. **O `multiply` estava apagando a máquina.** O card nascia em `top-25%` e a faixa da lavoura vai de 11 % a 36 %: metade do drone caía sobre a fotografia, e `multiply` só "imprime" contra o papel — sobre o campo ele multiplicava o corpo claro pelo verde e o tanque virava oliva. O drone lia como camuflado, não como estando à frente. Card baixou para `top-37%` (mobile `34%`): a tinta visível começa 6,3 % caixa adentro (o resto é hélice desfocada que o `contrast-[1.18]` já apaga em branco), então ela cai inteira no papel.
+2. **A proporção da caixa era a da viewport, não a do recorte.** `h-[22%] w-[26%]` são porcentagens de EIXOS diferentes: a caixa tinha 2.10 em 16:9, 1.89 em 16:10 e 1.58 a 390 px, e o `object-cover` comia as laterais — **os dois rotores externos saíam cortados em tudo que não fosse 16:9** (a 390 px sumia 25 % da largura). Agora a altura vem da largura (`aspect-[300/143] w-[26%]`, mobile `w-[68%]`); em 1920×1080 dá 238 px contra os 237,6 de antes, então a composição do desktop não muda — passa a valer em qualquer proporção. `[data-target]` repete as medidas (a mira tem que cair sobre a fotografia).
+3. **O recorte estava descentrado.** `[570,445,875,590]` cortava o rotor traseiro (começava 19 px abaixo do topo da hélice) e a borda do dianteiro, e sobrava vazio embaixo e à direita — bem onde a mira e a etiqueta ancoram. Novo: `[568,426,868,569]`, centrado no CENTROIDE de tinta medido DEPOIS do `contrast` (718 / 497,5), não no meio da caixa envolvente — o drone é assimétrico (braços e trem de pouso pesam para a direita e para baixo) e a caixa envolvente deixava a massa alta e à esquerda.
+
+**De carona:** `sizes` do recorte era `100vw` descrevendo a CAIXA; ele descreve a imagem inteira depois do recorte (1440/300 = 4,8x a largura da caixa, ~2400 px em 1920), então o Next servia variante de 640–828 px — agora `(max-width: 768px) 330vw, 130vw` e o `currentSrc` sobe para 1920/3840. As leituras técnicas saíram de `right-6% top-54%` (faixa que virou o corpo do drone) para `right-9% top-[calc(37%+12.393vw+2.5rem)]`: alinhadas à direita DO CARD, e o `top` acompanha a base dele — com a altura vinda da largura, um `top` em % da ALTURA da tela descolaria (a base do drone cai em 59 % a 1366×768 e em 53 % a 1024×768).
+
+**Validação:** 1920×1080, 1440×900, 1366×768, 1024×768, 390×844 e 320×568 × 3 checkpoints (0.3 / 0.5 / 0.68) — aspecto 2.098 em todos, mira coincidindo com a foto (dx 0), sem overflow, e colisão testada contra lavoura / readout / metadata / manchete / CTA: nenhuma. Console limpo (só os 404 de `_vercel/insights` do localhost). `tsc`/`lint`/`build` verdes, JS compartilhado segue 106 kB. **Sem push de deploy.**
+
+**Limitação:** a captura de origem tem 1440×900 e o recorte usa 300 px de largura, então o card amplia ~1,7x em 1920 — é o teto de nitidez disponível sem um render novo do drone.
+
 ## 31/08/2026 — SELECTED WORK v2: quatro atos, um filme (local, sem push)
 
 Refatoração completa da seção `#work`. Antes: quatro `<article>` de 100 svh, todos `sticky top-0`, com duas timelines por painel. **Causa raiz do "card → card → card": o painel *i* grudava no topo no MESMO frame em que o *i+1* começava a subir por cima — nenhum ato ficava sozinho em tela em momento nenhum.** Não era falta de motion, era falta de duração.
