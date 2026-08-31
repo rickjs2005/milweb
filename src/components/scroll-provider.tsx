@@ -45,6 +45,7 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
     let raf: ((t: number) => void) | null = null;
     let watchdog = 0;
     let onShow: (() => void) | null = null;
+    let cleanupVisibility: (() => void) | null = null;
     let disposed = false;
     import("lenis").then(({ default: LenisCtor }) => {
       if (disposed) return;
@@ -74,12 +75,21 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
           ScrollTrigger.refresh();
         }
       }, 1000);
-      // volta de bfcache / aba oculta: garante o loop vivo e as medidas certas
+      // volta de bfcache / aba oculta: garante o loop vivo e as medidas certas.
+      // `pageshow` só cobre bfcache/navegação — trocar de aba e voltar (o caso mais
+      // comum) não dispara isso, só `visibilitychange`; sem ele o rAF do gsap.ticker
+      // fica pausado (é assim que o browser trata aba oculta) e o watchdog acima não
+      // adianta nada enquanto ele não voltar a rodar — o site "trava" até um F5.
       onShow = () => {
         instance.start();
         ScrollTrigger.refresh();
       };
+      const onVisibility = () => {
+        if (document.visibilityState === "visible") onShow?.();
+      };
       window.addEventListener("pageshow", onShow);
+      document.addEventListener("visibilitychange", onVisibility);
+      cleanupVisibility = () => document.removeEventListener("visibilitychange", onVisibility);
     });
 
     return () => {
@@ -87,6 +97,7 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
       if (raf) gsap.ticker.remove(raf);
       window.clearInterval(watchdog);
       if (onShow) window.removeEventListener("pageshow", onShow);
+      cleanupVisibility?.();
       lenis.current?.destroy();
       lenis.current = null;
     };

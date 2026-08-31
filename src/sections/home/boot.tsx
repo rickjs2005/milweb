@@ -12,8 +12,16 @@ import { BootController } from "./boot-controller";
  * → fragmentos → saída em clip-path. Se o JS nunca chegar, o overlay sai
  * sozinho em --boot-exit (2,6 s). Clique/tecla pulam.
  */
+// `history.scrollRestoration = 'manual'` primeiro que tudo: o padrão do browser
+// ('auto') reaplica o scrollY salvo quando a aba é fechada e reaberta (Ctrl+Shift+T
+// no Edge/Chrome restaura sessionStorage junto) — o Lenis (import assíncrono,
+// components/scroll-provider.tsx) inicializa DEPOIS, achando que a página está em
+// 0; a posição nativa já pulou pra Y>0 enquanto a interna do Lenis fica presa em 0,
+// e o wheel passa a mover uma coisa que não corresponde a nada visível (sintoma
+// relatado: "fecho a aba, entro de novo, trava"). Sem isso pra disputar, a página
+// sempre começa em 0 de verdade.
 const SKIP_SCRIPT =
-  "(function(){try{var h=document.documentElement;if(sessionStorage.getItem('mw:booted')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches){h.classList.add('booted');}else{h.classList.add('booting');}}catch(e){}})();";
+  "(function(){try{if('scrollRestoration' in history)history.scrollRestoration='manual';var h=document.documentElement;if(sessionStorage.getItem('mw:booted')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches){h.classList.add('booted');}else{h.classList.add('booting');}}catch(e){}})();";
 
 export function Boot({ mark, tagline, origin, lines, skip, compile }: { mark: string; tagline: string; origin: string; lines: readonly string[]; skip: string; compile: string }) {
   return (
