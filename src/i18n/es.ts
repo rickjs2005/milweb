@@ -23,7 +23,7 @@ export const es: Dictionary = {
   inspect: { title: "MODO INSPECCIÓN — VISTA ESTRUCTURAL", dev: "MW / DEV" },
   work: {
     eyebrow: "PROYECTOS SELECCIONADOS",
-    enter: "ENTRAR A LA EXPERIENCIA",
+    enter: "EXPLORAR PROYECTO",
     all: "TODOS LOS PROYECTOS",
     clientWork: "TRABAJO PARA CLIENTE",
     labels: {

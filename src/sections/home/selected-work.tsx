@@ -1,12 +1,14 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
+import { useRef, type CSSProperties } from "react";
 import Link from "next/link";
 import { gsap, EASE, MQ, ScrollTrigger, useGSAP } from "@/animations/gsap";
-import { WorldLayers } from "./world-layers";
-import { WORLD_LAWS } from "./world-laws";
 import { vtOfSlug } from "@/lib/route-transition";
+import { ACT, ACT_ORDER, SKIN, bleedOf, type ActSlug } from "./work/act-config";
+import { ActStage } from "./work/act-stages";
+import { WorkDots } from "./work/work-dots";
+import { ACT_LAWS } from "./work/act-laws";
+import { AUREX_PARTS } from "./work/aurex-movement";
 
 export type WorkItem = {
   n: string;
@@ -19,20 +21,42 @@ export type WorkItem = {
   image: string;
   detail: string;
   href: string;
-  /** Rótulos técnicos reais do projeto (mono, discretos). */
+  /** Rótulos técnicos reais do projeto (nível 02 da hierarquia). */
   labels: string[];
 };
 
 /**
- * ACT 03 — SELECTED WORK. Quatro mundos em sticky stack, uma obra
- * contínua: KAVITA → (land→origin) → TERRAL → (organic→structure) →
- * VERTEX → (structure→mechanism) → AUREX → (mechanism→system) → o resto.
+ * ACT 03 — SELECTED WORK. Um filme em quatro atos, não quatro cards.
  *
- * Cada painel tem camadas próprias (data-world) que a timeline de entrada
- * e a de saída animam com scrub. A estrutura MilWeb (régua, índice,
- * mono, grid) permanece; só a atmosfera muda. DOM + CSS + SVG + GSAP — sem
- * canvas. A mídia e o título carregam view-transition-name para viajar até
- * o hero do case.
+ * ANATOMIA (idêntica nos quatro; o que muda é o palco):
+ *
+ *   [ 01 / KAVITA ] ─────────────────────────────── [ 01 / 04 ]   nível 03
+ *
+ *                     ‹ palco: a experiência do ato ›
+ *
+ *   T25P · T70P · T100 · 26 ITENS · …                             nível 02
+ *   AGRICULTURA                                                   nível 01
+ *   REIMAGINADA.
+ *   MW/002                        EXPERIÊNCIA INTERATIVA          nível 03
+ *                                 [ EXPLORAR PROJETO ↗ ]
+ *
+ * RITMO. Cada ato tem um trilho de 200 svh com o conteúdo `sticky` dentro:
+ * uma viewport PARADO (o ato acontece) e uma viewport sendo coberto pelo
+ * próximo (a transição). No layout anterior os painéis tinham 100 svh e o
+ * seguinte começava a subir no mesmo frame em que o atual grudava — nenhum ato
+ * ficava sozinho na tela em momento nenhum, e era isso (não a falta de motion)
+ * que fazia a seção ler como carrossel de cards.
+ *
+ * UMA TRIGGER POR ATO. `top bottom` → `bottom top`, progresso 0→1, e todo
+ * comportamento derivado dele pelas faixas de `ACT`. Nada de setTimeout, delay
+ * ou número mágico; nenhuma propriedade com dois donos (o cursor tem as leis em
+ * work/act-laws.ts, e elas não tocam em nada que a timeline anime).
+ *
+ * CONTINUIDADE. O fio entre os atos é a cor: cada painel revela na saída a cor
+ * do PRÓXIMO (`[data-bleed]`), então no frame da virada os dois mundos já são
+ * da mesma cor. Junto, o motivo se dissolve no motivo seguinte — a topografia
+ * vira grão, o grão vira linha de projeto, a linha vira referência mecânica — e
+ * a malha de pontos troca de significado (work/work-dots.tsx).
  */
 export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientWork }: { items: WorkItem[]; eyebrow: string; enter: string; all: string; allHref: string; act: string; clientWork: string }) {
   const root = useRef<HTMLElement>(null);
@@ -40,10 +64,10 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
   useGSAP(
     () => {
       const el = root.current!;
-      const panels = gsap.utils.selector(el)<HTMLElement>("[data-panel]");
+      const acts = gsap.utils.selector(el)<HTMLElement>("[data-panel]");
       const mm = gsap.matchMedia();
-      // Os mundos ficam abaixo da dobra: a configuração (que lê layout) roda
-      // depois do idle, fora da tarefa de hidratação — TBT e LCP intactos.
+      // A seção vive abaixo da dobra: a configuração (que lê layout) espera o
+      // navegador ficar ocioso — TBT e LCP da Home intactos.
       const w = window as Window & { requestIdleCallback?: (c: () => void, o?: { timeout: number }) => number };
       const idle = (cb: () => void) => (w.requestIdleCallback ? w.requestIdleCallback(cb, { timeout: 1200 }) : window.setTimeout(cb, 200));
       let disposed = false;
@@ -53,107 +77,123 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
         ScrollTrigger.refresh();
       });
 
-      const setup = () => mm.add(MQ.noReduce, () => {
-        const desktop = window.matchMedia("(min-width: 1080px)").matches;
-        // Leis de cada mundo (cursor/scroll): só com ponteiro fino.
-        const fine = window.matchMedia(MQ.fine).matches;
-        const laws = fine ? panels.map((panel) => WORLD_LAWS[panel.dataset.world ?? ""]?.(panel)).filter(Boolean) : [];
+      const setup = () =>
+        mm.add(MQ.noReduce, () => {
+          const small = window.innerWidth < 720;
+          const fine = window.matchMedia(MQ.fine).matches;
+          const laws = fine ? acts.map((p) => ACT_LAWS[p.dataset.world ?? ""]?.(p)).filter(Boolean) : [];
 
-        panels.forEach((panel, i) => {
-          const world = panel.dataset.world!;
-          const q = gsap.utils.selector(panel);
-          const media = q<HTMLElement>("[data-media]")[0];
-          // escala sempre na imagem interna: a caixa [data-media] é o clip (overflow-hidden) e
-          // alinha à coluna — escalar a caixa a faria passar da largura da viewport
-          const mediaImg = (media.querySelector("img") as HTMLElement | null) ?? media;
-          const text = q<HTMLElement>("[data-text]");
-          const next = panels[i + 1];
+          acts.forEach((article, i) => {
+            const slug = article.dataset.world as ActSlug;
+            const q = gsap.utils.selector(article);
+            const one = <T extends HTMLElement>(s: string) => q<T>(s)[0] as T | undefined;
+            const last = i === items.length - 1;
 
-          // ---------- ENTRADA ----------
-          const enterTl = gsap.timeline({
-            scrollTrigger: { trigger: panel, start: i === 0 ? "top 80%" : "top bottom", end: i === 0 ? "top 20%" : "top top", scrub: 0.6 },
-            defaults: { ease: EASE.outQuint },
-          });
-          enterTl.fromTo(text, { yPercent: 30, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, stagger: 0.06, duration: 0.5 }, 0.25);
-
-          if (world === "kavita-drones") {
-            // scanner: a imagem se revela da esquerda atrás de uma linha signal
-            enterTl.fromTo(media, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "none" }, 0);
-            enterTl.fromTo(q("[data-scan]"), { left: "0%" }, { left: "100%", duration: 0.7, ease: "none" }, 0);
-            enterTl.to(q("[data-scan]"), { autoAlpha: 0, duration: 0.1 }, 0.7);
-            enterTl.fromTo(q("[data-coord]"), { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, stagger: 0.08, duration: 0.3 }, 0.4);
-            // a varredura lê a interface: a estrutura da seção aparece atrás da linha
-            enterTl.fromTo(q("[data-scan-reveal]"), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "none" }, 0);
-            enterTl.to(q("[data-scan-reveal]"), { autoAlpha: 0, duration: 0.2 }, 0.75);
-            // contornos topográficos e rotas se desenham
-            enterTl.fromTo(q("[data-contour]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.03, duration: 0.6, ease: "none" }, 0.1);
-            enterTl.fromTo(q("[data-route]"), { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.1, duration: 0.5, ease: "none" }, 0.35);
-          }
-          if (world === "terral") {
-            // calor: entra devagar, escala lenta, grão sobe
-            enterTl.fromTo(media, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1, ease: EASE.smooth }, 0);
-            enterTl.fromTo(mediaImg, { scale: 1.12 }, { scale: 1, duration: 1, ease: EASE.smooth }, 0);
-            enterTl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.5, duration: 0.6 }, 0.2);
-            enterTl.fromTo(q("[data-second]"), { yPercent: 20, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6 }, 0.5);
-            // a interface ganha matéria: entra dobrada como papel e vira imagem viva (impressão → foto)
-            enterTl.fromTo(q("[data-fold]"), { rotationX: -18, transformOrigin: "50% 100%", transformPerspective: 1400 }, { rotationX: 0, duration: 0.9, ease: EASE.smooth }, 0);
-            enterTl.fromTo(q("[data-print]"), { filter: "grayscale(1) contrast(1.25)", opacity: 0.85 }, { filter: "grayscale(0) contrast(1)", opacity: 1, duration: 0.8, ease: "none" }, 0.2);
-          }
-          if (world === "atelier-vertex") {
-            // blueprint: guias se desenham, a imagem sobe em 4 fatias verticais
-            enterTl.fromTo(q("[data-guide]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.6, ease: "none" }, 0);
-            enterTl.fromTo(q("[data-strip]"), { clipPath: "inset(0% 0 0 0)" }, { clipPath: "inset(100% 0 0 0)", stagger: 0.08, duration: 0.5 }, 0.15);
-            // a planta técnica evolui para perspectiva; as cotas aparecem
-            enterTl.fromTo(q("[data-guides]"), { rotationX: 0, transformPerspective: 1400 }, { rotationX: 46, duration: 0.8, ease: EASE.smooth }, 0.25);
-            enterTl.fromTo(q("[data-dims]"), { autoAlpha: 0, y: -6 }, { autoAlpha: 1, y: 0, duration: 0.3 }, 0.55);
-          }
-          if (world === "aurex-timepieces") {
-            // mecanismo: anéis giram e escalam do centro, a imagem abre em círculo
-            enterTl.fromTo(q("[data-ring]"), { scale: 0.35, rotate: -90, autoAlpha: 0, transformOrigin: "50% 50%" }, { scale: 1, rotate: 0, autoAlpha: 1, stagger: 0.06, duration: 0.8 }, 0);
-            enterTl.fromTo(media, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.8, ease: EASE.smooth }, 0.15);
-          }
-
-          // ---------- SAÍDA (enquanto o próximo cobre) ----------
-          if (next) {
-            // trigger: panel (não `next`) — medir a posição de um elemento sticky que
-            // ainda não "grudou" é instável nesse padrão de cases empilhados; como os
-            // painéis são contíguos (mesma altura, sem vão), o bottom deste painel
-            // cruza a tela exatamente junto com o top do próximo — mesmo timing, mas
-            // medido a partir de um elemento cuja própria entrada já prova ser confiável.
-            const exitTl = gsap.timeline({
-              scrollTrigger: { trigger: panel, start: "bottom bottom", end: "bottom 15%", scrub: 0.6 },
-              defaults: { ease: EASE.inOutQuart },
+            const tl = gsap.timeline({
+              scrollTrigger: {
+                id: `act-${slug}`,
+                trigger: article,
+                start: "top bottom",
+                // O ÚLTIMO ato não é coberto por ninguém: o sticky dele solta
+                // quando o trilho acaba, e daí em diante o painel já está
+                // subindo. Terminar em `bottom top` daria a ele um terço final
+                // de progresso acontecendo fora da tela — a decomposição do
+                // calibre só terminava depois do painel ter começado a sair.
+                end: last ? "bottom bottom" : "bottom top",
+                scrub: 0.55,
+                invalidateOnRefresh: true,
+              },
+              defaults: { ease: "none" },
             });
-            exitTl.to(text, { autoAlpha: 0.15, duration: 0.5 }, 0);
-            if (world === "kavita-drones") {
-              // LAND → ORIGIN: a imagem amplia, ganha grão e se parte em faixas
-              exitTl.to(mediaImg, { scale: 1.18, duration: 1 }, 0);
-              exitTl.to(q("[data-grain]"), { autoAlpha: 0.7, duration: 0.8 }, 0);
-              exitTl.to(q("[data-band]"), { xPercent: (k) => (k % 2 ? 14 : -14), autoAlpha: 0, stagger: 0.06, duration: 0.7 }, 0.3);
-            }
-            if (world === "terral") {
-              // ORGANIC → STRUCTURE: o grão vira pontos; os pontos viram grade
-              exitTl.to(q("[data-grain]"), { autoAlpha: 0, duration: 0.4 }, 0);
-              exitTl.fromTo(q("[data-dots]"), { autoAlpha: 0, scale: 0.92, transformOrigin: "50% 50%" }, { autoAlpha: 1, scale: 1, duration: 0.6 }, 0.1);
-              exitTl.to(media, { autoAlpha: 0.25, duration: 0.8 }, 0.2);
-              exitTl.to(mediaImg, { scale: 0.96, duration: 0.8 }, 0.2);
-            }
-            if (world === "atelier-vertex") {
-              // STRUCTURE → MECHANISM: as guias convergem em rotação para o centro
-              exitTl.to(q("[data-guides]"), { rotate: 38, scale: 0.45, autoAlpha: 0, transformOrigin: "50% 50%", duration: 1 }, 0);
-              exitTl.fromTo(q("[data-strip]"), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", stagger: 0.04, duration: 0.8 }, 0.1);
-            }
-          } else {
-            // AUREX → SISTEMA: o mecanismo desacelera e some; a página volta ao grid.
-            gsap
-              .timeline({ scrollTrigger: { trigger: el, start: "bottom 90%", end: "bottom 20%", scrub: 0.6 }, defaults: { ease: EASE.outQuint } })
-              .to(q("[data-ring]"), { rotate: 24, scale: 1.25, autoAlpha: 0, stagger: 0.05, duration: 1 }, 0)
-              .to(media, { clipPath: "circle(0% at 50% 50%)", duration: 0.8, ease: EASE.inOutQuart }, 0.1);
-          }
 
+            /* ---------- ENTRADA (0 → 0.18): a estrutura editorial chega ---------- */
+            tl.fromTo(q("[data-reveal]"), { yPercent: 26, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, stagger: 0.02, duration: ACT.enter, ease: EASE.outQuint }, 0.02);
+
+            /* ---------- o palco de cada ato ---------- */
+            if (slug === "kavita-drones") kavita(tl, q, one, small);
+            if (slug === "terral") terral(tl, q, one, small);
+            if (slug === "atelier-vertex") vertex(tl, q, one, small);
+            if (slug === "aurex-timepieces") aurex(tl, q, one, small);
+
+            /* ---------- PREPARAÇÃO + TRANSIÇÃO (0.70 → 1) ----------
+               A malha troca de significado antes da virada e a cor do próximo
+               mundo sobe por cima: quando o painel seguinte encosta, os dois já
+               são da mesma cor — não existe corte, existe dissolução. */
+            const dotsNext = q("[data-dots-next]");
+            if (dotsNext.length) {
+              tl.to(q("[data-dots]"), { autoAlpha: 0, duration: 0.18 }, ACT.hold);
+              tl.to(dotsNext, { autoAlpha: 1, duration: 0.18 }, ACT.hold);
+            }
+            // O último ato não é coberto por ninguém: apagar a coluna editorial
+            // ali deixaria a cena morta ainda em tela cheia.
+            if (!last) tl.to(q("[data-reveal]"), { autoAlpha: 0.2, duration: 0.16 }, ACT.prepare - 0.06);
+            // A cor do próximo mundo sobe durante TODA a cortina (0.70 → 0.96),
+            // não só no fim: o painel seguinte começa a cobrir em ~0.67, e uma
+            // revelação que só começasse em 0.86 deixaria uma borda dura entre os
+            // dois fundos por meia tela de scroll. Para em 0.9 de opacidade para
+            // o mundo que sai continuar visível por baixo — dissolve, não apaga.
+            if (!last) tl.fromTo(q("[data-bleed]"), { autoAlpha: 0 }, { autoAlpha: 0.9, duration: 0.96 - ACT.hold, ease: "power1.in" }, ACT.hold);
+
+            /* ---------- resíduo do ato anterior ----------
+               Os primeiros frames de cada ato ainda carregam o motivo do
+               anterior, que se apaga durante a construção. É a outra metade da
+               continuidade: a transição não termina na virada, ela vaza. */
+            const residue = q("[data-residue]");
+            if (residue.length) tl.to(residue, { autoAlpha: 0, duration: ACT.build - ACT.enter }, ACT.enter);
+            // ...e a borda de cima do painel que sobe carrega a cor do anterior,
+            // apagando conforme ele toma a tela: a cortina vira dissolução.
+            const veil = q("[data-veil]");
+            if (veil.length) tl.to(veil, { autoAlpha: 0, duration: ACT.build }, 0.02);
+          });
+
+          if (process.env.NODE_ENV !== "production") {
+            // Sonda de auditoria: a cena inteira é função do progresso, então
+            // poder LER o progresso de cada ato é o que permite conferir por
+            // checkpoint em vez de adivinhar a posição de scroll.
+            (window as unknown as { __mwWork?: unknown }).__mwWork = {
+              acts: acts.map((a) => ({
+                world: a.dataset.world,
+                get p() { return Number((ScrollTrigger.getById(`act-${a.dataset.world}`)?.progress ?? -1).toFixed(4)); },
+                get start() { return Math.round(ScrollTrigger.getById(`act-${a.dataset.world}`)?.start ?? -1); },
+                get end() { return Math.round(ScrollTrigger.getById(`act-${a.dataset.world}`)?.end ?? -1); },
+                get top() { return Math.round(a.getBoundingClientRect().top + window.scrollY); },
+              })),
+              refresh: () => ScrollTrigger.refresh(),
+              all: () => ScrollTrigger.getAll().map((t) => ({ id: String(t.vars.id ?? ""), trig: (t.trigger as HTMLElement | null)?.dataset?.world ?? (t.trigger as HTMLElement | null)?.id ?? (t.trigger as HTMLElement | null)?.tagName, start: Math.round(t.start), end: Math.round(t.end), pin: !!t.pin })),
+              seek: (i: number, p: number) => {
+                const st = ScrollTrigger.getById(`act-${acts[i].dataset.world}`);
+                if (st) window.scrollTo({ top: st.start + p * (st.end - st.start), behavior: "instant" });
+              },
+            };
+          }
+          return () => laws.forEach((off) => off?.());
         });
-        return () => laws.forEach((off) => off?.());
-      });
+
+      /**
+       * REDUCED MOTION — composição final estática. Vários elementos nascem em
+       * `opacity: 0` no HTML porque quem os acende é a timeline; sem este ramo
+       * eles ficariam invisíveis para sempre e o ato perderia justamente o que
+       * ele mostra (a fachada revelada, o calibre aberto, as leituras técnicas).
+       * Aqui não há scrub nem trigger: só o estado de repouso, tudo legível.
+       */
+      const stillness = () =>
+        mm.add(MQ.reduce, () => {
+          acts.forEach((article) => {
+            const q = gsap.utils.selector(article);
+            gsap.set(q("[data-coord], [data-target], [data-anchor], [data-plan-label], [data-part-label], [data-dim], [data-movement-wrap], [data-axis]"), { autoAlpha: 1 });
+            // véu e sangria são ferramentas de TRANSIÇÃO: sem timeline para
+            // apagá-los, ficariam cobrindo metade do painel para sempre
+            gsap.set(q("[data-scan], [data-veil], [data-bleed]"), { autoAlpha: 0 });
+            gsap.set(q("[data-grain]"), { autoAlpha: 0.4 });
+            gsap.set(q("[data-slice]"), { clipPath: "inset(0% 0 0 0)", xPercent: 0 });
+            gsap.set(q("[data-media]"), { autoAlpha: 1, clipPath: "none" });
+            if (article.dataset.world === "aurex-timepieces") {
+              gsap.set(q("[data-media]"), { autoAlpha: 0.2 });
+              AUREX_PARTS.forEach((part) => gsap.set(q(`[data-part="${part.id}"]`), { x: part.dx, y: part.dy, rotate: part.spin * 42, svgOrigin: "0 0" }));
+            }
+          });
+        });
+      stillness();
 
       return () => {
         disposed = true;
@@ -167,130 +207,279 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
 
   return (
     <section ref={root} id="work" data-act={act} data-inspect="SELECTED_WORK" className="relative">
-      {items.map((w, i) => (
-        <article
-          key={w.slug}
-          data-panel
-          data-world={w.slug}
-          data-inspect={`WORLD_${w.n} / ${w.name}`}
-          className="world sticky top-0 flex h-[100svh] flex-col overflow-hidden px-margin pb-6 pt-nav md:pb-8"
-        >
-          {/* ===== camadas do mundo ===== */}
-          <WorldLayers slug={w.slug} />
+      {items.map((item, i) => {
+        const slug = item.slug as ActSlug;
+        const skin = SKIN[slug];
+        const prev = i > 0 ? (items[i - 1].slug as ActSlug) : null;
+        const nextSlug = ACT_ORDER[ACT_ORDER.indexOf(slug) + 1];
+        const chars = Math.max(...item.title.map((l) => l.length));
+        const last = i === items.length - 1;
+        return (
+          <article
+            key={item.slug}
+            data-panel
+            data-world={item.slug}
+            data-inspect={`ACT_${item.n} / ${item.name}`}
+            className="relative h-[170svh] md:h-[200svh]"
+            style={{ "--act-bg": skin.bg, "--act-ink": skin.ink, "--chars": chars } as CSSProperties}
+          >
+            <div className="act sticky top-0 h-[100svh] overflow-hidden" style={{ background: skin.bg, color: skin.ink }}>
+              {/* palco (nível 00 — atrás de tudo) */}
+              <ActStage slug={slug} image={item.image} detail={item.detail} />
 
-          {/* ===== estrutura MilWeb ===== */}
-          <div className="relative z-10 flex items-center justify-between border-t border-current pt-3 t-mono">
-            <span data-text>{i === 0 ? eyebrow : ""}</span>
-            <span data-text className="tnum">
-              {w.n} / {total}
-            </span>
-          </div>
+              {/* a malha: a mesma em todos os atos, com o significado do mundo */}
+              <div className="pointer-events-none absolute inset-0 z-[1] opacity-45" style={{ color: skin.ink }}>
+                <WorkDots mode={skin.dots} next={nextSlug ? SKIN[nextSlug].dots : undefined} />
+              </div>
 
-          {/* linha 1: índice + rótulos técnicos | mídia dominante */}
-          <div className="relative z-10 grid flex-1 grid-cols-4 gap-x-gutter gap-y-4 pt-4 md:grid-cols-12">
-            <div className="col-span-4 flex flex-col justify-between md:col-span-4 lg:col-span-3">
-              <p data-text className="t-mono opacity-60">
-                {w.n} / {w.name}
-              </p>
-              <ul data-text className="t-mono hidden opacity-60 md:block">
-                {w.labels.map((l) => (
-                  <li key={l} data-coord>
-                    {l}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="col-span-4 md:col-span-8 lg:col-span-9 md:flex md:items-start md:justify-end">
-              <div
-                data-media
-                data-fold={w.slug === "terral" ? "" : undefined}
-                className="relative aspect-[16/10] w-full overflow-hidden bg-neutral"
-                style={{ viewTransitionName: `case-media-${w.slug}`, width: "min(100%, calc(50svh * 1.6))" }}
-                data-inspect="MEDIA"
-              >
-                <Image src={w.image} alt={w.name} fill loading="lazy" sizes="(min-width: 1080px) 60vw, 100vw" className="object-cover object-top" data-print={w.slug === "terral" ? "" : undefined} />
-                {w.slug === "terral" && (
-                  /* mancha-portal: a casa do torrador aparece dentro de uma mancha de café que segue o cursor */
-                  <span data-portal aria-hidden="true" className="world-portal absolute inset-0 hidden md:block" style={{ backgroundImage: `url(${w.detail})` }} />
-                )}
-                {w.slug === "atelier-vertex" && (
-                  /* porta arquitetônica: dois batentes de papel que se abrem ao entrar no espaço */
-                  <span data-door aria-hidden="true" className="world-door absolute inset-0 hidden md:block">
-                    <span className="world-door-leaf left-0 origin-left" />
-                    <span className="world-door-leaf right-0 origin-right" />
+              {/* resíduo do ato anterior — o motivo que ainda não foi embora */}
+              {prev ? <Residue from={prev} /> : null}
+              {/* véu de entrada: a borda superior deste painel nasce com a cor do
+                  ato anterior, então a cortina do sticky não aparece como um
+                  corte reto entre dois fundos de cores diferentes */}
+              {prev ? <span data-veil aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-[42%]" style={{ background: `linear-gradient(to bottom, ${SKIN[prev].bg} 0%, ${SKIN[prev].bg}00 100%)` }} /> : null}
+
+              {/* a cor do próximo mundo, revelada na saída */}
+              {nextSlug ? <span data-bleed aria-hidden="true" className="pointer-events-none absolute inset-0 z-[6] opacity-0" style={{ background: bleedOf(slug) }} /> : null}
+
+              {/* ===== anatomia editorial (nível 01–03) ===== */}
+              <div className="relative z-10 flex h-full flex-col px-margin pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-nav md:pb-8">
+                {i === 0 ? (
+                  <p data-reveal className="t-mono pt-3 opacity-55">
+                    {eyebrow}
+                  </p>
+                ) : null}
+                <div data-reveal className="flex items-center justify-between border-t border-current/25 pt-3 t-mono">
+                  <span>
+                    {item.n} / {item.name}
                   </span>
-                )}
-                {w.slug === "aurex-timepieces" &&
-                  [0, 1, 2].map((k) => (
-                    <span key={k} data-plane aria-hidden="true" className="absolute inset-x-0 hidden md:block" style={{ top: `${k * 33.34}%`, height: "33.4%", backgroundImage: `url(${w.image})`, backgroundSize: "100% 300%", backgroundPosition: `0 ${k * 50}%` }} />
+                  <span className="tnum opacity-55">
+                    {item.n} / {total}
+                  </span>
+                </div>
+
+                {/* o palco vive atrás desta folga */}
+                <div className="flex-1" />
+
+                {/* NÍVEL 02 — metadata técnica do projeto */}
+                <ul data-reveal className="t-mono flex flex-wrap items-center gap-x-5 gap-y-1 opacity-90">
+                  {item.labels.map((l) => (
+                    <li key={l} data-coord className="whitespace-nowrap">
+                      {l}
+                    </li>
                   ))}
-                {w.slug === "kavita-drones" &&
-                  [0, 1, 2].map((k) => (
-                    <span key={k} data-band aria-hidden="true" className="absolute inset-x-0" style={{ top: `${k * 33.34}%`, height: "33.4%", backgroundImage: `url(${w.image})`, backgroundSize: "100% 300%", backgroundPosition: `0 ${k * 50}%`, opacity: 0 }} />
-                  ))}
-                {w.slug === "atelier-vertex" &&
-                  [0, 1, 2, 3].map((k) => (
-                    <span key={k} data-strip aria-hidden="true" className="absolute top-0 h-full w-1/4 bg-paper" style={{ left: `${k * 25}%` }} />
-                  ))}
-                {w.slug === "terral" && (
-                  <div data-second aria-hidden="true" className="absolute bottom-0 left-0 hidden w-[28%] border-r border-t border-[#E9E0CF] md:block">
-                    <div className="relative aspect-[16/10]">
-                      <Image src={w.detail} alt="" fill sizes="20vw" className="object-cover" />
-                    </div>
+                </ul>
+
+                {/* NÍVEL 01 — a manchete domina a viewport */}
+                <h2 data-headline data-reveal className="t-display t-fit-work mt-3 md:mt-4" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${item.slug}` }}>
+                  <span className="block">{item.title[0]}</span>
+                  <span className="block">{item.title[1]}</span>
+                </h2>
+
+                {/* NÍVEL 03 — interface */}
+                <div className="mt-4 flex items-end justify-between gap-6 t-mono md:mt-5">
+                  <div data-reveal className="opacity-55">
+                    <span>MW/00{i + 2}</span>
+                    {last ? (
+                      <Link href={allHref} className="link-rule ml-4 md:ml-6">
+                        {all} →
+                      </Link>
+                    ) : null}
                   </div>
-                )}
-                <span data-grain aria-hidden="true" className="grain pointer-events-none absolute inset-0 opacity-0" />
+                  <div data-reveal className="text-right">
+                    <p className="opacity-55">
+                      {item.client ? `${clientWork} — ${item.client.toUpperCase()}` : item.displayType}
+                      {item.year ? ` — ${item.year}` : ""}
+                    </p>
+                    <Link href={item.href} data-vt={vtOfSlug(item.slug)} data-cta className="act-cta mt-2 inline-flex items-center gap-1.5" data-inspect="CTA / EXPLORE">
+                      <span aria-hidden="true" className="act-cta-br">
+                        [
+                      </span>
+                      <span className="act-cta-txt">{enter}</span>
+                      <span aria-hidden="true" className="act-cta-arrow">
+                        ↗
+                      </span>
+                      <span aria-hidden="true" className="act-cta-br">
+                        ]
+                      </span>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* linha 2: título em largura total + meta + CTA */}
-          <div className="relative z-10 grid grid-cols-4 items-end gap-x-gutter gap-y-3 pt-4 md:grid-cols-12">
-            <h2 data-text className="t-display t-display-md col-span-4 md:col-span-9" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${w.slug}` }}>
-              {w.slug === "aurex-timepieces" ? (
-                /* tipografia alterada pelo tempo: cada letra responde ao scroll com atraso próprio (texto íntegro para leitores de tela) */
-                <>
-                  <span className="sr-only">{w.title.join(" ")}</span>
-                  {w.title.map((line) => (
-                    <span key={line} className="block" aria-hidden="true">
-                      {Array.from(line).map((ch, i) => (
-                        <span key={i} data-tchar className="inline-block will-change-transform">
-                          {ch === " " ? "\u00a0" : ch}
-                        </span>
-                      ))}
-                    </span>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <span className="block">{w.title[0]}</span>
-                  <span className="block">{w.title[1]}</span>
-                </>
-              )}
-            </h2>
-            <div className="col-span-4 md:col-span-3 md:text-right">
-              <p data-text className="t-mono opacity-80">
-                {w.client ? `${clientWork} — ${w.client.toUpperCase()}` : w.displayType}
-                {w.year ? ` — ${w.year}` : ""}
-              </p>
-              <Link data-text href={w.href} data-vt={vtOfSlug(w.slug)} className="link-rule t-mono mt-3 inline-block" data-inspect="CTA / ENTER">
-                [ {enter} ]
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative z-10 mt-4 flex items-center justify-between t-mono opacity-70">
-            <span data-text>MW/00{i + 2}</span>
-            {i === items.length - 1 ? (
-              <Link data-text href={allHref} className="link-rule">
-                {all} →
-              </Link>
-            ) : (
-              <span data-text>↓</span>
-            )}
-          </div>
-        </article>
-      ))}
+          </article>
+        );
+      })}
     </section>
   );
+}
+
+/** O motivo do ato anterior, ainda em cena nos primeiros frames deste. */
+function Residue({ from }: { from: ActSlug }) {
+  if (from === "kavita-drones")
+    // contornos de levantamento sobrando sobre o papel quente
+    return (
+      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="0.75" opacity="0.3">
+        <path d="M-40 700 C240 620 420 760 700 690 C960 626 1180 720 1480 660" />
+        <path d="M-40 780 C260 700 460 830 720 764 C980 700 1200 792 1480 736" />
+        <path d="M-40 620 C220 540 400 690 680 616" />
+      </svg>
+    );
+  if (from === "terral")
+    // grãos que ainda caem antes do papel ficar limpo
+    return (
+      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid slice" fill="currentColor" opacity="0.35">
+        {Array.from({ length: 26 }).map((_, k) => {
+          const x = ((k * 37) % 100) + 0.5;
+          const y = ((k * 23) % 56) + 0.5;
+          return <circle key={k} cx={x.toFixed(1)} cy={y.toFixed(1)} r={(0.12 + (k % 4) * 0.07).toFixed(2)} />;
+        })}
+      </svg>
+    );
+  // vertex → aurex: as guias de projeto que ainda não viraram eixos mecânicos
+  return (
+    <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.22" vectorEffect="non-scaling-stroke">
+      {[86, 403, 720, 1037, 1354].map((x) => (
+        <line key={x} x1={x} y1="0" x2={x} y2="900" />
+      ))}
+      <line x1="0" y1="168" x2="1440" y2="168" />
+      <line x1="0" y1="612" x2="1440" y2="612" />
+    </svg>
+  );
+}
+
+/* ==================================================================
+   OS QUATRO PALCOS — cada função recebe a timeline do ato e escreve as
+   suas batidas nas faixas de `ACT`. Uma propriedade, um dono.
+   ================================================================== */
+type Q = ReturnType<typeof gsap.utils.selector>;
+type One = <T extends HTMLElement>(s: string) => T | undefined;
+
+/** 01 KAVITA — território sob análise: varredura, topografia, rota, parallax. */
+function kavita(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const media = one("[data-media]");
+  const drone = one("[data-media-b]");
+  const img = one("[data-media] [data-crop]");
+
+  // ENTRADA — a foto se revela atrás da linha de varredura
+  tl.fromTo(media ?? [], { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: ACT.enter + 0.06 }, 0);
+  tl.fromTo(q("[data-scan]"), { left: "0%", autoAlpha: 1 }, { left: "100%", duration: ACT.enter + 0.06 }, 0);
+  tl.to(q("[data-scan]"), { autoAlpha: 0, duration: 0.04 }, ACT.enter + 0.06);
+
+  // CONSTRUÇÃO — contornos e rotas se desenham; as leituras técnicas entram
+  tl.fromTo(q("[data-contour]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.012, duration: 0.22 }, 0.06);
+  tl.fromTo(q("[data-route]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.16 }, ACT.enter);
+  tl.fromTo(q("[data-crosshair]"), { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 0.55, scale: 1, stagger: 0.05, duration: 0.12 }, ACT.enter + 0.04);
+  tl.fromTo(q("[data-coord]"), { autoAlpha: 0, x: 12 }, { autoAlpha: 0.75, x: 0, stagger: 0.05, duration: 0.14 }, ACT.build - 0.04);
+  // o equipamento entra depois do território: primeiro o campo, depois a máquina
+  tl.fromTo(drone ?? [], { autoAlpha: 0, y: 26, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.16, ease: EASE.outQuint }, ACT.enter + 0.06);
+  tl.fromTo(q("[data-target]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.1 }, ACT.build);
+
+  // EXPERIÊNCIA — parallax lento: a foto sobe menos que o mapa
+  if (!small && img) tl.fromTo(img, { yPercent: 3 }, { yPercent: -3, duration: ACT.hold - ACT.build, ease: "none" }, ACT.build);
+  if (!small && drone) tl.fromTo(drone, { yPercent: -2 }, { yPercent: 4, duration: ACT.hold - ACT.build, ease: "none" }, ACT.build);
+  tl.fromTo(q("[data-topo]"), { yPercent: 0 }, { yPercent: -3, duration: ACT.hold - ACT.build }, ACT.build);
+
+  // PREPARAÇÃO → TERRAL: a topografia se desmancha e o branco técnico esquenta
+  tl.to(q("[data-contour]"), { autoAlpha: 0, stagger: 0.01, duration: 0.14 }, ACT.hold + 0.02);
+  tl.to(q("[data-route]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
+  tl.to(q("[data-crosshair]"), { autoAlpha: 0, duration: 0.08 }, ACT.hold + 0.02);
+  if (img) tl.to(img, { scale: 1.14, duration: ACT.prepare + 0.14 - ACT.hold }, ACT.hold);
+  if (drone) tl.to(drone, { autoAlpha: 0.35, y: -18, duration: 0.2 }, ACT.prepare - 0.1);
+  tl.to(q("[data-frame]"), { autoAlpha: 0, duration: 0.1 }, ACT.prepare - 0.04);
+}
+
+/** 02 TERRAL — matéria: duas fotografias fora de fase, grão físico, papel ao fundo. */
+function terral(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const a = one("[data-media]");
+  const aImg = one("[data-media] [data-crop]");
+  const b = one("[data-media-b]");
+
+  // ENTRADA — A entra por baixo, quente e lenta
+  tl.fromTo(a ?? [], { autoAlpha: 0, yPercent: 8 }, { autoAlpha: 1, yPercent: 0, duration: ACT.enter + 0.08, ease: EASE.smooth }, 0);
+  // CONSTRUÇÃO — B chega depois, pela esquerda, e o grão sobe nas duas
+  tl.fromTo(b ?? [], { autoAlpha: 0, xPercent: -12, yPercent: 10 }, { autoAlpha: 1, xPercent: 0, yPercent: 0, duration: 0.2, ease: EASE.outQuint }, ACT.enter);
+  tl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.55, duration: 0.16 }, ACT.enter + 0.04);
+  tl.fromTo(q("[data-fibre]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.04);
+
+  // EXPERIÊNCIA — as duas em velocidades diferentes (é o que cria a profundidade)
+  if (!small) {
+    if (aImg) tl.fromTo(aImg, { scale: 1 }, { scale: 1.05, duration: ACT.prepare - ACT.build }, ACT.build);
+    if (b) tl.fromTo(b, { yPercent: 0, xPercent: 0 }, { yPercent: -7, xPercent: -3, duration: ACT.prepare - ACT.build }, ACT.build);
+  }
+
+  // PREPARAÇÃO → VERTEX: o papel limpa e as bordas viram linha de projeto
+  tl.to(q("[data-fibre]"), { autoAlpha: 0.15, duration: 0.14 }, ACT.hold + 0.02);
+  tl.to(q("[data-grain]"), { autoAlpha: 0.12, duration: 0.14 }, ACT.hold + 0.02);
+  tl.to([a ?? [], b ?? []], { autoAlpha: 0.5, duration: 0.16 }, ACT.prepare - 0.08);
+}
+
+/** 03 VERTEX — o desenho constrói o espaço: guias → fatias → fachada alinhada. */
+function vertex(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const slices = q<HTMLElement>("[data-slice]");
+  const media = one("[data-media]");
+
+  // ENTRADA — as guias se desenham de cima para baixo
+  tl.fromTo(q("[data-guide]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.025, duration: 0.2 }, 0);
+  tl.fromTo(media ?? [], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.14 }, 0.04);
+
+  // CONSTRUÇÃO — anchor points e rótulos de prancha
+  tl.fromTo(q("[data-anchor]"), { autoAlpha: 0, scale: 0.3, transformOrigin: "50% 50%" }, { autoAlpha: 0.8, scale: 1, stagger: 0.012, duration: 0.12 }, ACT.enter);
+  tl.fromTo(q("[data-plan-label]"), { autoAlpha: 0, y: -6 }, { autoAlpha: 0.75, y: 0, stagger: 0.04, duration: 0.12 }, ACT.enter + 0.06);
+
+  // EXPERIÊNCIA — cada fatia revela a fachada de baixo para cima, fora de fase,
+  // e só depois se alinham: é a obra sendo construída pelo scroll
+  slices.forEach((s, k) => {
+    tl.fromTo(s, { clipPath: "inset(100% 0 0 0)", xPercent: k % 2 ? 9 : -9 }, { clipPath: "inset(0% 0 0 0)", duration: 0.2 }, ACT.build + k * 0.05);
+    tl.to(s, { xPercent: 0, duration: 0.14, ease: EASE.outQuint }, ACT.hold - 0.1 + k * 0.02);
+  });
+  // a cota mede a obra depois que ela existe
+  tl.fromTo(q("[data-dim]"), { autoAlpha: 0, scaleX: 0.2, transformOrigin: "0% 50%" }, { autoAlpha: 0.6, scaleX: 1, duration: 0.14, ease: EASE.outQuint }, ACT.hold - 0.04);
+
+  // PREPARAÇÃO → AUREX: as guias convergem para o centro e a luz cai
+  tl.to(q("[data-guides]"), { scale: small ? 0.9 : 0.78, autoAlpha: 0.35, transformOrigin: "50% 42%", duration: 1 - ACT.hold }, ACT.hold);
+  tl.to(q("[data-plan-label]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
+  tl.to(q("[data-dim]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
+  if (media) tl.to(media, { autoAlpha: 0.32, scale: 0.94, duration: 0.2 }, ACT.prepare - 0.1);
+}
+
+/** 04 AUREX — o tempo desmontado: o calibre AX-01 em vista explodida, pelo scroll. */
+function aurex(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const media = one("[data-media]");
+  const wrap = one("[data-movement-wrap]");
+
+  // ENTRADA — o relógio real abre em círculo (a composição que já funcionava)
+  tl.fromTo(media ?? [], { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(72% at 50% 50%)", duration: ACT.enter + 0.04, ease: EASE.smooth }, 0);
+
+  // CONSTRUÇÃO — o esquema entra ALINHADO com a fotografia: estado montado
+  tl.fromTo(wrap ?? [], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.12 }, ACT.enter);
+  tl.fromTo(q("[data-axis]"), { autoAlpha: 0, scaleY: 0.2, transformOrigin: "50% 50%" }, { autoAlpha: 0.4, scaleY: 1, duration: 0.14 }, ACT.enter + 0.04);
+
+  // EXPERIÊNCIA — a DECOMPOSIÇÃO. Cada peça anda pelo seu vetor e cada roda gira
+  // pela sua razão do trem: a explosão é mecânica, não uma rotação aleatória.
+  // A foto cede lugar ao esquema conforme ele se separa.
+  const spread = small ? 0.62 : 1;
+  AUREX_PARTS.forEach((part, k) => {
+    const g = q<SVGGElement>(`[data-part="${part.id}"]`)[0];
+    if (!g) return;
+    tl.fromTo(
+      g,
+      { x: 0, y: 0, rotate: 0 },
+      { x: part.dx * spread, y: part.dy * spread, rotate: part.spin * 42, duration: ACT.hold - ACT.build, ease: "power1.inOut", svgOrigin: "0 0" },
+      ACT.build + k * 0.012,
+    );
+  });
+  if (media) tl.to(media, { autoAlpha: 0.18, duration: ACT.hold - ACT.build }, ACT.build);
+  tl.fromTo(q("[data-part-label]"), { autoAlpha: 0, x: -8 }, { autoAlpha: 0.6, x: 0, stagger: 0.03, duration: 0.12 }, ACT.hold - 0.08);
+
+  // SAÍDA — o calibre continua girando devagar e a cena se apaga com a seção
+  AUREX_PARTS.forEach((part) => {
+    const g = q<SVGGElement>(`[data-part="${part.id}"]`)[0];
+    if (!g || !part.spin) return;
+    tl.to(g, { rotate: part.spin * 70, duration: 1 - ACT.hold, svgOrigin: "0 0" }, ACT.hold);
+  });
+  // a saída do calibre acontece no fim de tudo: o painel ainda está inteiro em
+  // tela durante `prepare`, e apagar antes seria apagar o ato no auge
+  if (wrap) tl.to(wrap, { autoAlpha: 0.55, scale: 1.05, duration: 0.06 }, 0.94);
+  tl.to(q("[data-part-label]"), { autoAlpha: 0, duration: 0.05 }, 0.94);
 }

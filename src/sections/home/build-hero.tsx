@@ -199,6 +199,15 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
             start: "top top",
             end: small ? "+=220%" : "+=320%",
             pin: true,
+            // O Hero é o ÚNICO trigger pinado da Home e está acima de todos os
+            // outros: ele precisa ser medido primeiro, senão o ScrollTrigger
+            // calcula as posições das seções de baixo sem a distância do pin.
+            // Sem isto, os quatro atos do Selected Work nasciam com `start`
+            // 3456 px adiantado (a própria distância do pin) e chegavam ao
+            // estado final antes de o visitante ver o primeiro — e um
+            // `ScrollTrigger.refresh()` não corrige, porque a ordenação do
+            // refresh usa exatamente este campo.
+            refreshPriority: 1,
             scrub: small ? 0.5 : 0.8,
             anticipatePin: 1,
             invalidateOnRefresh: true,

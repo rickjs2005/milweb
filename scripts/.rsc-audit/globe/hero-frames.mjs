@@ -48,7 +48,7 @@ for (const vp of sizes) {
   for (const p of STEPS) {
     await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), p * pinned * vp.height);
     await page.waitForTimeout(950);
-    await page.screenshot({ path: `${OUT}/hero-${tag}-${String(Math.round(p * 100)).padStart(3, "0")}.png` });
+    await page.screenshot({ path: `${OUT}/${process.env.TAG ?? "hero"}-${tag}-${String(Math.round(p * 100)).padStart(3, "0")}.png` });
   }
   const overflow = await page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - window.innerWidth));
   console.log(`${tag} · data-globe=${state} · span=${Math.round(span)} · overflow-x=${overflow}px · console=${bad.length ? bad.join(" | ") : "limpo"}`);

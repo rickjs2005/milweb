@@ -23,13 +23,13 @@ export const en: Dictionary = {
   inspect: { title: "INSPECT MODE — STRUCTURE VIEW", dev: "MW / DEV" },
   work: {
     eyebrow: "SELECTED WORK",
-    enter: "ENTER EXPERIENCE",
+    enter: "EXPLORE PROJECT",
     all: "ALL WORK",
     clientWork: "CLIENT WORK",
     labels: {
       kavita: ["T25P · T70P · T100", "26 ITEMS · 05 CATEGORIES", "04 BRANCHES · MG / ES / RJ"],
       terral: ["THE ROASTER'S HOUSE — HOLD 6S", "05 CHAPTERS", "03 BLENDS"],
-      vertex: ["SCALE 1:75 · REV 03", "11.50 M", "GOP 1 — EVERY FRAME A KEYFRAME"],
+      vertex: ["SCALE 1:75 · REV 03", "11.50 M", "GOP 1 · TYPICAL FLOOR"],
       aurex: ["CALIBRE AX-01 TOURBILLON", "15 SCENES", "10 PARTS · 05 GEARS"],
     },
   },

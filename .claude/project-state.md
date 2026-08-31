@@ -5,6 +5,32 @@ Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (Scro
 Branch: `main` · produção em https://milweb.com.br (Vercel)
 Último deploy verificado: **31/08/2026 · `d3cb274`** — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
+## 31/08/2026 — SELECTED WORK v2: quatro atos, um filme (local, sem push)
+
+Refatoração completa da seção `#work`. Antes: quatro `<article>` de 100 svh, todos `sticky top-0`, com duas timelines por painel. **Causa raiz do "card → card → card": o painel *i* grudava no topo no MESMO frame em que o *i+1* começava a subir por cima — nenhum ato ficava sozinho em tela em momento nenhum.** Não era falta de motion, era falta de duração.
+
+**Ritmo novo.** Cada ato tem trilho de `200 svh` com o conteúdo `sticky` dentro: uma viewport PARADO + uma viewport sendo coberto. Uma ScrollTrigger por ato (`top bottom` → `bottom top`, 3 svh de percurso), progresso 0→1, tudo derivado das faixas de `work/act-config.ts` (0.18 entrada · 0.36 construção · 0.70 experiência · 0.86 preparação · 1.00 transição). O ÚLTIMO ato usa `end: "bottom bottom"` — ninguém o cobre, e terminar em `bottom top` deixava um terço do progresso acontecendo já fora da tela.
+
+**Anatomia comum** (a mesma nos quatro; o que muda é o palco): rail `01 / KAVITA … 01 / 04` (nível 03) · palco full-bleed · metadata técnica (nível 02) · manchete que domina (nível 01, `.t-fit-work` escala por `--chars` com teto em `14svh` → 132–151 px em 1920, contra 120 px fixos antes) · `MW/00n` + tipo + `[ EXPLORAR PROJETO ↗ ]`.
+
+**Palcos.** Kavita: faixa da lavoura sangrando à direita + o drone isolado (do frame de produtos, `mix-blend-multiply` no invólucro para dissolver o card branco no papel) com marcação de alvo, topografia, varredura e leituras. Terral: duas fotografias SOBREPOSTAS em velocidades diferentes (macro dos grãos escala 1→1.05, tambor do torrador translada), papel só no fundo, grão dentro das caixas de imagem. Vertex: 4 guias que DEFINEM 4 fatias revelando a fachada entregue sobre a prancha, com anchor points, rótulos e linha de cota. Aurex: composição escura preservada; o vazio do centro passa a ser o calibre AX-01 em vista explodida (SVG procedural, 9 peças, engrenagens com razão de trem real — `work/aurex-movement.tsx`), alinhado com a fotografia no estado montado.
+
+**Transições.** A cor do próximo mundo sobe durante TODA a cortina (`[data-bleed]`, 0.70→0.96, para em 0.9 de opacidade), o painel que entra nasce com um véu da cor do anterior no topo (`[data-veil]`), o motivo do ato anterior sobra nos primeiros frames (`Residue`), e a malha de pontos troca de significado antes da virada (survey → grain → anchor → pivot, `work/work-dots.tsx`).
+
+**Quatro defeitos de raiz encontrados e corrigidos:**
+1. **`refreshPriority` no pin do Hero.** As triggers dos atos são criadas num `requestIdleCallback` ANTES de o pin do Hero existir, e o ScrollTrigger nunca somava a distância do pin a elas: os quatro atos nasciam com `start` 3456 px adiantado e chegavam ao estado final antes de o visitante ver o primeiro. `ScrollTrigger.refresh()` não corrige — a ordenação do refresh usa exatamente esse campo. Uma linha em `build-hero.tsx` (é a única alteração no Hero).
+2. **`vector-effect` não é herdado em SVG.** O `stroke` de 1 unidade do viewBox no `<g>` da malha virava ~19 px de traço em volta de cada ponto: os "pontos" eram borrões de 24 px em todos os atos.
+3. **Recorte × GSAP disputando `transform`.** O recorte por `scale`/`transform-origin` era sobrescrito pelo `scale` da timeline e a Terral voltava a mostrar o frame inteiro do site. O recorte virou geometria (`left/top/width/height` a partir da região em PIXELS da captura) e o `transform` ficou livre para o movimento.
+4. **`sizes` do next/image com zoom.** Declarando a largura da CAIXA (30vw) o Next servia variante de 640 px para uma imagem exibida com 2000 px — todo recorte fechado saía borrado.
+
+**Art direction dos assets:** as capturas dos projetos são páginas inteiras, e era isso que fazia tudo ler como "screenshot num retângulo". Cada palco agora recorta uma região em pixels escolhida para EXCLUIR a interface do próprio site (a copy da Kavita cobre metade do frame; a tipografia da Terral fica na metade esquerda; o botão e a manchete do Vertex ficam acima da faixa usada). `page.tsx` ganhou `WORLD_DETAIL` por ato — o Vertex estava usando `entregue.webp` como base E como fatia (a prancha nunca aparecia).
+
+**Arquivos:** novos `src/sections/home/work/{act-config.ts, act-stages.tsx, aurex-movement.tsx, work-dots.tsx, act-laws.ts}`; `selected-work.tsx` reescrito; `world-layers.tsx` e `world-laws.ts` removidos; `globals.css` (tokens `.act`, `.t-fit-work`, `.act-cta`), `page.tsx`, i18n (`enter` → EXPLORAR PROJETO / EXPLORE PROJECT / EXPLORAR PROYECTO; vertex ganha PAV. TIPO), `build-hero.tsx` (só o `refreshPriority`).
+
+**Validação:** `scripts/.rsc-audit/work/{acts.mjs, reduced.mjs, probe.mjs}` — 1920×1080, 1366×768 e 390×844 em 4 checkpoints por ato: sem overflow, console limpo, manchete sem corte, CTA acessível; reduced-motion com estado estável (calibre aberto, fatias reveladas, véu/sangria apagados). `tsc`/`lint`/`build` verdes; JS compartilhado segue 106 kB, rota `/[lang]` 188 kB. **Sem push.**
+
+**Limitações:** (a) a seção passou de 400 svh para 800 svh — é o preço do ato ter tempo de existir, e é uma mudança de ritmo que o Rick precisa aprovar; (b) 1600×900, 1440×900 e 1024×768 não foram varridos (a varredura larga estava custando minutos por rodada); (c) as capturas de origem têm 1440×900, então recortes fechados chegam a ~1,5x de ampliação — aceitável, mas é o teto de nitidez disponível; (d) navegação para os cases, voltar pelo browser e troca de idioma dentro da seção não foram re-testados nesta passagem.
+
 ## 31/08/2026 — HERO v4: "CÓDIGOS MOVEM O MUNDO." (local, sem push)
 
 Nova direção conceitual pedida pelo Rick: **o Milo saiu do Hero** e a manchete virou `CÓDIGOS MOVEM / O MUNDO.` (EN `CODE MOVES / THE WORLD.`, ES `CÓDIGOS MUEVEN / EL MUNDO.`), sub `Design, código e tecnologia para construir o que vem depois.` A ideia é que **o mundo nasce da própria tipografia**: o "O" que fecha a palavra do mundo não é trocado por um globo — ele *vira* um.

@@ -16,7 +16,12 @@ import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisua
 import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 
-const WORLD_DETAIL: Record<string, string> = { terral: "/shots/terral/casa-do-torrador.webp" };
+/** Segunda imagem de cada ato do Selected Work (a primeira é `w.image`). */
+const WORLD_DETAIL: Record<string, string> = {
+  "kavita-drones": "/shots/kavita-drones/drones.webp",
+  terral: "/shots/terral/casa-do-torrador.webp",
+  "atelier-vertex": "/shots/atelier-vertex/prancha.webp",
+};
 const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex" };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];
 
