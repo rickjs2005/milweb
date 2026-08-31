@@ -74,7 +74,7 @@
   .t-display-xl { font-size: var(--step-6); }
   /* Headline do Hero: no desktop cabe em ~8 das 12 colunas (as demais são do Milo);
      no mobile cada palavra é uma linha e a maior palavra dita o tamanho. */
-  .t-fit-hero { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) * 0.98 / (var(--chars-m, 8) * 0.97))); }
+  .t-fit-hero { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) * 1.03 / (var(--chars-m, 8) * 0.97))); }
   @media (min-width: 768px) {
     .t-fit-hero { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) * 0.7 / (var(--chars, 12) * 0.97))); }
   }
@@ -270,10 +270,6 @@ html, body { overflow-x: clip; }
 [data-stage] { opacity: 0.16; transition: opacity var(--dur-medium) var(--ease-in-out-quart), color var(--dur-fast); }
 [data-stage].is-past { opacity: 0.28; }
 [data-stage].is-active { opacity: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .milo-hero-fallback { animation: milo-hero-arrive 0.6s var(--ease-out-expo) both; }
-}
-@keyframes milo-hero-arrive { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [data-layer="wire"], html.anomaly [data-layer="stages"], html.anomaly [data-layer="code"] { animation: anomaly 0.45s steps(6) both; }
 @keyframes anomaly {
   0% { transform: translate(0, 0) skewX(0); }
@@ -385,8 +381,13 @@ html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [da
 }
 @media (prefers-reduced-motion: reduce) { .milo-panel[data-pulse="1"]::after { animation: none; } }
 
-/* ---- Hero / Milo Null (variante NEXT_PUBLIC_HERO_VISUAL=milo) ------------ */
-.milo-hero-fallback { opacity: 1; transition: opacity var(--dur-slow) var(--ease-in-out-quart); }
-html[data-milo="on"] .milo-hero-fallback { opacity: 0; }
-.milo-hero-canvas { opacity: 0; transition: opacity var(--dur-slow) var(--ease-in-out-quart); }
-.milo-hero-canvas[data-ready] { opacity: 1; }
+/* ---- Hero / GLOBO -------------------------------------------------------- */
+/* O SVG do globo é o estado FINAL desenhado à mão — ele só pode aparecer onde o
+   canvas não vai existir: reduced-motion, sem WebGL, GPU reprovada pela sonda
+   (html[data-globe="off"]). No caminho normal fica invisível de propósito: o
+   globo tem que NASCER do "O" da manchete, não já estar posto na direita. */
+.hero-globe-fallback { opacity: 0; transition: opacity var(--dur-slow) var(--ease-in-out-quart); }
+html[data-globe="off"] .hero-globe-fallback { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .hero-globe-fallback { opacity: 1; } }
+.hero-globe-canvas { opacity: 0; transition: opacity var(--dur-medium) var(--ease-in-out-quart); }
+.hero-globe-canvas[data-ready] { opacity: 1; }

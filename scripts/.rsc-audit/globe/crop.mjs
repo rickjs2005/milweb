@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+const [p, x, y, w, h, name, lang = "pt"] = process.argv.slice(2);
+const b = await chromium.launch({ headless: false });
+const page = await b.newPage({ viewport: { width: 1920, height: 1080 } });
+await page.goto(`http://127.0.0.1:3100/${lang}?quality=high`, { waitUntil: "load" });
+await page.waitForTimeout(500); await page.keyboard.press("Escape"); await page.waitForTimeout(900);
+await page.mouse.move(900, 500); await page.mouse.move(910, 510);
+await page.waitForFunction(() => document.documentElement.dataset.globe === "on", null, { timeout: 15000 });
+await page.evaluate((pp) => window.scrollTo({ top: pp * 3.2 * innerHeight, behavior: "instant" }), Number(p));
+await page.waitForTimeout(1400);
+await page.screenshot({ path: `scripts/.rsc-audit/globe/${name}.png`, clip: { x: +x, y: +y, width: +w, height: +h } });
+await b.close();
+console.log("ok");

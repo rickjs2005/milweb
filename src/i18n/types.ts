@@ -7,7 +7,17 @@ export type Dictionary = {
   nav: { work: string; lab: string; studio: string; services: string; contact: string; menu: string; close: string; primary: string };
   acts: { build: string; work: string; capabilities: string; lab: string; brk: string; human: string; builtWith: string; contact: string };
   boot: { tagline: string; origin: string; lines: [string, string, string, string]; skip: string; compile: string };
-  hero: { headline: [string, string]; stages: [string, string, string, string, string, string]; support: [string, string, string]; inspect: string; scroll: string; sub: string; cta: string };
+  hero: {
+    headline: [string, string];
+    /** Qual glifo da manchete vira o globo: índice da linha e do caractere DENTRO dela.
+     *  Sempre o "O" que fecha a palavra do mundo — perto do FIM da linha, para o
+     *  globo nascer ali e migrar pouco: PT "O MUNDO." (1,6) · EN "THE WORLD." (1,5)
+     *  · ES "EL MUNDO." (1,7). É dado de idioma, não de layout. */
+    orb: [number, number];
+    stages: [string, string, string, string, string, string];
+    support: [string, string, string];
+    inspect: string; scroll: string; sub: string; cta: string;
+  };
   inspect: { title: string; dev: string };
   work: {
     eyebrow: string;

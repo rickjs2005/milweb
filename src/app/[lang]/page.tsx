@@ -40,6 +40,7 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
           visual={getHeroVisualVariant()}
           s={{
             headline: d.hero.headline,
+            orb: d.hero.orb,
             support: [...d.hero.support],
             stages: d.hero.stages,
             inspect: d.hero.inspect,

@@ -36,14 +36,14 @@ export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 
 // assíncronos — Lenis, SplitText, etc.) terminar de montar antes da primeira interação
 // possível. NÃO é a correção do travamento em fechar/reabrir aba (esse caminho pula o
 // preloader inteiro via sessionStorage, ver `booted` abaixo — o preloader nem roda nele);
-// é só folga a mais no caminho normal de carregamento. `exit` pedido explicitamente em 5s
+// é só folga a mais no caminho normal de carregamento. `exit` pedido explicitamente em 3s (era 5s)
 // tanto na primeira visita quanto em visitas seguintes (QUICK) — inclui visitante real
 // que já visitou antes, não só o teste local (o QUICK existia justamente pra ser rápido
 // pra quem já viu a intro; ficou pedido assim mesmo sabendo da troca).
-const FIRST = { exit: 5.0, assemble: 4.8, anomaly: 6.5, headline: 5.1, done: 8.0 };
+const FIRST = { exit: 3.0, assemble: 2.8, anomaly: 4.4, headline: 3.1, done: 5.6 };
 /** Mobile: a introdução existe, mas curta — no celular o conteúdo vem antes do espetáculo. */
 const SHORT = { exit: 2.0, assemble: 1.6, anomaly: 2.9, headline: 2.1, done: 3.8 };
-const QUICK = { exit: 5.0, assemble: 4.8, anomaly: -1, headline: 5.1, done: 6.1 };
+const QUICK = { exit: 3.0, assemble: 2.8, anomaly: -1, headline: 3.1, done: 4.1 };
 
 export function BootController() {
   useEffect(() => {
@@ -102,7 +102,8 @@ export function BootController() {
         compiler.values.opacity = 1;
         compiler.notify();
         compileTo("assembled", heroPlacement(), { duration: visits > 0 ? 0.9 : 1.8 });
-        // ponte genérica de visual (o Milo escuta; o Compiler segue pelo compileTo acima)
+        // ponte genérica de visual (o Compiler segue pelo compileTo acima; o globo do
+        // Hero não escuta o Boot — ele só existe em função do scroll)
         window.dispatchEvent(new Event("mw:visual-assemble"));
       },
       [],
