@@ -32,10 +32,15 @@ export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 
  *       não está nessa lista de seletores, então já pode estar em tela sem conflito
  *  5.1  controle total
  */
-const FIRST = { exit: 2.1, assemble: 1.9, anomaly: 3.6, headline: 2.2, done: 5.1 };
+// Pedido do Rick: mais folga antes do overlay sair, pra dar tempo do site (chunks
+// assíncronos — Lenis, SplitText, etc.) terminar de montar antes da primeira interação
+// possível. NÃO é a correção do travamento em fechar/reabrir aba (esse caminho pula o
+// preloader inteiro via sessionStorage, ver `booted` abaixo — o preloader nem roda nele);
+// é só folga a mais no caminho normal de carregamento.
+const FIRST = { exit: 2.8, assemble: 2.5, anomaly: 4.3, headline: 2.9, done: 5.8 };
 /** Mobile: a introdução existe, mas curta — no celular o conteúdo vem antes do espetáculo. */
-const SHORT = { exit: 1.5, assemble: 1.2, anomaly: 2.4, headline: 1.6, done: 3.3 };
-const QUICK = { exit: 0.5, assemble: 0.3, anomaly: -1, headline: 0.6, done: 1.6 };
+const SHORT = { exit: 2.0, assemble: 1.6, anomaly: 2.9, headline: 2.1, done: 3.8 };
+const QUICK = { exit: 0.8, assemble: 0.5, anomaly: -1, headline: 0.9, done: 2.0 };
 
 export function BootController() {
   useEffect(() => {
