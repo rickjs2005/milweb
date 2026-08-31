@@ -36,11 +36,14 @@ export const heroPlacement = () => (window.innerWidth >= 1080 ? { cx: 0.68, cy: 
 // assíncronos — Lenis, SplitText, etc.) terminar de montar antes da primeira interação
 // possível. NÃO é a correção do travamento em fechar/reabrir aba (esse caminho pula o
 // preloader inteiro via sessionStorage, ver `booted` abaixo — o preloader nem roda nele);
-// é só folga a mais no caminho normal de carregamento.
-const FIRST = { exit: 2.8, assemble: 2.5, anomaly: 4.3, headline: 2.9, done: 5.8 };
+// é só folga a mais no caminho normal de carregamento. `exit` pedido explicitamente em 5s
+// tanto na primeira visita quanto em visitas seguintes (QUICK) — inclui visitante real
+// que já visitou antes, não só o teste local (o QUICK existia justamente pra ser rápido
+// pra quem já viu a intro; ficou pedido assim mesmo sabendo da troca).
+const FIRST = { exit: 5.0, assemble: 4.8, anomaly: 6.5, headline: 5.1, done: 8.0 };
 /** Mobile: a introdução existe, mas curta — no celular o conteúdo vem antes do espetáculo. */
 const SHORT = { exit: 2.0, assemble: 1.6, anomaly: 2.9, headline: 2.1, done: 3.8 };
-const QUICK = { exit: 0.8, assemble: 0.5, anomaly: -1, headline: 0.9, done: 2.0 };
+const QUICK = { exit: 5.0, assemble: 4.8, anomaly: -1, headline: 5.1, done: 6.1 };
 
 export function BootController() {
   useEffect(() => {
