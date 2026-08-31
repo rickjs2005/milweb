@@ -12,7 +12,7 @@ export function MiloHeroFallback() {
       viewBox="0 0 400 760"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
-      className="milo-hero-fallback pointer-events-none absolute right-[4%] top-[22%] z-[1] h-[44%] w-auto md:top-[9%] md:h-[84%]"
+      className="milo-hero-fallback pointer-events-none absolute right-[2%] top-[40%] z-[1] h-[32%] w-auto md:right-[4%] md:top-[9%] md:h-[84%]"
     >
       {/* linhas verticais que se curvam ao redor do corpo (a grid reagindo) */}
       {cols.map((c) => {

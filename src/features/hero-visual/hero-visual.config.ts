@@ -24,11 +24,16 @@ export const MILO_HERO = {
   /** altura do Milo como fração da viewport (desktop) → escala do root (altura nominal 1,9) */
   heightSvh: 0.78,
   scale: (0.78 * VIEW_H) / 1.9,
-  /** mobile: só tronco, cabeça e braço ativo importam — maior e com os pés abaixo da dobra */
-  scaleMobile: 0.72,
-  /** y do root (pés): borda inferior da viewport no plano z=0 é 1 − VIEW_H/2; + respiro. Mobile: pés abaixo da dobra, cabeça a ~50 % */
+  /** mobile: Milo é claramente MENOR que o bloco do headline (~34 % da altura útil — era 0,72,
+   * ≈51 % da viewport, competindo com a manchete). A cabeça não pode chegar perto das linhas
+   * superiores da headline nem tocar o texto durante a entrada. */
+  heightSvhMobile: 0.34,
+  scaleMobile: (0.34 * VIEW_H) / 1.9,
+  /** y do root (pés): borda inferior da viewport no plano z=0 é 1 − VIEW_H/2; + respiro. Mobile:
+   * pés ficam mais alto que no desktop (o corpo é bem menor) — a "zona de interação" abaixo da
+   * headline, acima da metadata, não o rodapé da tela. */
   y: 1 - VIEW_H / 2 + 0.08,
-  yMobile: -0.5,
+  yMobile: -0.66,
   /** rotação do corpo: andando (perfil, de frente para a headline) e parado (três quartos) */
   yawWalk: -1.15,
   yawRest: -0.36,
@@ -36,12 +41,12 @@ export const MILO_HERO = {
    * reduzida (era 0,68): o torso ficava livre demais da palavra (~1,5 coluna), um vão grande
    * demais para o braço "ler" como alcançando-a; mais perto, o braço cobre a distância que falta */
   holdOffset: 0.52,
-  holdOffsetMobile: 0.6,
+  holdOffsetMobile: 0.72,
   /** passo nominal (mundo, × escala) — o número de ciclos é arredondado para a chegada cair em pose neutra */
   stride: 1.35, // um ciclo = dois passos de ~0,68 (≈ 0,75 × perna de 0,9) — passo humano, não passinho
   /** folga além da borda para o corpo (e o braço em balanço) começar totalmente fora da tela */
   offscreenPad: 0.8,
-  offscreenPadMobile: 0.5,
+  offscreenPadMobile: 0.6,
   /** custo máximo (ms) do frame medido depois do aquecimento; acima disso volta ao SVG */
   frameBudgetMs: 14,
 } as const;

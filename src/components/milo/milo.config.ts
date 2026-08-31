@@ -189,6 +189,11 @@ export const MILO = {
     headDistortionMultiplier: 1.12,
     coatFlapMultiplier: 1.1,
     fullParticleMultiplier: 0.65,
+    /** raio de amostragem do halo curvado ao redor do corpo (uHero), como fração do valor
+     * desktop — no mobile a silhueta é menor mas o raio de amostragem do halo é fixo em UV
+     * (fração da TELA, não do corpo), então relativamente ao corpo ele "estoura" mais numa
+     * viewport estreita/portrait; 1 = comportamento atual (desktop, inalterado). */
+    haloScale: 1,
   },
 
   /** Grid técnica do fundo (px de CSS). */

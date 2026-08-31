@@ -130,6 +130,13 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   heroFrame.walk = walkIn;
   heroFrame.pull = fontWidth;
   heroFrame.fontWidth = fontWidth;
+  // No mobile o headline não muda de peso (wdth/wght ficam parados — evita risco de overflow
+  // numa tela estreita); o "quanto o corpo está sendo puxado" vem do próprio pushProgress em
+  // vez de fontWidth, senão o tronco/quadril nunca reagiriam ao puxão no celular.
+  const pullAmount = small ? push : fontWidth;
+  // o halo curvado (uHaloScale) é amostrado em UV de tela fixo — sobra em silhuetas menores/
+  // portrait; reduzido só no mobile, desktop continua exatamente igual (1).
+  f.params.haloScale = small ? 0.55 : 1;
 
   // ---- posição do corpo: entra, para junto da extremidade (colunas 8–10) e FICA — a frase vem até ele
   const xOff = g.halfW + (small ? MILO_HERO.offscreenPadMobile : MILO_HERO.offscreenPad) * S;
@@ -138,7 +145,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   let x: number;
   if (p < L.walkStart) x = xOff;
   else if (p < L.walkEnd) x = lerp(xOff, stopX, walkIn);
-  else x = stopX + 0.006 * S * antic * (1 - settled) - 0.03 * S * holding * fontWidth; // peso vai à frente na antecipação (mão parada), absorve na puxada
+  else x = stopX + 0.006 * S * antic * (1 - settled) - 0.03 * S * holding * pullAmount; // peso vai à frente na antecipação (mão parada), absorve na puxada
   heroPlacement.x = x;
   heroPlacement.y = small ? MILO_HERO.yMobile : MILO_HERO.y;
   heroPlacement.scale = S;
@@ -147,7 +154,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   const turn = smooth(L.walkEnd - 0.06, L.armStart, p);
   // antecipação: rotação mínima do tronco para a frase; ao assentar, o corpo vira um pouco mais de
   // frente (a mão ativa, de volta ao repouso, pende ao lado do corpo — não sobre "AS.")
-  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.03 * antic - 0.12 * holding * fontWidth + 0.14 * settled;
+  heroPlacement.yaw = lerp(MILO_HERO.yawWalk, MILO_HERO.yawRest, turn) - 0.03 * antic - 0.12 * holding * pullAmount + 0.14 * settled;
 
   // ---- pernas: fase pela distância percorrida (assinada → andar de ré inverte o ciclo)
   f.walk.phase = (xOff - x) / g.stride;
@@ -177,7 +184,7 @@ export function driveMilo(input: MiloHeroInput, L: Labels, fontWidth: number, g:
   pullTarget.release = settled;
 
   // ---- tronco: peso à frente para alcançar; absorve a força no contato; recua curto ao assentar
-  f.lean = 0.015 * antic * (1 - settled) + 0.07 * reachW * (1 - settled) - 0.06 * holding * fontWidth + 0.05 * f.walk.speed;
+  f.lean = 0.015 * antic * (1 - settled) + 0.07 * reachW * (1 - settled) - 0.06 * holding * pullAmount + 0.05 * f.walk.speed;
   f.recoil = Math.sin(Math.PI * smooth(L.pullEnd, L.settle + 0.04, p)) * 0.8;
   f.solid = settled;
   // refração momentânea + distorção localizada no ponto de força (cai com o assentamento)

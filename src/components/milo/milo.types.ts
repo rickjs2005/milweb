@@ -90,6 +90,7 @@ export type MiloFrame = {
     headDistortionMultiplier: number;
     coatFlapMultiplier: number;
     fullParticleMultiplier: number;
+    haloScale: number;
   };
   /** Multiplicador de partículas do estado atual (interpolado pelo GSAP). */
   particles: number;

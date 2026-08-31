@@ -58,6 +58,35 @@ export const HERO_SCENE = {
   settle: 0.78,
   outro: 0.9,
 } as const;
+/**
+ * Roteiro MOBILE — mesma forma de `HERO_SCENE` (mesmas chaves, pin mais curto),
+ * mas o ritmo é outro: no celular o Milo é pequeno e a mini-história tem que
+ * caber num pin de 220% em vez de 320%. Além das chaves de `HERO_SCENE`, o
+ * cenário mobile usa dois instantes locais (não são labels): `revealStart`
+ * (0.62, início do reveal de "PESSOAS.") e `gripEnd` (0.80, fim do "segurar"
+ * antes do puxão) — ficam como const no corpo de `scene()`, não aqui, porque
+ * `S` é lido como união de `HERO_SCENE | HERO_SCENE_MOBILE` e as duas
+ * precisam ter exatamente as mesmas chaves.
+ *
+ *   0.00–0.15  ESTADO INICIAL   headline incompleta ("PESSOAS." ainda oculta), Milo fora da tela
+ *   0.15–0.42  CAMINHADA        Milo entra andando pela direita, em direção ao fim da frase
+ *   0.42–0.56  APROXIMAÇÃO      desacelera, braço se prepara
+ *   0.56–0.70  CHEGADA          "PESSOAS." aparece (0.62→0.70), sincronizada com a mão chegando
+ *   0.70–0.80  CONTATO          mão segura a frase — pausa breve antes do puxão
+ *   0.80–0.90  PUXÃO            a frase estica como uma faixa elástica presa à esquerda
+ *   0.90–0.96  RECUPERAÇÃO      alongamento recua um pouco (nunca 100% → 0%, sem "boing")
+ *   0.96–1.00  SAÍDA            entrega comercial some / cede lugar à próxima seção
+ */
+export const HERO_SCENE_MOBILE = {
+  design: 0.06,
+  walkStart: 0.15,
+  walkEnd: 0.42,
+  armStart: 0.56,
+  contact: 0.7,
+  pullEnd: 0.9,
+  settle: 0.96,
+  outro: 0.97,
+} as const;
 /** wdth/wght da headline: estável e legível antes do contato; peso total ao assentar */
 export const HEADLINE_AXES = { from: { wdth: 105, wght: 700 }, to: { wdth: 125, wght: 900 } } as const;
 const STAGE_BOUNDS = [HERO_SCENE.design, HERO_SCENE.walkStart, HERO_SCENE.armStart, HERO_SCENE.settle, HERO_SCENE.outro];
@@ -141,7 +170,11 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
         // direita no mesmo trecho da caminhada — sem pernas, mas no mesmo tempo.
         if (fallback && visual === "milo") gsap.set(fallback, { xPercent: 160, x: "12vw" });
 
-        const S = HERO_SCENE;
+        const S = small ? HERO_SCENE_MOBILE : HERO_SCENE;
+        // No mobile a última palavra ("PESSOAS.") começa oculta (clip-path) — a headline
+        // "incompleta" pedida no roteiro — e só aparece no instante em que a mão do Milo chega.
+        const lastWord = small ? q("[data-headline-word=last]") : null;
+        if (lastWord) gsap.set(lastWord, { clipPath: "inset(0 100% 0 0)", transformOrigin: "left center" });
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
@@ -172,14 +205,35 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
           tl.to(q("[data-layer=code]"), { autoAlpha: 0.12, duration: 0.1 }, S.design);
         }
         if (fallback && visual === "milo") tl.to(fallback, { xPercent: 0, x: 0, duration: S.walkEnd - S.walkStart, ease: EASE.smooth }, S.walkStart);
-        // 04 INTERAÇÃO — no CONTATO a frase começa a se mover com a mão: wdth/wght
-        // sobem do estado estável ao peso total (contact → pullEnd).
-        // power2.out: a frase reage desde o primeiro frame do empurrão e desacelera junto com o braço
-        tl.to(axes, { wdth: A.to.wdth, wght: A.to.wght, duration: S.pullEnd - S.contact, ease: "power2.out", onUpdate: applyAxes }, S.contact);
+        if (!small) {
+          // 04 INTERAÇÃO (desktop) — no CONTATO a frase começa a se mover com a mão: wdth/wght
+          // sobem do estado estável ao peso total (contact → pullEnd).
+          // power2.out: a frase reage desde o primeiro frame do empurrão e desacelera junto com o braço
+          tl.to(axes, { wdth: A.to.wdth, wght: A.to.wght, duration: S.pullEnd - S.contact, ease: "power2.out", onUpdate: applyAxes }, S.contact);
+        } else if (lastWord) {
+          // 04 INTERAÇÃO (mobile) — sem eixo variável de peso (risco de overflow numa tela
+          // estreita); em vez disso "PESSOAS." é revelada por clip-path exatamente quando a
+          // mão chega (reveal termina em S.contact), depois um puxão-elástico controlado por
+          // pullAmount (heroFrame.push) em MiloHeroBridge já reage o corpo ao alongamento.
+          const revealStart = 0.62;
+          const gripEnd = 0.8;
+          tl.to(lastWord, { clipPath: "inset(0 0% 0 0)", duration: S.contact - revealStart, ease: "power2.out" }, revealStart);
+          // 05 CONTATO/GARRA — mão segura a palavra; pausa breve (revealStart→gripEnd já passou o
+          // contato) antes do puxão — sem isso o salto direto pro alongamento não lê como "pegar"
+          // 06 PUXÃO — a palavra estica como uma faixa presa à esquerda (transform-origin left):
+          // o lado da mão (direita) se move mais, a âncora (esquerda) não se move
+          tl.to(lastWord, { scaleX: 1.14, skewX: -2, letterSpacing: "0.03em", duration: S.pullEnd - gripEnd, ease: "power2.out" }, gripEnd);
+          // 07 RECUPERAÇÃO ELÁSTICA — nunca elastic.out (sensação premium, não "boing" de desenho);
+          // 100% do alongamento recua só até ~94%, ease controlado
+          tl.to(lastWord, { scaleX: 1.06, skewX: 0, letterSpacing: "0.012em", duration: S.settle - S.pullEnd, ease: "power3.inOut" }, S.pullEnd);
+        }
         // 05 EXPERIÊNCIA — a estrutura recua de vez; a grid fica (é o papel do Milo)
         tl.to([q("[data-layer=wire]"), q("[data-layer=code]")], { autoAlpha: 0, duration: 0.06 }, S.settle);
         // 06 ENTREGA — descrição comercial e CTA, discretos, alinhados ao grid
         tl.to(q("[data-outro]"), { autoAlpha: 1, y: 0, stagger: 0.02, duration: 0.06, ease: EASE.outExpo }, S.outro);
+        // no mobile a ENTREGA é absolute (não reserva altura — ver comentário acima do bloco) e
+        // pode colidir com o rodapé técnico numa tela baixa (320×568); o rodapé cede o lugar
+        if (small) tl.to(q("[data-ship]"), { autoAlpha: 0, duration: 0.04 }, S.outro);
         // saída: a grid e o rodapé técnico abaixam um pouco antes do pin soltar — o Selected Work
         // entra sobre um Hero já em repouso, sem corte seco
         if (!small) tl.to(q("[data-layer=grid]"), { autoAlpha: 0.45, duration: 0.04 }, 0.96);
@@ -276,7 +330,7 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
 
       {/* TIPOGRAFIA (o LCP) — colunas 1–8; a última palavra é o que a mão do Milo segura.
           O bloco vive no terço inferior, ~8svh acima do rodapé técnico — não colado no fundo. */}
-      <div className="relative z-10 mt-auto md:z-[1]" style={visual === "milo" ? { zIndex: 4 } : undefined}>
+      <div className="relative z-10 mt-6 md:mt-auto md:z-[1]" style={visual === "milo" ? { zIndex: 4 } : undefined}>
         <h1 className="t-display t-display-xl t-fit-hero text-ink" style={fitVars(s.headline)} data-inspect="HERO_TITLE" aria-label={s.headline.join(" ")}>
           {s.headline.map((line, i) => {
             const words = line.split(" ");
@@ -294,8 +348,11 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
           })}
         </h1>
 
-        {/* ENTREGA — descrição comercial + CTA (colunas 1–5), entram depois da ação */}
-        <div className="grid-12 mt-6 gap-y-4 md:mt-8">
+        {/* ENTREGA — descrição comercial + CTA (colunas 1–5), entram depois da ação.
+            No mobile fica fora do fluxo (absolute, colada no fim do h1): enquanto invisível
+            (autoAlpha 0) não pode reservar altura — a 320×568 code+headline+ENTREGA+rodapé
+            juntos em fluxo normal já não cabem (rodapé fica cortado, ver auditoria mobile). */}
+        <div className="grid-12 mt-6 gap-y-4 max-md:absolute max-md:inset-x-0 max-md:top-full md:mt-8">
           <p data-outro className="col-span-3 max-w-[24ch] text-[length:var(--step-0)] leading-snug text-ink-2 md:col-span-5 md:max-w-[34ch]">
             {s.sub}
           </p>
@@ -308,7 +365,7 @@ export function BuildHero({ s, act, visual = "compiler", workHref = "#work" }: {
       </div>
 
       {/* SHIP — rodapé técnico do ato, com respiro acima da borda */}
-      <div className="grid-12 relative z-10 mt-[7svh] items-end t-mono md:mt-[8svh]">
+      <div data-ship className="grid-12 relative z-10 mt-auto items-end t-mono md:mt-[8svh]">
         <ul className="col-span-4 space-y-0.5 text-ink-3 md:col-span-4">
           {s.support.map((l) => (
             <li key={l}>{l}</li>

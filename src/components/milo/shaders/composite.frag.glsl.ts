@@ -51,6 +51,7 @@ uniform float uTorsoHatch;
 uniform float uThighHatch;
 uniform float uHeadMul;
 uniform float uFlapMul;
+uniform float uHaloScale;
 // modo Hero: réplica da grid DOM (colunas verticais) e saída transparente fora do corpo
 uniform float uHero;
 uniform float uContact;
@@ -152,8 +153,11 @@ void main() {
     soft += a;
     grad += d * a;
     dil = max(dil, maskAt(uv + d * texel * uMaskDilate));
-    wide += maskAt(uv + d / aspect * 0.028);
-    sh += maskAt(uv + d / aspect * 0.02 + vec2(0.006, -0.03));
+    // uHaloScale (mobile-only, 1 = desktop inalterado): o raio de amostragem é fixo em UV de
+    // TELA, não do corpo — numa viewport estreita/portrait o halo relativo ao corpo "estoura"
+    // mais; reduzir o raio aqui é o único jeito de conter isso sem mudar a silhueta em si.
+    wide += maskAt(uv + d / aspect * 0.028 * uHaloScale);
+    sh += maskAt(uv + d / aspect * 0.02 * uHaloScale + vec2(0.006, -0.03) * uHaloScale);
     nAcc += texture2D(tMask, uv + d * texel * uMaskBlur * 0.6);
   }
   soft /= 12.0;

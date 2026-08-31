@@ -39,6 +39,7 @@ export function createCompositeMaterial() {
       uThighHatch: { value: s.thighHatchingMultiplier },
       uHeadMul: { value: s.headDistortionMultiplier },
       uFlapMul: { value: s.coatFlapMultiplier },
+      uHaloScale: { value: s.haloScale },
       uHero: { value: 0 },
       uContact: { value: 0 },
       uGridOrigin: { value: new THREE.Vector2(0, 0) },

@@ -158,6 +158,7 @@ function HeroPipeline({ quality, onReady, onFail }: { quality: MiloQuality; onRe
     c.uThighHatch.value = f.params.thighHatchingMultiplier;
     c.uHeadMul.value = f.params.headDistortionMultiplier;
     c.uFlapMul.value = f.params.coatFlapMultiplier;
+    c.uHaloScale.value = f.params.haloScale;
     c.uCell.value = MILO.grid.cell * dpr;
     c.uGridOrigin.value.copy(g.uGridOrigin.value);
     c.uGridSize.value.copy(g.uGridSize.value);
