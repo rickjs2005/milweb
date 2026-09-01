@@ -16,9 +16,18 @@ import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisua
 import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
 
-/** Segunda imagem de cada ato do Selected Work (a primeira é `w.image`). */
+/**
+ * Placa principal do palco quando ela NÃO é a captura do case (`w.image`, que
+ * segue sendo o hero da página do case). Kavita: a lavoura sem interface por
+ * cima — a captura tinha a copy do site cobrindo metade do frame.
+ */
+const WORLD_PLATE: Record<string, string> = {
+  "kavita-drones": "/shots/kavita-drones/field.webp",
+};
+/** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
 const WORLD_DETAIL: Record<string, string> = {
-  "kavita-drones": "/shots/kavita-drones/drones.webp",
+  // render do DJI Agras T70P com canal alfa (recorte assado a partir do render de produto)
+  "kavita-drones": "/shots/kavita-drones/t70p.webp",
   terral: "/shots/terral/casa-do-torrador.webp",
   "atelier-vertex": "/shots/atelier-vertex/prancha.webp",
 };
@@ -72,7 +81,7 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
               displayType: d.displayType[p.displayType],
               client: p.clientWork ? p.clientName ?? null : null,
               year: p.year ?? null,
-              image: w.image,
+              image: WORLD_PLATE[p.slug] ?? w.image,
               detail: WORLD_DETAIL[p.slug] ?? w.image,
               href: withLocale(locale, `/work/${p.slug}`),
               labels: [...d.work.labels[WORLD_KEY[p.slug]]],

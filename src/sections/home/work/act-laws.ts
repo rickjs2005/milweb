@@ -40,16 +40,20 @@ const kavita: Law = (panel) => {
   const xy = q<HTMLElement>("[data-map-xy]")[0];
   const topo = q<HTMLElement>("[data-topo]")[0];
   const media = q<HTMLElement>("[data-media]")[0];
+  const craft = q<HTMLElement>("[data-media-b]")[0];
   const title = q<HTMLElement>("[data-headline]")[0];
   const drones = q<SVGGElement>("[data-drone]");
   const routes = q<SVGPathElement>("[data-route]");
   if (!cursor || !topo) return () => {};
   const cx = gsap.quickTo(cursor, "x", { duration: 0.18, ease: EASE.outQuint });
   const cy = gsap.quickTo(cursor, "y", { duration: 0.18, ease: EASE.outQuint });
-  // parallax: o mapa atrás anda mais que a foto, e a tipografia quase não anda
+  // parallax em quatro profundidades: o mapa atrás anda mais que a janela, o
+  // drone (o plano mais próximo) anda contra, e a tipografia quase não anda.
+  // Só x/y aqui — xPercent/yPercent/scale do drone são da timeline do ato.
   const layers = [
     { el: topo, k: 16 },
     { el: media, k: -9 },
+    { el: craft, k: -18 },
     { el: title, k: -3 },
   ]
     .filter((l) => l.el)

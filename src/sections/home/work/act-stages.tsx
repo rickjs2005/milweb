@@ -76,18 +76,29 @@ export function ActStage({ slug, image, detail }: { slug: ActSlug; image: string
 }
 
 /* ------------------------------------------------------------------ 01 KAVITA
-   Território sob análise. A lavoura entra como faixa que sangra pela direita e
-   o equipamento vem à frente, isolado e com marcação de alvo: campo atrás,
-   tecnologia na frente, topografia lendo o terreno. */
+   Território sob análise. Três planos, cada um com um papel:
+
+     o campo é o AMBIENTE     — a placa da lavoura dentro de uma janela de varredura
+     a topografia é a LÍNGUA  — contornos e rotas lendo o terreno atrás de tudo
+     o drone é o PROTAGONISTA — um render com alfa real, à frente, cruzando a moldura
+
+   A janela não é uma foto num retângulo: ela nasce como fenda, é LIDA pela
+   linha de varredura (o que ainda não foi lido fica sob um véu da cor do papel)
+   e é ela que solta as leituras técnicas conforme a linha passa. O drone tem
+   recorte alfa de verdade (assado a partir do render de produto, 900 px), por
+   isso pode ficar meio dentro, meio fora da janela sem ler como PNG colado —
+   e sem `multiply`, que fazia o tanque branco sumir sobre o verde. */
+const KAVITA_READOUTS = ["LAT 19°55′ S · LON 43°56′ W", "T70P · ALT 42 M", "SWATH 7,0 M · COV 14,6 HA/H", "SPRAY SYSTEM ACTIVE"];
+
 function KavitaStage({ image, detail }: { image: string; detail: string }) {
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-      <svg data-topo className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="0.75">
+      <svg data-topo className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round">
         {CONTOURS.map((d, i) => (
           <path key={i} data-contour d={d} pathLength="1" opacity={(0.3 - (i % 6) * 0.03).toFixed(2)} />
         ))}
         {ROUTES.map((d, i) => (
-          <path key={"r" + i} data-route d={d} pathLength="1" strokeDasharray="3 7" opacity="0.45" />
+          <path key={"r" + i} data-route d={d} pathLength="1" opacity="0.45" />
         ))}
         {ROUTES.map((_, i) => (
           <g key={"d" + i} data-drone opacity="0">
@@ -103,37 +114,53 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
         ))}
       </svg>
 
-      {/* A LAVOURA — a única região da captura que é fotografia pura: no frame
-          original a copy do site cobre a metade esquerda e desce até 47 % da
-          altura, então o enquadramento honesto é o alto à direita. */}
-      <div data-media className="absolute right-[-6%] top-[11%] z-[2] h-[25%] w-[44%] overflow-hidden max-md:left-margin max-md:right-margin max-md:w-auto max-md:top-[13%] max-md:h-[20%]" style={{ viewTransitionName: "case-media-kavita-drones" }} data-inspect="MEDIA">
-        <Crop src={image} region={[900, 85, 1440, 258]} sizes="100vw" />
-        {/* varredura: a linha que lê o território */}
-        <span data-scan className="absolute inset-y-0 w-px bg-signal" style={{ left: "0%" }}>
-          <span className="absolute inset-y-0 -left-16 w-16 bg-gradient-to-r from-transparent to-signal/30" />
+      {/* A JANELA DE VARREDURA — a lavoura (cafezal em MG: horizonte, morros,
+          fileiras convergindo) sangra pela direita. A imagem é 10 % mais alta
+          que a caixa para o parallax vertical nunca mostrar borda. */}
+      <div data-media className="absolute right-[-4%] top-[max(15%,136px)] z-[2] h-[44%] w-[60%] overflow-hidden max-md:left-margin max-md:right-margin max-md:top-[max(15%,136px)] max-md:h-[30%] max-md:w-auto" style={{ viewTransitionName: "case-media-kavita-drones" }} data-inspect="MEDIA">
+        <span data-crop className="absolute inset-x-0 -inset-y-[5%] block">
+          <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 62vw, 100vw" className="object-cover object-[46%_58%]" />
         </span>
-        <span data-frame className="absolute inset-0 border border-ink/25" />
+        {/* a varredura: a linha lê de cima para baixo; o que está abaixo dela
+            ainda não foi lido e fica sob um véu da cor do papel. O invólucro
+            inteiro desliza (yPercent 0 → 100), então linha e véu têm um só dono. */}
+        <span data-scan className="pointer-events-none absolute inset-0 block">
+          <span className="absolute inset-x-0 top-0 block h-[200%]" style={{ background: "rgb(242 240 234 / 0.74)" }} />
+          <span className="absolute inset-x-0 -top-14 block h-14 bg-gradient-to-b from-transparent to-signal/35" />
+          <span className="absolute inset-x-0 top-0 block h-px bg-signal" />
+        </span>
+        {/* moldura técnica: régua de marcas no topo, cantos e o rótulo da leitura */}
+        <span data-frame className="pointer-events-none absolute inset-0 block border border-ink/25">
+          <svg className="absolute inset-x-0 top-0 h-2 w-full" viewBox="0 0 100 4" preserveAspectRatio="none">
+            {Array.from({ length: 41 }).map((_, k) => (
+              <line key={k} x1={(k * 2.5).toFixed(1)} y1="0" x2={(k * 2.5).toFixed(1)} y2={k % 4 === 0 ? 4 : 2} stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" opacity="0.5" />
+            ))}
+          </svg>
+          <span className="t-mono absolute left-3 top-4 text-[10px] tracking-[0.14em] opacity-70 max-md:hidden">SCAN 01</span>
+        </span>
       </div>
 
-      {/* O EQUIPAMENTO — protagonista, isolado do frame de produtos. `multiply`
-          no invólucro (e não na imagem: o z-index do invólucro cria contexto de
-          empilhamento, e ali dentro a mistura não teria com o que se misturar)
-          dissolve o card claro no papel: o drone fica impresso na página. */}
-      <div data-media-b className="absolute right-[9%] top-[25%] z-[3] h-[22%] w-[26%] overflow-hidden mix-blend-multiply max-md:right-[6%] max-md:top-[31%] max-md:h-[17%] max-md:w-[58%]">
-        <Crop src={detail} region={[570, 445, 875, 590]} sizes="100vw" className="contrast-[1.18]" />
-      </div>
-      <div data-target aria-hidden="true" className="absolute right-[9%] top-[25%] z-[4] h-[22%] w-[26%] opacity-0 max-md:right-[6%] max-md:top-[31%] max-md:h-[17%] max-md:w-[58%]">
-        <span className="absolute left-0 top-0 h-4 w-4 border-l border-t border-current opacity-70" />
-        <span className="absolute right-0 top-0 h-4 w-4 border-r border-t border-current opacity-70" />
-        <span className="absolute bottom-0 left-0 h-4 w-4 border-b border-l border-current opacity-70" />
-        <span className="absolute bottom-0 right-0 h-4 w-4 border-b border-r border-current opacity-70" />
-        <span className="t-mono absolute -bottom-5 right-0 text-[10px] tracking-[0.14em] opacity-60">DJI AGRAS T70P</span>
+      {/* O DRONE — protagonista. A caixa tem a proporção exata do recorte
+          (900 × 442), então os cantos de alvo abraçam a silhueta de verdade. O
+          alvo é filho da caixa: herda todo movimento do drone sem ter dono
+          próprio de transform. */}
+      <div data-media-b className="absolute left-[35%] top-[41%] z-[3] aspect-[900/442] w-[28%] max-md:left-[0%] max-md:top-[37%] max-md:w-[70%]" data-inspect="DRONE">
+        <Image src={detail} alt="" fill loading="lazy" sizes="(min-width: 720px) 28vw, 66vw" className="object-contain" />
+        <span data-target className="absolute inset-[6%] block opacity-0">
+          <span className="absolute left-0 top-0 h-4 w-4 border-l border-t border-current opacity-70" />
+          <span className="absolute right-0 top-0 h-4 w-4 border-r border-t border-current opacity-70" />
+          <span className="absolute bottom-0 left-0 h-4 w-4 border-b border-l border-current opacity-70" />
+          <span className="absolute bottom-0 right-0 h-4 w-4 border-b border-r border-current opacity-70" />
+          <span className="t-mono absolute -bottom-5 right-0 whitespace-nowrap text-[10px] tracking-[0.14em] opacity-70">DJI AGRAS T70P</span>
+        </span>
       </div>
 
-      {/* leituras técnicas: aparecem no scroll, ao longo da varredura */}
-      <div data-readout className="t-mono absolute right-[6%] top-[54%] z-[4] hidden text-right md:block">
-        {["ALT 42 M", "SWATH 7,0 M", "COV 14,6 HA/H"].map((t) => (
-          <p key={t} data-coord className="tnum opacity-0">
+      {/* leituras técnicas: uma por vez, cada uma no instante em que a linha
+          de varredura passa pela região que ela descreve (horizonte → drone →
+          faixa de aplicação → bicos). Nunca todas acesas ao mesmo tempo. */}
+      <div data-readout className="t-mono absolute right-margin top-[62%] z-[4] hidden text-right md:block">
+        {KAVITA_READOUTS.map((t) => (
+          <p key={t} data-coord className="tnum whitespace-nowrap opacity-0">
             {t}
           </p>
         ))}

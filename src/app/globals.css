@@ -298,21 +298,23 @@ html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [da
 }
 
 /* CTA do ato — editorial, nunca botão. Os colchetes abrem, a seta anda e a
-   régua cresce da esquerda; tudo em transform/opacity. */
+   régua cresce da esquerda SÓ sob a palavra (não sob os colchetes); tudo em
+   transform/opacity. A seta parte um instante depois dos colchetes. */
 .act-cta { position: relative; font-family: var(--font-mono), ui-monospace, monospace; font-size: var(--step--1);
   letter-spacing: 0.08em; text-transform: uppercase; color: currentColor; }
-.act-cta::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px;
+.act-cta-txt { position: relative; }
+.act-cta-txt::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px;
   background: currentColor; transform: scaleX(0); transform-origin: left;
   transition: transform var(--dur-medium) var(--ease-out-expo); }
 .act-cta-br { display: inline-block; opacity: 0.5; transition: transform var(--dur-medium) var(--ease-out-expo), opacity var(--dur-fast); }
-.act-cta-arrow { display: inline-block; transition: transform var(--dur-medium) var(--ease-out-expo); }
-.act-cta:hover::after, .act-cta:focus-visible::after { transform: scaleX(1); }
+.act-cta-arrow { display: inline-block; transition: transform var(--dur-medium) var(--ease-out-expo) 40ms; }
+.act-cta:hover .act-cta-txt::after, .act-cta:focus-visible .act-cta-txt::after { transform: scaleX(1); }
 .act-cta:hover .act-cta-br, .act-cta:focus-visible .act-cta-br { opacity: 1; }
-.act-cta:hover .act-cta-br:first-child, .act-cta:focus-visible .act-cta-br:first-child { transform: translateX(-3px); }
-.act-cta:hover .act-cta-br:last-child, .act-cta:focus-visible .act-cta-br:last-child { transform: translateX(3px); }
-.act-cta:hover .act-cta-arrow, .act-cta:focus-visible .act-cta-arrow { transform: translate(2px, -2px); }
+.act-cta:hover .act-cta-br:first-child, .act-cta:focus-visible .act-cta-br:first-child { transform: translateX(-4px); }
+.act-cta:hover .act-cta-br:last-child, .act-cta:focus-visible .act-cta-br:last-child { transform: translateX(4px); }
+.act-cta:hover .act-cta-arrow, .act-cta:focus-visible .act-cta-arrow { transform: translate(3px, -3px); }
 @media (prefers-reduced-motion: reduce) {
-  .act-cta::after { transform: scaleX(1); }
+  .act-cta-txt::after { transform: scaleX(1); }
   .act-cta-br, .act-cta-arrow { transition: none; }
 }
 

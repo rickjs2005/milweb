@@ -180,13 +180,19 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
         mm.add(MQ.reduce, () => {
           acts.forEach((article) => {
             const q = gsap.utils.selector(article);
-            gsap.set(q("[data-coord], [data-target], [data-anchor], [data-plan-label], [data-part-label], [data-dim], [data-movement-wrap], [data-axis]"), { autoAlpha: 1 });
+            // cada palco tem só parte destes elementos; um alvo vazio faz o GSAP
+            // avisar no console ("target not found") — pula em vez de avisar
+            const set = (sel: string, vars: gsap.TweenVars) => {
+              const els = q(sel);
+              if (els.length) gsap.set(els, vars);
+            };
+            set("[data-coord], [data-meta], [data-target], [data-frame], [data-anchor], [data-plan-label], [data-part-label], [data-dim], [data-movement-wrap], [data-axis]", { autoAlpha: 1 });
             // véu e sangria são ferramentas de TRANSIÇÃO: sem timeline para
             // apagá-los, ficariam cobrindo metade do painel para sempre
-            gsap.set(q("[data-scan], [data-veil], [data-bleed]"), { autoAlpha: 0 });
-            gsap.set(q("[data-grain]"), { autoAlpha: 0.4 });
-            gsap.set(q("[data-slice]"), { clipPath: "inset(0% 0 0 0)", xPercent: 0 });
-            gsap.set(q("[data-media]"), { autoAlpha: 1, clipPath: "none" });
+            set("[data-scan], [data-veil], [data-bleed]", { autoAlpha: 0 });
+            set("[data-grain]", { autoAlpha: 0.4 });
+            set("[data-slice]", { clipPath: "inset(0% 0 0 0)", xPercent: 0 });
+            set("[data-media]", { autoAlpha: 1, clipPath: "none" });
             if (article.dataset.world === "aurex-timepieces") {
               gsap.set(q("[data-media]"), { autoAlpha: 0.2 });
               AUREX_PARTS.forEach((part) => gsap.set(q(`[data-part="${part.id}"]`), { x: part.dx, y: part.dy, rotate: part.spin * 42, svgOrigin: "0 0" }));
@@ -264,7 +270,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
                 {/* NÍVEL 02 — metadata técnica do projeto */}
                 <ul data-reveal className="t-mono flex flex-wrap items-center gap-x-5 gap-y-1 opacity-90">
                   {item.labels.map((l) => (
-                    <li key={l} data-coord className="whitespace-nowrap">
+                    <li key={l} data-meta className="whitespace-nowrap">
                       {l}
                     </li>
                   ))}
@@ -317,12 +323,13 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
 /** O motivo do ato anterior, ainda em cena nos primeiros frames deste. */
 function Residue({ from }: { from: ActSlug }) {
   if (from === "kavita-drones")
-    // contornos de levantamento sobrando sobre o papel quente
+    // contornos de levantamento já virando grão — o estado em que o Kavita
+    // termina (linhas pontilhadas com corpo), sobrando sobre o papel quente
     return (
-      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="0.75" opacity="0.3">
-        <path d="M-40 700 C240 620 420 760 700 690 C960 626 1180 720 1480 660" />
-        <path d="M-40 780 C260 700 460 830 720 764 C980 700 1200 792 1480 736" />
-        <path d="M-40 620 C220 540 400 690 680 616" />
+      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="0.004 0.014" opacity="0.3">
+        <path pathLength="1" d="M-40 700 C240 620 420 760 700 690 C960 626 1180 720 1480 660" />
+        <path pathLength="1" d="M-40 780 C260 700 460 830 720 764 C980 700 1200 792 1480 736" />
+        <path pathLength="1" d="M-40 620 C220 540 400 690 680 616" />
       </svg>
     );
   if (from === "terral")
@@ -355,38 +362,84 @@ function Residue({ from }: { from: ActSlug }) {
 type Q = ReturnType<typeof gsap.utils.selector>;
 type One = <T extends HTMLElement>(s: string) => T | undefined;
 
-/** 01 KAVITA — território sob análise: varredura, topografia, rota, parallax. */
+/**
+ * 01 KAVITA — território sob análise. O roteiro do ato, em progresso da trigger:
+ *
+ *   0.00–0.22  ENTRADA      topografia se desenha; a janela abre como uma fenda
+ *   0.22–0.56  VARREDURA    a linha lê o campo de cima para baixo (o véu sai com ela)
+ *   0.32–0.46  DRONE        entra de baixo e cruza a moldura; alvo e leitura T70P
+ *   0.28–0.62  LEITURAS     uma por vez, no instante em que a linha passa pela região
+ *   0.48–0.62  METADATA     três blocos, em sequência
+ *   0.64–0.74  ESTABILIZA   a janela fecha como abriu e o drone decola: a manchete
+ *                           fica sozinha em tela — nada compete
+ *   0.72–0.92  SAÍDA        os contornos viram grão (a língua do Terral) e as
+ *                           rotas somem; a sangria de cor (compartilhada) sobe
+ *
+ * GEOMETRIA QUE MANDA NO ROTEIRO: o conteúdo é sticky dentro de um trilho de
+ * 200 svh, então a partir de ~0.67 o painel começa a subir coberto pelo
+ * próximo. A metade de cima (onde a janela mora) sai da tela em ~0.72 — por
+ * isso a janela fecha ANTES disso, e a "dominância" da manchete é feita por
+ * subtração, não por mexer nela (x/y da manchete pertencem à lei do cursor).
+ */
 function kavita(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   const media = one("[data-media]");
   const drone = one("[data-media-b]");
   const img = one("[data-media] [data-crop]");
+  const scan = q("[data-scan]");
+  const frame = q("[data-frame]");
+  const target = q("[data-target]");
+  const readouts = q("[data-readout] [data-coord]");
+  const meta = q("[data-meta]");
+  const contours = q("[data-contour]");
+  const routes = q("[data-route]");
 
-  // ENTRADA — a foto se revela atrás da linha de varredura
-  tl.fromTo(media ?? [], { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: ACT.enter + 0.06 }, 0);
-  tl.fromTo(q("[data-scan]"), { left: "0%", autoAlpha: 1 }, { left: "100%", duration: ACT.enter + 0.06 }, 0);
-  tl.to(q("[data-scan]"), { autoAlpha: 0, duration: 0.04 }, ACT.enter + 0.06);
-
-  // CONSTRUÇÃO — contornos e rotas se desenham; as leituras técnicas entram
-  tl.fromTo(q("[data-contour]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.012, duration: 0.22 }, 0.06);
-  tl.fromTo(q("[data-route]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.16 }, ACT.enter);
+  /* ENTRADA — a topografia se desenha e a janela abre como uma fenda de varredura */
+  tl.fromTo(contours, { strokeDashoffset: 1, strokeDasharray: "1 1" }, { strokeDashoffset: 0, stagger: 0.012, duration: 0.22 }, 0.04);
+  tl.fromTo(routes, { strokeDashoffset: 1, strokeDasharray: "1 1" }, { strokeDashoffset: 0, stagger: 0.04, duration: 0.16 }, ACT.enter);
+  // depois de desenhadas, as rotas viram linha de voo pontilhada (pathLength = 1)
+  tl.set(routes, { strokeDasharray: "0.008 0.02" }, ACT.enter + 0.2);
   tl.fromTo(q("[data-crosshair]"), { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 0.55, scale: 1, stagger: 0.05, duration: 0.12 }, ACT.enter + 0.04);
-  tl.fromTo(q("[data-coord]"), { autoAlpha: 0, x: 12 }, { autoAlpha: 0.75, x: 0, stagger: 0.05, duration: 0.14 }, ACT.build - 0.04);
-  // o equipamento entra depois do território: primeiro o campo, depois a máquina
-  tl.fromTo(drone ?? [], { autoAlpha: 0, y: 26, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.16, ease: EASE.outQuint }, ACT.enter + 0.06);
-  tl.fromTo(q("[data-target]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.1 }, ACT.build);
+  tl.fromTo(media ?? [], { clipPath: "inset(50% 0 50% 0)" }, { clipPath: "inset(0% 0 0% 0)", duration: 0.18, ease: EASE.outQuint }, 0.06);
+  tl.fromTo(frame, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.08 }, 0.16);
 
-  // EXPERIÊNCIA — parallax lento: a foto sobe menos que o mapa
-  if (!small && img) tl.fromTo(img, { yPercent: 3 }, { yPercent: -3, duration: ACT.hold - ACT.build, ease: "none" }, ACT.build);
-  if (!small && drone) tl.fromTo(drone, { yPercent: -2 }, { yPercent: 4, duration: ACT.hold - ACT.build, ease: "none" }, ACT.build);
-  tl.fromTo(q("[data-topo]"), { yPercent: 0 }, { yPercent: -3, duration: ACT.hold - ACT.build }, ACT.build);
+  /* VARREDURA — a linha lê o campo; o que está abaixo dela ainda é véu */
+  tl.fromTo(scan, { yPercent: 0 }, { yPercent: 100, duration: 0.34 }, 0.22);
 
-  // PREPARAÇÃO → TERRAL: a topografia se desmancha e o branco técnico esquenta
-  tl.to(q("[data-contour]"), { autoAlpha: 0, stagger: 0.01, duration: 0.14 }, ACT.hold + 0.02);
-  tl.to(q("[data-route]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
-  tl.to(q("[data-crosshair]"), { autoAlpha: 0, duration: 0.08 }, ACT.hold + 0.02);
-  if (img) tl.to(img, { scale: 1.14, duration: ACT.prepare + 0.14 - ACT.hold }, ACT.hold);
-  if (drone) tl.to(drone, { autoAlpha: 0.35, y: -18, duration: 0.2 }, ACT.prepare - 0.1);
-  tl.to(q("[data-frame]"), { autoAlpha: 0, duration: 0.1 }, ACT.prepare - 0.04);
+  /* DRONE — entra de baixo quando a linha chega ao meio da janela e cruza a
+     moldura. Só xPercent/yPercent/scale/autoAlpha aqui: x/y são da lei do cursor. */
+  tl.fromTo(drone ?? [], { autoAlpha: 0, yPercent: 16, xPercent: -6, scale: 0.94, transformOrigin: "50% 50%" }, { autoAlpha: 1, yPercent: 0, xPercent: 0, scale: 1, duration: 0.14, ease: EASE.outQuint }, 0.32);
+  tl.fromTo(target, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05 }, 0.46);
+
+  /* LEITURAS — cada uma no seu instante; a anterior baixa quando a próxima chega */
+  const beats = [0.28, 0.46, 0.53, 0.6];
+  readouts.forEach((r, i) => {
+    tl.fromTo(r, { autoAlpha: 0, x: 10 }, { autoAlpha: 0.85, x: 0, duration: 0.05, ease: EASE.outQuint }, beats[i] ?? 0.6);
+    if (i < readouts.length - 1) tl.to(r, { autoAlpha: 0.16, duration: 0.05 }, beats[i + 1]);
+  });
+
+  /* METADATA — três blocos independentes, em sequência, enquanto a leitura termina */
+  meta.forEach((m, i) => tl.fromTo(m, { autoAlpha: 0, x: 10 }, { autoAlpha: 1, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.48 + i * 0.06));
+
+  /* EXPERIÊNCIA — profundidade lenta: a placa quase parada, o mapa vivo atrás */
+  if (!small && img) tl.fromTo(img, { yPercent: 3 }, { yPercent: -3, duration: ACT.hold - ACT.build }, ACT.build);
+  tl.fromTo(q("[data-topo]"), { yPercent: 0, scale: 1, transformOrigin: "50% 60%" }, { yPercent: -4, scale: 1.035, duration: ACT.prepare - ACT.build }, ACT.build);
+  // relevo vivo: os anéis respiram em opacidade, do centro para fora — sem morph
+  tl.to(contours, { opacity: (i: number) => 0.36 - (i % 6) * 0.03, stagger: { each: 0.015, from: "center" }, duration: 0.14 }, 0.4);
+  if (drone) tl.to(drone, { yPercent: -5, xPercent: 3, duration: 0.18 }, 0.46);
+
+  /* ESTABILIZAÇÃO — a manchete fica sozinha: a janela fecha como abriu e o drone decola */
+  tl.to(readouts, { autoAlpha: 0, duration: 0.06 }, 0.66);
+  tl.to(target, { autoAlpha: 0, duration: 0.05 }, 0.64);
+  tl.to(frame, { autoAlpha: 0, duration: 0.06 }, 0.64);
+  if (media) tl.to(media, { clipPath: "inset(50% 0 50% 0)", duration: 0.1, ease: EASE.smooth }, 0.65);
+  if (drone) tl.to(drone, { yPercent: -34, xPercent: 12, scale: 1.04, autoAlpha: 0.4, duration: 0.16, ease: "power1.in" }, 0.66);
+
+  /* SAÍDA → TERRAL — a topografia perde a rigidez: os contornos viram grão
+     (pathLength = 1, então o tracejado é fração do caminho) e ganham corpo,
+     as rotas e as cruzetas somem. É a língua do próximo ato nascendo aqui. */
+  tl.to(contours, { strokeDasharray: "0.004 0.014", strokeWidth: 1.6, opacity: 0.24, stagger: 0.012, duration: 0.2 }, ACT.hold + 0.02);
+  tl.to(routes, { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.04);
+  tl.to(q("[data-crosshair]"), { autoAlpha: 0, duration: 0.08 }, ACT.hold + 0.04);
 }
 
 /** 02 TERRAL — matéria: duas fotografias fora de fase, grão físico, papel ao fundo. */
