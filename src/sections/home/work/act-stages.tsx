@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { AurexMovement } from "./aurex-movement";
 import type { ActSlug } from "./act-config";
+import { DESIGN, PLATE, SHEET, contourPath, meshPaths, trackPoints } from "./inkvision-geometry";
 
 /**
  * OS PALCOS. Cada ato tem um palco próprio — a experiência visual principal da
@@ -70,6 +71,7 @@ export function ActStage({ slug, image, detail, labels }: { slug: ActSlug; image
   if (slug === "kavita-drones") return <KavitaStage image={image} detail={detail} />;
   if (slug === "terral") return <TerralStage image={image} detail={detail} />;
   if (slug === "atelier-vertex") return <VertexStage image={image} detail={detail} labels={labels} />;
+  if (slug === "inkvision") return <InkvisionStage image={image} />;
   return <AurexStage image={image} />;
 }
 
@@ -501,6 +503,143 @@ function AurexStage({ image }: { image: string }) {
       <div data-time-cursor className="absolute inset-0 z-[4] hidden md:block">
         {[0, 1, 2, 3].map((k) => (
           <span key={k} data-ghost className="absolute left-0 top-0 block h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current opacity-0" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ 05 INKVISION
+   Um sistema entendendo a pele. CORPO → DETECÇÃO → MALHA → DESENHO PLANO →
+   PROJEÇÃO → WARP → IMG2IMG → RESULTADO. No começo vemos o SISTEMA (contorno,
+   tracking points, malha paramétrica, a folha com o desenho); no fim vemos o
+   RESULTADO (a pele, a tatuagem integrada, quase nenhuma marcação).
+
+   A PLACA é uma fotografia editorial de antebraço em P&B (1600 × 1067). Toda a
+   camada de visão é um SVG no MESMO sistema de coordenadas da foto, com
+   `xMidYMid slice` — recorta exatamente como o `object-cover` da imagem, então
+   contorno, malha e tatuagem ficam alinhados em qualquer proporção do frame.
+
+   A TINTA é um segundo SVG em `mix-blend-mode: multiply`: preto sobre a folha
+   branca é preto; sobre a pele, escurece o tom e ganha a textura — é isso que
+   integra, não opacidade. O desenho é a marca do próprio InkVision (o losango
+   com o ponto) em traço fino, fatiado em 10 tiras que a timeline enrola no
+   cilindro do braço (ver inkvision-geometry: `stripTargets`).
+
+   ORIGINAL ↔ SIMULATION é uma terceira cópia da foto por cima, clipada pelo
+   cursor (lei do mundo), visível só depois que a simulação fecha. */
+const INK_STEPS = ["SKIN SEGMENTATION", "PERSPECTIVE · CURVATURE", "TATTOO WARP", "IMG2IMG · LOW STRENGTH"];
+const INK_ACCENT = "#F0563E";
+const INK_MESH = meshPaths();
+const INK_CONTOUR = contourPath();
+const INK_TRACK = trackPoints();
+
+function InkvisionStage({ image }: { image: string }) {
+  const { size, scale, strips } = DESIGN;
+  const w = size / strips;
+  const sheet = size * scale * 1.24;
+  const vb = `0 0 ${PLATE.w} ${PLATE.h}`;
+  return (
+    <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+      {/* O FRAME — 3:2 como a placa, com teto de altura (o recorte é igual na foto e nos SVGs) */}
+      <div data-media-wrap className="absolute left-[6%] top-[max(15svh,136px)] z-[2] aspect-[3/2] w-[58%] max-h-[40svh] max-md:left-margin max-md:right-margin max-md:w-auto max-md:aspect-[5/4] max-md:top-[max(14svh,120px)] max-md:max-h-[40svh]" data-inspect="SIMULATION">
+        <div data-media className="absolute inset-0 isolate overflow-hidden" style={{ viewTransitionName: "case-media-inkvision" }} data-inspect="MEDIA">
+          <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 58vw, 100vw" className="object-cover" />
+          {/* IMG2IMG — a cópia "antes" (a pele sob o véu) cobre a base e some da esquerda
+              para a direita na etapa 04: a varredura clareia e fecha a simulação sem
+              nunca cobrir a tinta, que vive acima */}
+          <span data-sweep className="absolute inset-0 block">
+            <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 58vw, 100vw" className="object-cover" />
+            {/* a pele emerge do preto do Aurex */}
+            <span data-dark className="absolute inset-0 block bg-[#0B0B0B] opacity-55" />
+          </span>
+          <span data-sweep-line className="absolute left-0 top-0 block h-full w-px opacity-0" style={{ background: INK_ACCENT }} />
+
+          {/* CAMADA DE VISÃO: contorno de detecção, malha paramétrica, folha do desenho, tracking points */}
+          <svg data-vision className="absolute inset-0 h-full w-full" viewBox={vb} preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor">
+            <path data-contour d={INK_CONTOUR} pathLength="1" strokeWidth="1.2" strokeDasharray="1" strokeDashoffset="1" vectorEffect="non-scaling-stroke" opacity="0.75" />
+            <g data-mesh opacity="0.55">
+              {INK_MESH.map((m, i) => (
+                <path key={i} data-mesh-line d={m.d} pathLength="1" strokeWidth={m.kind === "long" ? 0.9 : 0.7} strokeDasharray="1" strokeDashoffset="1" vectorEffect="non-scaling-stroke" className={m.kind === "ring" && i % 2 ? "max-md:hidden" : undefined} />
+              ))}
+            </g>
+            {/* a folha: o desenho nasce plano aqui, como um arquivo, antes de ir para a pele */}
+            <g data-sheet opacity="0" transform={`translate(${SHEET.x} ${SHEET.y})`}>
+              <rect x={-sheet / 2} y={-sheet / 2} width={sheet} height={sheet} fill="#F2F0EA" stroke="none" />
+              <text x={-sheet / 2 + 14} y={-sheet / 2 + 26} fontSize="15" fill="#111111" stroke="none" style={MONO}>
+                DESIGN · 01
+              </text>
+              <text x={sheet / 2 - 14} y={sheet / 2 - 12} fontSize="13" textAnchor="end" fill="#111111" stroke="none" opacity="0.6" style={MONO}>
+                FLAT
+              </text>
+            </g>
+            {INK_TRACK.map((p, i) => (
+              <rect key={i} data-track data-key={p.key ? "" : undefined} x={p.x - 5} y={p.y - 5} width="10" height="10" strokeWidth="1" opacity="0" vectorEffect="non-scaling-stroke" className={p.key || i % 2 === 0 ? undefined : "max-md:hidden"} />
+            ))}
+          </svg>
+
+          {/* A TINTA — em multiply: integra na pele em vez de flutuar sobre ela */}
+          <svg data-ink-svg className="absolute inset-0 h-full w-full mix-blend-multiply" viewBox={vb} preserveAspectRatio="xMidYMid slice" fill="none" stroke="#111111" opacity="0.92">
+            <defs>
+              {/* a marca do InkVision em traço fino: o losango, o ponto, o anel e os quatro registros */}
+              <g id="inkv-design" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M100 22 L158 100 L100 178 L42 100 Z" strokeWidth="4" />
+                <path d="M100 46 L140 100 L100 154 L60 100 Z" strokeWidth="1.4" />
+                <circle cx="100" cy="100" r="10" fill="#111111" stroke="none" />
+                <circle cx="100" cy="100" r="80" strokeWidth="0.9" strokeDasharray="1.5 5" />
+                <path d="M100 4 V14 M100 186 V196 M4 100 H14 M186 100 H196" strokeWidth="1.4" />
+              </g>
+              {Array.from({ length: strips }, (_, i) => (
+                <clipPath key={i} id={`inkv-s${i}`}>
+                  <rect x={i * w - 0.3} y="-40" width={w + 0.6} height="280" />
+                </clipPath>
+              ))}
+            </defs>
+            {/* posição (x/y) e rotação vivem em grupos separados: a rotação gira em
+                torno do centro do desenho, a posição leva o conjunto até a pele */}
+            <g data-tattoo opacity="0">
+              <g data-tattoo-rot>
+                <g transform={`scale(${scale}) translate(-100 -100)`}>
+                  {Array.from({ length: strips }, (_, i) => (
+                    <g key={i} data-strip clipPath={`url(#inkv-s${i})`}>
+                      <use href="#inkv-design" />
+                    </g>
+                  ))}
+                </g>
+              </g>
+            </g>
+          </svg>
+
+
+          {/* ORIGINAL ↔ SIMULATION — o cursor compara (lei do mundo) */}
+          <span data-compare className="absolute inset-0 hidden opacity-0 md:block">
+            <span data-original className="absolute inset-0 block" style={{ clipPath: "inset(0 100% 0 0)" }}>
+              <Image src={image} alt="" fill loading="lazy" sizes="58vw" className="object-cover" />
+            </span>
+            <span data-compare-line className="absolute left-0 top-0 block h-full w-px bg-paper/70 opacity-0">
+              <span className="absolute right-2 top-3 whitespace-nowrap text-[10px] text-paper/80" style={MONO}>
+                ORIGINAL
+              </span>
+              <span className="absolute left-2 top-3 whitespace-nowrap text-[10px] text-paper/80" style={MONO}>
+                SIMULATION
+              </span>
+            </span>
+          </span>
+        </div>
+        <span data-frame className="pointer-events-none absolute inset-0 block border border-current opacity-25" />
+        <span className="absolute -top-5 left-0 whitespace-nowrap text-[10px] opacity-60 max-md:hidden" style={MONO}>
+          SIM 01
+        </span>
+      </div>
+
+      {/* O PIPELINE — as etapas reais da simulação, uma por vez, à direita do frame */}
+      <div data-readout className="absolute left-[68%] top-[max(15svh,136px)] z-[3] hidden md:block">
+        {INK_STEPS.map((t, i) => (
+          <p key={t} data-step className="mt-2 whitespace-nowrap text-[11px] opacity-0 first:mt-0" style={MONO}>
+            <span className="mr-3 inline-block h-[6px] w-[6px] -translate-y-px" style={{ background: INK_ACCENT }} />
+            <span className="tnum mr-3 opacity-60">0{i + 1}</span>
+            {t}
+          </p>
         ))}
       </div>
     </div>

@@ -232,7 +232,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, act, tech }: { ey
           <p className="max-w-sm normal-case tracking-normal text-paper/70 md:flex-1" style={{ fontFamily: "var(--font-display)", fontSize: "var(--step-0)", letterSpacing: 0, textTransform: "none" }}>
             {body}
           </p>
-          <p className="text-paper/50 md:flex-1 md:text-center">MW/006</p>
+          <p className="text-paper/50 md:flex-1 md:text-center">MW/007</p>
           <p className="md:flex-1 md:text-right">
             <Link href={href} data-vt="horizon" data-cta className="act-cta inline-flex items-center gap-1.5 text-paper" data-inspect="CTA">
               <span aria-hidden="true" className="act-cta-br">

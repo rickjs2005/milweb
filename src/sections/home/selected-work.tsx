@@ -9,6 +9,8 @@ import { ActStage } from "./work/act-stages";
 import { WorkDots } from "./work/work-dots";
 import { ACT_LAWS } from "./work/act-laws";
 import { AUREX_PARTS } from "./work/aurex-movement";
+import { SHEET, stripTargets, tattooPose } from "./work/inkvision-geometry";
+import { dotsOf } from "./work/act-config";
 
 export type WorkItem = {
   n: string;
@@ -26,11 +28,11 @@ export type WorkItem = {
 };
 
 /**
- * ACT 03 — SELECTED WORK. Um filme em quatro atos, não quatro cards.
+ * ACT 03 — SELECTED WORK. Um filme em cinco atos, não cinco cards.
  *
- * ANATOMIA (idêntica nos quatro; o que muda é o palco):
+ * ANATOMIA (idêntica nos cinco; o que muda é o palco):
  *
- *   [ 01 / KAVITA ] ─────────────────────────────── [ 01 / 04 ]   nível 03
+ *   [ 01 / KAVITA ] ─────────────────────────────── [ 01 / 05 ]   nível 03
  *
  *                     ‹ palco: a experiência do ato ›
  *
@@ -88,6 +90,12 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             const q = gsap.utils.selector(article);
             const one = <T extends HTMLElement>(s: string) => q<T>(s)[0] as T | undefined;
             const last = i === items.length - 1;
+            // O Aurex foi coreografado como último ato: progresso inteiro com o
+            // painel em tela. Com o InkVision depois dele, mantém esse mapeamento
+            // e fica de fora da escurecida e da sangria de saída (que aconteceriam
+            // com o calibre ainda inteiro na tela; o preto já é o mesmo) — é o
+            // mínimo na fronteira, sem tocar no calibre.
+            const holdsToEnd = last || slug === "aurex-timepieces";
 
             const tl = gsap.timeline({
               scrollTrigger: {
@@ -99,7 +107,10 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
                 // subindo. Terminar em `bottom top` daria a ele um terço final
                 // de progresso acontecendo fora da tela — a decomposição do
                 // calibre só terminava depois do painel ter começado a sair.
-                end: last ? "bottom bottom" : "bottom top",
+                // O Aurex foi coreografado como último ato (progresso inteiro com
+                // o painel em tela); com o InkVision depois dele, mantém esse
+                // mapeamento — é o mínimo na fronteira, sem tocar no calibre.
+                end: holdsToEnd ? "bottom bottom" : "bottom top",
                 scrub: 0.55,
                 invalidateOnRefresh: true,
               },
@@ -114,6 +125,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             if (slug === "terral") terral(tl, q, one, small);
             if (slug === "atelier-vertex") vertex(tl, q, one, small);
             if (slug === "aurex-timepieces") aurex(tl, q, one, small);
+            if (slug === "inkvision") inkvision(tl, q, one, small);
 
             /* ---------- PREPARAÇÃO + TRANSIÇÃO (0.70 → 1) ----------
                A malha troca de significado antes da virada e a cor do próximo
@@ -126,13 +138,13 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             }
             // O último ato não é coberto por ninguém: apagar a coluna editorial
             // ali deixaria a cena morta ainda em tela cheia.
-            if (!last) tl.to(q("[data-reveal]"), { autoAlpha: 0.2, duration: 0.16 }, ACT.prepare - 0.06);
+            if (!holdsToEnd) tl.to(q("[data-reveal]"), { autoAlpha: 0.2, duration: 0.16 }, ACT.prepare - 0.06);
             // A cor do próximo mundo sobe durante TODA a cortina (0.70 → 0.96),
             // não só no fim: o painel seguinte começa a cobrir em ~0.67, e uma
             // revelação que só começasse em 0.86 deixaria uma borda dura entre os
             // dois fundos por meia tela de scroll. Para em 0.9 de opacidade para
             // o mundo que sai continuar visível por baixo — dissolve, não apaga.
-            if (!last) tl.fromTo(q("[data-bleed]"), { autoAlpha: 0 }, { autoAlpha: 0.9, duration: 0.96 - ACT.hold, ease: "power1.in" }, ACT.hold);
+            if (!holdsToEnd) tl.fromTo(q("[data-bleed]"), { autoAlpha: 0 }, { autoAlpha: 0.9, duration: 0.96 - ACT.hold, ease: "power1.in" }, ACT.hold);
 
             /* ---------- resíduo do ato anterior ----------
                Os primeiros frames de cada ato ainda carregam o motivo do
@@ -187,6 +199,20 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
               if (els.length) gsap.set(els, vars);
             };
             set("[data-coord], [data-meta], [data-target], [data-frame], [data-anchor], [data-plan-label], [data-part-label], [data-movement-wrap], [data-axis]", { autoAlpha: 1 });
+            if (article.dataset.world === "inkvision") {
+              // em repouso: o RESULTADO — pele clara, tatuagem enrolada e integrada,
+              // malha leve, só os tracking points-chave, a última etapa acesa
+              const pose = tattooPose();
+              set("[data-dark], [data-contour], [data-sheet], [data-track]:not([data-key]), [data-sweep], [data-sweep-line], [data-compare]", { autoAlpha: 0 });
+              set("[data-track][data-key]", { autoAlpha: 0.9 });
+              set("[data-mesh-line]", { strokeDashoffset: 0 });
+              set("[data-mesh]", { autoAlpha: 0.1 });
+              set("[data-tattoo]", { autoAlpha: 1, x: pose.x, y: pose.y });
+              set("[data-tattoo-rot]", { rotation: pose.rotation, transformOrigin: "50% 50%" });
+              stripTargets().forEach((t, i) => set(`[data-strip]:nth-child(${i + 1})`, { x: t.x, y: t.y, scaleX: t.scaleX, transformOrigin: `${t.cx}px 100px` }));
+              const steps = q("[data-step]");
+              if (steps.length) gsap.set(steps, { autoAlpha: (i: number) => (i === steps.length - 1 ? 0.85 : 0.18) });
+            }
             if (article.dataset.world === "atelier-vertex") {
               // em repouso: prancha inteira desenhada, obra entregue nas quatro
               // fatias, cotas e elevação leve por cima
@@ -318,7 +344,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
                       {item.client ? `${clientWork} — ${item.client.toUpperCase()}` : item.displayType}
                       {item.year ? ` — ${item.year}` : ""}
                     </p>
-                    <Link href={item.href} data-vt={vtOfSlug(item.slug)} data-cta className="act-cta mt-2 inline-flex items-center gap-1.5" data-inspect="CTA / EXPLORE">
+                    <Link href={item.href} data-vt={vtOfSlug(item.slug)} data-cta className="act-cta mt-2 inline-flex items-center gap-1.5 whitespace-nowrap" data-inspect="CTA / EXPLORE">
                       <span aria-hidden="true" className="act-cta-br">
                         [
                       </span>
@@ -362,6 +388,16 @@ function Residue({ from }: { from: ActSlug }) {
           const y = ((k * 23) % 56) + 0.5;
           return <circle key={k} cx={x.toFixed(1)} cy={y.toFixed(1)} r={(0.12 + (k % 4) * 0.07).toFixed(2)} />;
         })}
+      </svg>
+    );
+  if (from === "aurex-timepieces")
+    // aurex → inkvision: os pivôs do calibre ainda em cena, já no lugar dos
+    // tracking points — mecânica virando visão computacional
+    return (
+      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid slice" fill="currentColor" opacity="0.35">
+        {dotsOf("pivot").map((d, k) => (
+          <circle key={k} cx={d.x.toFixed(2)} cy={d.y.toFixed(2)} r={d.r.toFixed(2)} opacity={d.o.toFixed(2)} />
+        ))}
       </svg>
     );
   // vertex → aurex: as guias já convergidas num feixe (o estado em que o Vertex
@@ -685,4 +721,108 @@ function aurex(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   // tela durante `prepare`, e apagar antes seria apagar o ato no auge
   if (wrap) tl.to(wrap, { autoAlpha: 0.55, scale: 1.05, duration: 0.06 }, 0.94);
   tl.to(q("[data-part-label]"), { autoAlpha: 0, duration: 0.05 }, 0.94);
+}
+
+/**
+ * 05 INKVISION — um sistema entendendo a pele. É o ÚLTIMO ato: a trigger vai
+ * até `bottom bottom`, então o painel entra durante 0 → 0.5 (a metade de cima,
+ * onde o frame mora, aparece primeiro) e fica preso, inteiro em tela, de 0.5 a
+ * 1. O roteiro, em progresso da trigger:
+ *
+ *   0.04–0.24  CORPO        a pele emerge do preto do Aurex (véu 0.55 → 0.28)
+ *   0.14–0.30  DETECÇÃO     o contorno se desenha ao redor do antebraço; os tracking
+ *                           points pousam nos dois bordos; etapa 01 acende
+ *   0.30–0.44  MALHA        a superfície paramétrica se constrói (longitudinais e
+ *                           anéis do cilindro); etapa 02
+ *   0.42–0.50  DESENHO      a folha branca sobe com o desenho plano (a marca do
+ *                           InkVision em traço fino) — um arquivo, não uma tatuagem
+ *   0.50–0.60  PROJEÇÃO     a folha some, o desenho viaja até a pele e gira para o
+ *                           eixo do braço; etapa 03
+ *   0.56–0.68  WARP         tira a tira, do centro para fora, o desenho enrola no
+ *                           cilindro (posição r·sin φ, largura cos φ, curvatura); a
+ *                           malha baixa para 0.22 — ela segue, mas cede
+ *   0.64–0.78  IMG2IMG      a varredura de baixa intensidade cruza o frame da
+ *                           esquerda para a direita e "fecha" a simulação: o véu sai,
+ *                           o contorno sai, sobram três marcações; etapa 04
+ *   0.62–0.80  RESULTADO    metadata em três batidas; as etapas anteriores baixam
+ *   0.80–1.00  COMPARAÇÃO   ORIGINAL ↔ SIMULATION disponível ao cursor (lei do mundo)
+ *
+ * Uma propriedade, um dono: a timeline tem x/y/rotation/scaleX das tiras e o
+ * clip da varredura; a lei do cursor só tem o clip da cópia original.
+ */
+function inkvision(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const dark = q("[data-dark]");
+  const contour = q("[data-contour]");
+  const meshLines = q("[data-mesh-line]");
+  const mesh = q("[data-mesh]");
+  const track = q("[data-track]");
+  const trackAux = q("[data-track]:not([data-key])");
+  const sheet = q("[data-sheet]");
+  const tattoo = one("[data-tattoo]");
+  const rot = one("[data-tattoo-rot]");
+  const strips = q("[data-strip]");
+  const sweep = q("[data-sweep]");
+  const sweepLine = q("[data-sweep-line]");
+  const compare = q("[data-compare]");
+  const steps = q("[data-step]");
+  const meta = q("[data-meta]");
+  const wrap = one("[data-media-wrap]");
+  const pose = tattooPose();
+  const targets = stripTargets();
+  // Último ato: nenhum tween chega a 1.0 (não há sangria nem saída), e a duração
+  // de uma timeline é o fim do último tween — sem esta âncora o progresso 0.7
+  // da trigger cairia no tempo 0.60 e todo o roteiro ficaria adiantado.
+  tl.set({}, {}, 1);
+  const step = (i: number, at: number) => {
+    if (!steps[i]) return;
+    tl.fromTo(steps[i], { autoAlpha: 0, x: 10 }, { autoAlpha: 0.85, x: 0, duration: 0.05, ease: EASE.outQuint }, at);
+    if (i > 0) tl.to(steps[i - 1], { autoAlpha: 0.18, duration: 0.05 }, at);
+  };
+
+  /* CORPO — a pele emerge */
+  tl.fromTo(dark, { autoAlpha: 0.55 }, { autoAlpha: 0.28, duration: 0.2 }, 0.04);
+
+  /* DETECÇÃO */
+  tl.fromTo(contour, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.14 }, 0.14);
+  tl.fromTo(track, { autoAlpha: 0, scale: 0.3, transformOrigin: "50% 50%" }, { autoAlpha: 0.9, scale: 1, stagger: 0.012, duration: 0.06, ease: EASE.outQuint }, 0.2);
+  step(0, 0.14);
+
+  /* MALHA */
+  tl.fromTo(meshLines, { strokeDashoffset: 1 }, { strokeDashoffset: 0, stagger: 0.008, duration: 0.12 }, 0.3);
+  step(1, 0.3);
+
+  /* DESENHO PLANO — a folha e o desenho, um arquivo */
+  // x/y absolutos: num <g> com `transform` de atributo, um `y: 0` relativo apagaria o translate
+  tl.fromTo(sheet, { autoAlpha: 0, x: SHEET.x, y: SHEET.y + 24 }, { autoAlpha: 1, x: SHEET.x, y: SHEET.y, duration: 0.06, ease: EASE.outQuint }, 0.42);
+  tl.fromTo(tattoo ?? [], { autoAlpha: 0, x: SHEET.x, y: SHEET.y + 24 }, { autoAlpha: 1, x: SHEET.x, y: SHEET.y, duration: 0.06, ease: EASE.outQuint }, 0.43);
+  tl.fromTo(rot ?? [], { rotation: 0, transformOrigin: "50% 50%" }, { rotation: 0, duration: 0.01 }, 0.43);
+
+  /* PROJEÇÃO — a folha some, o desenho viaja até a pele e gira para o eixo do braço */
+  tl.to(sheet, { autoAlpha: 0, duration: 0.05 }, 0.5);
+  if (tattoo) tl.to(tattoo, { x: pose.x, y: pose.y, duration: 0.1, ease: EASE.smooth }, 0.5);
+  if (rot) tl.to(rot, { rotation: pose.rotation, duration: 0.1, ease: EASE.smooth }, 0.5);
+  step(2, 0.52);
+
+  /* WARP — tira a tira, do centro para fora, o desenho enrola no cilindro */
+  strips.forEach((st, i) => {
+    const t = targets[i];
+    if (!t) return;
+    tl.fromTo(st, { x: 0, y: 0, scaleX: 1, transformOrigin: `${t.cx}px 100px` }, { x: t.x, y: t.y, scaleX: t.scaleX, duration: 0.1, ease: EASE.smooth }, 0.56 + Math.abs(i - (strips.length - 1) / 2) * 0.008);
+  });
+  tl.to(mesh, { autoAlpha: 0.22, duration: 0.1 }, 0.58);
+
+  /* IMG2IMG — a varredura fecha a simulação; o sistema recua, sobra o resultado */
+  step(3, 0.64);
+  tl.fromTo(sweepLine, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.02 }, 0.64);
+  tl.fromTo(sweep, { clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(0 0 0 100%)", duration: 0.12 }, 0.64);
+  tl.fromTo(sweepLine, { x: 0 }, { x: () => wrap?.offsetWidth ?? 0, duration: 0.12 }, 0.64);
+  tl.to(sweepLine, { autoAlpha: 0, duration: 0.02 }, 0.76);
+  tl.to(dark, { autoAlpha: 0, duration: 0.12 }, 0.64);
+  tl.to(contour, { autoAlpha: 0, duration: 0.08 }, 0.66);
+  tl.to(trackAux, { autoAlpha: 0, duration: 0.08, stagger: 0.006 }, 0.68);
+  tl.to(mesh, { autoAlpha: small ? 0 : 0.1, duration: 0.1 }, 0.7);
+
+  /* RESULTADO — metadata em três batidas; a comparação fica disponível */
+  meta.forEach((m, i) => tl.fromTo(m, { autoAlpha: 0, x: 10 }, { autoAlpha: 1, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.62 + i * 0.06));
+  tl.fromTo(compare, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 0.8);
 }

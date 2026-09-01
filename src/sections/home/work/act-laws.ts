@@ -196,4 +196,42 @@ const aurex: Law = (panel) => {
   });
 };
 
-export const ACT_LAWS: Record<string, Law> = { "kavita-drones": kavita, terral, "atelier-vertex": vertex, "aurex-timepieces": aurex };
+/** INKVISION — comparação: sobre a mídia, o cursor separa ORIGINAL (à esquerda)
+ *  de SIMULATION (à direita). A cópia original só existe depois que a
+ *  simulação fechou (autoAlpha é da timeline); o clip é só desta lei. Escuta no
+ *  PAINEL (a coluna editorial, z-10, cobre o palco e engoliria os eventos da
+ *  mídia) e converte para o retângulo da mídia, medido na entrada do ponteiro. */
+const inkvision: Law = (panel) => {
+  const q = gsap.utils.selector(panel);
+  const media = q<HTMLElement>("[data-media]")[0];
+  const original = q<HTMLElement>("[data-original]")[0];
+  const line = q<HTMLElement>("[data-compare-line]")[0];
+  if (!media || !original || !line) return () => {};
+  const lx = gsap.quickTo(line, "x", { duration: 0.22, ease: EASE.outQuint });
+  let mr = media.getBoundingClientRect();
+  let shown = false;
+  const hide = () => {
+    if (!shown) return;
+    shown = false;
+    original.style.clipPath = "inset(0 100% 0 0)";
+    gsap.to(line, { autoAlpha: 0, duration: 0.25 });
+  };
+  return pointer(panel, {
+    enter: () => (mr = media.getBoundingClientRect()),
+    move: (px, py, r) => {
+      const x = px + r.left - mr.left;
+      const y = py + r.top - mr.top;
+      if (x < 0 || y < 0 || x > mr.width || y > mr.height) return hide();
+      const f = x / mr.width;
+      original.style.clipPath = "inset(0 " + ((1 - f) * 100).toFixed(2) + "% 0 0)";
+      lx(x);
+      if (!shown) {
+        shown = true;
+        gsap.to(line, { autoAlpha: 1, duration: 0.25 });
+      }
+    },
+    leave: hide,
+  });
+};
+
+export const ACT_LAWS: Record<string, Law> = { "kavita-drones": kavita, terral, "atelier-vertex": vertex, "aurex-timepieces": aurex, inkvision };

@@ -1,7 +1,7 @@
 import type { Localized } from "@/lib/content";
 
 /**
- * Os quatro trabalhos da Home (ACT 03). Cada um ocupa uma viewport inteira.
+ * Os cinco trabalhos da Home (ACT 03). Cada um ocupa uma viewport inteira.
  * `title` são as duas linhas do display; `image` é um frame 1440×900 do
  * projeto — o mesmo usado nas transições em mosaico.
  */
@@ -46,5 +46,13 @@ export const SELECTED_WORK: SelectedWork[] = [
     title: { pt: ["O TEMPO,", "DESMONTADO."], en: ["TIME,", "DISASSEMBLED."], es: ["EL TIEMPO,", "DESARMADO."] },
     kind: { pt: "Relógio 3D procedural · R3F", en: "Procedural 3D watch · R3F", es: "Reloj 3D procedural · R3F" },
     image: "/shots/aurex-timepieces.webp",
+  },
+  {
+    n: "05",
+    slug: "inkvision",
+    name: "INKVISION",
+    title: { pt: ["ANTES", "DA AGULHA."], en: ["BEFORE", "THE NEEDLE."], es: ["ANTES", "DE LA AGUJA."] },
+    kind: { pt: "SaaS · simulação de tattoo por IA", en: "SaaS · AI tattoo simulation", es: "SaaS · simulación de tattoo por IA" },
+    image: "/shots/inkvision.webp",
   },
 ];

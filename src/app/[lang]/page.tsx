@@ -29,6 +29,9 @@ const WORLD_PLATE: Record<string, string> = {
   // ESTRUTURA: primeiro frame do vídeo real da obra (andaime e laje), em
   // monocromia — a captura do site era o mesmo vídeo com a copy por cima
   "atelier-vertex": "/shots/atelier-vertex/estrutura.webp",
+  // PELE: a única captura do InkVision é a página com a copy por cima e um
+  // mockup pequeno — a placa é uma fotografia editorial de antebraço em P&B
+  inkvision: "/shots/inkvision/skin.webp",
 };
 /** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
 const WORLD_DETAIL: Record<string, string> = {
@@ -39,7 +42,7 @@ const WORLD_DETAIL: Record<string, string> = {
   // ENTREGA: o último frame do mesmo vídeo (mesma câmera — as fatias encaixam)
   "atelier-vertex": "/shots/atelier-vertex/entrega.webp",
 };
-const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex" };
+const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex" | "inkvision"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex", inkvision: "inkvision" };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];
 
 /**

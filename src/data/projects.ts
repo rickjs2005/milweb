@@ -61,7 +61,7 @@ const ORDER = [
   "imperio-cafe",
 ];
 
-const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces"];
+const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision"];
 
 /** displayType explícito para os casos em que a categoria comercial não descreve o trabalho. */
 const DISPLAY: Record<string, DisplayType> = {

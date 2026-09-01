@@ -5,7 +5,7 @@
  * contrato compartilhado: paleta, faixas de progresso e o modo do sistema de
  * pontos. Cada ato tem linguagem própria, mas todos leem estes mesmos números.
  */
-export type ActSlug = "kavita-drones" | "terral" | "atelier-vertex" | "aurex-timepieces";
+export type ActSlug = "kavita-drones" | "terral" | "atelier-vertex" | "aurex-timepieces" | "inkvision";
 
 /**
  * FAIXAS DE PROGRESSO — uma ScrollTrigger por ato, `progress` 0→1, e todo
@@ -36,7 +36,8 @@ export const range = (p: number, a: number, b: number) => Math.min(1, Math.max(0
 
 /**
  * A ATMOSFERA. A progressão de cor é o fio que costura os quatro atos:
- * off-white técnico → papel quente → papel limpo/frio → grafite → preto.
+ * off-white técnico → papel quente → papel limpo/frio → preto → preto quente
+ * (o InkVision nasce do preto do Aurex; a pele é que traz a luz de volta).
  * `bleed` é a cor do PRÓXIMO ato: cada painel a revela na saída, então no frame
  * da virada os dois mundos já têm a mesma cor e não existe corte.
  */
@@ -45,9 +46,10 @@ export const SKIN: Record<ActSlug, { bg: string; ink: string; ink2: string; rule
   terral: { bg: "#E9E0CF", ink: "#1F1710", ink2: "#6B5B49", rule: "#1F1710", dots: "grain" },
   "atelier-vertex": { bg: "#EFEFEC", ink: "#111111", ink2: "#5F5F5A", rule: "#111111", dots: "anchor" },
   "aurex-timepieces": { bg: "#0F0F0F", ink: "#F2F0EA", ink2: "#8C8C87", rule: "#F2F0EA", dots: "pivot" },
+  inkvision: { bg: "#121110", ink: "#F2F0EA", ink2: "#8C8C87", rule: "#F2F0EA", dots: "track" },
 };
 
-export const ACT_ORDER: ActSlug[] = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces"];
+export const ACT_ORDER: ActSlug[] = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision"];
 
 /** A cor com que cada ato termina — é a do próximo (o último cede à página). */
 export const bleedOf = (slug: ActSlug): string => {
@@ -65,7 +67,7 @@ export const bleedOf = (slug: ActSlug): string => {
  *   anchor  anchor points de CAD (retícula precisa, quadrados, com marca de eixo)
  *   pivot   pivôs mecânicos (distribuição radial em torno de um centro)
  */
-export type DotMode = "survey" | "grain" | "anchor" | "pivot";
+export type DotMode = "survey" | "grain" | "anchor" | "pivot" | "track";
 
 export type Dot = { x: number; y: number; r: number; o: number; square?: boolean; tick?: boolean; ry?: number; rot?: number };
 
@@ -119,6 +121,14 @@ export function dotsOf(mode: DotMode): Dot[] {
         ry: r * (0.55 + noise(i, 5) * 0.3),
         rot: Math.round(noise(i, 6) * 180),
       });
+    }
+    return out;
+  }
+  if (mode === "track") {
+    // tracking points: poucos, irregulares, quadrados — o que sobra de uma
+    // malha quando o sistema só guarda o que reconheceu
+    for (let i = 0; i < 34; i++) {
+      out.push({ x: noise(i, 7) * w, y: noise(i, 8) * h, r: 0.1, o: 0.3 + noise(i, 9) * 0.45, square: true, tick: i % 6 === 2 });
     }
     return out;
   }
