@@ -3,9 +3,9 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **01/09/2026 · `8602dda`** — ato 03/Vertex refinado NO AR (validado em produção em 1920 e 390: `estrutura.webp`/`entrega.webp` 200, console limpo, medidas idênticas ao local). Anterior: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **01/09/2026 · `049ec4e`** — LAB / Horizonte de Eventos refinado NO AR (validado em produção em 1920 e 390: zero letras sob o header em todos os checkpoints, colapso completo após soltar, console limpo). Anterior: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
-## 01/09/2026 — LAB (ato 05) · Horizonte de Eventos: gravidade controlada (local, SEM commit/push)
+## 01/09/2026 — LAB (ato 05) · Horizonte de Eventos: gravidade controlada (NO AR em `049ec4e`)
 
 Só a section `#lab` foi tocada (`lab-teaser.tsx` reescrito, novo `features/lab/event-horizon.ts`, `.t-fit-lab` em `globals.css`, `page.tsx` só perdeu o prop `poster`). Header, Hero, cards e outras sections intactos.
 
@@ -21,7 +21,7 @@ Só a section `#lab` foi tocada (`lab-teaser.tsx` reescrito, novo `features/lab/
 
 **Validação:** `scripts/.rsc-audit/work/lab.mjs` (1920×1080, 1440×900, 1366×768, 1024×768, 390×844 × 3–7 checkpoints: overflow 0, console limpo, letras sob o header 0, puxão máximo 22/22/22/11,5/4,9 px, rotação ≤ 6,8°; `--reduced` = anel parado entre as linhas) e `lab-hover.mjs` (cursor esquerda/direita muda a letra mais puxada, CTA atraído, resize 1920→1366→1920 e reload na posição). `tsc`/`lint` verdes, `next build` passou (`/[lang]` 193 kB, compartilhado 106 kB).
 
-**Limitações:** (a) a régua "LAB / 001 · GLSL / WEBGL" e o "MW/006" ficaram como estavam (consistência global); (b) o colapso final engole a manchete em vez de devolvê-la ao normal — foi a forma de proteger o header sem tocar no blend global; (c) aparelho físico não testado. **Próxima ação:** Rick avaliar; se aprovado, commit + push + validar em produção.
+**Limitações:** (a) a régua "LAB / 001 · GLSL / WEBGL" e o "MW/006" ficaram como estavam (consistência global); (b) o colapso final engole a manchete em vez de devolvê-la ao normal — foi a forma de proteger o header sem tocar no blend global; (c) aparelho físico não testado. **Próxima ação:** Rick aprovou e pediu commit + push (`049ec4e`, validado em produção com `lab.mjs https://milweb.com.br`). Pendentes da Home: Aurex (ato 04) na anatomia dos outros três; o resto das sections (Capabilities, Break, Human, Built With, Contato) só quando o Rick pedir.
 
 ## 01/09/2026 — VERTEX (ato 03) refinado: o projeto construído pelo scroll (NO AR em `8602dda`)
 
