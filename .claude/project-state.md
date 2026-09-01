@@ -3,9 +3,9 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **31/08/2026 · `d3cb274`** (local à frente, sem push: Selected Work v2 `c5eacea` + refino do ato 01/Kavita de 01/09/2026) — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **01/09/2026 · `174883b`** — ato 01/Kavita refinado NO AR (deploy `milweb-ngvnwpqqx`, aliasado em milweb.com.br; validado em produção em 1920 e 390: assets 200, console limpo). Anterior: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
-## 01/09/2026 — KAVITA (ato 01) refinado: janela de varredura + drone com alfa (local, sem push)
+## 01/09/2026 — KAVITA (ato 01) refinado: janela de varredura + drone com alfa (NO AR em `174883b`)
 
 Só o ato 01 foi tocado (Hero, header, i18n e os outros três atos intactos; o que é compartilhado mudou só onde o Kavita precisava e sem efeito nos demais). O problema de raiz era "janela com imagem + drone por cima": a placa era um recorte de 540 px da CAPTURA do site (borrado a 1,56×, com o header e o botão teal aparecendo no parallax) e o drone era um recorte de 305 px do card de produto com `multiply` — o tanque branco sumia sobre o verde.
 
@@ -17,7 +17,7 @@ Só o ato 01 foi tocado (Hero, header, i18n e os outros três atos intactos; o q
 
 **Compartilhado, mínimo:** `.act-cta` — régua só sob a palavra (`.act-cta-txt::after`), colchetes ±4 px, seta 3 px com 40 ms de atraso; `stillness` (reduced-motion) ganhou `[data-meta]`/`[data-frame]` e um `set()` que pula alvos vazios (6 avisos "GSAP target not found" no console eram pré-existentes: `[data-grain]`/`[data-slice]` só existem em um ato cada).
 
-**Validação:** `scripts/.rsc-audit/work/kavita.mjs` (8 checkpoints × 1920/1366/390: overflow 0, manchete 132/93/31 px sem corte, console limpo, `--reduced` = estado estável com tudo legível) e `kavita-hover.mjs` (hover do CTA, resize 1920→1366→1920 no meio da cena e reload na posição: progresso e estado preservados). `tsc`/`lint` verdes (só o warning pré-existente do OG image). `next build` NÃO rodado (dev na mesma `.next`). **Sem push.**
+**Validação:** `scripts/.rsc-audit/work/kavita.mjs` (8 checkpoints × 1920/1366/390: overflow 0, manchete 132/93/31 px sem corte, console limpo, `--reduced` = estado estável com tudo legível) e `kavita-hover.mjs` (hover do CTA, resize 1920→1366→1920 no meio da cena e reload na posição: progresso e estado preservados). `tsc`/`lint` verdes (só o warning pré-existente do OG image). `next build` passou na Vercel. **Próxima ação neste projeto:** Rick aprovou o Kavita como base de qualidade; os atos 02–04 (Terral, Vertex, Aurex) seguem a mesma anatomia quando voltarmos — o Rick pausou pra outro projeto.
 
 **Decisões para o Rick:** (a) `MW/002` mantido — é o serial da PÁGINA (Hero 001 → atos 002–005 → Lab 006 → Built-with 008 → Contato 009); virar `MW/001` colidiria com o Hero, e mudar o formato mexe nos quatro atos; (b) as coordenadas `LAT 19°55′ S · LON 43°56′ W` são decorativas (região de BH/MG); (c) a placa vem do site institucional (mesmo cliente, Kavita Agro), não da landing dos drones; (d) 1440×900/1600×900 e aparelho físico não varridos.
 
