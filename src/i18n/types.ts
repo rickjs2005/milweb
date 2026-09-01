@@ -54,4 +54,5 @@ export type Dictionary = {
     stage: { under: string; title: string; surfaceLabel: string; surface: string; tension: string; idle: string; words: string[]; timeWords: [string, string, string, string, string] };
   };
   footer: { email: string; year: string };
+  preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
 };

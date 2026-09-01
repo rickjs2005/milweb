@@ -70,4 +70,5 @@ export const es: Dictionary = {
     stage: { under: "DEBAJO / 02", title: "DEBAJO DE LA SUPERFICIE", surfaceLabel: "SUPERFICIE / 01", surface: "SUPERFICIE", tension: "TENSIÓN", idle: "EN PAUSA", words: ["EL", "CÓDIGO", "DEBE", "MOVER", "PERSONAS", "PESO", "MASA", "IMPACTO", "MILWEB"], timeWords: ["EL", "TIEMPO", "ES", "MATERIA", "AQUÍ"] },
   },
   footer: { email: "E-mail", year: "Brasil" },
+  preferred: { eyebrow: "GOOGLE / FUENTES PREFERIDAS", title: ["MANTÉN A MILWEB", "ENTRE TUS FUENTES."], cta: "AÑADIR MILWEB", loading: "ABRIENDO GOOGLE…", retry: "INTENTAR DE NUEVO", aria: "Añadir MilWeb a fuentes preferidas en Google" },
 };

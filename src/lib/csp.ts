@@ -40,12 +40,15 @@
  */
 
 const VERCEL_SCRIPTS = "https://va.vercel-scripts.com";
+/** SDK oficial do Google Preferred Sources (carregado no layout em modo manual; o fluxo do Google abre em popup, fora da CSP da página). */
+const GOOGLE_PREFERRED_SOURCES = "https://news.google.com";
 
 export function buildCsp({ dev }: { dev: boolean }): string {
   const scriptSrc = [
     `'self'`,
     `'unsafe-inline'`,
     VERCEL_SCRIPTS,
+    GOOGLE_PREFERRED_SOURCES,
     ...(dev ? [`'unsafe-eval'`] : []),
   ].join(" ");
 
@@ -67,6 +70,9 @@ export function buildCsp({ dev }: { dev: boolean }): string {
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
+    // o SDK do Preferred Sources abre o fluxo em popup, mas injeta um iframe
+    // auxiliar de news.google.com (o canal que devolve o resultado à página)
+    `frame-src ${GOOGLE_PREFERRED_SOURCES}`,
     `frame-ancestors 'none'`,
     // Fora só em teste local por HTTP (MW_LOCAL_HTTP=1): o WebKit aplica o
     // upgrade até em 127.0.0.1 e o site fica sem CSS/JS. Produção mantém.

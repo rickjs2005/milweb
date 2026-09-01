@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProvider } from "@/components/scroll-provider";
@@ -13,6 +14,7 @@ import { pageMetadata } from "@/lib/seo";
 import { SITE_COPY, siteJsonLd } from "@/lib/inline-scripts";
 import { QUALITY_SCRIPT } from "@/lib/quality";
 import { FONT_CLASS } from "@/lib/fonts";
+import { PREFERRED_SOURCE_SDK } from "@/lib/preferred-source";
 
 
 /** As três versões saem prontas do build; o segmento mais externo enumera os idiomas. */
@@ -57,6 +59,9 @@ export default async function LangLayout({ children, params }: { children: React
         <script dangerouslySetInnerHTML={{ __html: QUALITY_SCRIPT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
         <TrackConversions />
+        {/* Google Preferred Sources: o SDK oficial UMA vez por página, depois do load, em modo
+            manual — quem desenha o botão é a MilWeb (components/google-preferred-source) */}
+        <Script src={PREFERRED_SOURCE_SDK} strategy="lazyOnload" {...{ "preferred-sources-control": "manual" }} />
         <ViewTransitions />
         <Nav
           locale={locale}
