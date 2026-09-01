@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { AurexMovement } from "./aurex-movement";
 import type { ActSlug } from "./act-config";
 
@@ -179,29 +180,154 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
 }
 
 /* ------------------------------------------------------------------ 02 TERRAL
-   Matéria. Duas fotografias sobrepostas em velocidades diferentes: a macro dos
-   grãos (A, atrás, à direita) e o tambor do torrador (B, à frente, à esquerda).
-   O papel é FUNDO — nunca um filtro por cima de tudo, que era o que deixava
-   manchete, mídia e textura todos no mesmo plano visual. */
+   Matéria. Um diagrama editorial em duas figuras, não uma colagem:
+
+     FIG. 01 (A, atrás, à direita)  — o GRÃO: matéria caindo no resfriador, fogo embaixo
+     FIG. 02 (B, à frente, à esquerda) — a TORRA: as mãos no braço, o processo humano
+
+   ...e a manchete fecha a frase: do grão → processo → à xícara. As duas são
+   fotografia do projeto (1500 px, sem a interface do site), com o papel como
+   FUNDO — nunca um filtro por cima de tudo, que era o que deixava manchete,
+   mídia e textura no mesmo plano.
+
+   GEOMETRIA COM DESTINO. As bordas das figuras caem exatamente sobre as guias
+   que o Vertex vai desenhar (x = 28 %, 50 % e 94 %; y = 18,67 % — as linhas
+   403/720/1354 e 168 do viewBox 1440 × 900 do ato seguinte). Na saída, as
+   marcas de corte de cada figura se estendem até as bordas da tela: os frames
+   viram as linhas de projeto do próximo ato, sem fade-out/fade-in.
+
+   INVÓLUCRO × CAIXA. `[data-media-wrap]` é o dono do MOVIMENTO (parallax do
+   scroll em yPercent/xPercent, profundidade do cursor em x/y) e carrega marcas,
+   rótulo e linhas — filhos, que herdam o movimento sem ter transform próprio.
+   `[data-media]` é a CAIXA: clipa, abre como cortina (clip-path) e leva o
+   `view-transition-name` até o hero do case. Dentro dela `[data-crop]` faz o
+   movimento interno (scale + deriva lateral: a matéria viva). */
+const TERRAL_MARKS = [
+  { at: "left-0 top-0", h: "-left-4 top-0", v: "left-0 -top-4" },
+  { at: "right-0 top-0", h: "-right-4 top-0", v: "right-0 -top-4" },
+  { at: "left-0 bottom-0", h: "-left-4 bottom-0", v: "left-0 -bottom-4" },
+  { at: "right-0 bottom-0", h: "-right-4 bottom-0", v: "right-0 -bottom-4" },
+] as const;
+
+/** Marcas de corte (registro de impressão) nos quatro cantos de uma figura. */
+function CropMarks() {
+  return (
+    <>
+      {TERRAL_MARKS.map((m) => (
+        <span key={m.at} className="contents">
+          <span data-mark className={`absolute ${m.h} block h-px w-2.5 bg-current opacity-0 max-md:hidden`} />
+          <span data-mark className={`absolute ${m.v} block h-2.5 w-px bg-current opacity-0 max-md:hidden`} />
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** As bordas da figura estendidas até a tela — as linhas de projeto do Vertex nascendo aqui. */
+function EdgeLines({ sides }: { sides: ("left" | "right" | "top")[] }) {
+  return (
+    <>
+      {sides.includes("left") ? (
+        <>
+          <span data-line-v className="absolute bottom-full left-0 block h-[100svh] w-px origin-bottom scale-y-0 bg-current opacity-60 max-md:hidden" />
+          <span data-line-v className="absolute left-0 top-full block h-[100svh] w-px origin-top scale-y-0 bg-current opacity-60 max-md:hidden" />
+        </>
+      ) : null}
+      {sides.includes("right") ? (
+        <>
+          <span data-line-v className="absolute bottom-full right-0 block h-[100svh] w-px origin-bottom scale-y-0 bg-current opacity-60 max-md:hidden" />
+          <span data-line-v className="absolute right-0 top-full block h-[100svh] w-px origin-top scale-y-0 bg-current opacity-60 max-md:hidden" />
+        </>
+      ) : null}
+      {sides.includes("top") ? (
+        <>
+          <span data-line-h className="absolute right-full top-0 block h-px w-[100vw] origin-right scale-x-0 bg-current opacity-60 max-md:hidden" />
+          <span data-line-h className="absolute left-full top-0 block h-px w-[100vw] origin-left scale-x-0 bg-current opacity-60 max-md:hidden" />
+        </>
+      ) : null}
+    </>
+  );
+}
+
+const MONO: CSSProperties = { fontFamily: "var(--font-mono), ui-monospace, monospace", letterSpacing: "0.14em" };
+
 function TerralStage({ image, detail }: { image: string; detail: string }) {
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-      {/* fibra do papel: só no fundo, atrás de tudo */}
-      <span data-fibre className="absolute inset-0 opacity-[0.5]" style={{ backgroundImage: "repeating-linear-gradient(94deg, rgba(31,23,16,0.045) 0 1px, transparent 1px 7px), repeating-linear-gradient(2deg, rgba(31,23,16,0.03) 0 1px, transparent 1px 11px)" }} />
+      {/* A FIBRA DO PAPEL (a malha fina). Não é uniforme: a máscara radial a
+          deixa inteira ao redor das fotografias e a leva a ~30 % atrás da
+          manchete — a manchete respira sem nenhum gradiente aparecer. */}
+      <span
+        data-fibre
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "repeating-linear-gradient(94deg, rgba(31,23,16,0.05) 0 1px, transparent 1px 7px), repeating-linear-gradient(2deg, rgba(31,23,16,0.034) 0 1px, transparent 1px 11px)",
+          maskImage: "radial-gradient(62% 56% at 68% 38%, #000 0%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.3) 100%)",
+          WebkitMaskImage: "radial-gradient(62% 56% at 68% 38%, #000 0%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.3) 100%)",
+        }}
+      />
+      {/* o papel: ruído de impressão sobre a folha inteira, percebido mais do
+          que visto (a timeline o segura em 0,08) */}
+      <span data-paper className="grain pointer-events-none absolute inset-0 opacity-0" />
 
-      {/* A — macro dos grãos (metade direita do frame "O SOL"; a esquerda é o
-          terreiro COM a tipografia do site, e fica de fora do recorte) */}
-      <div data-media className="absolute right-[-4%] top-[8%] z-[2] h-[54%] w-[46%] overflow-hidden max-md:left-margin max-md:right-margin max-md:w-auto max-md:top-[10%] max-md:h-[36%]" style={{ viewTransitionName: "case-media-terral" }} data-inspect="MEDIA">
-        <Crop src={image} region={[720, 200, 1430, 780]} sizes="100vw" />
-        <span data-grain className="grain pointer-events-none absolute inset-0 opacity-0" />
+      {/* FIG. 01 — GRÃO. Esquerda em 50 %, direita em 94 %, topo em 18,67 %:
+          as guias 720/1354/168 do Vertex. Não sangra: tem margem da borda. */}
+      <div data-media-wrap className="absolute left-[50%] right-[6%] top-[18.67%] z-[2] h-[40%] max-md:left-[18%] max-md:right-margin max-md:top-[14%] max-md:h-[36%]" data-inspect="FIG_01">
+        <div data-media className="absolute inset-0 overflow-hidden" style={{ viewTransitionName: "case-media-terral" }} data-inspect="MEDIA">
+          {/* 4 % de folga em volta: o zoom e a deriva nunca mostram borda */}
+          <span data-crop className="absolute -inset-[4%] block">
+            <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 48vw, 80vw" className="object-cover object-[50%_45%]" />
+          </span>
+          <span data-grain className="grain pointer-events-none absolute inset-0 opacity-0" />
+        </div>
+        {/* a borda técnica: nasce apagada e endurece na saída, quando a foto some e sobra o frame */}
+        <span data-frame className="pointer-events-none absolute inset-0 block border border-current opacity-0" />
+        <CropMarks />
+        <EdgeLines sides={["left", "right", "top"]} />
+        <span data-fig className="absolute -top-5 left-0 whitespace-nowrap text-[10px] opacity-0 max-md:hidden" style={MONO}>
+          FIG. 01
+        </span>
       </div>
 
-      {/* B — o tambor do torrador, à frente e fora de fase com A */}
-      <div data-media-b className="absolute left-[34%] top-[24%] z-[3] hidden h-[42%] w-[24%] overflow-hidden md:block">
-        <Crop src={detail} region={[700, 60, 1400, 760]} sizes="50vw" />
-        <span data-grain className="grain pointer-events-none absolute inset-0 opacity-0" />
-        <span className="absolute inset-0 border border-[#1F1710]/25" />
+      {/* FIG. 02 — TORRA. Esquerda em 28 % (guia 403 do Vertex), sobrepondo o
+          canto inferior esquerdo da FIG. 01 só parcialmente. Termina em 56 %:
+          a metadata mora em ~59 % a 768 px de altura e ~64 % a 1080. */}
+      <div data-media-b-wrap className="absolute left-[28%] top-[34%] z-[3] h-[22%] w-[27%] max-md:left-margin max-md:top-[44%] max-md:h-[22%] max-md:w-[62%]" data-inspect="FIG_02">
+        <div data-media-b className="absolute inset-0 overflow-hidden">
+          <span data-crop className="absolute -inset-[3%] block">
+            <Image src={detail} alt="" fill loading="lazy" sizes="(min-width: 720px) 28vw, 56vw" className="object-cover object-[55%_55%]" />
+          </span>
+          <span data-grain className="grain pointer-events-none absolute inset-0 opacity-0" />
+        </div>
+        <span data-frame className="pointer-events-none absolute inset-0 block border border-current opacity-0" />
+        <CropMarks />
+        <EdgeLines sides={["left"]} />
+        <span data-fig className="absolute -top-5 left-0 whitespace-nowrap text-[10px] opacity-0 max-md:hidden" style={MONO}>
+          FIG. 02
+        </span>
       </div>
+
+      {/* A CURVA DE TORRA — instrumento editorial, só eixos e a marca do
+          primeiro crack: nenhum número que possa ler como dado do cliente. Mora
+          na coluna vazia à esquerda da FIG. 02, alinhada à guia 86 do Vertex. */}
+      <svg data-roast className="absolute left-[6%] top-[41%] z-[2] hidden w-[14%] opacity-0 md:block" viewBox="0 0 200 110" fill="none" stroke="currentColor" strokeWidth="1">
+        <line x1="20" y1="8" x2="20" y2="92" vectorEffect="non-scaling-stroke" opacity="0.5" />
+        <line x1="20" y1="92" x2="192" y2="92" vectorEffect="non-scaling-stroke" opacity="0.5" />
+        <path data-roast-curve pathLength="1" d="M20 90 C58 88 78 74 102 56 C126 40 148 30 192 24" vectorEffect="non-scaling-stroke" opacity="0.8" />
+        <g data-roast-label opacity="0">
+          <line x1="132" y1="34" x2="132" y2="92" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" opacity="0.45" />
+          <circle cx="132" cy="36" r="2.2" fill="currentColor" stroke="none" />
+          <text x="138" y="30" fontSize="8" fill="currentColor" stroke="none" style={MONO}>
+            1ST CRACK
+          </text>
+        </g>
+        <text data-roast-label x="6" y="14" fontSize="8" fill="currentColor" stroke="none" opacity="0" style={MONO}>
+          °C
+        </text>
+        <text data-roast-label x="172" y="106" fontSize="8" fill="currentColor" stroke="none" opacity="0" style={MONO}>
+          MIN
+        </text>
+      </svg>
 
       {/* rastro de grãos atrás do cursor (lei do mundo) */}
       <div data-grains className="absolute inset-0 z-[4] hidden md:block">

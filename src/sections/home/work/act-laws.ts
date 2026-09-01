@@ -109,12 +109,14 @@ const kavita: Law = (panel) => {
   };
 };
 
-/** TERRAL — matéria: rastro de grãos e as duas fotografias em profundidades diferentes. */
+/** TERRAL — matéria: rastro de grãos e as duas figuras em profundidades diferentes.
+ *  Move os INVÓLUCROS (x/y), que carregam marcas e linhas junto; a caixa clipada
+ *  e o recorte interno pertencem à timeline do ato. */
 const terral: Law = (panel) => {
   const q = gsap.utils.selector(panel);
   const dots = q<HTMLElement>("[data-grain-dot]");
-  const a = q<HTMLElement>("[data-media]")[0];
-  const b = q<HTMLElement>("[data-media-b]")[0];
+  const a = q<HTMLElement>("[data-media-wrap]")[0];
+  const b = q<HTMLElement>("[data-media-b-wrap]")[0];
   const movers = dots.map((d, i) => ({ x: gsap.quickTo(d, "x", { duration: 0.25 + i * 0.07, ease: EASE.outQuint }), y: gsap.quickTo(d, "y", { duration: 0.25 + i * 0.07, ease: EASE.outQuint }) }));
   const depth = [
     { el: a, k: -7 },

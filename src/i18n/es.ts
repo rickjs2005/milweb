@@ -28,7 +28,7 @@ export const es: Dictionary = {
     clientWork: "TRABAJO PARA CLIENTE",
     labels: {
       kavita: ["T25P · T70P · T100", "26 ÍTEMS · 05 CATEGORÍAS", "04 SUCURSALES · MG / ES / RJ"],
-      terral: ["LA CASA DEL TOSTADOR — MANTÉN 6S", "05 CAPÍTULOS", "03 BLENDS"],
+      terral: ["LA CASA DEL TOSTADOR", "05 CAPÍTULOS", "03 BLENDS"],
       vertex: ["ESC 1:75 · REV 03", "11,50 M", "GOP 1 — CADA FRAME ES KEYFRAME"],
       aurex: ["CALIBRE AX-01 TOURBILLON", "15 ESCENAS", "10 PIEZAS · 05 ENGRANAJES"],
     },

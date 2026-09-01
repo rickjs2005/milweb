@@ -67,7 +67,7 @@ export const bleedOf = (slug: ActSlug): string => {
  */
 export type DotMode = "survey" | "grain" | "anchor" | "pivot";
 
-export type Dot = { x: number; y: number; r: number; o: number; square?: boolean; tick?: boolean };
+export type Dot = { x: number; y: number; r: number; o: number; square?: boolean; tick?: boolean; ry?: number; rot?: number };
 
 /**
  * A malha vive num viewBox 100 x 56 (a proporcao de uma viewport larga) desenhado
@@ -103,8 +103,22 @@ export function dotsOf(mode: DotMode): Dot[] {
     return out;
   }
   if (mode === "grain") {
-    for (let i = 0; i < 90; i++) {
-      out.push({ x: noise(i, 1) * w, y: noise(i, 2) * h, r: 0.09 + noise(i, 3) * 0.22, o: 0.28 + noise(i, 4) * 0.5 });
+    // Grão, não retícula: cada ponto é uma elipse levemente girada (razão
+    // 0,55–0,85, ângulo próprio) e a dispersão adensa perto das fotografias —
+    // um terço dos pontos cai na faixa das duas mídias (topo-direita), o resto
+    // se espalha pelo papel. A manchete, embaixo à esquerda, fica com o campo
+    // mais ralo e respira.
+    for (let i = 0; i < 108; i++) {
+      const near = i % 3 === 0;
+      const r = 0.08 + noise(i, 3) * 0.2;
+      out.push({
+        x: near ? 40 + noise(i, 1) * 58 : noise(i, 1) * w,
+        y: near ? 6 + noise(i, 2) * 30 : noise(i, 2) * h,
+        r,
+        o: 0.22 + noise(i, 4) * 0.5,
+        ry: r * (0.55 + noise(i, 5) * 0.3),
+        rot: Math.round(noise(i, 6) * 180),
+      });
     }
     return out;
   }

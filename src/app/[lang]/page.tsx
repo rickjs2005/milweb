@@ -23,12 +23,16 @@ import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
  */
 const WORLD_PLATE: Record<string, string> = {
   "kavita-drones": "/shots/kavita-drones/field.webp",
+  // GRÃO: os grãos caindo no resfriador (fotografia do projeto, 1500 px) — a
+  // captura do site tinha a tipografia da Terral na metade esquerda do frame
+  terral: "/shots/terral/grao.webp",
 };
 /** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
 const WORLD_DETAIL: Record<string, string> = {
   // render do DJI Agras T70P com canal alfa (recorte assado a partir do render de produto)
   "kavita-drones": "/shots/kavita-drones/t70p.webp",
-  terral: "/shots/terral/casa-do-torrador.webp",
+  // TORRA: as mãos no braço do resfriador — o processo, a ação humana
+  terral: "/shots/terral/torra.webp",
   "atelier-vertex": "/shots/atelier-vertex/prancha.webp",
 };
 const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex" };

@@ -35,6 +35,10 @@ function Layer({ mode, attr, hidden = false }: { mode: DotMode; attr: string; hi
       {dots.map((d, i) =>
         d.square ? (
           <rect key={i} x={(d.x - d.r).toFixed(2)} y={(d.y - d.r).toFixed(2)} width={(d.r * 2).toFixed(2)} height={(d.r * 2).toFixed(2)} opacity={d.o.toFixed(2)} />
+        ) : d.ry ? (
+          // grão: elipse com eixo próprio — a irregularidade é o que separa um
+          // grão de um ponto de retícula
+          <ellipse key={i} cx={d.x.toFixed(2)} cy={d.y.toFixed(2)} rx={d.r.toFixed(2)} ry={d.ry.toFixed(2)} opacity={d.o.toFixed(2)} transform={`rotate(${d.rot ?? 0} ${d.x.toFixed(2)} ${d.y.toFixed(2)})`} />
         ) : (
           <circle key={i} cx={d.x.toFixed(2)} cy={d.y.toFixed(2)} r={d.r.toFixed(2)} opacity={d.o.toFixed(2)} />
         ),

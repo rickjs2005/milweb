@@ -187,6 +187,14 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
               if (els.length) gsap.set(els, vars);
             };
             set("[data-coord], [data-meta], [data-target], [data-frame], [data-anchor], [data-plan-label], [data-part-label], [data-dim], [data-movement-wrap], [data-axis]", { autoAlpha: 1 });
+            if (article.dataset.world === "terral") {
+              // em repouso: figuras com marcas de corte e borda leve, o instrumento
+              // já desenhado; as linhas estendidas ficam de fora (são ferramenta de saída)
+              set("[data-roast], [data-roast-label], [data-fig]", { autoAlpha: 1 });
+              set("[data-frame]", { autoAlpha: 0.4 });
+              set("[data-mark]", { autoAlpha: 0.55 });
+              set("[data-roast-curve]", { strokeDashoffset: 0 });
+            }
             // véu e sangria são ferramentas de TRANSIÇÃO: sem timeline para
             // apagá-los, ficariam cobrindo metade do painel para sempre
             set("[data-scan], [data-veil], [data-bleed]", { autoAlpha: 0 });
@@ -442,29 +450,93 @@ function kavita(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   tl.to(q("[data-crosshair]"), { autoAlpha: 0, duration: 0.08 }, ACT.hold + 0.04);
 }
 
-/** 02 TERRAL — matéria: duas fotografias fora de fase, grão físico, papel ao fundo. */
+/**
+ * 02 TERRAL — matéria. O roteiro do ato, em progresso da trigger:
+ *
+ *   0.02–0.22  PAPEL        a fibra e o ruído de impressão sobem; a malha de grãos já está
+ *   0.08–0.30  GRÃO         a FIG. 01 entra pela direita (a caixa abre como cortina e a
+ *                           foto desliza dentro no sentido contrário: matéria chegando)
+ *   0.26–0.42  TORRA        a FIG. 02 cruza a composição de baixo/esquerda e assenta
+ *                           sobre o canto da FIG. 01; o grão sobe nas duas
+ *   0.36–0.86  PROFUNDIDADE três velocidades: a FIG. 01 quase parada (yPercent −3 → 0,
+ *                           zoom 1 → 1,06 e deriva lateral — a matéria viva), a
+ *                           FIG. 02 mais viva (yPercent +2 → −9, x +2), a malha de
+ *                           grãos entre as duas. Tudo em xPercent/yPercent/scale:
+ *                           x/y são da lei do cursor
+ *   0.40–0.62  REGISTRO     marcas de corte, rótulos FIG., a curva de torra se
+ *                           desenha e a metadata chega em três blocos
+ *   0.62–0.66  ESTABILIZA   o instrumento sai: só as duas figuras e a manchete
+ *   0.66–0.86  SAÍDA        a matéria esfria — grão e papel limpam, as fotos
+ *                           baixam, as bordas endurecem em linha e as marcas de
+ *                           corte se ESTENDEM até a tela: os frames viram as guias
+ *                           de projeto do Vertex (mesmas posições: 28/50/94 % e 18,67 %)
+ *
+ * A mesma geometria sticky do Kavita manda aqui: a metade de cima sai da tela
+ * em ~0.72, então a coreografia das figuras termina antes e a dominância da
+ * manchete é por subtração (o instrumento e os rótulos saem, nada é somado).
+ */
 function terral(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const aWrap = one("[data-media-wrap]");
   const a = one("[data-media]");
   const aImg = one("[data-media] [data-crop]");
-  const b = one("[data-media-b]");
+  const bWrap = one("[data-media-b-wrap]");
+  const bImg = one("[data-media-b] [data-crop]");
+  const meta = q("[data-meta]");
+  const marks = q("[data-mark]");
+  const figs = q("[data-fig]");
+  const frames = q("[data-frame]");
+  const roast = q("[data-roast]");
 
-  // ENTRADA — A entra por baixo, quente e lenta
-  tl.fromTo(a ?? [], { autoAlpha: 0, yPercent: 8 }, { autoAlpha: 1, yPercent: 0, duration: ACT.enter + 0.08, ease: EASE.smooth }, 0);
-  // CONSTRUÇÃO — B chega depois, pela esquerda, e o grão sobe nas duas
-  tl.fromTo(b ?? [], { autoAlpha: 0, xPercent: -12, yPercent: 10 }, { autoAlpha: 1, xPercent: 0, yPercent: 0, duration: 0.2, ease: EASE.outQuint }, ACT.enter);
-  tl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.55, duration: 0.16 }, ACT.enter + 0.04);
-  tl.fromTo(q("[data-fibre]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.04);
+  /* PAPEL — a folha ganha corpo */
+  tl.fromTo(q("[data-fibre]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0.02);
+  tl.fromTo(q("[data-paper]"), { autoAlpha: 0 }, { autoAlpha: 0.08, duration: 0.2 }, 0.02);
 
-  // EXPERIÊNCIA — as duas em velocidades diferentes (é o que cria a profundidade)
+  /* GRÃO — a FIG. 01 entra pela direita: cortina + deslize interno contrário */
+  tl.fromTo(a ?? [], { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: 0.22, ease: EASE.outQuint }, 0.08);
+  tl.fromTo(aImg ?? [], { xPercent: 5, scale: 1.04 }, { xPercent: 0, scale: 1, duration: 0.24, ease: EASE.outQuint }, 0.08);
+
+  /* TORRA — a FIG. 02 cruza e assenta; o grão sobe nas duas */
+  tl.fromTo(bWrap ?? [], { autoAlpha: 0, xPercent: -16, yPercent: 14 }, { autoAlpha: 1, xPercent: 0, yPercent: 2, duration: 0.16, ease: EASE.outQuint }, 0.26);
+  tl.fromTo(q("[data-grain]"), { autoAlpha: 0 }, { autoAlpha: 0.5, duration: 0.14 }, 0.3);
+
+  /* PROFUNDIDADE — três velocidades, todas do scroll */
   if (!small) {
-    if (aImg) tl.fromTo(aImg, { scale: 1 }, { scale: 1.05, duration: ACT.prepare - ACT.build }, ACT.build);
-    if (b) tl.fromTo(b, { yPercent: 0, xPercent: 0 }, { yPercent: -7, xPercent: -3, duration: ACT.prepare - ACT.build }, ACT.build);
+    if (aWrap) tl.fromTo(aWrap, { yPercent: -3 }, { yPercent: 0, duration: ACT.prepare - ACT.build }, ACT.build);
+    if (aImg) tl.to(aImg, { scale: 1.06, xPercent: -1.5, duration: ACT.prepare - ACT.build }, ACT.build);
+    if (bWrap) tl.to(bWrap, { yPercent: -9, xPercent: 2, duration: ACT.prepare - 0.42 }, 0.42);
+    if (bImg) tl.fromTo(bImg, { yPercent: 1.5 }, { yPercent: -1.5, duration: ACT.prepare - 0.42 }, 0.42);
+    // a malha de grãos anda devagar entre as duas figuras (unidades do viewBox)
+    tl.fromTo(q("[data-dots]"), { y: 0.6 }, { y: -1, duration: ACT.prepare - ACT.build }, ACT.build);
   }
 
-  // PREPARAÇÃO → VERTEX: o papel limpa e as bordas viram linha de projeto
-  tl.to(q("[data-fibre]"), { autoAlpha: 0.15, duration: 0.14 }, ACT.hold + 0.02);
-  tl.to(q("[data-grain]"), { autoAlpha: 0.12, duration: 0.14 }, ACT.hold + 0.02);
-  tl.to([a ?? [], b ?? []], { autoAlpha: 0.5, duration: 0.16 }, ACT.prepare - 0.08);
+  /* REGISTRO — marcas, rótulos, instrumento e metadata: a composição se declara montada */
+  tl.fromTo(marks, { autoAlpha: 0, scale: 0.5, transformOrigin: "50% 50%" }, { autoAlpha: 0.55, scale: 1, stagger: 0.008, duration: 0.08 }, 0.4);
+  figs.forEach((f, i) => tl.fromTo(f, { autoAlpha: 0, x: -6 }, { autoAlpha: 0.7, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.3 + i * 0.14));
+  tl.fromTo(roast, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 0.44);
+  tl.fromTo(q("[data-roast-curve]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, duration: 0.16 }, 0.46);
+  tl.fromTo(q("[data-roast-label]"), { autoAlpha: 0 }, { autoAlpha: 0.75, stagger: 0.04, duration: 0.05 }, 0.52);
+  meta.forEach((m, i) => tl.fromTo(m, { autoAlpha: 0, x: 10 }, { autoAlpha: 1, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.46 + i * 0.06));
+
+  /* ESTABILIZAÇÃO — só figuras e manchete: o instrumento sai de cena */
+  tl.to(roast, { autoAlpha: 0, duration: 0.06 }, 0.62);
+
+  /* SAÍDA → VERTEX — a matéria esfria e os frames viram linhas de projeto.
+     Começa em 0.66, antes da faixa de preparação: a metade de cima do painel
+     (onde as figuras moram) sai da tela em ~0.72, e a sangria de cor do próximo
+     ato passa de 50 % perto de 0.9 — depois disso não há mais nada para ver. As
+     linhas que descem das figuras cruzam a zona da manchete, que fica em tela
+     até o fim: é por elas que a transformação continua visível. */
+  tl.to(q("[data-grain]"), { autoAlpha: 0.1, duration: 0.12 }, 0.66);
+  tl.to(q("[data-paper]"), { autoAlpha: 0, duration: 0.12 }, 0.66);
+  tl.to(q("[data-fibre]"), { autoAlpha: 0.35, duration: 0.14 }, 0.66);
+  tl.to(frames, { autoAlpha: 0.7, duration: 0.08 }, 0.66);
+  tl.to(marks, { autoAlpha: 0, duration: 0.05 }, 0.69);
+  tl.to(figs, { autoAlpha: 0, duration: 0.05 }, 0.69);
+  // as marcas de corte se estendem: verticais primeiro, a horizontal depois
+  tl.fromTo(q("[data-line-v]"), { scaleY: 0 }, { scaleY: 1, stagger: 0.012, duration: 0.12, ease: EASE.smooth }, 0.68);
+  tl.fromTo(q("[data-line-h]"), { scaleX: 0 }, { scaleX: 1, duration: 0.1, ease: EASE.smooth }, 0.72);
+  // as fotos cedem lugar ao frame (a caixa clipada, não o invólucro: as linhas ficam)
+  tl.to([a ?? [], q("[data-media-b]")], { autoAlpha: 0.38, duration: 0.14 }, 0.72);
 }
 
 /** 03 VERTEX — o desenho constrói o espaço: guias → fatias → fachada alinhada. */
