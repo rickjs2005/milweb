@@ -3,9 +3,9 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **01/09/2026 · `efc2654`** — ato 02/Terral refinado NO AR (validado em produção em 1920 e 390: `grao.webp`/`torra.webp` 200, console limpo, medidas idênticas ao local). Anterior: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **01/09/2026 · `8602dda`** — ato 03/Vertex refinado NO AR (validado em produção em 1920 e 390: `estrutura.webp`/`entrega.webp` 200, console limpo, medidas idênticas ao local). Anterior: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
-## 01/09/2026 — VERTEX (ato 03) refinado: o projeto construído pelo scroll (local, SEM commit/push)
+## 01/09/2026 — VERTEX (ato 03) refinado: o projeto construído pelo scroll (NO AR em `8602dda`)
 
 Só o ato 03 foi tocado. Compartilhado mudou em três pontos cirúrgicos: `ActStage` recebe `labels`; o `<ul>` de metadata não renderiza para o Vertex (as anotações vivem no palco); `Residue` vertex→aurex (no painel do Aurex) passou a desenhar o feixe convergido em que o Vertex termina; ramo reduced-motion com `if (world === "atelier-vertex")`. O tipo `labels.vertex` virou tupla de 5.
 
@@ -19,7 +19,7 @@ Só o ato 03 foi tocado. Compartilhado mudou em três pontos cirúrgicos: `ActSt
 
 **Validação:** `scripts/.rsc-audit/work/vertex.mjs` (1920×1080, 1440×900, 1366×768, 1024×768, 390×844 × 9 checkpoints: overflow 0, manchete 151/117/108/84/37 px sem corte, console limpo, frame → manchete 130/118/44/146/277 px; `--reduced` = prancha inteira, obra entregue nas quatro fatias, cotas e elevação leve) e `vertex-hover.mjs` (cursor inclina o invólucro, hover do CTA, resize 1920→1366→1920 e reload preservam progresso 0,6 e clips). `tsc`/`lint` verdes, `next build` passou (`/[lang]` 191 kB, compartilhado 106 kB). Saída conferida em 0,9 e 0,96 (feixe + Aurex entrando).
 
-**Limitações:** (a) o vídeo tem 1024 px de largura — a 1920 o frame amplia 1,14× (teto de nitidez do asset, igual ao que estava no ar); (b) a elevação é traçado editorial, não projeto; (c) aparelho físico não testado; (d) o feixe da saída fica a 0,22 no resíduo do Aurex — discreto por desenho. **Próxima ação:** Rick avaliar o Vertex; se aprovado, commit + push + validar em produção; depois Aurex (ato 04).
+**Limitações:** (a) o vídeo tem 1024 px de largura — a 1920 o frame amplia 1,14× (teto de nitidez do asset, igual ao que estava no ar); (b) a elevação é traçado editorial, não projeto; (c) aparelho físico não testado; (d) o feixe da saída fica a 0,22 no resíduo do Aurex — discreto por desenho. **Próxima ação:** Rick aprovou e pediu commit + push (`8602dda`, validado em produção em 1920 e 390 com `vertex.mjs https://milweb.com.br`). Falta o Aurex (ato 04) — mesma anatomia: asset real do projeto antes de captura, invólucro dono do movimento, tudo antes de 0,72.
 
 ## 01/09/2026 — TERRAL (ato 02) refinado: duas figuras com destino (NO AR em `efc2654`)
 
