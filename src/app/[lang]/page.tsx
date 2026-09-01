@@ -26,6 +26,9 @@ const WORLD_PLATE: Record<string, string> = {
   // GRÃO: os grãos caindo no resfriador (fotografia do projeto, 1500 px) — a
   // captura do site tinha a tipografia da Terral na metade esquerda do frame
   terral: "/shots/terral/grao.webp",
+  // ESTRUTURA: primeiro frame do vídeo real da obra (andaime e laje), em
+  // monocromia — a captura do site era o mesmo vídeo com a copy por cima
+  "atelier-vertex": "/shots/atelier-vertex/estrutura.webp",
 };
 /** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
 const WORLD_DETAIL: Record<string, string> = {
@@ -33,7 +36,8 @@ const WORLD_DETAIL: Record<string, string> = {
   "kavita-drones": "/shots/kavita-drones/t70p.webp",
   // TORRA: as mãos no braço do resfriador — o processo, a ação humana
   terral: "/shots/terral/torra.webp",
-  "atelier-vertex": "/shots/atelier-vertex/prancha.webp",
+  // ENTREGA: o último frame do mesmo vídeo (mesma câmera — as fatias encaixam)
+  "atelier-vertex": "/shots/atelier-vertex/entrega.webp",
 };
 const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex" };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];

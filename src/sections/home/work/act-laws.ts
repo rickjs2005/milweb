@@ -150,34 +150,29 @@ const terral: Law = (panel) => {
   return off;
 };
 
-/** VERTEX — espaço: guias, prancha e tipografia em três planos de profundidade. */
+/** VERTEX — espaço: a prancha inteira (frame, guias e cotas são um só invólucro)
+ *  inclina em perspectiva com o cursor; a tipografia anda contra. Só rotationX/Y
+ *  e x aqui — a timeline do ato é dona de scale (saída) e de tudo o mais. */
 const vertex: Law = (panel) => {
   const q = gsap.utils.selector(panel);
   const title = q<HTMLElement>("[data-headline]")[0];
-  const media = q<HTMLElement>("[data-media]")[0];
-  const guides = q<HTMLElement>("[data-guides]")[0];
-  if (!media || !guides) return () => {};
-  gsap.set(media, { transformPerspective: 1600 });
-  const mediaY = gsap.quickTo(media, "rotationY", { duration: 0.9, ease: EASE.outQuint });
-  const mediaX = gsap.quickTo(media, "rotationX", { duration: 0.9, ease: EASE.outQuint });
-  const guideX = gsap.quickTo(guides, "x", { duration: 1.1, ease: EASE.outQuint });
-  const guideY = gsap.quickTo(guides, "y", { duration: 1.1, ease: EASE.outQuint });
+  const wrap = q<HTMLElement>("[data-media-wrap]")[0];
+  if (!wrap) return () => {};
+  gsap.set(wrap, { transformPerspective: 1600 });
+  const wrapY = gsap.quickTo(wrap, "rotationY", { duration: 0.9, ease: EASE.outQuint });
+  const wrapX = gsap.quickTo(wrap, "rotationX", { duration: 0.9, ease: EASE.outQuint });
   const titleX = title ? gsap.quickTo(title, "x", { duration: 1.1, ease: EASE.outQuint }) : null;
   const off = pointer(panel, {
     move: (px, py, r) => {
       const nx = px / r.width - 0.5;
       const ny = py / r.height - 0.5;
-      guideX(nx * 24);
-      guideY(ny * 12);
-      mediaY(nx * -5);
-      mediaX(ny * 2.5);
+      wrapY(nx * -4);
+      wrapX(ny * 2);
       titleX?.(nx * -4);
     },
     leave: () => {
-      guideX(0);
-      guideY(0);
-      mediaY(0);
-      mediaX(0);
+      wrapY(0);
+      wrapX(0);
       titleX?.(0);
     },
   });

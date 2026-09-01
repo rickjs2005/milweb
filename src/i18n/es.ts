@@ -29,7 +29,7 @@ export const es: Dictionary = {
     labels: {
       kavita: ["T25P · T70P · T100", "26 ÍTEMS · 05 CATEGORÍAS", "04 SUCURSALES · MG / ES / RJ"],
       terral: ["LA CASA DEL TOSTADOR", "05 CAPÍTULOS", "03 BLENDS"],
-      vertex: ["ESC 1:75 · REV 03", "11,50 M", "GOP 1 — CADA FRAME ES KEYFRAME"],
+      vertex: ["ESC 1:75", "REV 03", "11,50 M", "GOP 1", "PLANTA TIPO"],
       aurex: ["CALIBRE AX-01 TOURBILLON", "15 ESCENAS", "10 PIEZAS · 05 ENGRANAJES"],
     },
   },

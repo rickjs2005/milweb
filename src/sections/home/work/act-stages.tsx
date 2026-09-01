@@ -66,13 +66,10 @@ function contour(cx: number, cy: number, r: number, seed: number, wobble: number
 const CONTOURS = [...[70, 130, 200, 285, 380, 490].map((r, i) => contour(300, 620, r, 1.3 + i * 0.4, 0.16)), ...[80, 150, 235].map((r, i) => contour(1180, 250, r, 4.1 + i * 0.6, 0.2))];
 const ROUTES = ["M60 800 L330 570 L640 630 L980 380 L1420 290", "M120 210 L460 330 L720 190 L1060 250 L1400 120"];
 
-/** Faixa da fachada usada pelo Vertex: abaixo da manchete e do botão do site. */
-const VERTEX_CROP = { x0: 400, y0: 460, w: 1040, h: 390 } as const;
-
-export function ActStage({ slug, image, detail }: { slug: ActSlug; image: string; detail: string }) {
+export function ActStage({ slug, image, detail, labels }: { slug: ActSlug; image: string; detail: string; labels: string[] }) {
   if (slug === "kavita-drones") return <KavitaStage image={image} detail={detail} />;
   if (slug === "terral") return <TerralStage image={image} detail={detail} />;
-  if (slug === "atelier-vertex") return <VertexStage image={image} detail={detail} />;
+  if (slug === "atelier-vertex") return <VertexStage image={image} detail={detail} labels={labels} />;
   return <AurexStage image={image} />;
 }
 
@@ -340,65 +337,112 @@ function TerralStage({ image, detail }: { image: string; detail: string }) {
 }
 
 /* ------------------------------------------------------------------ 03 VERTEX
-   O desenho constrói o espaço. As quatro guias deixam de ser enfeite: elas
-   DEFINEM as quatro fatias que revelam a fachada entregue sobre a prancha.
-   Blueprint → guias → estrutura → imagem → obra. */
-function VertexStage({ image, detail }: { image: string; detail: string }) {
+   O projeto sendo construído pelo scroll. PLANTA → LINHAS → ESTRUTURA →
+   CONSTRUÇÃO → FOTOGRAFIA, literalmente:
+
+     a PRANCHA   guias que se desenham, anchor points, rótulos e cotas — nenhuma foto
+     a ELEVAÇÃO  o desenho técnico da fachada, traçado sobre o enquadramento real
+     a ESTRUTURA quatro fatias sobem do chão com o primeiro frame do vídeo da obra
+                 (andaime, laje, pilares) — a estrutura sendo preenchida
+     a ENTREGA   pelo mesmo caminho, fatia a fatia, o último frame: o prédio pronto
+
+   As duas fotografias são frames do vídeo real do projeto (câmera fixa), então
+   as fatias encaixam pixel a pixel e a "construção" é a própria obra avançando.
+   Monocromia com contraste aberto: vigas, andaime e volumes precisam ler, porque
+   são as linhas reais da obra conversando com o grid da interface.
+
+   O FRAME é um invólucro só (`[data-media-wrap]`, 28 % → 94 %, altura por
+   proporção com teto em 40 svh): as guias verticais são as BORDAS das fatias,
+   as horizontais são as bordas do frame, os anchor points moram nos cruzamentos
+   e as cotas medem o frame — filhos do invólucro, então nunca desalinham. As
+   guias 28 e 94 são onde o Terral entrega as bordas das figuras dele. */
+const VERTEX_SLICES = [0, 1, 2, 3] as const;
+
+/** Elevação da fachada, traçada sobre o recorte 1024 × 380 do frame entregue. */
+const ELEVATION = [
+  "M192 6 H900", // laje de cobertura
+  "M232 0 V352 H470 V0", // volume esquerdo (varandas)
+  "M232 100 H470 M232 198 H470 M232 292 H470", // lajes das varandas
+  "M292 0 V352 M318 0 V352", // brises
+  "M470 0 H660 V346 H470", // pórtico central
+  "M532 55 H600 V95 H532 Z M532 150 H600 V195 H532 Z M532 250 H600 V300 H532 Z", // esquadrias do pórtico
+  "M660 0 H900 V350", // volume direito
+  "M740 60 H800 V95 H740 Z M740 150 H800 V195 H740 Z M740 250 H800 V300 H740 Z", // esquadrias
+  "M480 368 H640 V380 M0 360 H1024", // garagem e muro
+];
+
+function VertexStage({ image, detail, labels }: { image: string; detail: string; labels: string[] }) {
+  const [esc, rev, span, gop, pav] = labels;
+  const dec = span?.includes(".") ? "." : ",";
+  const label = "t-mono pointer-events-none absolute whitespace-nowrap text-[10px] tracking-[0.14em] opacity-0";
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-      <div data-media className="absolute left-[13%] top-[10%] z-[2] h-[50%] w-[74%] overflow-hidden max-md:left-margin max-md:right-margin max-md:w-auto max-md:top-[12%] max-md:h-[30%]" style={{ viewTransitionName: "case-media-atelier-vertex" }} data-inspect="MEDIA">
-        {/* base: a prancha — planta técnica desenhada sobre a obra em execução */}
-        <Crop src={detail} region={[400, 460, 1440, 850]} sizes="100vw" className="opacity-90" />
-        {/* as quatro fatias: janelas sobre a MESMA fachada entregue. A faixa
-            escolhida começa abaixo da manchete do próprio site — sobra obra. */}
-        {[0, 1, 2, 3].map((k) => (
-          <span key={k} data-slice className="absolute top-0 h-full overflow-hidden" style={{ left: `${k * 25}%`, width: "25%" }}>
-            {/* a mesma região da base, em coordenadas da fatia: a imagem inteira
-                é dimensionada e deslocada, e `background-size: 100% 100%` a mapeia
-                exatamente — as quatro janelas leem o MESMO enquadramento. */}
-            <span
-              className="absolute block"
-              style={{ left: `${(-VERTEX_CROP.x0 / VERTEX_CROP.w) * 400 - k * 100}%`, top: `${(-VERTEX_CROP.y0 / VERTEX_CROP.h) * 100}%`, width: `${(SHOT.w / VERTEX_CROP.w) * 400}%`, height: `${(SHOT.h / VERTEX_CROP.h) * 100}%`, backgroundImage: `url(${image})`, backgroundSize: "100% 100%" }}
-            />
-          </span>
-        ))}
-        <span data-frame className="absolute inset-0 border border-ink/20" />
-      </div>
+      {/* a guia de margem (6 %) e as anotações da prancha que vivem fora do frame */}
+      <span data-guide-m className="absolute left-[6%] top-0 block h-full w-px origin-top scale-y-0 bg-current opacity-30 max-md:hidden" />
+      <span data-plan-label className={`${label} left-[6%] top-[max(11svh,104px)] max-md:left-margin max-md:top-[max(14svh,110px)]`}>{esc}</span>
+      <span data-plan-label className={`${label} right-[6%] top-[max(11svh,104px)] text-right max-md:right-margin max-md:top-[max(14svh,110px)]`}>{rev}</span>
+      <span data-plan-label className={`${label} left-[6%] top-[33%] max-md:hidden`}>{pav}</span>
+      <span data-leader className="absolute left-[6%] top-[calc(33%+1.35rem)] block h-px w-[22%] origin-left scale-x-0 border-t border-dashed border-current opacity-40 max-md:hidden" />
+      <span data-plan-label className={`${label} left-[6%] top-[52%] max-md:hidden`}>{gop}</span>
 
-      {/* guias de projeto: as quatro verticais que cortam a mídia + eixos e cotas */}
-      <svg data-guides className="absolute inset-0 z-[3] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none" stroke="currentColor" vectorEffect="non-scaling-stroke">
+      {/* O FRAME */}
+      <div data-media-wrap className="absolute left-[28%] right-[6%] top-[max(15svh,136px)] z-[2] aspect-[1024/380] max-h-[40svh] max-md:left-margin max-md:right-margin max-md:top-[max(19svh,136px)] max-md:aspect-[4/3]" data-inspect="FRAME">
+        {/* guias verticais = bordas das fatias, da altura da tela (o frame nasce a 15 svh) */}
         {[0, 1, 2, 3, 4].map((k) => (
-          <line key={k} data-guide x1={86 + k * 317} y1="0" x2={86 + k * 317} y2="900" pathLength="1" strokeWidth="1" opacity="0.42" />
+          <span key={k} data-guide-v className="absolute top-[calc(-1*max(15svh,136px))] block h-[100svh] w-px origin-top scale-y-0 bg-current opacity-45 max-md:top-[calc(-1*max(19svh,136px))]" style={{ left: `${k * 25}%` }} />
         ))}
-        {[168, 612].map((y) => (
-          <line key={y} data-guide x1="0" y1={y} x2="1440" y2={y} pathLength="1" strokeWidth="1" opacity="0.22" />
-        ))}
-        {/* pontos técnicos nos cruzamentos — anchor points, não partículas */}
+        {/* guias horizontais = bordas do frame, centradas nele (crescem do centro) */}
+        <span data-guide-h className="absolute left-[calc(50%-150vw)] top-0 block h-px w-[300vw] origin-center scale-x-0 bg-current opacity-30" />
+        <span data-guide-h className="absolute bottom-0 left-[calc(50%-150vw)] block h-px w-[300vw] origin-center scale-x-0 bg-current opacity-30" />
+        {/* anchor points nos cruzamentos: □ → ■ → □ quando a guia chega */}
         {[0, 1, 2, 3, 4].flatMap((k) =>
-          [168, 612].map((y) => (
-            <rect key={`${k}-${y}`} data-anchor x={86 + k * 317 - 3} y={y - 3} width="6" height="6" strokeWidth="1" opacity="0" />
+          [0, 1].map((j) => (
+            <span key={`${k}-${j}`} data-anchor className="absolute -ml-[3.5px] -mt-[3.5px] block h-[7px] w-[7px] border border-current opacity-0 max-md:hidden" style={{ left: `${k * 25}%`, top: `${j * 100}%` }}>
+              <span data-anchor-fill className="absolute inset-0 block bg-current opacity-0" />
+            </span>
           )),
         )}
-        {/* linha de cota: a largura real da obra */}
-        <g data-dim opacity="0">
-          <line x1="86" y1="700" x2="1354" y2="700" strokeWidth="1" />
-          <line x1="86" y1="690" x2="86" y2="710" strokeWidth="1" />
-          <line x1="1354" y1="690" x2="1354" y2="710" strokeWidth="1" />
-        </g>
-      </svg>
 
-      {/* rótulos de prancha, ancorados nas guias */}
-      <div data-plan-labels className="t-mono pointer-events-none absolute inset-0 z-[4] hidden md:block">
-        {[
-          { t: "ESC 1:75", l: "6%", y: "15%" },
-          { t: "REV 03", l: "50%", y: "15%" },
-          { t: "PAV. TIPO", l: "28%", y: "62%" },
-          { t: "11,50 M", l: "72%", y: "62%" },
-        ].map((d) => (
-          <span key={d.t} data-plan-label className="absolute -translate-y-1/2 bg-[color:var(--act-bg)] px-2 text-[10px] tracking-[0.14em] opacity-0" style={{ left: d.l, top: d.y }}>
-            {d.t}
-          </span>
-        ))}
+        {/* as quatro fatias: ESTRUTURA embaixo, ENTREGA em cima, cada camada
+            carregando a imagem inteira deslocada — as fatias leem o MESMO
+            enquadramento e encaixam. A revelação é clip-path de baixo para
+            cima (a obra sobe do chão), nunca fade. */}
+        <div data-media className="absolute inset-0 overflow-hidden" style={{ viewTransitionName: "case-media-atelier-vertex" }} data-inspect="MEDIA">
+          {VERTEX_SLICES.map((k) => (
+            <span key={k} data-slice className="absolute top-0 block h-full overflow-hidden" style={{ left: `${k * 25}%`, width: "25%" }}>
+              <span data-slice-in className="absolute inset-0 block">
+                <span data-layer-a className="absolute top-0 block h-full" style={{ left: `${-k * 100}%`, width: "400%" }}>
+                  <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 66vw, 100vw" className="object-cover" />
+                </span>
+                <span data-layer-b className="absolute top-0 block h-full" style={{ left: `${-k * 100}%`, width: "400%" }}>
+                  <Image src={detail} alt="" fill loading="lazy" sizes="(min-width: 720px) 66vw, 100vw" className="object-cover" />
+                </span>
+              </span>
+            </span>
+          ))}
+          {/* a elevação: o desenho técnico da fachada, no mesmo enquadramento
+              (`slice` recorta como o object-cover, então casa em qualquer proporção) */}
+          <svg data-elevation className="absolute inset-0 h-full w-full opacity-80" viewBox="0 0 1024 380" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round">
+            {ELEVATION.map((d, i) => (
+              <path key={i} data-draw d={d} pathLength="1" vectorEffect="non-scaling-stroke" />
+            ))}
+          </svg>
+        </div>
+
+        {/* cota horizontal: a largura do frame */}
+        <span data-dim-h className="absolute left-0 right-0 top-full mt-4 block h-px origin-left bg-current opacity-0">
+          <span className="absolute -top-1 left-0 block h-2 w-px bg-current" />
+          <span className="absolute -top-1 right-0 block h-2 w-px bg-current" />
+        </span>
+        <span data-dim-label className={`${label} left-1/2 top-full mt-1.5 -translate-x-1/2 bg-[color:var(--act-bg)] px-2`}>
+          {span}
+        </span>
+        {/* cota vertical: um pavimento, à direita do frame */}
+        <span data-dim-v className="absolute left-full top-0 ml-3 block h-[30%] w-px origin-top bg-current opacity-0 max-xl:hidden">
+          <span className="absolute -left-1 top-0 block h-px w-2 bg-current" />
+          <span className="absolute -left-1 bottom-0 block h-px w-2 bg-current" />
+        </span>
+        <span data-dim-label className={`${label} left-full top-[15%] ml-5 -translate-y-1/2 max-xl:hidden`}>{`3${dec}20 M`}</span>
       </div>
     </div>
   );

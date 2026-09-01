@@ -24,7 +24,7 @@ export type Dictionary = {
     enter: string;
     all: string;
     clientWork: string;
-    labels: { kavita: [string, string, string]; terral: [string, string, string]; vertex: [string, string, string]; aurex: [string, string, string] };
+    labels: { kavita: [string, string, string]; terral: [string, string, string]; vertex: [string, string, string, string, string]; aurex: [string, string, string] };
   };
   displayType: { "CLIENT WORK": string; "SCROLL EXPERIENCE": string; "WEBGL EXPERIENCE": string; "INTERACTIVE COMMERCE": string; "DIGITAL PRODUCT": string; "CREATIVE DEVELOPMENT": string; EXPERIMENTAL: string };
   capabilities: { eyebrow: string; items: [string, string, string, string, string]; react: { depth: string; structure: string; perspective: string; type: string; grid: string } };

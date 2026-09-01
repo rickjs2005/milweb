@@ -186,7 +186,17 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
               const els = q(sel);
               if (els.length) gsap.set(els, vars);
             };
-            set("[data-coord], [data-meta], [data-target], [data-frame], [data-anchor], [data-plan-label], [data-part-label], [data-dim], [data-movement-wrap], [data-axis]", { autoAlpha: 1 });
+            set("[data-coord], [data-meta], [data-target], [data-frame], [data-anchor], [data-plan-label], [data-part-label], [data-movement-wrap], [data-axis]", { autoAlpha: 1 });
+            if (article.dataset.world === "atelier-vertex") {
+              // em repouso: prancha inteira desenhada, obra entregue nas quatro
+              // fatias, cotas e elevação leve por cima
+              set("[data-guide-v], [data-guide-m], [data-dim-v]", { scaleY: 1 });
+              set("[data-guide-h], [data-leader], [data-dim-h]", { scaleX: 1 });
+              set("[data-layer-a], [data-layer-b]", { clipPath: "none" });
+              set("[data-dim-h], [data-dim-v], [data-dim-label]", { autoAlpha: 0.8 });
+              set("[data-elevation]", { autoAlpha: 0.25 });
+              set("[data-draw]", { strokeDashoffset: 0 });
+            }
             if (article.dataset.world === "terral") {
               // em repouso: figuras com marcas de corte e borda leve, o instrumento
               // já desenhado; as linhas estendidas ficam de fora (são ferramenta de saída)
@@ -199,7 +209,6 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             // apagá-los, ficariam cobrindo metade do painel para sempre
             set("[data-scan], [data-veil], [data-bleed]", { autoAlpha: 0 });
             set("[data-grain]", { autoAlpha: 0.4 });
-            set("[data-slice]", { clipPath: "inset(0% 0 0 0)", xPercent: 0 });
             set("[data-media]", { autoAlpha: 1, clipPath: "none" });
             if (article.dataset.world === "aurex-timepieces") {
               gsap.set(q("[data-media]"), { autoAlpha: 0.2 });
@@ -239,7 +248,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           >
             <div className="act sticky top-0 h-[100svh] overflow-hidden" style={{ background: skin.bg, color: skin.ink }}>
               {/* palco (nível 00 — atrás de tudo) */}
-              <ActStage slug={slug} image={item.image} detail={item.detail} />
+              <ActStage slug={slug} image={item.image} detail={item.detail} labels={item.labels} />
 
               {/* a malha: a mesma em todos os atos, com o significado do mundo */}
               <div className="pointer-events-none absolute inset-0 z-[1] opacity-45" style={{ color: skin.ink }}>
@@ -275,14 +284,18 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
                 {/* o palco vive atrás desta folga */}
                 <div className="flex-1" />
 
-                {/* NÍVEL 02 — metadata técnica do projeto */}
-                <ul data-reveal className="t-mono flex flex-wrap items-center gap-x-5 gap-y-1 opacity-90">
-                  {item.labels.map((l) => (
-                    <li key={l} data-meta className="whitespace-nowrap">
-                      {l}
-                    </li>
-                  ))}
-                </ul>
+                {/* NÍVEL 02 — metadata técnica do projeto. No Vertex ela não é
+                    uma linha: são as anotações da prancha, distribuídas pelo
+                    palco (ESC no canto, REV no outro, a cota sob o frame…). */}
+                {slug === "atelier-vertex" ? null : (
+                  <ul data-reveal className="t-mono flex flex-wrap items-center gap-x-5 gap-y-1 opacity-90">
+                    {item.labels.map((l) => (
+                      <li key={l} data-meta className="whitespace-nowrap">
+                        {l}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* NÍVEL 01 — a manchete domina a viewport */}
                 <h2 data-headline data-reveal className="t-display t-fit-work mt-3 md:mt-4" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${item.slug}` }}>
@@ -351,14 +364,15 @@ function Residue({ from }: { from: ActSlug }) {
         })}
       </svg>
     );
-  // vertex → aurex: as guias de projeto que ainda não viraram eixos mecânicos
+  // vertex → aurex: as guias já convergidas num feixe (o estado em que o Vertex
+  // termina) — eixos que ainda não viraram mecânica
   return (
-    <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.22" vectorEffect="non-scaling-stroke">
-      {[86, 403, 720, 1037, 1354].map((x) => (
-        <line key={x} x1={x} y1="0" x2={x} y2="900" />
+    <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.22">
+      {[0, 1, 2, 3, 4].map((k) => (
+        <line key={k} x1={792 + k * 43} y1="0" x2={792 + k * 43} y2="900" transform={`rotate(${(k - 2) * 9} ${792 + k * 43} 450)`} vectorEffect="non-scaling-stroke" />
       ))}
-      <line x1="0" y1="168" x2="1440" y2="168" />
-      <line x1="0" y1="612" x2="1440" y2="612" />
+      <line x1="783" y1="162" x2="973" y2="162" vectorEffect="non-scaling-stroke" />
+      <line x1="783" y1="594" x2="973" y2="594" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -539,33 +553,97 @@ function terral(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   tl.to([a ?? [], q("[data-media-b]")], { autoAlpha: 0.38, duration: 0.14 }, 0.72);
 }
 
-/** 03 VERTEX — o desenho constrói o espaço: guias → fatias → fachada alinhada. */
+/**
+ * 03 VERTEX — construído no scroll. O roteiro do ato, em progresso da trigger:
+ *
+ *   0.02–0.26  PRANCHA      a guia de margem e as cinco verticais se desenham de cima
+ *                           para baixo; as horizontais crescem do centro; cada anchor
+ *                           point acende quando a guia chega ao cruzamento (□ → ■ → □);
+ *                           os rótulos assentam. Nenhuma fotografia.
+ *   0.14–0.36  ELEVAÇÃO     o desenho técnico da fachada se traça dentro do frame
+ *   0.30–0.58  ESTRUTURA    fatia a fatia (0.30/0.35/0.40/0.45), a obra sobe do chão:
+ *                           clip de baixo para cima com o primeiro frame do vídeo
+ *                           (andaime, laje), cada fatia assentando 5 % ao subir
+ *   0.44–0.56  COTAS        11,50 M mede o frame quando a estrutura existe; 3,20 M um pavimento
+ *   0.46–0.72  ENTREGA      pelo mesmo caminho (0.46/0.51/0.56/0.61), o último frame: o
+ *                           prédio pronto cobre a estrutura; a elevação vira traço leve
+ *   0.66–0.74  ASSINATURA   elevação, rótulos, cotas e anchors saem — só a obra e a
+ *                           manchete CONSTRUÍDO / NO SCROLL, que já estava lá
+ *   0.72–0.96  SAÍDA        as verticais deixam de ser grid: convergem para o centro
+ *                           do frame e abrem em feixe (±9° por guia), as horizontais
+ *                           encolhem para o eixo, a obra apaga e o frame recua —
+ *                           arquitetura → engenharia → mecânica, sobre a sangria
+ *                           de cor (compartilhada) que vai do papel ao preto do Aurex
+ *
+ * Tudo termina antes de ~0.72: a metade de cima do painel (onde o frame mora)
+ * sai da tela aí, e a sangria passa de 50 % perto de 0.9.
+ */
 function vertex(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
-  const slices = q<HTMLElement>("[data-slice]");
+  const wrap = one("[data-media-wrap]");
   const media = one("[data-media]");
+  const guidesV = q<HTMLElement>("[data-guide-v]");
+  const guidesH = q("[data-guide-h]");
+  const guideM = q("[data-guide-m]");
+  const anchors = q("[data-anchor]");
+  const fills = q("[data-anchor-fill]");
+  const labels = q("[data-plan-label]");
+  const leader = q("[data-leader]");
+  const dimH = q("[data-dim-h]");
+  const dimV = q("[data-dim-v]");
+  const dimLabels = q("[data-dim-label]");
+  const elevation = q("[data-elevation]");
+  const draw = q("[data-draw]");
+  const slicesIn = q("[data-slice-in]");
+  const layersA = q("[data-layer-a]");
+  const layersB = q("[data-layer-b]");
 
-  // ENTRADA — as guias se desenham de cima para baixo
-  tl.fromTo(q("[data-guide]"), { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.025, duration: 0.2 }, 0);
-  tl.fromTo(media ?? [], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.14 }, 0.04);
-
-  // CONSTRUÇÃO — anchor points e rótulos de prancha
-  tl.fromTo(q("[data-anchor]"), { autoAlpha: 0, scale: 0.3, transformOrigin: "50% 50%" }, { autoAlpha: 0.8, scale: 1, stagger: 0.012, duration: 0.12 }, ACT.enter);
-  tl.fromTo(q("[data-plan-label]"), { autoAlpha: 0, y: -6 }, { autoAlpha: 0.75, y: 0, stagger: 0.04, duration: 0.12 }, ACT.enter + 0.06);
-
-  // EXPERIÊNCIA — cada fatia revela a fachada de baixo para cima, fora de fase,
-  // e só depois se alinham: é a obra sendo construída pelo scroll
-  slices.forEach((s, k) => {
-    tl.fromTo(s, { clipPath: "inset(100% 0 0 0)", xPercent: k % 2 ? 9 : -9 }, { clipPath: "inset(0% 0 0 0)", duration: 0.2 }, ACT.build + k * 0.05);
-    tl.to(s, { xPercent: 0, duration: 0.14, ease: EASE.outQuint }, ACT.hold - 0.1 + k * 0.02);
+  /* PRANCHA — as guias se desenham; os anchors acendem quando a guia chega */
+  const vAt = (k: number) => 0.04 + k * 0.03; // início da vertical k (dura 0.16, 100 svh de cima para baixo)
+  tl.fromTo(guideM, { scaleY: 0 }, { scaleY: 1, duration: 0.14 }, 0.02);
+  tl.fromTo(guidesV, { scaleY: 0 }, { scaleY: 1, stagger: 0.03, duration: 0.16 }, vAt(0));
+  tl.fromTo(guidesH, { scaleX: 0 }, { scaleX: 1, stagger: 0.05, duration: 0.16 }, 0.1);
+  anchors.forEach((a, i) => {
+    const k = Math.floor(i / 2);
+    const j = i % 2; // 0 = borda de cima do frame (15 svh), 1 = borda de baixo (~55 svh)
+    const t = vAt(k) + 0.16 * (j ? 0.55 : 0.15);
+    tl.fromTo(a, { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 0.8, scale: 1, duration: 0.03 }, t);
+    const f = fills[i];
+    if (f) {
+      tl.fromTo(f, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.012 }, t);
+      tl.to(f, { autoAlpha: 0, duration: 0.03 }, t + 0.02);
+    }
   });
-  // a cota mede a obra depois que ela existe
-  tl.fromTo(q("[data-dim]"), { autoAlpha: 0, scaleX: 0.2, transformOrigin: "0% 50%" }, { autoAlpha: 0.6, scaleX: 1, duration: 0.14, ease: EASE.outQuint }, ACT.hold - 0.04);
+  tl.fromTo(labels, { autoAlpha: 0, y: -6 }, { autoAlpha: 0.8, y: 0, stagger: 0.03, duration: 0.1, ease: EASE.outQuint }, 0.14);
+  tl.fromTo(leader, { scaleX: 0 }, { scaleX: 1, duration: 0.1 }, 0.2);
 
-  // PREPARAÇÃO → AUREX: as guias convergem para o centro e a luz cai
-  tl.to(q("[data-guides]"), { scale: small ? 0.9 : 0.78, autoAlpha: 0.35, transformOrigin: "50% 42%", duration: 1 - ACT.hold }, ACT.hold);
-  tl.to(q("[data-plan-label]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
-  tl.to(q("[data-dim]"), { autoAlpha: 0, duration: 0.1 }, ACT.hold + 0.02);
-  if (media) tl.to(media, { autoAlpha: 0.32, scale: 0.94, duration: 0.2 }, ACT.prepare - 0.1);
+  /* ELEVAÇÃO — o projeto se desenha dentro do frame vazio */
+  tl.fromTo(draw, { strokeDashoffset: 1, strokeDasharray: 1 }, { strokeDashoffset: 0, stagger: 0.02, duration: 0.16 }, 0.14);
+
+  /* ESTRUTURA — a obra sobe do chão, fatia a fatia, e assenta */
+  layersA.forEach((l, k) => tl.fromTo(l, { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.14, ease: EASE.smooth }, 0.3 + k * 0.05));
+  slicesIn.forEach((s, k) => tl.fromTo(s, { yPercent: 5 }, { yPercent: 0, duration: 0.14, ease: EASE.outQuint }, 0.3 + k * 0.05));
+
+  /* COTAS — medem a obra quando ela existe */
+  tl.fromTo(dimH, { autoAlpha: 0, scaleX: 0.2 }, { autoAlpha: 0.7, scaleX: 1, duration: 0.12, ease: EASE.outQuint }, 0.44);
+  tl.fromTo(dimV, { autoAlpha: 0, scaleY: 0.2 }, { autoAlpha: 0.7, scaleY: 1, duration: 0.12, ease: EASE.outQuint }, 0.5);
+  tl.fromTo(dimLabels, { autoAlpha: 0 }, { autoAlpha: 0.8, stagger: 0.06, duration: 0.06 }, 0.48);
+
+  /* ENTREGA — o prédio pronto cobre a estrutura pelo mesmo caminho */
+  layersB.forEach((l, k) => tl.fromTo(l, { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.12, ease: EASE.smooth }, 0.46 + k * 0.05));
+  tl.to(elevation, { autoAlpha: 0.25, duration: 0.14 }, 0.46);
+
+  /* ASSINATURA — só a obra e a manchete */
+  tl.to(elevation, { autoAlpha: 0, duration: 0.08 }, 0.66);
+  tl.to([labels, leader, dimH, dimV, dimLabels], { autoAlpha: 0, duration: 0.08 }, 0.68);
+  tl.to(anchors, { autoAlpha: 0, duration: 0.06 }, 0.7);
+
+  /* SAÍDA → AUREX — o grid vira feixe de eixos; a obra apaga; o frame recua */
+  const w = () => wrap?.offsetWidth ?? 0;
+  guidesV.forEach((g, k) => tl.to(g, { x: () => (0.5 - k / 4) * w() * 0.82, rotation: (k - 2) * 9, transformOrigin: "50% 60%", duration: 0.24, ease: "power1.in" }, 0.72));
+  tl.to(guidesH, { scaleX: 0.12, duration: 0.24, ease: "power1.in" }, 0.72);
+  tl.to(guideM, { autoAlpha: 0, duration: 0.1 }, 0.74);
+  if (media) tl.to(media, { autoAlpha: 0.3, duration: 0.2 }, 0.76);
+  if (wrap) tl.to(wrap, { scale: small ? 0.96 : 0.94, transformOrigin: "50% 50%", duration: 0.24 }, 0.74);
 }
 
 /** 04 AUREX — o tempo desmontado: o calibre AX-01 em vista explodida, pelo scroll. */
