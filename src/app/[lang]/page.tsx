@@ -97,7 +97,7 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
           })}
         />
         <Capabilities act={d.acts.capabilities} eyebrow={d.capabilities.eyebrow} items={d.capabilities.items.map((label, i) => ({ n: String(i + 1).padStart(2, "0"), label, react: REACT[i], reactLabel: d.capabilities.react[REACT[i]] }))} />
-        <LabTeaser act={d.acts.lab} eyebrow={d.lab.eyebrow} tech={d.lab.tech} title={d.lab.title} body={t(BRAND.labBody)} enter={d.lab.enter} href={withLocale(locale, "/lab")} poster="/lab/blackhole.jpg" />
+        <LabTeaser act={d.acts.lab} eyebrow={d.lab.eyebrow} tech={d.lab.tech} title={d.lab.title} body={t(BRAND.labBody)} enter={d.lab.enter} href={withLocale(locale, "/lab")} />
         <BreakTheWebsite act={d.acts.brk} trigger={d.brk.trigger} headline={d.brk.headline} sub={d.brk.sub} rebuild={d.brk.rebuild} title={d.brk.title} pieces={d.brk.pieces} />
         <Human act={d.acts.human} headline={d.human.headline} tail={d.human.tail} name={BRAND.founder} role={t(BRAND.founderRole).toUpperCase()} location={t(BRAND.location).toUpperCase()} />
         <BuiltWith act={d.acts.builtWith} eyebrow={d.builtWith.eyebrow} big={d.builtWith.big} stack={BRAND.stack} />

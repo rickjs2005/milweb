@@ -297,6 +297,12 @@ html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [da
   .t-fit-work { font-size: min(14svh, var(--step-5), calc((100vw - 2 * var(--margin)) * 0.86 / (var(--chars, 12) * 0.97))); }
 }
 
+/* Manchete do Lab — cabe na largura com a segunda linha recuada (--chars conta o recuo). */
+.t-fit-lab { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) / (var(--chars-m, 11) * 0.97))); }
+@media (min-width: 720px) {
+  .t-fit-lab { font-size: min(var(--step-6), calc((100vw - 2 * var(--margin)) / (var(--chars, 12.6) * 0.97))); }
+}
+
 /* CTA do ato — editorial, nunca botão. Os colchetes abrem, a seta anda e a
    régua cresce da esquerda SÓ sob a palavra (não sob os colchetes); tudo em
    transform/opacity. A seta parte um instante depois dos colchetes. */
