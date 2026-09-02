@@ -13,7 +13,7 @@ export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act,
     <section id="contact" data-act={act} data-inspect="CONTACT" className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-nav">
       <div className="rule flex items-center justify-between pt-3 t-mono">
         <span>{label}</span>
-        <span className="tnum text-ink-3">MW/010</span>
+        <span className="tnum text-ink-3">MW/011</span>
       </div>
 
       <h2 className="t-display t-display-xl t-fit relative z-10 text-ink" style={fitLines(headline)} data-inspect="H2">

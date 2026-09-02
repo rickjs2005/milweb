@@ -10,6 +10,7 @@ import { WorkDots } from "./work/work-dots";
 import { ACT_LAWS } from "./work/act-laws";
 import { AUREX_PARTS } from "./work/aurex-movement";
 import { SHEET, stripTargets, tattooPose } from "./work/inkvision-geometry";
+import { ROUTE_H, ROUTE_V, headingInto, nodeAt, segments, type LegMode, type NodeKey, type UnitKey } from "./work/logistics-geometry";
 import { dotsOf } from "./work/act-config";
 
 export type WorkItem = {
@@ -25,14 +26,16 @@ export type WorkItem = {
   href: string;
   /** Rótulos técnicos reais do projeto (nível 02 da hierarquia). */
   labels: string[];
+  /** Etapas de um percurso (só o Logistics Demo: as sete da jornada do projeto). */
+  stages: string[];
 };
 
 /**
- * ACT 03 — SELECTED WORK. Um filme em cinco atos, não cinco cards.
+ * ACT 03 — SELECTED WORK. Um filme em seis atos, não seis cards.
  *
- * ANATOMIA (idêntica nos cinco; o que muda é o palco):
+ * ANATOMIA (idêntica nos seis; o que muda é o palco):
  *
- *   [ 01 / KAVITA ] ─────────────────────────────── [ 01 / 05 ]   nível 03
+ *   [ 01 / KAVITA ] ─────────────────────────────── [ 01 / 06 ]   nível 03
  *
  *                     ‹ palco: a experiência do ato ›
  *
@@ -90,12 +93,12 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             const q = gsap.utils.selector(article);
             const one = <T extends HTMLElement>(s: string) => q<T>(s)[0] as T | undefined;
             const last = i === items.length - 1;
-            // O Aurex foi coreografado como último ato: progresso inteiro com o
-            // painel em tela. Com o InkVision depois dele, mantém esse mapeamento
-            // e fica de fora da escurecida e da sangria de saída (que aconteceriam
-            // com o calibre ainda inteiro na tela; o preto já é o mesmo) — é o
-            // mínimo na fronteira, sem tocar no calibre.
-            const holdsToEnd = last || slug === "aurex-timepieces";
+            // O Aurex e o InkVision foram coreografados como último ato: progresso
+            // inteiro com o painel em tela. Com um ato depois deles, mantêm esse
+            // mapeamento e ficam de fora da escurecida e da sangria de saída (que
+            // aconteceriam com o calibre / a simulação ainda inteiros na tela; o
+            // escuro já é o mesmo) — é o mínimo na fronteira, sem tocar neles.
+            const holdsToEnd = last || slug === "aurex-timepieces" || slug === "inkvision";
 
             const tl = gsap.timeline({
               scrollTrigger: {
@@ -126,6 +129,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
             if (slug === "atelier-vertex") vertex(tl, q, one, small);
             if (slug === "aurex-timepieces") aurex(tl, q, one, small);
             if (slug === "inkvision") inkvision(tl, q, one, small);
+            if (slug === "logistics-demo") logistics(tl, q, one, small);
 
             /* ---------- PREPARAÇÃO + TRANSIÇÃO (0.70 → 1) ----------
                A malha troca de significado antes da virada e a cor do próximo
@@ -213,6 +217,24 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
               const steps = q("[data-step]");
               if (steps.length) gsap.set(steps, { autoAlpha: (i: number) => (i === steps.length - 1 ? 0.85 : 0.18) });
             }
+            if (article.dataset.world === "logistics-demo") {
+              // em repouso: a rota inteira executada, os quatro nós e as legendas,
+              // a carga já no destino (última milha), a janela no mar aberto
+              set("[data-plan]", { autoAlpha: 0 });
+              set("[data-leg]", { strokeDashoffset: 0, opacity: 1 });
+              set("[data-node], [data-cargo], [data-plate-b]", { autoAlpha: 1 });
+              set("[data-node-cap], [data-leg-label], [data-status], [data-route-pct]", { autoAlpha: 1 });
+              set('[data-unit="truck-back"]', { autoAlpha: 1 });
+              ([["[data-route-h]", ROUTE_H], ["[data-route-v]", ROUTE_V]] as const).forEach(([sel, r]) => {
+                const [x, y] = nodeAt(r, "dst");
+                set(`${sel} [data-cargo]`, { x, y });
+                set(`${sel} [data-cargo-rot]`, { rotation: headingInto(r, "dst"), transformOrigin: "50% 50%" });
+              });
+              const steps = q("[data-step]");
+              if (steps.length) gsap.set(steps, { autoAlpha: (i: number) => (i === steps.length - 1 ? 0.9 : 0) });
+              const n = q("[data-route-pct-n]")[0];
+              if (n) n.textContent = "100";
+            }
             if (article.dataset.world === "atelier-vertex") {
               // em repouso: prancha inteira desenhada, obra entregue nas quatro
               // fatias, cotas e elevação leve por cima
@@ -274,7 +296,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
           >
             <div className="act sticky top-0 h-[100svh] overflow-hidden" style={{ background: skin.bg, color: skin.ink }}>
               {/* palco (nível 00 — atrás de tudo) */}
-              <ActStage slug={slug} image={item.image} detail={item.detail} labels={item.labels} />
+              <ActStage slug={slug} image={item.image} detail={item.detail} labels={item.labels} stages={item.stages} />
 
               {/* a malha: a mesma em todos os atos, com o significado do mundo */}
               <div className="pointer-events-none absolute inset-0 z-[1] opacity-45" style={{ color: skin.ink }}>
@@ -400,6 +422,17 @@ function Residue({ from }: { from: ActSlug }) {
         ))}
       </svg>
     );
+  if (from === "inkvision")
+    // inkvision → logistics: os tracking points ainda em cena — a timeline do
+    // ato os alinha numa linha de coordenadas antes de apagá-los, e é dessa
+    // linha que a origem da rota nasce (visão computacional virando instrumento)
+    return (
+      <svg data-residue aria-hidden="true" className="pointer-events-none absolute inset-0 z-[2] h-full w-full" viewBox="0 0 100 56" preserveAspectRatio="xMidYMid slice" fill="currentColor" opacity="0.4">
+        {dotsOf("track").map((d, k) => (
+          <rect key={k} x={(d.x - d.r).toFixed(2)} y={(d.y - d.r).toFixed(2)} width={(d.r * 2).toFixed(2)} height={(d.r * 2).toFixed(2)} opacity={d.o.toFixed(2)} />
+        ))}
+      </svg>
+    );
   // vertex → aurex: as guias já convergidas num feixe (o estado em que o Vertex
   // termina) — eixos que ainda não viraram mecânica
   return (
@@ -414,7 +447,7 @@ function Residue({ from }: { from: ActSlug }) {
 }
 
 /* ==================================================================
-   OS QUATRO PALCOS — cada função recebe a timeline do ato e escreve as
+   OS SEIS PALCOS — cada função recebe a timeline do ato e escreve as
    suas batidas nas faixas de `ACT`. Uma propriedade, um dono.
    ================================================================== */
 type Q = ReturnType<typeof gsap.utils.selector>;
@@ -825,4 +858,167 @@ function inkvision(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   /* RESULTADO — metadata em três batidas; a comparação fica disponível */
   meta.forEach((m, i) => tl.fromTo(m, { autoAlpha: 0, x: 10 }, { autoAlpha: 1, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.62 + i * 0.06));
   tl.fromTo(compare, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 0.8);
+}
+
+/**
+ * 06 LOGISTICS DEMO — cada milha sob controle. É o ÚLTIMO ato (trigger até
+ * `bottom bottom`: o painel entra em 0 → 0.5 e fica preso, inteiro em tela,
+ * de 0.5 a 1). O roteiro, em progresso da trigger:
+ *
+ *   0.02–0.18  FRONTEIRA    os tracking points do InkVision (resíduo) se alinham numa
+ *                           linha de coordenadas e apagam; o plano tracejado da rota sobe
+ *   0.10–0.16  ORIGEM       ORG-01 nasce com um pulso; a carga é consolidada e lacrada
+ *                           (STG-01, STG-02: contêiner → caminhão)
+ *   0.17–0.32  TERRESTRE    a primeira perna se desenha e o caminhão a percorre (STG-03)
+ *   0.30–0.38  PORTO        a janela abre no porto ao anoitecer; handover no terminal —
+ *                           o contêiner desce do caminhão (STG-04)
+ *   0.36–0.54  OCEANO       a perna longa cruza a composição; o navio; a janela vira mar
+ *                           aberto (STG-05)
+ *   0.54–0.58  HUB          HUB-02 pulsa; a carga troca para o avião
+ *   0.57–0.70  AÉREO        a última perna; a janela recua; DST-03 aparece antes da
+ *                           chegada (STG-06)
+ *   0.70–0.78  DESTINO      pulso no destino, última milha (caminhão espelhado, como no
+ *                           projeto); o plano some e sobra a execução inteira (STG-07)
+ *   0.66–0.80  METADATA     três batidas; o card resolve — a manchete já estava lá
+ *
+ * A carga percorre a polilinha vértice a vértice (x/y em unidades do SVG, tempo
+ * proporcional ao comprimento), girando para o rumo de cada segmento. Só a
+ * composição visível é animada (larga ou vertical); a lei do cursor tem apenas o
+ * retículo e a profundidade da caixa — nunca a carga.
+ */
+function logistics(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
+  const layer = one(small ? "[data-route-v]" : "[data-route-h]");
+  if (!layer) return;
+  const route = small ? ROUTE_V : ROUTE_H;
+  const s = gsap.utils.selector(layer);
+  const first = <T extends Element>(sel: string) => s<T>(sel)[0] as T | undefined;
+  const plan = s("[data-plan]");
+  const legs = s("[data-leg]");
+  const leg = (m: LegMode) => s(`[data-leg][data-mode="${m}"]`);
+  const legLabel = (m: LegMode) => s(`[data-leg-label][data-mode="${m}"]`);
+  const node = (k: NodeKey) => s(`[data-node="${k}"]`);
+  const pulse = (k: NodeKey) => s(`[data-node="${k}"] [data-pulse]`);
+  const cap = (k: NodeKey) => s(`[data-node-cap="${k}"]`);
+  const unit = (u: UnitKey) => s(`[data-unit="${u}"]`);
+  const cargo = first<SVGGElement>("[data-cargo]");
+  const rot = first<SVGGElement>("[data-cargo-rot]");
+  const media = first<HTMLElement>("[data-media]");
+  const plateB = s("[data-plate-b]");
+  const steps = q("[data-step]");
+  const status = q("[data-status]");
+  const pctWrap = q("[data-route-pct]");
+  const pctN = one("[data-route-pct-n]");
+  const meta = q("[data-meta]");
+  const residue = q("[data-residue] rect");
+  // Último ato: nenhum tween chega a 1.0 — sem esta âncora a duração da timeline
+  // seria o fim do último tween e todo o roteiro ficaria adiantado.
+  tl.set({}, {}, 1);
+
+  const step = (i: number, at: number) => {
+    if (!steps[i]) return;
+    // a anterior apaga ANTES da próxima acender (as duas ocupam o mesmo lugar) e os
+    // dois tweens nunca se sobrepõem no tempo — quem escreve por último ganharia
+    tl.fromTo(steps[i], { autoAlpha: 0, x: 8 }, { autoAlpha: 0.9, x: 0, duration: 0.02, ease: EASE.outQuint }, at);
+    if (i > 0) tl.to(steps[i - 1], { autoAlpha: 0, duration: 0.02 }, at - 0.03);
+  };
+  // um nó chega: ponto + anel assentam, a legenda sobe; o pulso laranja é UMA vez
+  const land = (k: NodeKey, at: number, withPulse = true) => {
+    tl.fromTo(node(k), { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 1, scale: 1, duration: 0.05, ease: EASE.outQuint }, at);
+    if (withPulse) tl.fromTo(pulse(k), { autoAlpha: 0.9, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 0, scale: 2.6, duration: 0.07, ease: "power1.out" }, at + 0.01);
+    tl.fromTo(cap(k), { autoAlpha: 0, y: 4 }, { autoAlpha: 0.85, y: 0, duration: 0.05, ease: EASE.outQuint }, at + 0.02);
+  };
+  // a carga troca de modal: o recorte que sai apaga, o que entra acende meio passo depois
+  const swap = (from: UnitKey, to: UnitKey, at: number) => {
+    tl.to(unit(from), { autoAlpha: 0, duration: 0.03 }, at);
+    tl.fromTo(unit(to), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.03 }, at + 0.015);
+  };
+  // o percurso entre dois vértices no intervalo t0 → t1, tempo proporcional ao comprimento
+  const travel = (from: number, to: number, t0: number, t1: number) => {
+    const segs = segments(route, from, to);
+    const total = segs.reduce((a, sg) => a + sg.len, 0);
+    let at = t0;
+    segs.forEach((sg) => {
+      const d = ((t1 - t0) * sg.len) / total;
+      if (rot) tl.to(rot, { rotation: sg.angle, duration: 0.012, ease: EASE.smooth }, Math.max(0.01, at - 0.006));
+      if (cargo) tl.to(cargo, { x: sg.x1, y: sg.y1, duration: d, ease: "none" }, at);
+      at += d;
+    });
+  };
+  const draw = (m: LegMode, t0: number, dur: number) => tl.fromTo(leg(m), { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: dur, ease: "none" }, t0);
+  const label = (m: LegMode, at: number) => tl.fromTo(legLabel(m), { autoAlpha: 0, y: 4 }, { autoAlpha: 0.8, y: 0, duration: 0.05, ease: EASE.outQuint }, at);
+  // fração do percurso executado (só o número; o texto em volta é estático)
+  const lens = route.legs.map((l) => segments(route, l.from, l.to).reduce((a, sg) => a + sg.len, 0));
+  const sum = lens.reduce((a, b) => a + b, 0);
+  const pct = { v: 0 };
+  const show = () => {
+    if (pctN) pctN.textContent = String(Math.round(pct.v)).padStart(3, "0");
+  };
+  const progress = (to: number, t0: number, t1: number) => tl.to(pct, { v: to, duration: t1 - t0, ease: "none", onUpdate: show }, t0);
+
+  /* FRONTEIRA — os tracking points viram uma linha de coordenadas (o resíduo apaga em 0.18 → 0.36) */
+  const track = dotsOf("track");
+  residue.forEach((r, i) => {
+    const d = track[i];
+    if (d) tl.to(r, { x: ((i + 0.5) / residue.length) * 100 - d.x, y: 13.4 - d.y, duration: 0.16, ease: EASE.smooth }, 0.02);
+  });
+  tl.fromTo(plan, { autoAlpha: 0 }, { autoAlpha: 0.28, duration: 0.1 }, 0.08);
+
+  /* ORIGEM */
+  const [ox, oy] = nodeAt(route, "org");
+  if (cargo) tl.set(cargo, { x: ox, y: oy }, 0);
+  if (rot) tl.set(rot, { rotation: 0, transformOrigin: "50% 50%" }, 0);
+  land("org", 0.1);
+  tl.fromTo(status, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.04 }, 0.09);
+  step(0, 0.09);
+  tl.fromTo(cargo ?? [], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.04 }, 0.12);
+  tl.fromTo(unit("container"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.03 }, 0.12);
+  step(1, 0.145);
+  swap("container", "truck", 0.16);
+
+  /* TERRESTRE */
+  draw("ground", 0.17, 0.15);
+  label("ground", 0.19);
+  step(2, 0.2);
+  tl.fromTo(pctWrap, { autoAlpha: 0 }, { autoAlpha: 0.7, duration: 0.04 }, 0.18);
+  travel(route.nodes.org, route.nodes.port, 0.18, 0.32);
+  progress((lens[0] / sum) * 100, 0.18, 0.32);
+
+  /* PORTO — a janela abre no terminal; a carga desce do caminhão */
+  tl.fromTo(media ?? [], { clipPath: "inset(50% 0 50% 0)", autoAlpha: 1 }, { clipPath: "inset(0% 0 0% 0)", duration: 0.08, ease: EASE.outQuint }, 0.3);
+  land("port", 0.31);
+  step(3, 0.32);
+  swap("truck", "container", 0.32);
+
+  /* OCEANO — a perna longa; o navio; a janela vira mar aberto */
+  swap("container", "ship", 0.36);
+  draw("ocean", 0.36, 0.18);
+  step(4, 0.38);
+  label("ocean", 0.4);
+  travel(route.nodes.port, route.nodes.hub, 0.38, 0.54);
+  progress(((lens[0] + lens[1]) / sum) * 100, 0.38, 0.54);
+  tl.fromTo(plateB, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.08 }, 0.42);
+
+  /* HUB */
+  land("hub", 0.54);
+  swap("ship", "plane", 0.56);
+  step(5, 0.58);
+
+  /* AÉREO — a janela recua; o destino aparece antes da chegada */
+  draw("air", 0.57, 0.13);
+  label("air", 0.6);
+  if (media) tl.to(media, { autoAlpha: 0.4, duration: 0.08 }, 0.58);
+  travel(route.nodes.hub, route.nodes.dst, 0.58, 0.7);
+  progress(100, 0.58, 0.7);
+  land("dst", 0.64, false);
+
+  /* DESTINO — pulso, última milha, o plano some: sobra a execução inteira */
+  tl.fromTo(pulse("dst"), { autoAlpha: 0.9, scale: 0.4, transformOrigin: "50% 50%" }, { autoAlpha: 0, scale: 2.6, duration: 0.07, ease: "power1.out" }, 0.705);
+  step(6, 0.72);
+  swap("plane", "truck-back", 0.72);
+  tl.to(plan, { autoAlpha: 0, duration: 0.06 }, 0.72);
+  tl.to(legs, { opacity: 1, duration: 0.06 }, 0.72);
+  if (media) tl.to(media, { autoAlpha: 0.28, duration: 0.06 }, 0.72);
+
+  /* METADATA — três batidas */
+  meta.forEach((m, i) => tl.fromTo(m, { autoAlpha: 0, x: 10 }, { autoAlpha: 1, x: 0, duration: 0.06, ease: EASE.outQuint }, 0.66 + i * 0.06));
 }

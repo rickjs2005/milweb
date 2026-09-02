@@ -1,7 +1,7 @@
 import type { Localized } from "@/lib/content";
 
 /**
- * Os cinco trabalhos da Home (ACT 03). Cada um ocupa uma viewport inteira.
+ * Os seis trabalhos da Home (ACT 03). Cada um ocupa uma viewport inteira.
  * `title` são as duas linhas do display; `image` é um frame 1440×900 do
  * projeto — o mesmo usado nas transições em mosaico.
  */
@@ -54,5 +54,13 @@ export const SELECTED_WORK: SelectedWork[] = [
     title: { pt: ["ANTES", "DA AGULHA."], en: ["BEFORE", "THE NEEDLE."], es: ["ANTES", "DE LA AGUJA."] },
     kind: { pt: "SaaS · simulação de tattoo por IA", en: "SaaS · AI tattoo simulation", es: "SaaS · simulación de tattoo por IA" },
     image: "/shots/inkvision.webp",
+  },
+  {
+    n: "06",
+    slug: "logistics-demo",
+    name: "LOGISTICS DEMO",
+    title: { pt: ["CADA MILHA", "SOB CONTROLE."], en: ["EVERY MILE", "UNDER CONTROL."], es: ["CADA MILLA", "BAJO CONTROL."] },
+    kind: { pt: "Experiência logística · projeto conceitual", en: "Logistics experience · concept project", es: "Experiencia logística · proyecto conceptual" },
+    image: "/shots/logistics-demo.webp",
   },
 ];

@@ -27,7 +27,7 @@ export type ProjectEntry = Project & {
   displayType: DisplayType;
   /** Só quando o fato é conhecido — nunca inventado. */
   year?: number;
-  /** 1..4 para os Selected Works da Home. */
+  /** 1..6 para os Selected Works da Home. */
   featuredOrder?: number;
   prevSlug: string;
   nextSlug: string;
@@ -48,6 +48,7 @@ const ORDER = [
   "one-piece",
   "rockverse",
   "inkvision",
+  "logistics-demo",
   "milsaca",
   "ecoa",
   "loja-iphone",
@@ -61,7 +62,7 @@ const ORDER = [
   "imperio-cafe",
 ];
 
-const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision"];
+const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision", "logistics-demo"];
 
 /** displayType explícito para os casos em que a categoria comercial não descreve o trabalho. */
 const DISPLAY: Record<string, DisplayType> = {
@@ -73,6 +74,8 @@ const DISPLAY: Record<string, DisplayType> = {
   "aurex-motors": "WEBGL EXPERIENCE",
   "as-copas": "WEBGL EXPERIENCE",
   "lumen-architecture": "WEBGL EXPERIENCE",
+  // o globo é Three.js, mas a peça é scrollytelling (esteira sticky, 72 frames em canvas, rota que se desenha)
+  "logistics-demo": "SCROLL EXPERIENCE",
   milsaca: "DIGITAL PRODUCT",
   millead: "DIGITAL PRODUCT",
 };
@@ -117,7 +120,7 @@ export const PROJECT_INDEX: ProjectEntry[] = listed.map((slug, i) => {
 export const TOTAL = PROJECT_INDEX.length;
 export const TOTAL_LABEL = String(TOTAL).padStart(2, "0");
 
-/** Os quatro da Home, em ordem de featuredOrder. */
+/** Os seis da Home, em ordem de featuredOrder. */
 export const SELECTED = FEATURED.map((s) => PROJECT_INDEX.find((p) => p.slug === s)!).filter(Boolean);
 
 /** Case por slug — inclui projetos ocultos (página existe, mas sem número). */

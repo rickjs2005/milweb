@@ -5,7 +5,7 @@
  * contrato compartilhado: paleta, faixas de progresso e o modo do sistema de
  * pontos. Cada ato tem linguagem própria, mas todos leem estes mesmos números.
  */
-export type ActSlug = "kavita-drones" | "terral" | "atelier-vertex" | "aurex-timepieces" | "inkvision";
+export type ActSlug = "kavita-drones" | "terral" | "atelier-vertex" | "aurex-timepieces" | "inkvision" | "logistics-demo";
 
 /**
  * FAIXAS DE PROGRESSO — uma ScrollTrigger por ato, `progress` 0→1, e todo
@@ -37,7 +37,8 @@ export const range = (p: number, a: number, b: number) => Math.min(1, Math.max(0
 /**
  * A ATMOSFERA. A progressão de cor é o fio que costura os quatro atos:
  * off-white técnico → papel quente → papel limpo/frio → preto → preto quente
- * (o InkVision nasce do preto do Aurex; a pele é que traz a luz de volta).
+ * (o InkVision nasce do preto do Aurex; a pele é que traz a luz de volta) →
+ * grafite azulado (o Logistics Demo: a identidade do próprio demo, `--ld-deep`).
  * `bleed` é a cor do PRÓXIMO ato: cada painel a revela na saída, então no frame
  * da virada os dois mundos já têm a mesma cor e não existe corte.
  */
@@ -47,9 +48,11 @@ export const SKIN: Record<ActSlug, { bg: string; ink: string; ink2: string; rule
   "atelier-vertex": { bg: "#EFEFEC", ink: "#111111", ink2: "#5F5F5A", rule: "#111111", dots: "anchor" },
   "aurex-timepieces": { bg: "#0F0F0F", ink: "#F2F0EA", ink2: "#8C8C87", rule: "#F2F0EA", dots: "pivot" },
   inkvision: { bg: "#121110", ink: "#F2F0EA", ink2: "#8C8C87", rule: "#F2F0EA", dots: "track" },
+  // a paleta do demo: grafite #0F1318, off-white #F4F3EF, cinza #7C7F85 (o laranja fica só na carga)
+  "logistics-demo": { bg: "#0F1318", ink: "#F4F3EF", ink2: "#7C7F85", rule: "#F4F3EF", dots: "graticule" },
 };
 
-export const ACT_ORDER: ActSlug[] = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision"];
+export const ACT_ORDER: ActSlug[] = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision", "logistics-demo"];
 
 /** A cor com que cada ato termina — é a do próximo (o último cede à página). */
 export const bleedOf = (slug: ActSlug): string => {
@@ -66,10 +69,13 @@ export const bleedOf = (slug: ActSlug): string => {
  *   grain   grãos de café (dispersão irregular, raios variados, sem ordem)
  *   anchor  anchor points de CAD (retícula precisa, quadrados, com marca de eixo)
  *   pivot   pivôs mecânicos (distribuição radial em torno de um centro)
+ *   track   tracking points (poucos, irregulares, quadrados)
+ *   graticule  a retícula do mapa técnico: cruzetas finas, regulares — o que sobra
+ *              quando os tracking points se alinham em coordenadas
  */
-export type DotMode = "survey" | "grain" | "anchor" | "pivot" | "track";
+export type DotMode = "survey" | "grain" | "anchor" | "pivot" | "track" | "graticule";
 
-export type Dot = { x: number; y: number; r: number; o: number; square?: boolean; tick?: boolean; ry?: number; rot?: number };
+export type Dot = { x: number; y: number; r: number; o: number; square?: boolean; tick?: boolean; tickLen?: number; ry?: number; rot?: number };
 
 /**
  * A malha vive num viewBox 100 x 56 (a proporcao de uma viewport larga) desenhado
@@ -121,6 +127,15 @@ export function dotsOf(mode: DotMode): Dot[] {
         ry: r * (0.55 + noise(i, 5) * 0.3),
         rot: Math.round(noise(i, 6) * 180),
       });
+    }
+    return out;
+  }
+  if (mode === "graticule") {
+    // cruzetas curtas numa retícula regular, sem ponto: só a marca de eixo
+    const cols = 15;
+    const rows = 8;
+    for (let i = 0; i < cols * rows; i++) {
+      out.push({ x: ((i % cols) + 0.5) * (w / cols), y: (Math.floor(i / cols) + 0.5) * (h / rows), r: 0.001, o: 0.5, tick: true, tickLen: 0.4 });
     }
     return out;
   }

@@ -234,4 +234,60 @@ const inkvision: Law = (panel) => {
   });
 };
 
-export const ACT_LAWS: Record<string, Law> = { "kavita-drones": kavita, terral, "atelier-vertex": vertex, "aurex-timepieces": aurex, inkvision };
+/** LOGISTICS — instrumento: o retículo do cursor (uma horizontal e uma vertical)
+ *  cruza a caixa da rota só enquanto o ponteiro está dentro dela, e a caixa e a
+ *  manchete andam em profundidades opostas. Só x/y aqui; a carga, as pernas e a
+ *  janela são do scroll. Como no InkVision, escuta no painel e converte para o
+ *  retângulo da caixa, medido na entrada do ponteiro. */
+const logistics: Law = (panel) => {
+  const q = gsap.utils.selector(panel);
+  const wrap = q<HTMLElement>("[data-media-wrap]")[0];
+  const rh = q<HTMLElement>("[data-reticle-h]")[0];
+  const rv = q<HTMLElement>("[data-reticle-v]")[0];
+  const title = q<HTMLElement>("[data-headline]")[0];
+  if (!wrap || !rh || !rv) return () => {};
+  const hy = gsap.quickTo(rh, "y", { duration: 0.16, ease: EASE.outQuint });
+  const vx = gsap.quickTo(rv, "x", { duration: 0.16, ease: EASE.outQuint });
+  const depth = [
+    { el: wrap, k: -6 },
+    { el: title, k: -3 },
+  ]
+    .filter((l) => l.el)
+    .map(({ el, k }) => ({ x: gsap.quickTo(el, "x", { duration: 0.9, ease: EASE.outQuint }), y: gsap.quickTo(el, "y", { duration: 0.9, ease: EASE.outQuint }), k }));
+  let wr = wrap.getBoundingClientRect();
+  let shown = false;
+  const hide = () => {
+    if (!shown) return;
+    shown = false;
+    gsap.to([rh, rv], { autoAlpha: 0, duration: 0.25 });
+  };
+  return pointer(panel, {
+    enter: () => (wr = wrap.getBoundingClientRect()),
+    move: (px, py, r) => {
+      const nx = px / r.width - 0.5;
+      const ny = py / r.height - 0.5;
+      depth.forEach((l) => {
+        l.x(nx * l.k);
+        l.y(ny * l.k);
+      });
+      const x = px + r.left - wr.left;
+      const y = py + r.top - wr.top;
+      if (x < 0 || y < 0 || x > wr.width || y > wr.height) return hide();
+      hy(y);
+      vx(x);
+      if (!shown) {
+        shown = true;
+        gsap.to([rh, rv], { autoAlpha: 0.35, duration: 0.25 });
+      }
+    },
+    leave: () => {
+      hide();
+      depth.forEach((l) => {
+        l.x(0);
+        l.y(0);
+      });
+    },
+  });
+};
+
+export const ACT_LAWS: Record<string, Law> = { "kavita-drones": kavita, terral, "atelier-vertex": vertex, "aurex-timepieces": aurex, inkvision, "logistics-demo": logistics };

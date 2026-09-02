@@ -9,6 +9,7 @@ export const PROJECT_SLUGS = [
   "milsaca",
   "millead",
   "inkvision",
+  "logistics-demo",
   "rockverse",
   "aurex-motors",
   "atelier-vertex",

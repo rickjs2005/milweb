@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { AurexMovement } from "./aurex-movement";
 import type { ActSlug } from "./act-config";
 import { DESIGN, PLATE, SHEET, contourPath, meshPaths, trackPoints } from "./inkvision-geometry";
+import { LogisticsStage } from "./logistics-stage";
 
 /**
  * OS PALCOS. Cada ato tem um palco próprio — a experiência visual principal da
@@ -67,8 +68,9 @@ function contour(cx: number, cy: number, r: number, seed: number, wobble: number
 const CONTOURS = [...[70, 130, 200, 285, 380, 490].map((r, i) => contour(300, 620, r, 1.3 + i * 0.4, 0.16)), ...[80, 150, 235].map((r, i) => contour(1180, 250, r, 4.1 + i * 0.6, 0.2))];
 const ROUTES = ["M60 800 L330 570 L640 630 L980 380 L1420 290", "M120 210 L460 330 L720 190 L1060 250 L1400 120"];
 
-export function ActStage({ slug, image, detail, labels }: { slug: ActSlug; image: string; detail: string; labels: string[] }) {
+export function ActStage({ slug, image, detail, labels, stages = [] }: { slug: ActSlug; image: string; detail: string; labels: string[]; stages?: string[] }) {
   if (slug === "kavita-drones") return <KavitaStage image={image} detail={detail} />;
+  if (slug === "logistics-demo") return <LogisticsStage image={image} detail={detail} labels={labels} stages={stages} />;
   if (slug === "terral") return <TerralStage image={image} detail={detail} />;
   if (slug === "atelier-vertex") return <VertexStage image={image} detail={detail} labels={labels} />;
   if (slug === "inkvision") return <InkvisionStage image={image} />;

@@ -15,6 +15,7 @@ import { getDict } from "@/i18n";
 import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisual";
 import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { NODES } from "@/sections/home/work/logistics-geometry";
 
 /**
  * Placa principal do palco quando ela NÃO é a captura do case (`w.image`, que
@@ -32,6 +33,9 @@ const WORLD_PLATE: Record<string, string> = {
   // PELE: a única captura do InkVision é a página com a copy por cima e um
   // mockup pequeno — a placa é uma fotografia editorial de antebraço em P&B
   inkvision: "/shots/inkvision/skin.webp",
+  // PORTO: o porto ao anoitecer do próprio demo (clipe da rede) — a superfície
+  // onde a carga faz o handover; a captura do site é o hero com o globo
+  "logistics-demo": "/shots/logistics-demo/port.webp",
 };
 /** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
 const WORLD_DETAIL: Record<string, string> = {
@@ -41,8 +45,10 @@ const WORLD_DETAIL: Record<string, string> = {
   terral: "/shots/terral/torra.webp",
   // ENTREGA: o último frame do mesmo vídeo (mesma câmera — as fatias encaixam)
   "atelier-vertex": "/shots/atelier-vertex/entrega.webp",
+  // OCEANO: o navio visto de cima cortando a esteira (frame editorial da sequência de altitude)
+  "logistics-demo": "/shots/logistics-demo/ocean.webp",
 };
-const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex" | "inkvision"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex", inkvision: "inkvision" };
+const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex" | "inkvision" | "logistics"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex", inkvision: "inkvision", "logistics-demo": "logistics" };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];
 
 /**
@@ -95,7 +101,9 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
               image: WORLD_PLATE[p.slug] ?? w.image,
               detail: WORLD_DETAIL[p.slug] ?? w.image,
               href: withLocale(locale, `/work/${p.slug}`),
-              labels: [...d.work.labels[WORLD_KEY[p.slug]]],
+              // o Logistics Demo abre a metadata com o corredor real do projeto (ORG-01 → DST-03), que mora na geometria
+              labels: WORLD_KEY[p.slug] === "logistics" ? [`${NODES.org.code} → ${NODES.dst.code}`, ...d.work.labels.logistics] : [...d.work.labels[WORLD_KEY[p.slug]]],
+              stages: WORLD_KEY[p.slug] === "logistics" ? [...d.work.stages.logistics] : [],
             };
           })}
         />

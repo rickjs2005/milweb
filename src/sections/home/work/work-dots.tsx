@@ -47,8 +47,8 @@ function Layer({ mode, attr, hidden = false }: { mode: DotMode; attr: string; hi
       {dots.map((d, i) =>
         d.tick ? (
           <g key={`t${i}`} stroke="currentColor" opacity={(d.o * 0.7).toFixed(2)} strokeWidth="0.07">
-            <line x1={(d.x - 0.85).toFixed(2)} y1={d.y.toFixed(2)} x2={(d.x + 0.85).toFixed(2)} y2={d.y.toFixed(2)} />
-            <line x1={d.x.toFixed(2)} y1={(d.y - 0.85).toFixed(2)} x2={d.x.toFixed(2)} y2={(d.y + 0.85).toFixed(2)} />
+            <line x1={(d.x - (d.tickLen ?? 0.85)).toFixed(2)} y1={d.y.toFixed(2)} x2={(d.x + (d.tickLen ?? 0.85)).toFixed(2)} y2={d.y.toFixed(2)} />
+            <line x1={d.x.toFixed(2)} y1={(d.y - (d.tickLen ?? 0.85)).toFixed(2)} x2={d.x.toFixed(2)} y2={(d.y + (d.tickLen ?? 0.85)).toFixed(2)} />
           </g>
         ) : null,
       )}

@@ -8,7 +8,7 @@ export function BuiltWith({ eyebrow, big, stack, act }: { eyebrow: string; big: 
         <div data-rule className="rule flex items-center justify-between pt-3 t-mono">
           <span data-reveal>{eyebrow}</span>
           <span data-reveal className="tnum text-ink-3">
-            MW/009
+            MW/010
           </span>
         </div>
         <ul className="mt-10 md:mt-16">
