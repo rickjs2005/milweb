@@ -3,9 +3,9 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-**`main` está à frente da produção** (globo com mouse/pulso/arcos, ver bloco da noite de 05/09; sem deploy). Último deploy verificado: **05/09/2026 · `37501ba` = tag `v1.0.0`** (deploy `milweb-nfpabj4of`, aliasado em milweb.com.br, `vercel inspect` confirmado; a11y desktop 100 em produção). Anterior no mesmo dia: `5c3e71a` (ato 06 validado em produção). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **05/09/2026 (18h) · `94471c8` = tag `v1.1.0`** (deploy `milweb-6nc6fkg8c`, aliasado em milweb.com.br, `vercel inspect` confirmado; globo com mouse/pulso/arcos validado em produção em 1920 e 390). Anterior: **05/09/2026 · `37501ba` = tag `v1.0.0`** (deploy `milweb-nfpabj4of`, aliasado em milweb.com.br, `vercel inspect` confirmado; a11y desktop 100 em produção). Anterior no mesmo dia: `5c3e71a` (ato 06 validado em produção). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
-## 05/09/2026 (noite) — GLOBO: olha para o mouse, pulsa e manda arcos BRASIL → MUNDO (commit + push; SEM deploy)
+## 05/09/2026 (noite) — GLOBO: olha para o mouse, pulsa e manda arcos BRASIL → MUNDO (NO AR em `94471c8` = `v1.1.0`)
 
 Pedido do Rick: "o globo poderia girar de acordo com o mouse e tentar melhorar o globo". Brainstorm curto (bounded): ele escolheu **vida + interação** e **continentes mais bonitos**, e depois aprovou o desenho **sem a máscara nova** (os continentes editoriais ficam). Implementado:
 
@@ -18,7 +18,9 @@ Pedido do Rick: "o globo poderia girar de acordo com o mouse e tentar melhorar o
 - O preloader trava o scroll (`html.booting`) e chama `scrollTo(0,0)` na saída; `sessionStorage.mw:booted = 1` via `addInitScript` pula a intro quando o alvo é o estado formado.
 - Esperar o `mark` (não um timeout fixo): o scrub tem suavização e o `formed` chega ~1–3 s depois do scroll.
 
-**Não feito de propósito**: máscara Natural Earth (Rick não quis), rotação livre/arrastar (contra a direção), deploy (só com pedido).
+**Deploy (pedido pelo Rick):** `npx vercel --prod` → `milweb-6nc6fkg8c`, `vercel inspect milweb.com.br` = mesmo id. `pointer.mjs` contra produção (probe agora tolera a ausência de `__mwGlobe`, que só existe fora de produção): `data-globe=on` e console limpo em 1920×1080 e 390×844; recortes esquerda/direita mostram a rotação real e os arcos, mobile com o globo abaixo da manchete. Tag `v1.1.0`.
+
+**Não feito de propósito**: máscara Natural Earth (Rick não quis), rotação livre/arrastar (contra a direção).
 
 ## 05/09/2026 — FECHAMENTO: ato 06 validado em produção, auditoria final, entrega documentada, DEPLOY + tag v1.0.0
 
@@ -309,13 +311,12 @@ Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em 
 
 ## Próxima ação (em ordem)
 
-0. **Deploy do globo** quando o Rick pedir: `git push` já feito → `npx vercel --prod` → `vercel inspect milweb.com.br` → `pointer.mjs https://milweb.com.br 1920x1080` contra produção (o scrub-vs-CDN já mordeu antes) → tag `v1.1.0`.
-1. **Rick, no Search Console**: remover `/`, `/en`, `/es` da lista de sitemaps (são páginas) e pedir indexação delas pela Inspeção de URL → Fase 15 ✓.
-2. Vercel → Analytics → Events: conferir `whatsapp_click` no painel (POST 200 já confirmado).
-3. Remedir Lighthouse mobile em máquina limpa (61–68 em produção contra 86 local).
-4. Atualizar `hero-frames.mjs`/`layout-check.mjs` para rolar pela roda (o `scrollTo` deles não move mais a página).
-5. Fase 13: Safari/Firefox físicos quando houver aparelho (ou N/A justificado).
-6. Reskin do `/diagnostico` no sistema novo.
+0. **Rick, no Search Console**: remover `/`, `/en`, `/es` da lista de sitemaps (são páginas) e pedir indexação delas pela Inspeção de URL → Fase 15 ✓.
+1. Vercel → Analytics → Events: conferir `whatsapp_click` no painel (POST 200 já confirmado).
+2. Remedir Lighthouse mobile em máquina limpa (61–68 em produção contra 86 local).
+3. Atualizar `hero-frames.mjs`/`layout-check.mjs` para rolar pela roda (o `scrollTo` deles não move mais a página).
+4. Fase 13: Safari/Firefox físicos quando houver aparelho (ou N/A justificado).
+5. Reskin do `/diagnostico` no sistema novo.
 
 ## Notas de N/A
 

@@ -12,7 +12,7 @@ Data da entrega: 05/09/2026.
 |---|---|
 | URL canônica | https://milweb.com.br (PT) · `/en` · `/es` |
 | Repositório | https://github.com/rickjs2005/milweb (branch `main`) |
-| Versão entregue | tag `v1.0.0` = commit `37501ba` = deploy `milweb-nfpabj4of` (05/09/2026) |
+| Versão entregue | `v1.0.0` = `37501ba` = deploy `milweb-nfpabj4of` (05/09/2026). **Atual: `v1.1.0` = `94471c8` = deploy `milweb-6nc6fkg8c`** (globo com mouse, pulso e arcos) |
 | Stack | Next.js 15.1 · React 19 · Tailwind 3.4 · GSAP 3.15 + Lenis 1.3 · WebGL próprio (sem three.js) · WebAudio procedural |
 | Hospedagem | Vercel · time `rickjs2005s-projects` · projeto `milweb` · região `gru1` (São Paulo) |
 | Deploy | Manual pela CLI: `git push` primeiro, depois `npx vercel --prod`. Não há auto-deploy pelo GitHub. Sempre conferir com `npx vercel inspect milweb.com.br` que o domínio apontou pro deploy novo |
