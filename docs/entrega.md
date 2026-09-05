@@ -12,7 +12,7 @@ Data da entrega: 05/09/2026.
 |---|---|
 | URL canônica | https://milweb.com.br (PT) · `/en` · `/es` |
 | Repositório | https://github.com/rickjs2005/milweb (branch `main`) |
-| Versão entregue | tag `v1.0.0` (ver "Versão" abaixo) |
+| Versão entregue | tag `v1.0.0` = commit `37501ba` = deploy `milweb-nfpabj4of` (05/09/2026) |
 | Stack | Next.js 15.1 · React 19 · Tailwind 3.4 · GSAP 3.15 + Lenis 1.3 · WebGL próprio (sem three.js) · WebAudio procedural |
 | Hospedagem | Vercel · time `rickjs2005s-projects` · projeto `milweb` · região `gru1` (São Paulo) |
 | Deploy | Manual pela CLI: `git push` primeiro, depois `npx vercel --prod`. Não há auto-deploy pelo GitHub. Sempre conferir com `npx vercel inspect milweb.com.br` que o domínio apontou pro deploy novo |
@@ -28,7 +28,7 @@ Data da entrega: 05/09/2026.
 | Vercel Web Analytics | **Componente instalado, mas o recurso nunca foi ativado no painel** (Analytics → Enable). Enquanto não ativar, page views e eventos são descartados. Eventos disparados pelo código: `whatsapp_click` (source, path), `email_click` (source, path), `preferred_source_click` |
 | Google Search Console | Propriedade de domínio `sc-domain:milweb.com.br` verificada. **Sitemap ainda não enviado** (lista de sitemaps vazia). URL a enviar: `https://milweb.com.br/sitemap.xml` (114 URLs, 3 idiomas, hreflang) |
 | Google Preferred Sources | Botão no rodapé sobre o SDK oficial (`news.google.com`), no ar desde 01/09 |
-| Lighthouse (produção, 05/09/2026, máquina com carga) | Mobile 66–68 / 100 / 96 / 100 · Desktop 86 / 96 / 96 / 100. O mobile local sem carga media 86 (ver `docs/rebuild/perf-budget.md`); o número de produção deve ser remedido em máquina limpa antes de virar referência. As duas falhas de acessibilidade do desktop (contraste dos estágios do hero e nome acessível dos botões de idioma/som) foram corrigidas nesta entrega e precisam de deploy |
+| Lighthouse (produção, 05/09/2026, pós-deploy, máquina com carga) | Desktop 90 / 100 / 96 / 100 · Mobile 61 / 100 / 96 / 100 (três execuções no dia: 66, 68, 61). O mobile local sem carga media 86 (ver `docs/rebuild/perf-budget.md`); o número de produção deve ser remedido em máquina limpa antes de virar referência. As duas falhas de acessibilidade do desktop foram corrigidas e o 100 está confirmado em produção |
 
 ## Como validar (depois de cada deploy)
 
@@ -55,11 +55,11 @@ Entre execuções do Lighthouse, matar processos do Edge/Chrome que ficaram vivo
 
 ## Versão
 
-A entrega é marcada com uma tag anotada no commit que foi pro ar:
+A entrega está marcada com a tag anotada `v1.0.0` no commit `37501ba` (já enviada ao GitHub). Para as próximas:
 
 ```bash
-git tag -a v1.0.0 -m "Entrega: site trilíngue no ar, checklist site-institucional fechado"
-git push origin v1.0.0
+git tag -a v1.1.0 -m "descrição"
+git push origin v1.1.0
 ```
 
 Próximas entregas incrementam o minor (`v1.1.0` para seção nova, `v1.0.1` para correção).

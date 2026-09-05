@@ -3,9 +3,9 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **05/09/2026 · `5c3e71a`** (ato 06 validado em produção nesta data; ver bloco de 05/09). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **05/09/2026 · `37501ba` = tag `v1.0.0`** (deploy `milweb-nfpabj4of`, aliasado em milweb.com.br, `vercel inspect` confirmado; a11y desktop 100 em produção). Anterior no mesmo dia: `5c3e71a` (ato 06 validado em produção). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
-## 05/09/2026 — FECHAMENTO: ato 06 validado em produção, auditoria final, entrega documentada (commit + push; SEM deploy)
+## 05/09/2026 — FECHAMENTO: ato 06 validado em produção, auditoria final, entrega documentada, DEPLOY + tag v1.0.0
 
 Sessão de fechamento do checklist. O que foi feito e verificado:
 
@@ -17,7 +17,9 @@ Sessão de fechamento do checklist. O que foi feito e verificado:
 - **Acessibilidade desktop caiu pra 96 — corrigido (pendente de deploy)**: (1) `[data-stage]` do hero usava `opacity: 0.16/0.28` → contraste 1.4:1; axe NÃO exime texto `aria-hidden` do contraste. Agora a hierarquia é por tom: futuro `ink-3`, passado `ink-2`, atual `ink` (todos ≥ 4.5:1 nos dois temas). (2) `label-content-name-mismatch`: `LanguageSwitch` tinha `aria-label="Español"` com texto visível "ES" → `aria-label="ES · Español"`; `SoundToggle` tinha `aria-label` longo com texto visível "SOM OFF" → `title`, nome acessível = texto. Lighthouse a11y local (dev 3100, desktop) = **100**; `tsc` e `next lint` verdes; hero conferido em screenshot 1440×900 (0 / 600 / 1400).
 - **Fase 16 iniciada**: `docs/entrega.md` — URLs, repo, hosting, DNS (Registro.br → A 216.198.79.1), env vars, analytics/SC/Lighthouse com estado real, scripts de validação, backup, tag de versão, rotina mensal, pendências.
 
-**Não feito de propósito** (decisões do Rick): ativar Web Analytics, enviar sitemap, `vercel --prod` (regra: deploy só com pedido), tag `v1.0.0` (só depois do deploy). Safari/Firefox físicos continuam sem aparelho.
+**Deploy (autorizado pelo Rick no fim da sessão):** `npx vercel --prod` → `milweb-nfpabj4of`, `vercel inspect milweb.com.br` = mesmo id, READY. Conferido em produção: `aria-label="PT · Português"` etc. no HTML, CSS dos estágios por tom, `/es/diagnostico` com "cada centavo". Lighthouse pós-deploy (mesma máquina carregada): **desktop 90 / 100 / 96 / 100** (LCP 0,8 s, TBT 140 ms) · mobile 61 / 100 / 96 / 100 (LCP 4,3 s, TBT 760 ms; três execuções hoje deram 66, 68 e 61 — variância de máquina, remedir limpa). Tag anotada **`v1.0.0`** em `37501ba`, enviada ao GitHub. Fase 16 fechada.
+
+**Não feito de propósito** (decisões de conta do Rick): ativar Web Analytics e enviar sitemap. Safari/Firefox físicos continuam sem aparelho.
 
 ## 02/09/2026 — LOGISTICS DEMO (ato 06 do Selected Work): cada milha sob controle (commit + push; produção NÃO validada)
 
@@ -235,7 +237,7 @@ Fase 12 — Segurança             ✓  CSP estático, headers e redirects; stri
 Fase 13 — QA                    ◐  Chromium/WebKit automatizados OK (+ auditoria de navegação/RSC 29/08: 1285 passos Chromium, 0 falhas); Safari e Firefox FÍSICOS pendentes
 Fase 14 — Deploy                ✓  Vercel READY; rotas, redirects e 404 conferidos em produção
 Fase 15 — Indexação             ◐  propriedade sc-domain:milweb.com.br verificada; sitemap NUNCA foi enviado (lista vazia em 05/09) — enviar /sitemap.xml e pedir indexação
-Fase 16 — Entrega               ◐  docs/entrega.md escrito 05/09; falta deploy, tag v1.0.0 e os dois cliques (Analytics, sitemap)
+Fase 16 — Entrega               ✓  docs/entrega.md + deploy nfpabj4of + tag v1.0.0 (05/09); acessos, backup e manutenção documentados
 ```
 
 ## Métricas atuais (Lighthouse 13, build de produção local, máquina sem carga)
@@ -288,13 +290,12 @@ Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em 
 
 ## Próxima ação (em ordem)
 
-0. **Rick, 3 cliques**: Vercel → milweb → Analytics → **Enable**; Search Console → Sitemaps → enviar `https://milweb.com.br/sitemap.xml`; autorizar `npx vercel --prod` (a11y 100 + email_click + "cada centavo" estão só na main).
-1. Depois do deploy: `vercel inspect milweb.com.br` (domínio no deploy novo), Lighthouse desktop (a11y deve voltar a 100), `git tag -a v1.0.0` + push da tag, marcar Fase 16 ✓.
-2. Confirmar no painel Analytics → Events que `whatsapp_click`/`email_click` chegam (clicar num CTA em produção) → Fase 11 ✓.
-3. Search Console: acompanhar a leitura do sitemap (114 URLs) e pedir indexação de `/`, `/en`, `/es` → Fase 15 ✓.
-4. Remedir Lighthouse mobile em máquina limpa (fechar Edge, matar processos) e comparar com o 86 local; se o 66–68 se confirmar, investigar o chunk 3995 (0,8 s de script) em `perf-budget.md`.
-5. Fase 13: Safari/Firefox físicos quando houver aparelho (ou marcar N/A com justificativa).
-6. Reskin do `/diagnostico` no sistema novo (última página com cara antiga).
+0. **Rick, 2 cliques**: Vercel → milweb → Analytics → **Enable**; Search Console → Sitemaps → enviar `https://milweb.com.br/sitemap.xml`.
+1. Depois do Enable: clicar num CTA de WhatsApp em produção e confirmar `whatsapp_click` em Analytics → Events → Fase 11 ✓.
+2. Search Console: acompanhar a leitura do sitemap (114 URLs) e pedir indexação de `/`, `/en`, `/es` → Fase 15 ✓.
+3. Remedir Lighthouse mobile em máquina limpa (fechar Edge, matar processos); hoje deu 61–68 em produção contra 86 local. Se confirmar, investigar o chunk 3995 (~0,8 s de script) em `perf-budget.md`.
+4. Fase 13: Safari/Firefox físicos quando houver aparelho (ou marcar N/A com justificativa).
+5. Reskin do `/diagnostico` no sistema novo (última página com cara antiga).
 
 ## Notas de N/A
 
