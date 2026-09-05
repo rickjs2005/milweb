@@ -97,3 +97,41 @@ export const GLOBE_EXIT = {
   desktop: { scale: 1.42, dx: 0.16, dy: -0.1 },
   mobile: { scale: 1.22, dx: 0.13, dy: 0.04 },
 } as const;
+
+/**
+ * O MOUSE — o globo "olha" para o cursor. Só ponteiro fino (desktop): a posição
+ * do mouse na janela, normalizada em [-1, 1], vira um deslocamento de giro
+ * (yaw) e de inclinação (pitch) somado ao repouso, com amortecimento no próprio
+ * loop de render — acompanha com inércia e volta sozinho quando o mouse sai.
+ * As amplitudes são LIMITADAS pelo mesmo motivo da deriva: com ±0,52 rad de yaw
+ * o Brasil continua no hemisfério visível a partir de `spinHome`.
+ */
+export const GLOBE_POINTER = {
+  /** rad por unidade de mouse (mouse na borda da janela = ±yaw) */
+  yaw: 0.52,
+  pitch: 0.16,
+  /** fração do caminho percorrida por frame de 60 fps (0,07 ≈ 0,4 s até o repouso) */
+  damp: 0.07,
+} as const;
+
+/**
+ * A VIDA — o marcador pulsa e arcos de grande círculo saem do Brasil para o
+ * mundo, com um ponto de sinal percorrendo cada um. Tudo constante, cozido no
+ * shader em tempo de build (o renderer não tem uniform de array, e não precisa:
+ * a rota é dado editorial, não estado). Só aparece quando o globo está formado
+ * (mesmo gatilho do marcador, `uMark`). Tinta a 35 % para os arcos; o ponto que
+ * viaja é o único a usar Signal Green, junto com o pulso.
+ */
+export const GLOBE_LIFE = {
+  origin: { lat: -15.8, lon: -47.9 },
+  arcs: [
+    { name: "Nova York", lat: 40.7, lon: -74.0, speed: 0.11, phase: 0.0 },
+    { name: "Lisboa", lat: 38.7, lon: -9.1, speed: 0.09, phase: 0.35 },
+    { name: "Berlim", lat: 52.5, lon: 13.4, speed: 0.08, phase: 0.6 },
+    { name: "Cidade do México", lat: 19.4, lon: -99.1, speed: 0.13, phase: 0.2 },
+    { name: "Buenos Aires", lat: -34.6, lon: -58.4, speed: 0.16, phase: 0.8 },
+  ],
+  arcAlpha: 0.35,
+  /** segundos por ciclo do anel que expande a partir do marcador */
+  pulsePeriod: 2.4,
+} as const;

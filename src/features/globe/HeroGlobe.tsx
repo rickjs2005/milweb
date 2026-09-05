@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { onIdle } from "@/animations/idle";
 import { getQuality, probeGpu } from "@/lib/quality";
-import { GLOBE_EXIT, GLOBE_GLYPH, GLOBE_MOTION } from "./globe.config";
+import { GLOBE_EXIT, GLOBE_GLYPH, GLOBE_MOTION, GLOBE_POINTER } from "./globe.config";
 import { globe, globeFrame } from "./globe-store";
 import { measureOrb, orbTarget, type OrbGeom } from "./orb-metrics";
 
@@ -70,7 +70,27 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
       let box = canvas.getBoundingClientRect();
       const orbEl = () => hero()?.querySelector<HTMLElement>("[data-orb]") ?? null;
 
-      r.onFrame((t) => {
+      // O mouse: alvo em [-1, 1] a partir da posição na janela; o valor que o
+      // shader recebe (x, y) persegue o alvo no loop, com amortecimento por
+      // tempo. Só com ponteiro fino e fora do celular — no touch não existe
+      // "posição do cursor", e a deriva continua sendo a vida do globo.
+      const pointer = { tx: 0, ty: 0, x: 0, y: 0 };
+      const usePointer = gq.fine && window.innerWidth >= 768;
+      const onMove = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        pointer.tx = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1));
+        pointer.ty = Math.max(-1, Math.min(1, (e.clientY / window.innerHeight) * 2 - 1));
+      };
+      const onLeave = () => {
+        pointer.tx = 0;
+        pointer.ty = 0;
+      };
+      if (usePointer) {
+        window.addEventListener("pointermove", onMove, { passive: true });
+        document.documentElement.addEventListener("pointerleave", onLeave);
+      }
+
+      r.onFrame((t, dt) => {
         r.clear();
         const f = globeFrame;
         if (f.fade <= 0.002) return;
@@ -104,6 +124,13 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
         const cx = orb.cx + (tg.cx - orb.cx) * mx + box.width * EX.dx * out;
         const cy = orb.cy + (tg.cy - orb.cy) * my + box.height * dy * out;
         const dpr = r.dpr;
+        // inércia: fração do caminho por frame, normalizada para 60 fps
+        const k = 1 - Math.pow(1 - GLOBE_POINTER.damp, dt * 60);
+        pointer.x += (pointer.tx - pointer.x) * k;
+        pointer.y += (pointer.ty - pointer.y) * k;
+        // o mouse só manda depois que a esfera está formada (o marcador acende
+        // em `formed`); antes disso a transformação do "O" é só do scroll
+        const look = f.mark;
         r.draw(
           "globe",
           {
@@ -118,8 +145,9 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
             uMesh: f.mesh,
             uMark: f.mark,
             uFade: f.fade,
-            uSpin: GLOBE_MOTION.spinHome - (1 - m) * GLOBE_MOTION.spinFromScroll + Math.sin(t * GLOBE_MOTION.driftSpeed) * GLOBE_MOTION.drift,
-            uTilt: GLOBE_MOTION.tilt + Math.sin(t * 0.11) * GLOBE_MOTION.tiltWobble,
+            uSpin: GLOBE_MOTION.spinHome - (1 - m) * GLOBE_MOTION.spinFromScroll + Math.sin(t * GLOBE_MOTION.driftSpeed) * GLOBE_MOTION.drift + pointer.x * GLOBE_POINTER.yaw * look,
+            uTilt: GLOBE_MOTION.tilt + Math.sin(t * 0.11) * GLOBE_MOTION.tiltWobble + pointer.y * GLOBE_POINTER.pitch * look,
+            uTime: t,
             uInk: root.getAttribute("data-mode") === "dev" ? 1 : 0,
           },
           [{ name: "uTex", tex: r.getTexture("earth")!, unit: 0 }],
@@ -133,7 +161,7 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
       r.setDpr(0.12);
       r.resize();
       const t0 = performance.now();
-      r.draw("globe", { uRes: [canvas.width, canvas.height], uCenter: [canvas.width * 0.5, canvas.height * 0.5], uRadius: canvas.height * 0.4, uAspect: 1, uStroke: 0.3, uMorph: 1, uDepth: 1, uLand: 1, uMesh: 1, uMark: 1, uFade: 1, uSpin: 0, uTilt: -0.36, uInk: 0 }, [{ name: "uTex", tex: r.getTexture("earth")!, unit: 0 }]);
+      r.draw("globe", { uRes: [canvas.width, canvas.height], uCenter: [canvas.width * 0.5, canvas.height * 0.5], uRadius: canvas.height * 0.4, uAspect: 1, uStroke: 0.3, uMorph: 1, uDepth: 1, uLand: 1, uMesh: 1, uMark: 1, uFade: 1, uSpin: 0, uTilt: -0.36, uInk: 0, uTime: 1 }, [{ name: "uTex", tex: r.getTexture("earth")!, unit: 0 }]);
       r.gl.finish();
       const cost = performance.now() - t0;
       r.setDpr(before);
@@ -183,6 +211,7 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
           frame: globeFrame,
           api: globe,
           orb,
+          pointer,
           get frames() { return r.frames; },
           get dpr() { return r.dpr; },
           get held() { return !!held; },
@@ -192,6 +221,8 @@ export function HeroGlobe({ hero }: { hero: () => HTMLElement | null }) {
       }
 
       cleanup = () => {
+        window.removeEventListener("pointermove", onMove);
+        document.documentElement.removeEventListener("pointerleave", onLeave);
         io.disconnect();
         held?.();
         globe.mounted = false;

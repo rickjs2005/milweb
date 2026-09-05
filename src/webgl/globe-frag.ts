@@ -14,9 +14,54 @@
  * Não há troca de figura em nenhum ponto: o raio externo é o MESMO contorno
  * do começo ao fim, só o miolo muda de significado.
  *
- * Paleta: tinta sobre papel. Sem azul, sem bloom, sem specular. O único
- * acento é o marcador do Brasil em Signal Green, e só no fim.
+ * Paleta: tinta sobre papel. Sem azul, sem bloom, sem specular. Os únicos
+ * acentos em Signal Green são o marcador do Brasil, o pulso que sai dele e os
+ * pontos que viajam pelos arcos — e só no fim, com o globo formado.
+ *
+ * Os arcos (GLOBE_LIFE) são grandes círculos na superfície: para cada um, o
+ * vetor do destino B, a normal do plano N = A×B e o comprimento angular L
+ * entram como CONSTANTES do shader (calculados abaixo, em tempo de build). A
+ * distância de um pixel ao arco é |dot(P, N)| (o seno do ângulo até o plano),
+ * e o trecho válido é o lente onde o pixel está a menos de L tanto de A quanto
+ * de B. O ponto que viaja é um slerp entre A e B no tempo.
  */
+import { GLOBE_LIFE } from "@/features/globe/globe.config";
+
+const RAD = Math.PI / 180;
+const geo = (lat: number, lon: number): [number, number, number] => [Math.cos(lat * RAD) * Math.cos(lon * RAD), Math.sin(lat * RAD), Math.cos(lat * RAD) * Math.sin(lon * RAD)];
+const f = (n: number) => (Number.isInteger(n) ? `${n}.0` : n.toFixed(6));
+const v3 = (v: readonly number[]) => `vec3(${f(v[0])}, ${f(v[1])}, ${f(v[2])})`;
+const A = geo(GLOBE_LIFE.origin.lat, GLOBE_LIFE.origin.lon);
+const ARCS = GLOBE_LIFE.arcs.map((arc) => {
+  const B = geo(arc.lat, arc.lon);
+  const nx = A[1] * B[2] - A[2] * B[1];
+  const ny = A[2] * B[0] - A[0] * B[2];
+  const nz = A[0] * B[1] - A[1] * B[0];
+  const nl = Math.hypot(nx, ny, nz);
+  const L = Math.acos(Math.max(-1, Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2])));
+  return { B, N: [nx / nl, ny / nl, nz / nl], L, speed: arc.speed, phase: arc.phase };
+});
+/** um bloco por arco, desenrolado: sem loop com índice dinâmico em GLSL ES 1.0 */
+const ARC_GLSL = ARCS.map(
+  (arc) => `
+      {
+        vec3 B = ${v3(arc.B)};
+        vec3 N = ${v3(arc.N)};
+        float L = ${f(arc.L)};
+        float ta = acos(clamp(dot(g, A), -1.0, 1.0));
+        float tb = acos(clamp(dot(g, B), -1.0, 1.0));
+        // o arco se DESENHA a partir do Brasil conforme o marcador acende
+        float seg = step(ta, L * uMark + px) * step(tb, L + px);
+        float line = smoothstep(1.6 * px, 0.0, abs(dot(g, N))) * seg;
+        arcs = max(arcs, line);
+        float s = fract(uTime * ${f(arc.speed)} + ${f(arc.phase)}) * uMark;
+        vec3 Q = (sin((1.0 - s) * L) * A + sin(s * L) * B) / sin(L);
+        // menor que o marcador de origem: o ponto viaja, não compete com o Brasil
+        float bead = smoothstep(0.022, 0.009, acos(clamp(dot(g, Q), -1.0, 1.0)));
+        beads = max(beads, bead);
+      }`,
+).join("");
+
 export const GLOBE_FRAG = `
 precision highp float;
 varying vec2 vUv;
@@ -34,7 +79,8 @@ uniform float uSpin;
 uniform float uTilt;
 uniform float uFade;     // opacidade global
 uniform float uInk;      // 1 = modo dev (paleta invertida)
-uniform float uMark;     // marcador Brasil
+uniform float uMark;     // marcador Brasil (e, com ele, pulso e arcos)
+uniform float uTime;     // segundos — pulso e pontos que viajam
 uniform sampler2D uTex;  // máscara de terra equirretangular
 
 #define PI 3.141592653589793
@@ -122,15 +168,23 @@ void main() {
       a = over(a, dot0 * (0.34 + 0.30 * (1.0 - z)) * face);
     }
 
-    // marcador: o ponto de origem. Aparece só quando o globo já está formado.
+    // marcador: o ponto de origem. Aparece só quando o globo já está formado —
+    // e com ele os arcos (tinta) e o pulso e os pontos que viajam (sinal).
     if (uMark > 0.001) {
-      float latB = ${(-15.8 * Math.PI) / 180};
-      float lonB = ${(-47.9 * Math.PI) / 180};
-      float cosD = sin(lat) * sin(latB) + cos(lat) * cos(latB) * cos(lon - lonB);
-      float ang = acos(clamp(cosD, -1.0, 1.0));
+      vec3 A = ${v3(A)};
+      float ang = acos(clamp(dot(g, A), -1.0, 1.0));
       float core = smoothstep(0.030, 0.018, ang);
       float ring = smoothstep(0.006, 0.0, abs(ang - 0.085));
-      float mk = max(core, ring * 0.8) * uMark * face;
+
+      float arcs = 0.0;
+      float beads = 0.0;${ARC_GLSL}
+      a = over(a, arcs * ${f(GLOBE_LIFE.arcAlpha)} * uMark * face);
+
+      // pulso: um anel que nasce no marcador, cresce e some, uma vez por período
+      float ph = fract(uTime / ${f(GLOBE_LIFE.pulsePeriod)});
+      float pulse = smoothstep(0.010, 0.0, abs(ang - (0.05 + ph * 0.24))) * (1.0 - ph) * (1.0 - ph) * 0.6;
+
+      float mk = max(max(core, ring * 0.8), max(beads * 0.85, pulse)) * uMark * face;
       float aNew = over(a, mk);
       col = mix(col, signal, mk / max(aNew, 0.001));
       a = aNew;
