@@ -267,9 +267,11 @@ html[data-compiler="on"] .compiler-fallback { display: none; }
    flex — foi corrigida): clip não cria contexto de rolagem, o sticky continua funcionando. */
 html, body { overflow-x: clip; }
 /* Hero: estágios com hierarquia (atual → passado → futuro) e saída comercial */
-[data-stage] { opacity: 0.16; transition: opacity var(--dur-medium) var(--ease-in-out-quart), color var(--dur-fast); }
-[data-stage].is-past { opacity: 0.28; }
-[data-stage].is-active { opacity: 1; }
+/* Hierarquia por TOM, não por opacidade: os três estados precisam de 4.5:1 no papel
+   (axe não exime texto aria-hidden do contraste) — futuro em ink-3, passado em ink-2, atual em ink. */
+[data-stage] { color: rgb(var(--ink-3)); transition: color var(--dur-medium) var(--ease-in-out-quart); }
+[data-stage].is-past { color: rgb(var(--ink-2)); }
+[data-stage].is-active { color: rgb(var(--ink)); }
 html.anomaly [data-nav-root], html.anomaly [data-layer="grid"], html.anomaly [data-layer="wire"], html.anomaly [data-layer="stages"], html.anomaly [data-layer="code"] { animation: anomaly 0.45s steps(6) both; }
 @keyframes anomaly {
   0% { transform: translate(0, 0) skewX(0); }

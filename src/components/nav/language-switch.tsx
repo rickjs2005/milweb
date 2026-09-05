@@ -33,7 +33,8 @@ export function LanguageSwitch({ current, hrefs, label, names, className = "", t
             hrefLang={l === "pt" ? "pt-BR" : l}
             lang={l === "pt" ? "pt-BR" : l}
             aria-current={active ? "page" : undefined}
-            aria-label={names[l]}
+            // Nome acessível começa pelo texto visível (axe: label-content-name-mismatch).
+            aria-label={`${l.toUpperCase()} · ${names[l]}`}
             tabIndex={tabbable ? 0 : -1}
             onClick={() => remember(l)}
             className={"link-rule inline-flex min-h-[44px] min-w-[36px] items-center justify-center px-1.5 uppercase transition-opacity duration-fast " + (active ? "signal-dot opacity-100" : "opacity-60 hover:opacity-100")}

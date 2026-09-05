@@ -3,7 +3,21 @@
 Tipo: institucional
 Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (ScrollTrigger, CustomEase; SplitText sob demanda) · Lenis 1.3 · WebGL cru (shaders próprios, sem three.js) · WebAudio procedural · @vercel/analytics
 Branch: `main` · produção em https://milweb.com.br (Vercel)
-Último deploy verificado: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+Último deploy verificado: **05/09/2026 · `5c3e71a`** (ato 06 validado em produção nesta data; ver bloco de 05/09). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
+
+## 05/09/2026 — FECHAMENTO: ato 06 validado em produção, auditoria final, entrega documentada (commit + push; SEM deploy)
+
+Sessão de fechamento do checklist. O que foi feito e verificado:
+
+- **Ato 06 / Logistics Demo validado em produção** (`5c3e71a` = deploy `milweb-9w8wdq0dg`): `logistics.mjs https://milweb.com.br 1920x1080 390x844` → 16 checkpoints, zero colisão, zero corte, overflow 0, console limpo nos dois viewports; `logistics-hover.mjs` → retículo, resize 1920→1366→1920, reload e CTA abrindo `/projetos/logistics-demo` com `CADA MILHA SOB CONTROLE.`, console limpo.
+- **Fase 05 fechada**: leitura completa do espanhol (`src/i18n/es.ts`, `services.ts`, `content.ts`, `content-projects-1/2/3.ts`, `diagnostico/page.tsx`). Variante neutra LatAm consistente ("cotización", "sucursales", "fincas", "posentrega"). Único ajuste: `FAIR_PRICE.sub` "cada real" → "cada centavo" (moeda brasileira não fala pro leitor hispânico). Não é revisão de falante nativo — registrado em `docs/entrega.md`.
+- **Fase 11 — achado**: o painel Vercel → Analytics mostra o botão **Enable** e "Demo Data". O `<Analytics />` está no layout e o script `/_vercel/insights/script.js` responde 200, mas o recurso nunca foi ativado no projeto (API: `webAnalytics: {id}` sem `enabledAt`; MCP responde "Web Analytics not found"). **Todo `whatsapp_click` desde julho foi descartado.** Speed Insights está ativo e com dados. Adicionei `email_click` (mailto:) no mesmo listener de `track-conversions.tsx`. Ativar é 1 clique do Rick (decisão de conta, não fiz).
+- **Fase 15 — achado**: Search Console tem a propriedade `sc-domain:milweb.com.br` verificada, mas a lista de sitemaps está **vazia** — o sitemap nunca foi enviado. `/sitemap.xml` em produção: 200, 114 `<loc>`, 456 `xhtml:link`, inclui `logistics-demo`; `robots.txt` aponta pro sitemap; 404 real responde 404. Enviar é um submit na conta do Rick (não fiz).
+- **Lighthouse em produção (máquina com Edge aberto + WebView2)**: mobile 66 e 68 (duas execuções; LCP 3,0 s, TBT 0,9–1,1 s, SI 5,5 s) · desktop 86 / **96** / 96 / 100. O mobile local sem carga media 86 — a diferença precisa ser remedida em máquina limpa antes de virar diagnóstico. Sem terceiros bloqueando (third-party-summary vazio); o custo é do bundle próprio (chunk 3995 ≈ 0,8 s de script no mobile simulado).
+- **Acessibilidade desktop caiu pra 96 — corrigido (pendente de deploy)**: (1) `[data-stage]` do hero usava `opacity: 0.16/0.28` → contraste 1.4:1; axe NÃO exime texto `aria-hidden` do contraste. Agora a hierarquia é por tom: futuro `ink-3`, passado `ink-2`, atual `ink` (todos ≥ 4.5:1 nos dois temas). (2) `label-content-name-mismatch`: `LanguageSwitch` tinha `aria-label="Español"` com texto visível "ES" → `aria-label="ES · Español"`; `SoundToggle` tinha `aria-label` longo com texto visível "SOM OFF" → `title`, nome acessível = texto. Lighthouse a11y local (dev 3100, desktop) = **100**; `tsc` e `next lint` verdes; hero conferido em screenshot 1440×900 (0 / 600 / 1400).
+- **Fase 16 iniciada**: `docs/entrega.md` — URLs, repo, hosting, DNS (Registro.br → A 216.198.79.1), env vars, analytics/SC/Lighthouse com estado real, scripts de validação, backup, tag de versão, rotina mensal, pendências.
+
+**Não feito de propósito** (decisões do Rick): ativar Web Analytics, enviar sitemap, `vercel --prod` (regra: deploy só com pedido), tag `v1.0.0` (só depois do deploy). Safari/Firefox físicos continuam sem aparelho.
 
 ## 02/09/2026 — LOGISTICS DEMO (ato 06 do Selected Work): cada milha sob controle (commit + push; produção NÃO validada)
 
@@ -210,18 +224,18 @@ Fase 01 — Briefing              ✓  conceito "the website that builds itself"
 Fase 02 — Arquitetura           ✓  trilíngue por tabela (src/i18n/routing.ts); URLs antigas 308 direto; 05-i18n.md
 Fase 03 — UX                    ✓  home em 9 atos; HOLD TO INSPECT; Break/Rebuild; mobile com versão própria
 Fase 04 — UI                    ✓  tokens em styles/tokens.css; Archivo variável (eixo wdth) + JetBrains Mono; grid 12/8/4
-Fase 05 — Conteúdo              ◐  PT/EN/ES completos e tipados; falta LEITURA HUMANA do espanhol e revisão fina de ortografia
+Fase 05 — Conteúdo              ✓  PT/EN/ES completos e tipados; espanhol revisado por leitura completa em 05/09 (neutro LatAm, 1 ajuste), sem falante nativo
 Fase 06 — Frontend              ✓  404/500 com identidade, build verde, sem componentes legados
 Fase 07 — Motion Design         ✓  escultura com 8 estados, leis por mundo, 5 transições de rota, 3 experimentos no Lab
 Fase 08 — SEO On-Page           ✓  canonical/hreflang/x-default, og:locale, sitemap 111 URLs em 3 idiomas, JSON-LD inLanguage
 Fase 09 — Performance           ✓  mobile 86 · desktop 96 · a11y 100 · JS inicial 246,2 KB gzip (orçamento em perf-budget.md)
 Fase 10 — Acessibilidade        ✓  a11y 100; teclado, foco visível, reduced-motion, conteúdo sem canvas, controle de som com aria-pressed
-Fase 11 — Analytics e conversão ◐  track-conversions instalado; eventos reais ainda não confirmados em produção
+Fase 11 — Analytics e conversão ◐  whatsapp_click + email_click no código; Web Analytics NUNCA FOI ATIVADO no painel da Vercel (05/09) — ativar e confirmar eventos
 Fase 12 — Segurança             ✓  CSP estático, headers e redirects; strict mode
 Fase 13 — QA                    ◐  Chromium/WebKit automatizados OK (+ auditoria de navegação/RSC 29/08: 1285 passos Chromium, 0 falhas); Safari e Firefox FÍSICOS pendentes
 Fase 14 — Deploy                ✓  Vercel READY; rotas, redirects e 404 conferidos em produção
-Fase 15 — Indexação             ◐  falta reenviar o sitemap trilíngue no Search Console e pedir indexação
-Fase 16 — Entrega               ○  não iniciada
+Fase 15 — Indexação             ◐  propriedade sc-domain:milweb.com.br verificada; sitemap NUNCA foi enviado (lista vazia em 05/09) — enviar /sitemap.xml e pedir indexação
+Fase 16 — Entrega               ◐  docs/entrega.md escrito 05/09; falta deploy, tag v1.0.0 e os dois cliques (Analytics, sitemap)
 ```
 
 ## Métricas atuais (Lighthouse 13, build de produção local, máquina sem carga)
@@ -272,15 +286,15 @@ Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em 
 - **`pnpm build` e `next dev` não podem dividir a mesma `.next` ao mesmo tempo**: o build sobrescreve os chunks do dev server (erro "Cannot find module './vendor-chunks/gsap@3.15.0.js'"). Pare o dev, ou rode o build, e depois `rm -rf .next` + subir de novo.
 - **`NEXT_PUBLIC_HERO_VISUAL` é inlined no build**: trocar a variante exige reiniciar o dev server / redeploy. Em produção está `milo`.
 
-## Próxima ação (para amanhã, em ordem)
+## Próxima ação (em ordem)
 
-0. **Conferir o Hero v3 em produção num celular real** (o pin no mobile é novo — barra de endereço/jank em iOS) e rodar Lighthouse mobile (era sem pin por custo). Ajustes finos da marcha ficam nas constantes de `animation/walk.ts`.
-1. **Olho humano em GPU real** (Chrome desktop, não headless): hero com a escultura, troca de estados nos quatro mundos, as cinco transições de rota e os três experimentos do Lab. É o único teste que ainda não foi feito de verdade — todo o QA automatizado roda em rasterização por software.
-2. **Revisão humana do espanhol** (variante neutra LatAm) antes de divulgar para esse mercado.
-3. **Search Console**: reenviar o sitemap trilíngue e pedir indexação das rotas novas; acompanhar os 308.
-4. **Analytics**: confirmar em produção que os eventos de conversão (WhatsApp, e-mail, CTA) estão chegando — é o que falta para fechar a Fase 11.
-5. **Reskin do `/diagnostico`** no sistema novo (última página com cara antiga).
-6. Evoluções opcionais já mapeadas em `06-compile.md` §12: pré-aquecer o shader após a primeira interação, estender leis de mundo aos 20 cases restantes, quarto experimento no Lab.
+0. **Rick, 3 cliques**: Vercel → milweb → Analytics → **Enable**; Search Console → Sitemaps → enviar `https://milweb.com.br/sitemap.xml`; autorizar `npx vercel --prod` (a11y 100 + email_click + "cada centavo" estão só na main).
+1. Depois do deploy: `vercel inspect milweb.com.br` (domínio no deploy novo), Lighthouse desktop (a11y deve voltar a 100), `git tag -a v1.0.0` + push da tag, marcar Fase 16 ✓.
+2. Confirmar no painel Analytics → Events que `whatsapp_click`/`email_click` chegam (clicar num CTA em produção) → Fase 11 ✓.
+3. Search Console: acompanhar a leitura do sitemap (114 URLs) e pedir indexação de `/`, `/en`, `/es` → Fase 15 ✓.
+4. Remedir Lighthouse mobile em máquina limpa (fechar Edge, matar processos) e comparar com o 86 local; se o 66–68 se confirmar, investigar o chunk 3995 (0,8 s de script) em `perf-budget.md`.
+5. Fase 13: Safari/Firefox físicos quando houver aparelho (ou marcar N/A com justificativa).
+6. Reskin do `/diagnostico` no sistema novo (última página com cara antiga).
 
 ## Notas de N/A
 

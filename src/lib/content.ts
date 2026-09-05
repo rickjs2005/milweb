@@ -424,7 +424,7 @@ export const FAIR_PRICE = {
   sub: {
     pt: "Antes de enviar qualquer proposta, eu calculo horas, infraestrutura e escopo. Você sabe exatamente pra onde vai cada real.",
     en: "Before any proposal goes out, I price hours, infrastructure and scope. You know exactly where every dollar goes.",
-    es: "Antes de enviar cualquier propuesta, calculo horas, infraestructura y alcance. Sabes exactamente a dónde va cada real.",
+    es: "Antes de enviar cualquier propuesta, calculo horas, infraestructura y alcance. Sabes exactamente a dónde va cada centavo.",
   },
   bullets: [
     {

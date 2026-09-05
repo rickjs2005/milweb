@@ -392,7 +392,7 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
       {/* ESTÁGIOS — hierarquia: atual em tinta, passados apagados, futuros mais ainda */}
       <ol data-layer="stages" aria-hidden="true" className="t-mono absolute right-margin top-[calc(var(--nav-h)+2.5rem)] z-10 hidden whitespace-nowrap text-right md:block">
         {s.stages.map((st, i) => (
-          <li key={st} data-stage className="tnum text-ink [&.is-active]:signal-dot">
+          <li key={st} data-stage className="tnum [&.is-active]:signal-dot">
             0{i + 1} {st}
           </li>
         ))}

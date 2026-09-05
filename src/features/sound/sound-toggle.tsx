@@ -24,7 +24,9 @@ export function SoundToggle({ label, on, off, className = "", tabbable = true }:
       type="button"
       onClick={() => setActive(sound.toggle())}
       aria-pressed={active}
-      aria-label={label}
+      // Texto visível (SOM ON/OFF) é o nome acessível; a descrição longa vai no title
+      // (axe: label-content-name-mismatch).
+      title={label}
       tabIndex={tabbable ? 0 : -1}
       data-no-inspect
       className={"link-rule t-mono inline-flex min-h-[44px] items-center gap-2 px-1 uppercase " + className}
