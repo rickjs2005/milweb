@@ -26,7 +26,7 @@ Data da entrega: 05/09/2026.
 |---|---|
 | Vercel Speed Insights | Ativo e recebendo dados (`<SpeedInsights />` no layout) |
 | Vercel Web Analytics | Ativado em 05/09/2026 (até então o componente existia mas o recurso estava desligado no painel, e todo evento anterior foi descartado). Eventos disparados pelo código: `whatsapp_click` (source, path), `email_click` (source, path), `preferred_source_click`. Confirmado em produção: clique de WhatsApp → `POST /_vercel/insights/event` 200. Observação: Playwright headless não gera beacon (o script ignora bots) e o MCP da Vercel responde "not found" mesmo ativo; conferir no painel ou pela rede do navegador |
-| Google Search Console | Propriedade de domínio `sc-domain:milweb.com.br` verificada. Sitemap `https://milweb.com.br/sitemap.xml` (114 URLs, 3 idiomas, hreflang) enviado em 05/09/2026; status inicial "não foi possível buscar" é transitório (teste ao vivo: "URL disponível para o Google"; como Googlebot: 200, XML válido). Pedir indexação de `/`, `/en`, `/es` e conferir a leitura em 48 h |
+| Google Search Console | Propriedade de domínio `sc-domain:milweb.com.br` verificada. Sitemap `https://milweb.com.br/sitemap.xml` (114 URLs, 3 idiomas, hreflang) enviado e **processado** em 05/09/2026 (114 páginas encontradas; o "não foi possível buscar" inicial foi transitório). Pendente: pedir indexação de `/`, `/en`, `/es` pela Inspeção de URL e remover as três entradas erradas da lista de sitemaps |
 | Google Preferred Sources | Botão no rodapé sobre o SDK oficial (`news.google.com`), no ar desde 01/09 |
 | Lighthouse (produção, 05/09/2026, pós-deploy, máquina com carga) | Desktop 90 / 100 / 96 / 100 · Mobile 61 / 100 / 96 / 100 (três execuções no dia: 66, 68, 61). O mobile local sem carga media 86 (ver `docs/rebuild/perf-budget.md`); o número de produção deve ser remedido em máquina limpa antes de virar referência. As duas falhas de acessibilidade do desktop foram corrigidas e o 100 está confirmado em produção |
 
@@ -79,7 +79,7 @@ e registrar em `.claude/project-state.md`.
 
 ## Pendências conhecidas na entrega
 
-- Search Console: pedir indexação de `/`, `/en`, `/es` e confirmar que o sitemap saiu de "não foi possível buscar" (transitório) para "Sucesso".
+- Search Console: remover `/`, `/en`, `/es` da lista de sitemaps (foram enviadas por engano como sitemap) e pedir indexação delas pela Inspeção de URL.
 - Safari e Firefox físicos nunca foram testados (sem aparelho); Chromium e WebKit automatizados passam.
 - `/diagnostico` ainda usa o shim CSS antigo; funciona, mas destoa do sistema novo.
 - Revisão do espanhol feita por leitura completa (variante neutra LatAm), não por falante nativo.

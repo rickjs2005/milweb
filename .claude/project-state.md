@@ -22,7 +22,7 @@ Sessão de fechamento do checklist. O que foi feito e verificado:
 **Rick fez os dois cliques (17h):** Web Analytics ativado (painel passou a mostrar o onboarding "Install / Add component / Deploy", tudo já feito no código) e sitemap enviado no Search Console.
 
 - **Fase 11 fechada**: pela extensão do Chrome, clique real num `a[href*=wa.me]` da seção `#contact` em produção (com `preventDefault` pra não abrir o WhatsApp) → `POST /_vercel/insights/event` **200**. Playwright headless NÃO serve pra isso: o script da Vercel ignora bots (HeadlessChrome e mesmo com UA de Chrome só carregou `script.js`, sem beacon). O MCP da Vercel continua respondendo "Web Analytics not found" mesmo com o recurso ligado — não usar como prova de nada.
-- **Sitemap "Não foi possível buscar"**: diagnóstico completo — como Googlebot, `https://milweb.com.br/sitemap.xml` = 200, `application/xml`, 57,8 KB, 0,13 s, XML válido (114 `<url>`, namespace xhtml declarado, sem BOM); `http://` e `www.` dão 308 pro canônico; robots.txt aponta o sitemap; sem firewall/bot rule no projeto. **Teste ao vivo na Inspeção de URL: "O URL está disponível para o Google".** Ou seja, é o estado transitório que o SC mostra logo depois de enviar; deve virar "Sucesso" na primeira leitura (horas a dias). Se em 48 h continuar vermelho, reenviar.
+- **Sitemap "Não foi possível buscar"**: diagnóstico completo — como Googlebot, `https://milweb.com.br/sitemap.xml` = 200, `application/xml`, 57,8 KB, 0,13 s, XML válido (114 `<url>`, namespace xhtml declarado, sem BOM); `http://` e `www.` dão 308 pro canônico; robots.txt aponta o sitemap; sem firewall/bot rule no projeto. **Teste ao vivo na Inspeção de URL: "O URL está disponível para o Google".** Era o estado transitório: às 17:08 o SC já mostrava **`sitemap.xml` Processado, 114 páginas encontradas**. Detalhe: o Rick também enviou `/`, `/en` e `/es` como sitemaps (são páginas HTML) → aparecem com "1 erro"; remover pelo menu ⋮ de cada linha. Pedido de indexação é pela Inspeção de URL, não pela tela de Sitemaps.
 - Safari/Firefox físicos continuam sem aparelho.
 
 ## 02/09/2026 — LOGISTICS DEMO (ato 06 do Selected Work): cada milha sob controle (commit + push; produção NÃO validada)
@@ -240,7 +240,7 @@ Fase 11 — Analytics e conversão ✓  Web Analytics ativado pelo Rick em 05/09
 Fase 12 — Segurança             ✓  CSP estático, headers e redirects; strict mode
 Fase 13 — QA                    ◐  Chromium/WebKit automatizados OK (+ auditoria de navegação/RSC 29/08: 1285 passos Chromium, 0 falhas); Safari e Firefox FÍSICOS pendentes
 Fase 14 — Deploy                ✓  Vercel READY; rotas, redirects e 404 conferidos em produção
-Fase 15 — Indexação             ◐  sitemap enviado pelo Rick em 05/09 (SC mostrou "não foi possível buscar" logo após, mas o teste ao vivo diz "URL disponível para o Google" e o XML é válido) — aguardar leitura + pedir indexação de /, /en, /es
+Fase 15 — Indexação             ◐  sitemap.xml PROCESSADO no SC em 05/09 (114 páginas); falta pedir indexação de /, /en, /es pela Inspeção de URL e remover as 3 entradas erradas da lista de sitemaps (/, /en, /es enviadas como sitemap → "1 erro")
 Fase 16 — Entrega               ✓  docs/entrega.md + deploy nfpabj4of + tag v1.0.0 (05/09); acessos, backup e manutenção documentados
 ```
 
@@ -294,8 +294,8 @@ Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em 
 
 ## Próxima ação (em ordem)
 
-0. **Rick, 3 cliques**: Search Console → Inspeção de URL → `https://milweb.com.br/`, `/en`, `/es` → **Solicitar indexação** (um por vez). Em 48 h conferir Sitemaps: deve estar "Sucesso" com 114 páginas; se continuar "não foi possível buscar", reenviar → Fase 15 ✓.
-1. Vercel → Analytics → Events: conferir que `whatsapp_click` aparece no painel (o POST 200 já foi confirmado; o painel pode levar minutos).
+0. **Rick, no Search Console**: (a) Sitemaps → menu ⋮ das linhas `/`, `/en`, `/es` → Remover sitemap (são páginas, não sitemaps); (b) Inspeção de URL → `https://milweb.com.br/`, `/en`, `/es` → **Solicitar indexação** em cada uma. Depois disso, Fase 15 ✓ (conferir em alguns dias em Indexação → Páginas).
+1. Vercel → Analytics → Events: conferir que `whatsapp_click` aparece no painel (o POST 200 já foi confirmado).
 2. Remedir Lighthouse mobile em máquina limpa (fechar Edge, matar processos); hoje deu 61–68 em produção contra 86 local. Se confirmar, investigar o chunk 3995 (~0,8 s de script) em `perf-budget.md`.
 3. Fase 13: Safari/Firefox físicos quando houver aparelho (ou marcar N/A com justificativa).
 4. Reskin do `/diagnostico` no sistema novo (última página com cara antiga).
