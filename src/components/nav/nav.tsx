@@ -29,7 +29,8 @@ export type NavStrings = {
  */
 export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }) {
   const raw = usePathname() ?? "/";
-  const { internal } = internalizePath(raw);
+  // App Router can expose the rewritten /pt path on the default locale.
+  const { internal } = internalizePath(raw.replace(/^\/pt(?=\/|$)/, "") || "/");
   const [open, setOpen] = useState(false);
   const [act, setAct] = useState<string>("");
 
@@ -84,13 +85,13 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   return (
     <>
       <header data-nav-root className="fixed inset-x-0 top-0 z-nav flex h-nav items-center justify-between px-margin t-mono text-[#F2F0EA] mix-blend-difference" data-inspect="NAV">
-        <Link href={localizePath(locale, "/")} className="link-rule font-display text-[15px] font-black tracking-tight" aria-label="MilWeb">
+        <Link href={localizePath(locale, "/")} className={`link-rule font-display font-black tracking-tight ${internal === "/" ? "text-[22px]" : "text-[15px]"}`} aria-label="MilWeb">
           {BRAND.mark}
         </Link>
 
-        <span className="hidden tnum opacity-60 md:block" aria-live="polite">
+        {internal !== "/" && <span className="hidden tnum opacity-60 md:block" aria-live="polite">
           {act ? act : BRAND.index}
-        </span>
+        </span>}
 
         <div className="hidden items-center gap-7 md:flex">
           <nav className="flex items-center gap-7" aria-label={strings.primary}>

@@ -1,5 +1,34 @@
 # MilWeb — atualização visual de setembro de 2026
 
+## Segunda direção — 10 de setembro
+
+O feedback do Rick foi que a primeira revisão continuava próxima demais da composição anterior. A home agora abre com uma escultura orbital metálica em fundo preto, tipografia em grande escala e uma galeria editorial assimétrica. A mudança é de composição e ritmo, além de acabamento.
+
+### Implementação atual
+
+- `OrbitalHero`: imagem com transparência sempre presente; entrada após o boot, resposta suave ao ponteiro e deslocamento durante o scroll. São transformações de uma imagem renderizada, não um objeto 3D em tempo real. Sem dependência de WebGL para a abertura.
+- Hero com altura de 128svh no desktop e 112svh no celular, com sticky nativo. O CTA para os trabalhos está disponível desde a abertura. Redução de movimento elimina o trecho sticky e as animações.
+- `ProjectGallery`: seis projetos em uma grade de 12 colunas com proporções e posições diferentes. Capturas reais dos projetos visíveis também em dispositivos sem hover. Fotografias existentes fornecem o contexto das imagens. Links, rótulo do cliente e nomes seguem as fontes de conteúdo do repositório.
+- Cabeçalho da home com marca maior e sem o indicador de atos. Normalização do prefixo interno `/pt` antes de resolver a navegação.
+- Os componentes antigos de globo e atos permanecem no código; a home usa os dois componentes novos. A antiga opção de visual do hero não seleciona mais a abertura da home.
+- PT, EN e ES preservados, sem dependências adicionais ou alterações no lockfile. Mantidos boot, watchdog de scroll, Lab, interações, páginas de case e contato.
+
+### Asset da abertura
+
+`public/art/orbital-sculpture-v2.webp`: 1254 × 1254, alfa, 210.672 bytes. Uma imagem gerada para esta composição, convertida para WebP com qualidade 88 e alfa 100. Não é uma captura de trabalho de cliente.
+
+Brief de geração: escultura orbital quase esférica de fitas espessas de prata polida, faces planas e bordas chanfradas, entrelaçamento em torno de uma abertura diagonal; vista em três quartos, reflexos de estúdio brancos e pretos, silhueta contida no quadro e fundo transparente. Sem texto, ambiente, partículas ou iluminação colorida. Uma única geração, sem variantes.
+
+### Verificação desta revisão
+
+- Build de produção com verificação de tipos e lint: 126 páginas. A home passou de 38,7 KB para 13 KB; JavaScript de primeiro carregamento de 202 KB para 176 KB. Esses números são a saída do Next, não uma medição de velocidade no dispositivo.
+- Conferência visual desktop da abertura e galeria; seis capturas carregadas; nenhuma rolagem horizontal nos estados observados. Abertura conferida em PT/EN/ES.
+- CTA da abertura, navegação para o case Kavita e retorno à home conferidos. Galeria conserva nomes únicos `case-media-<slug>` para as transições.
+- Nesta revisão, o navegador não registrou erros da aplicação; mensagens de erro observadas eram da extensão do ambiente de inspeção.
+- Regras de celular e redução de movimento revisadas no código. Este navegador não oferece ajuste de viewport ou emulação de preferências; a aparência nessas condições não foi validada em dispositivo real. Não foi realizada uma auditoria Lighthouse ou uma avaliação Awwwards.
+
+## Primeira revisão — histórico
+
 Direção: tipografia em grande escala → globo → território real do primeiro projeto.
 
 ## Alterações

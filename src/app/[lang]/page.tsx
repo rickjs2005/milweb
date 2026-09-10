@@ -1,7 +1,7 @@
 import { Footer } from "@/components/footer";
 import { Boot } from "@/sections/home/boot";
-import { BuildHero } from "@/sections/home/build-hero";
-import { SelectedWork } from "@/sections/home/selected-work";
+import { OrbitalHero } from "@/sections/home/orbital-hero";
+import { ProjectGallery } from "@/sections/home/project-gallery";
 import { SELECTED_WORK } from "@/data/work";
 import { SELECTED } from "@/data/projects";
 import { Capabilities } from "@/sections/home/capabilities";
@@ -12,43 +12,16 @@ import { BuiltWith } from "@/sections/home/built-with";
 import { ContactCta } from "@/sections/home/contact-cta";
 import { BRAND } from "@/data/brand";
 import { getDict } from "@/i18n";
-import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisual";
-import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
-import { NODES } from "@/sections/home/work/logistics-geometry";
 
-/**
- * Placa principal do palco quando ela NÃO é a captura do case (`w.image`, que
- * segue sendo o hero da página do case). Kavita: a lavoura sem interface por
- * cima — a captura tinha a copy do site cobrindo metade do frame.
- */
+/** Project imagery supplies the setting behind each real website capture. */
 const WORLD_PLATE: Record<string, string> = {
   "kavita-drones": "/shots/kavita-drones/field.webp",
-  // GRÃO: os grãos caindo no resfriador (fotografia do projeto, 1500 px) — a
-  // captura do site tinha a tipografia da Terral na metade esquerda do frame
   terral: "/shots/terral/grao.webp",
-  // ESTRUTURA: primeiro frame do vídeo real da obra (andaime e laje), em
-  // monocromia — a captura do site era o mesmo vídeo com a copy por cima
   "atelier-vertex": "/shots/atelier-vertex/estrutura.webp",
-  // PELE: a única captura do InkVision é a página com a copy por cima e um
-  // mockup pequeno — a placa é uma fotografia editorial de antebraço em P&B
   inkvision: "/shots/inkvision/skin.webp",
-  // PORTO: o porto ao anoitecer do próprio demo (clipe da rede) — a superfície
-  // onde a carga faz o handover; a captura do site é o hero com o globo
   "logistics-demo": "/shots/logistics-demo/port.webp",
 };
-/** Segunda imagem de cada ato do Selected Work (a primeira é a placa). */
-const WORLD_DETAIL: Record<string, string> = {
-  // render do DJI Agras T70P com canal alfa (recorte assado a partir do render de produto)
-  "kavita-drones": "/shots/kavita-drones/t70p.webp",
-  // TORRA: as mãos no braço do resfriador — o processo, a ação humana
-  terral: "/shots/terral/torra.webp",
-  // ENTREGA: o último frame do mesmo vídeo (mesma câmera — as fatias encaixam)
-  "atelier-vertex": "/shots/atelier-vertex/entrega.webp",
-  // OCEANO: o navio visto de cima cortando a esteira (frame editorial da sequência de altitude)
-  "logistics-demo": "/shots/logistics-demo/ocean.webp",
-};
-const WORLD_KEY: Record<string, "kavita" | "terral" | "vertex" | "aurex" | "inkvision" | "logistics"> = { "kavita-drones": "kavita", terral: "terral", "atelier-vertex": "vertex", "aurex-timepieces": "aurex", inkvision: "inkvision", "logistics-demo": "logistics" };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];
 
 /**
@@ -63,26 +36,15 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
   return (
     <>
       <Boot mark={BRAND.mark} tagline={d.boot.tagline} origin={d.boot.origin} lines={d.boot.lines} skip={d.boot.skip} compile={d.boot.compile} />
-      <HeroVisual />
-      <HeroVisualDirector />
       <main>
-        <BuildHero
+        <OrbitalHero
           act={d.acts.build}
-          visual={getHeroVisualVariant()}
-          s={{
-            headline: d.hero.headline,
-            orb: d.hero.orb,
-            support: [...d.hero.support],
-            stages: d.hero.stages,
-            inspect: d.hero.inspect,
-            scroll: d.hero.scroll,
-            sub: d.hero.sub,
-            cta: d.hero.cta,
-          }}
-          workHref="#work"
-          nextWorld={{ image: WORLD_PLATE["kavita-drones"], name: SELECTED_WORK[0].name, title: SELECTED_WORK[0].title[locale], label: d.work.eyebrow }}
+          headline={d.hero.headline}
+          support={d.hero.support}
+          sub={d.hero.sub}
+          cta={d.hero.cta}
         />
-        <SelectedWork
+        <ProjectGallery
           act={d.acts.work}
           eyebrow={d.work.eyebrow}
           enter={d.work.enter}
@@ -99,12 +61,9 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
               displayType: d.displayType[p.displayType],
               client: p.clientWork ? p.clientName ?? null : null,
               year: p.year ?? null,
-              image: WORLD_PLATE[p.slug] ?? w.image,
-              detail: WORLD_DETAIL[p.slug] ?? w.image,
+              image: w.image,
+              atmosphere: WORLD_PLATE[p.slug],
               href: withLocale(locale, `/work/${p.slug}`),
-              // o Logistics Demo abre a metadata com o corredor real do projeto (ORG-01 → DST-03), que mora na geometria
-              labels: WORLD_KEY[p.slug] === "logistics" ? [`${NODES.org.code} → ${NODES.dst.code}`, ...d.work.labels.logistics] : [...d.work.labels[WORLD_KEY[p.slug]]],
-              stages: WORLD_KEY[p.slug] === "logistics" ? [...d.work.stages.logistics] : [],
             };
           })}
         />
