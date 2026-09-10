@@ -95,6 +95,10 @@ const KAVITA_READOUTS = ["LAT 19°55′ S · LON 43°56′ W", "T70P · ALT 42 M
 function KavitaStage({ image, detail }: { image: string; detail: string }) {
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+      <div data-kavita-arrival className="absolute inset-0">
+        <Image src={image} alt="" fill loading="lazy" sizes="100vw" className="object-cover object-[46%_58%]" />
+        <span className="bridge-shade absolute inset-0" />
+      </div>
       <svg data-topo className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round">
         {CONTOURS.map((d, i) => (
           <path key={i} data-contour d={d} pathLength="1" opacity={(0.3 - (i % 6) * 0.03).toFixed(2)} />
@@ -119,7 +123,7 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
       {/* A JANELA DE VARREDURA — a lavoura (cafezal em MG: horizonte, morros,
           fileiras convergindo) sangra pela direita. A imagem é 10 % mais alta
           que a caixa para o parallax vertical nunca mostrar borda. */}
-      <div data-media className="absolute right-[-4%] top-[max(15%,136px)] z-[2] h-[44%] w-[60%] overflow-hidden max-md:left-margin max-md:right-margin max-md:top-[max(15%,136px)] max-md:h-[30%] max-md:w-auto" style={{ viewTransitionName: "case-media-kavita-drones" }} data-inspect="MEDIA">
+      <div data-media className="kavita-field absolute right-[-4%] top-[max(15%,136px)] z-[2] h-[48%] w-[64%] overflow-hidden max-md:left-margin max-md:right-margin max-md:top-[max(15%,136px)] max-md:h-[30%] max-md:w-auto" style={{ viewTransitionName: "case-media-kavita-drones" }} data-inspect="MEDIA">
         <span data-crop className="absolute inset-x-0 -inset-y-[5%] block">
           <Image src={image} alt="" fill loading="lazy" sizes="(min-width: 720px) 62vw, 100vw" className="object-cover object-[46%_58%]" />
         </span>
@@ -127,7 +131,7 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
             ainda não foi lido e fica sob um véu da cor do papel. O invólucro
             inteiro desliza (yPercent 0 → 100), então linha e véu têm um só dono. */}
         <span data-scan className="pointer-events-none absolute inset-0 block">
-          <span className="absolute inset-x-0 top-0 block h-[200%]" style={{ background: "rgb(242 240 234 / 0.74)" }} />
+          <span className="absolute inset-x-0 top-0 block h-[200%]" style={{ background: "rgb(17 24 17 / 0.65)" }} />
           <span className="absolute inset-x-0 -top-14 block h-14 bg-gradient-to-b from-transparent to-signal/35" />
           <span className="absolute inset-x-0 top-0 block h-px bg-signal" />
         </span>
@@ -146,8 +150,8 @@ function KavitaStage({ image, detail }: { image: string; detail: string }) {
           (900 × 442), então os cantos de alvo abraçam a silhueta de verdade. O
           alvo é filho da caixa: herda todo movimento do drone sem ter dono
           próprio de transform. */}
-      <div data-media-b className="absolute left-[35%] top-[41%] z-[3] aspect-[900/442] w-[28%] max-md:left-[0%] max-md:top-[37%] max-md:w-[70%]" data-inspect="DRONE">
-        <Image src={detail} alt="" fill loading="lazy" sizes="(min-width: 720px) 28vw, 66vw" className="object-contain" />
+      <div data-media-b className="kavita-drone absolute left-[29%] top-[34%] z-[3] aspect-[900/442] w-[46%] max-md:left-[-2%] max-md:top-[33%] max-md:w-[90%]" data-inspect="DRONE">
+        <Image src={detail} alt="" fill loading="lazy" sizes="(min-width: 720px) 46vw, 90vw" className="object-contain" />
         <span data-target className="absolute inset-[6%] block opacity-0">
           <span className="absolute left-0 top-0 h-4 w-4 border-l border-t border-current opacity-70" />
           <span className="absolute right-0 top-0 h-4 w-4 border-r border-t border-current opacity-70" />

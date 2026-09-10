@@ -38,14 +38,12 @@ export const GLOBE_GLYPH = {
 export const GLOBE_PLACE = {
   desktop: {
     /** centro final em fração da caixa do Hero */
-    cx: 0.77,
-    cy: 0.37,
-    /** raio final: o menor entre uma fração da largura e uma da altura. Os dois
-     *  tetos existem para o globo NUNCA alcançar o bloco da manchete, que ocupa
-     *  ~61 % da largura útil: com cx 0,77 a borda esquerda cai em 0,63 W em
-     *  qualquer proporção de tela testada (16:9, 16:10, 4:3). */
-    rw: 0.145,
-    rh: 0.25,
+    cx: 0.73,
+    cy: 0.35,
+    /** Escala de protagonista. A manchete recua por transform enquanto o
+     *  globo cresce; o teto por altura conserva espaço para a entrega. */
+    rw: 0.23,
+    rh: 0.325,
   },
   mobile: {
     cx: 0.62,

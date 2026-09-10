@@ -122,6 +122,9 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
 
             /* ---------- ENTRADA (0 → 0.18): a estrutura editorial chega ---------- */
             tl.fromTo(q("[data-reveal]"), { yPercent: 26, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, stagger: 0.02, duration: ACT.enter, ease: EASE.outQuint }, 0.02);
+            // O título tem uma chegada própria, breve, de baixo para cima.
+            // O invólucro já pertence à entrada; só os spans são animados aqui.
+            tl.fromTo(q("[data-headline] > span"), { yPercent: 105, rotation: small ? 0 : 3 }, { yPercent: 0, rotation: 0, stagger: 0.035, duration: 0.2, ease: EASE.outQuint }, 0.055);
 
             /* ---------- o palco de cada ato ---------- */
             if (slug === "kavita-drones") kavita(tl, q, one, small);
@@ -346,7 +349,7 @@ export function SelectedWork({ items, eyebrow, enter, all, allHref, act, clientW
                 )}
 
                 {/* NÍVEL 01 — a manchete domina a viewport */}
-                <h2 data-headline data-reveal className="t-display t-fit-work mt-3 md:mt-4" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${item.slug}` }}>
+                <h2 data-headline data-reveal className="work-headline t-display t-fit-work mt-3 md:mt-4" data-inspect="CASE_TITLE" style={{ viewTransitionName: `case-title-${item.slug}` }}>
                   <span className="block">{item.title[0]}</span>
                   <span className="block">{item.title[1]}</span>
                 </h2>
@@ -483,6 +486,10 @@ function kavita(tl: gsap.core.Timeline, q: Q, one: One, small: boolean) {
   const meta = q("[data-meta]");
   const contours = q("[data-contour]");
   const routes = q("[data-route]");
+
+  // Do globo ao campo: a fotografia ocupa a tela e depois recua para abrir
+  // espaço ao drone. O fundo mantém matéria durante toda a apresentação.
+  tl.fromTo(q("[data-kavita-arrival]"), { autoAlpha: 1, scale: 1 }, { autoAlpha: 0.18, scale: 1.08, duration: 0.28, ease: "power2.inOut" }, 0.18);
 
   /* ENTRADA — a topografia se desenha e a janela abre como uma fenda de varredura */
   tl.fromTo(contours, { strokeDashoffset: 1, strokeDasharray: "1 1" }, { strokeDashoffset: 0, stagger: 0.012, duration: 0.22 }, 0.04);

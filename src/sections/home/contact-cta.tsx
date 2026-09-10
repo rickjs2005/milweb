@@ -10,7 +10,8 @@ import { fitLines } from "@/lib/fit";
 export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act, label }: { headline: readonly string[]; cta: string; ctaWord: string; href: string; email: string; whatsapp: string; act: string; label: string }) {
   const [before, after] = cta.split(ctaWord);
   return (
-    <section id="contact" data-act={act} data-inspect="CONTACT" className="container-page flex min-h-[100svh] flex-col justify-between pb-8 pt-nav">
+    <section id="contact" data-act={act} data-inspect="CONTACT" className="contact-finale container-page relative flex min-h-[100svh] flex-col justify-between overflow-hidden pb-8 pt-nav">
+      <div className="contact-orbit pointer-events-none absolute" aria-hidden="true"><span /></div>
       <div className="rule flex items-center justify-between pt-3 t-mono">
         <span>{label}</span>
         <span className="tnum text-ink-3">MW/011</span>
@@ -25,7 +26,7 @@ export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act,
       </h2>
 
       <div className="grid-12 relative z-10 items-end gap-y-8">
-        <Link href={href} className="group col-span-4 md:col-span-8 lg:col-span-8" data-inspect="CTA / START_A_PROJECT">
+        <Link href={href} className="contact-action group col-span-4 md:col-span-8 lg:col-span-8" data-inspect="CTA / START_A_PROJECT">
           <span className="t-display t-display-md inline-block text-ink">
             {before}
             <span className="relative inline-block">

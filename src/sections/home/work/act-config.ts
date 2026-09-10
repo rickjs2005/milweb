@@ -43,7 +43,7 @@ export const range = (p: number, a: number, b: number) => Math.min(1, Math.max(0
  * da virada os dois mundos já têm a mesma cor e não existe corte.
  */
 export const SKIN: Record<ActSlug, { bg: string; ink: string; ink2: string; rule: string; dots: DotMode }> = {
-  "kavita-drones": { bg: "#F2F0EA", ink: "#111111", ink2: "#5F5F5A", rule: "#111111", dots: "survey" },
+  "kavita-drones": { bg: "#111811", ink: "#F2F0EA", ink2: "#A4ADA0", rule: "#F2F0EA", dots: "survey" },
   terral: { bg: "#E9E0CF", ink: "#1F1710", ink2: "#6B5B49", rule: "#1F1710", dots: "grain" },
   "atelier-vertex": { bg: "#EFEFEC", ink: "#111111", ink2: "#5F5F5A", rule: "#111111", dots: "anchor" },
   "aurex-timepieces": { bg: "#0F0F0F", ink: "#F2F0EA", ink2: "#8C8C87", rule: "#F2F0EA", dots: "pivot" },

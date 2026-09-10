@@ -105,7 +105,7 @@ export function Capabilities({ items, eyebrow, act }: { items: Capability[]; eye
   );
 
   return (
-    <section ref={root} id="capabilities" data-act={act} data-inspect="CAPABILITIES" className="container-page relative bg-paper py-24 md:py-40">
+    <section ref={root} id="capabilities" data-act={act} data-inspect="CAPABILITIES" className="capabilities-experience container-page relative bg-paper py-24 md:py-40">
       {/* grid (reação "grid") */}
       <div data-grid aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 grid opacity-0" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
         {Array.from({ length: 12 }).map((_, i) => (
@@ -131,7 +131,7 @@ export function Capabilities({ items, eyebrow, act }: { items: Capability[]; eye
               [LI] {i + 1}/{items.length}
             </span>
             <span className="t-mono tnum text-ink-3">{c.n}</span>
-            <span className="t-display t-display-sm min-w-0 text-ink transition-colors duration-fast group-hover:text-ink-2 [overflow-wrap:anywhere]">{c.label}</span>
+            <span className="capability-title t-display t-display-sm min-w-0 text-ink transition-colors duration-fast [overflow-wrap:anywhere]">{c.label}</span>
             <span className="t-mono ml-auto hidden text-ink-3 opacity-0 transition-opacity duration-fast group-hover:opacity-100 md:block">
               {c.reactLabel} →
             </span>

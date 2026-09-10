@@ -7,23 +7,23 @@ import { Reveal } from "@/animations/reveal";
  */
 export function Human({ headline, tail, name, role, location, act }: { headline: readonly string[]; tail: string; name: string; role: string; location: string; act: string }) {
   return (
-    <section id="human" data-act={act} data-inspect="HUMAN" className="container-page flex min-h-[100svh] flex-col justify-center py-32 md:py-48">
+    <section id="human" data-act={act} data-inspect="HUMAN" className="human-signature container-page relative flex min-h-[100svh] flex-col justify-center py-32 md:py-48">
       <Reveal>
-        <h2 className="t-display t-display-lg text-ink" data-inspect="H2">
+        <h2 className="human-title t-display t-display-lg text-ink" data-inspect="H2">
           {headline.map((l) => (
             <span key={l} data-reveal className="block">
               {l}
             </span>
           ))}
         </h2>
-        <p data-reveal className="t-display t-display-lg mt-[0.6em] text-ink-3">
+        <p data-reveal className="human-tail t-display t-display-lg mt-[0.6em] text-ink-3">
           {tail}
         </p>
       </Reveal>
 
       <Reveal className="grid-12 mt-24 items-end gap-y-8 md:mt-40">
         <div data-reveal className="col-span-1">
-          <Image src="/avatar.png" alt={name} width={112} height={112} sizes="112px" className="w-20 grayscale md:w-28" data-inspect="IMG / RICK" />
+          <Image src="/avatar.png" alt={name} width={256} height={256} sizes="(min-width: 1080px) 200px, 80px" className="human-portrait w-20 grayscale md:w-28" data-inspect="IMG / RICK" />
         </div>
         <div data-reveal className="t-mono col-span-3 md:col-span-4 md:col-start-3">
           <p className="text-ink">{name}</p>

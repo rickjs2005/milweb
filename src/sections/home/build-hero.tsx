@@ -9,6 +9,7 @@ import type { HeroVisualVariant } from "@/features/hero-visual/hero-visual.types
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
 import { loadSplitText } from "@/animations/split-text";
 import { onIdle } from "@/animations/idle";
+import { HeroWorldBridge, type WorldBridge } from "./hero-world-bridge";
 
 export type BuildHeroStrings = {
   headline: readonly string[];
@@ -28,16 +29,9 @@ export type BuildHeroStrings = {
  * tom técnico do resto: textura de interface, não piada.
  */
 const CODE = [
-  "<body>",
-  '  <main data-act="build">',
-  "    <h1>MILWEB</h1>",
-  "    <script>",
-  "      const world = build();",
-  "      world.move();",
-  "    </script>",
-  '    <canvas id="globe" />',
-  "  </main>",
-  "</body>",
+  "const world = build();",
+  "world.move();",
+  "// MilWeb — creative development",
 ];
 
 /**
@@ -45,40 +39,38 @@ const CODE = [
  * timeline tem duração exatamente 1 (posição == progresso do ScrollTrigger) e
  * recebe estas marcas como labels.
  *
- *   0.00–0.18  ESTRUTURA    manchete estável, wireframe se desenha, órbita apagada
- *   0.18–0.40  DESIGN       grid desce, código recua, o sistema de coordenadas aparece
- *   0.40–0.58  MOTION       parallax curto da manchete; a primeira linha cede foco
- *   0.58–0.72  INTERAÇÃO    o "O" perde a haste: anel tipográfico → círculo → volume
- *   0.72–0.86  EXPERIÊNCIA  profundidade, meridianos e continentes; o globo migra
- *   0.86–0.94  (ainda EXP.) globo formado, marcador do Brasil acende
- *   0.94–1.00  ENTREGA      sub + CTA; o globo cresce e sai lateralmente para o Selected Work
+ *   0.00–0.22  ESTRUTURA / DESIGN — tipografia monumental e órbitas
+ *   0.22–0.49  MOTION / INTERAÇÃO — a grade ganha perspectiva; o O vira volume
+ *   0.49–0.73  EXPERIÊNCIA — o globo ocupa a cena e conecta o Brasil ao mundo
+ *   0.73–0.85  ENTREGA — sub + CTA
+ *   0.85–1.00  TERRITÓRIO — a lente abre a fotografia do primeiro projeto
  */
 export const HERO_SCENE = {
-  design: 0.18,
-  focus: 0.4,
-  morph: 0.58,
-  sphere: 0.72,
-  formed: 0.86,
-  outro: 0.94,
+  design: 0.1,
+  focus: 0.22,
+  morph: 0.34,
+  sphere: 0.49,
+  formed: 0.65,
+  outro: 0.73,
 } as const;
 /**
- * Roteiro MOBILE — mesmas chaves, ritmo mais curto: o pin é de 220 % em vez de
- * 320 %, então cada etapa tem menos scroll para acontecer e a transformação do
+ * Roteiro MOBILE — mesmas chaves, pin de 200 % em vez de 280 %.
+ * Cada etapa tem menos scroll para acontecer e a transformação do
  * "O" começa mais cedo (é o momento que o celular precisa ver inteiro).
  */
 export const HERO_SCENE_MOBILE = {
-  design: 0.14,
-  focus: 0.36,
-  morph: 0.52,
-  sphere: 0.66,
-  formed: 0.82,
-  outro: 0.9,
+  design: 0.08,
+  focus: 0.2,
+  morph: 0.32,
+  sphere: 0.47,
+  formed: 0.63,
+  outro: 0.73,
 } as const;
 
-const STAGE_BOUNDS = [HERO_SCENE.design, HERO_SCENE.focus, HERO_SCENE.morph, HERO_SCENE.sphere, HERO_SCENE.outro];
-const stageAt = (p: number) => {
+const stageAt = (p: number, scene: typeof HERO_SCENE | typeof HERO_SCENE_MOBILE) => {
+  const bounds = [scene.design, scene.focus, scene.morph, scene.sphere, scene.outro];
   let i = 0;
-  while (i < 5 && p >= STAGE_BOUNDS[i]) i++;
+  while (i < 5 && p >= bounds[i]) i++;
   return i;
 };
 
@@ -117,7 +109,7 @@ function words(line: string, orbAt: number | null) {
  *
  * Reduced-motion: manchete completa e globo em estado final estático (SVG).
  */
-export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s: BuildHeroStrings; act: string; visual?: HeroVisualVariant; workHref?: string }) {
+export function BuildHero({ s, act, visual = "globe", workHref = "#work", nextWorld }: { s: BuildHeroStrings; act: string; visual?: HeroVisualVariant; workHref?: string; nextWorld?: WorldBridge }) {
   const root = useRef<HTMLElement>(null);
   const getHero = useCallback(() => root.current, []);
   const [orbLine, orbIndex] = s.orb;
@@ -174,7 +166,7 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
         if (!small) {
           gsap.set(q("[data-layer=wire] > *"), { scaleX: 0, transformOrigin: "left center" });
           gsap.set(q("[data-layer=grid] > *"), { scaleY: 0, transformOrigin: "top" });
-          gsap.set(q("[data-orbit]"), { autoAlpha: 0, scale: 1.12, transformOrigin: "center" });
+          gsap.set(q("[data-orbit]"), { autoAlpha: 0.65, scale: 1.12, transformOrigin: "center" });
           // O código já está escrito quando o Boot revela o hero (entrada por
           // tempo, não por scroll: o estágio 0 nunca fica vazio).
           gsap.from(q("[data-layer=code] span"), { autoAlpha: 0, x: -6, stagger: 0.05, duration: 0.3, delay: 0.3 });
@@ -197,7 +189,7 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
           scrollTrigger: {
             trigger: el,
             start: "top top",
-            end: small ? "+=220%" : "+=320%",
+            end: small ? "+=200%" : "+=280%",
             pin: true,
             // O Hero é o ÚNICO trigger pinado da Home e está acima de todos os
             // outros: ele precisa ser medido primeiro, senão o ScrollTrigger
@@ -211,7 +203,7 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
             scrub: small ? 0.5 : 0.8,
             anticipatePin: 1,
             invalidateOnRefresh: true,
-            onUpdate: (st) => setStage(stageAt(st.progress)),
+            onUpdate: (st) => setStage(stageAt(st.progress, S)),
             onToggle: () => globe.sync(),
           },
         });
@@ -230,12 +222,15 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
           tl.to(q("[data-layer=code]"), { autoAlpha: 0.12, duration: 0.1 }, S.design);
         }
 
-        // 03 MOTION — parallax curto (só transform: a caixa da manchete não muda de
-        // tamanho em nenhum momento da cena, e é isso que mantém o layout parado)
+        // 03 MOTION — apenas transforms; o espaço da manchete no fluxo não muda.
         // No celular o parallax é maior porque tem trabalho a fazer: o bloco de
         // código sai de cena (12 % de opacidade) mas continua ocupando altura no
         // fluxo, e sem isso sobra um vazio grande acima da manchete no fim da cena.
         tl.to(h1, { y: small ? -36 : -26, duration: S.focus - S.design, ease: "power1.out" }, S.design);
+        if (!small && visual === "globe") {
+          tl.to(h1, { scale: 0.6, transformOrigin: "left bottom", duration: S.sphere - S.focus, ease: "power2.inOut" }, S.focus);
+          tl.to(q("[data-layer=grid]"), { rotationX: 64, yPercent: 24, scale: 1.5, transformPerspective: 900, transformOrigin: "50% 100%", duration: S.formed - S.focus, ease: "power2.inOut" }, S.focus);
+        }
         // ...e a primeira linha cede o foco para a linha do globo
         tl.to(q("[data-line='0']"), { autoAlpha: 0.4, y: -6, duration: S.morph - S.focus }, S.focus);
 
@@ -268,15 +263,20 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
         // e pode colidir com o rodapé técnico numa tela baixa (320×568): o rodapé cede
         if (small) tl.to(q("[data-ship]"), { autoAlpha: 0, duration: 0.04 }, S.outro);
 
-        // 08 SAÍDA — sem corte seco e sem vazio: o globo NÃO se apaga. Ele cresce,
-        // escapa pela borda direita (a section tem overflow-hidden, então sangra)
-        // e perde um pouco de densidade enquanto o pin solta e o Selected Work
-        // sobe — a section leva o globo embora junto com ela. Apagá-lo aqui
-        // deixava a metade direita vazia exatamente no frame da ENTREGA.
-        tl.to(globeFrame, { migrate: 1.55, fade: 0.62, duration: 1 - S.outro, ease: "power1.in" }, S.outro);
-        tl.to(q("[data-orbit]"), { autoAlpha: 0, scale: 1.18, duration: 0.05 }, 0.95);
-        if (!small) tl.to(q("[data-layer=grid]"), { autoAlpha: 0.45, duration: 0.04 }, 0.96);
-        tl.to(q("[data-layer=stages]"), { autoAlpha: 0.35, duration: 0.04 }, 0.96);
+        // 09 SAÍDA — o globo entrega a cena à fotografia. Sem primeiro projeto,
+        // a variante alternativa conserva a saída lateral.
+        if (visual === "globe" && nextWorld) {
+          // A lente revela a mesma fotografia que abre o primeiro ato.
+          tl.fromTo(q("[data-world-bridge]"), { autoAlpha: 0, clipPath: small ? "circle(0% at 62% 62%)" : "circle(0% at 73% 35%)" }, { autoAlpha: 1, clipPath: small ? "circle(120% at 62% 62%)" : "circle(120% at 73% 35%)", duration: 0.15, ease: "power2.inOut" }, 0.85);
+          tl.fromTo(q("[data-bridge-image]"), { scale: 1.22 }, { scale: 1, duration: 0.15, ease: "power2.out" }, 0.85);
+          tl.fromTo(q("[data-bridge-caption]"), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.035, stagger: 0.008, ease: EASE.outQuint }, 0.945);
+          tl.to([h1, ...q("[data-outro], [data-ship], [data-layer=stages], [data-orbit]")], { autoAlpha: 0, duration: 0.06 }, 0.85);
+          tl.to(globeFrame, { migrate: 1.24, fade: 0, duration: 0.1, ease: "power1.in" }, 0.86);
+        } else {
+          tl.to(globeFrame, { migrate: 1.55, fade: 0.62, duration: 1 - S.outro, ease: "power1.in" }, S.outro);
+          tl.to(q("[data-orbit]"), { autoAlpha: 0, scale: 1.18, duration: 0.05 }, 0.95);
+        }
+        if (!small) tl.to(q("[data-layer=grid]"), { autoAlpha: 0.25, duration: 0.04 }, 0.96);
         // duração exatamente 1 → labels/posições == progresso
         tl.to({}, { duration: 0.001 }, 0.999);
         if (process.env.NODE_ENV !== "production") {
@@ -337,7 +337,8 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
       id="top"
       data-act={act}
       data-inspect="HERO"
-      className="relative flex min-h-[100svh] flex-col overflow-hidden px-margin pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-nav md:pb-8"
+      data-visual={visual}
+      className="hero-experience relative flex min-h-[100svh] flex-col overflow-hidden px-margin pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-nav md:pb-8"
     >
       {/* GRID 12 (camada de design) */}
       <div data-layer="grid" aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 z-0 hidden md:grid" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
@@ -356,32 +357,24 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
         <span className="absolute bottom-0 right-0 h-16 w-[30%] border border-dashed border-ink/50" />
       </div>
 
-      {/* ÓRBITA / COORDENADAS — moldura técnica da região onde o globo termina.
-          Quadrado sobre uma fração fixa da altura útil: acompanha o mesmo raio
-          do globo (que também é limitado pela altura) em qualquer viewport. */}
-      {/* ÓRBITA / COORDENADAS — moldura técnica da região onde o globo termina.
-          Centrada no MESMO ponto do globo e com 1,34× o diâmetro dele: precisa
-          conter a esfera, não competir com ela. Quadrado sobre uma fração da
-          altura da section — o raio do globo também é limitado pela altura, então
-          os dois crescem juntos em qualquer viewport. */}
-      <div data-orbit aria-hidden="true" hidden={visual !== "globe"} className="pointer-events-none absolute left-[77%] top-[37%] z-[1] hidden aspect-square h-[70%] -translate-x-1/2 -translate-y-1/2 md:block">
+      {/* A órbita antecipa o destino do globo antes da transformação. */}
+      <div data-orbit aria-hidden="true" hidden={visual !== "globe"} className="hero-orbit pointer-events-none absolute left-[73%] top-[35%] z-[1] hidden aspect-square h-[88%] -translate-x-1/2 -translate-y-1/2 md:block">
         <svg viewBox="0 0 100 100" className="h-full w-full">
           <circle cx="50" cy="50" r="49" fill="none" stroke="rgb(var(--ink))" strokeOpacity="0.13" strokeWidth="0.16" strokeDasharray="1.4 2.6" />
-          {/* anel-alvo: exatamente o raio final do globo (r = 0,25 H, caixa = 0,35 H
-              → 35,7 em 100). A esfera pousa dentro dele — a moldura é um destino,
-              não um enfeite. */}
-          <circle cx="50" cy="50" r="35.7" fill="none" stroke="rgb(var(--neutral))" strokeWidth="0.22" />
+          {/* Raio por altura: 0,325 / 0,88 ≈ 37 % da caixa. */}
+          <circle cx="50" cy="50" r="37" fill="none" stroke="rgb(var(--neutral))" strokeWidth="0.22" />
+          <ellipse cx="50" cy="50" rx="48" ry="18" fill="none" stroke="rgb(var(--ink))" strokeOpacity="0.3" strokeWidth="0.12" transform="rotate(-32 50 50)" />
           <ellipse cx="50" cy="50" rx="35.7" ry="12" fill="none" stroke="rgb(var(--ink))" strokeOpacity="0.09" strokeWidth="0.16" transform="rotate(-20 50 50)" />
           <line x1="50" y1="0" x2="50" y2="4" stroke="rgb(var(--ink))" strokeOpacity="0.3" strokeWidth="0.25" />
           <line x1="50" y1="96" x2="50" y2="100" stroke="rgb(var(--ink))" strokeOpacity="0.3" strokeWidth="0.25" />
           <line x1="0" y1="50" x2="4" y2="50" stroke="rgb(var(--ink))" strokeOpacity="0.3" strokeWidth="0.25" />
           <line x1="96" y1="50" x2="100" y2="50" stroke="rgb(var(--ink))" strokeOpacity="0.3" strokeWidth="0.25" />
         </svg>
-        <p className="t-mono absolute -bottom-5 right-0 tnum text-ink-3">MW/GLOBE · LAT −15.79 · LON −47.88</p>
+        <p className="t-mono absolute bottom-[10%] left-4 tnum text-[9px] text-ink-3">MW/GLOBE · LAT −15.79 · LON −47.88</p>
       </div>
 
       {/* CÓDIGO (estado zero) — assinatura técnica, baixa prioridade */}
-      <pre data-layer="code" aria-hidden="true" className="t-code relative z-10 mt-4 text-ink-3 md:absolute md:left-margin md:top-[calc(var(--nav-h)+2.5rem)] md:mt-0 md:text-ink-2">
+      <pre data-layer="code" aria-hidden="true" className="hero-code t-code relative z-10 mt-4 text-ink-3 md:absolute md:left-margin md:top-[calc(var(--nav-h)+2.5rem)] md:mt-0 md:text-ink-2">
         {CODE.map((l) => (
           <span key={l} className="block">
             {l}
@@ -410,10 +403,8 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
         <CompilerFallback className="pointer-events-none absolute right-margin top-[24%] z-[1] w-[38%] max-w-[520px] md:top-[18%]" />
       )}
 
-      {/* TIPOGRAFIA (o LCP) — colunas 1–8, alinhada à esquerda; o maior elemento
-          da cena do começo ao fim. A caixa NUNCA muda de tamanho durante o
-          scroll: só mudam opacidade e posição. */}
-      <div className="relative z-10 mt-6 md:mt-auto">
+      {/* TIPOGRAFIA (LCP) — ocupa a largura e recua por transform para o globo. */}
+      <div className="hero-type relative z-10 mt-6 md:mt-auto">
         <h1 className="t-display t-display-xl t-fit-hero text-ink" style={fitVars(s.headline)} data-inspect="HERO_TITLE" aria-label={s.headline.join(" ")}>
           {s.headline.map((line, i) => (
             <span key={line} data-line={i} className="block whitespace-nowrap">
@@ -471,6 +462,8 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work" }: { s:
           </p>
         </div>
       </div>
+
+      {visual === "globe" && nextWorld ? <HeroWorldBridge world={nextWorld} /> : null}
 
       {/* SHIP — rodapé técnico do ato, com respiro acima da borda */}
       <div data-ship className="grid-12 relative z-10 mt-auto items-end t-mono md:mt-[8svh]">

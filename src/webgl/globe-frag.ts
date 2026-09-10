@@ -110,6 +110,8 @@ void main() {
 
   float a = 0.0;
   vec3 col = ink;
+  float surface = 0.0;
+  float signalA = 0.0;
 
   // ---- volume --------------------------------------------------------
   float z = sqrt(max(0.0, 1.0 - r2));
@@ -143,6 +145,7 @@ void main() {
       float dLon = abs(fract(lon / lonG + 0.5) - 0.5) * lonG * max(cos(lat), 0.06);
       float mesh = max(smoothstep(w, 0.0, dLat), smoothstep(w, 0.0, dLon));
       a = over(a, mesh * 0.16 * uMesh * face * face);
+      surface = over(surface, mesh * 0.26 * uMesh * face);
       // equador com um pouco mais de peso: é uma régua, não um fio qualquer
       a = over(a, smoothstep(w * 1.3, 0.0, abs(lat)) * 0.20 * uMesh * face);
     }
@@ -164,8 +167,9 @@ void main() {
       vec2 uv = vec2((lonC + PI) / (2.0 * PI), (PI * 0.5 - latC) / PI);
       float land = texture2D(uTex, uv).r;
       float grow = smoothstep(0.12, 0.62, land) * uLand;
-      float dot0 = smoothstep(0.38 * grow, 0.16 * grow, dd);
+      float dot0 = grow > 0.001 ? smoothstep(0.38 * grow, 0.16 * grow, dd) : 0.0;
       a = over(a, dot0 * (0.34 + 0.30 * (1.0 - z)) * face);
+      surface = over(surface, dot0 * (0.72 + 0.22 * z) * face);
     }
 
     // marcador: o ponto de origem. Aparece só quando o globo já está formado —
@@ -179,12 +183,14 @@ void main() {
       float arcs = 0.0;
       float beads = 0.0;${ARC_GLSL}
       a = over(a, arcs * ${f(GLOBE_LIFE.arcAlpha)} * uMark * face);
+      surface = over(surface, arcs * 0.62 * uMark * face);
 
       // pulso: um anel que nasce no marcador, cresce e some, uma vez por período
       float ph = fract(uTime / ${f(GLOBE_LIFE.pulsePeriod)});
       float pulse = smoothstep(0.010, 0.0, abs(ang - (0.05 + ph * 0.24))) * (1.0 - ph) * (1.0 - ph) * 0.6;
 
       float mk = max(max(core, ring * 0.8), max(beads * 0.85, pulse)) * uMark * face;
+      signalA = mk;
       float aNew = over(a, mk);
       col = mix(col, signal, mk / max(aNew, 0.001));
       a = aNew;
@@ -194,6 +200,22 @@ void main() {
   // A silhueta perde um pouco de tinta conforme vira contorno de esfera: em
   // tinta cheia, o fio de 1 px lê como adesivo recortado sobre o papel.
   a = over(a, ringA * mix(1.0, 0.72, open));
+  // A letra mantém a tinta original. Ao ganhar profundidade, vira um corpo
+  // de grafite: luz rasante e pontos claros tornam a curvatura legível mesmo
+  // em telas pequenas. A máscara editorial e as rotas permanecem as mesmas.
+  float body = smoothstep(0.38, 1.0, uDepth) * open;
+  if (body > 0.001) {
+    vec3 normal = vec3(d.x, -d.y, z);
+    float light = max(0.0, dot(normal, normalize(vec3(-0.55, 0.65, 0.7))));
+    vec3 graphite = mix(vec3(0.022, 0.029, 0.024), vec3(0.19, 0.22, 0.18), pow(light, 2.6));
+    graphite += pow(1.0 - z, 4.0) * 0.10;
+    vec3 base = mix(graphite, vec3(0.92) - graphite * 0.35, uInk);
+    vec3 detail = mix(vec3(0.86, 0.90, 0.82), vec3(0.09), uInk);
+    vec3 solid = mix(base, detail, clamp(surface, 0.0, 1.0));
+    solid = mix(solid, signal, signalA);
+    col = mix(col, solid, body);
+    a = mix(a, smoothstep(px, -px, r - 1.0), body);
+  }
   a *= uFade;
   if (a <= 0.002) { gl_FragColor = vec4(0.0); return; }
   gl_FragColor = vec4(col * a, a);

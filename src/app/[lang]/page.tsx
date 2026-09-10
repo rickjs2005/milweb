@@ -80,6 +80,7 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
             cta: d.hero.cta,
           }}
           workHref="#work"
+          nextWorld={{ image: WORLD_PLATE["kavita-drones"], name: SELECTED_WORK[0].name, title: SELECTED_WORK[0].title[locale], label: d.work.eyebrow }}
         />
         <SelectedWork
           act={d.acts.work}
