@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BRAND } from "@/data/brand";
@@ -32,6 +32,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   // App Router can expose the rewritten /pt path on the default locale.
   const { internal } = internalizePath(raw.replace(/^\/pt(?=\/|$)/, "") || "/");
   const [open, setOpen] = useState(false);
+  const mobileMenu = useRef<HTMLDialogElement>(null);
   const [act, setAct] = useState<string>("");
 
   const links = [
@@ -74,11 +75,21 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   }, [raw]);
 
   useEffect(() => {
+    const dialog = mobileMenu.current;
+    if (open && !dialog?.open) dialog?.showModal();
+    if (!open && dialog?.open) dialog.close();
     document.documentElement.style.overflow = open ? "hidden" : "";
     return () => {
       document.documentElement.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const closeOnDesktop = () => { if (desktop.matches) setOpen(false); };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   const isCurrent = (key: string) => internal === key || internal.startsWith(key + "/");
 
@@ -110,15 +121,21 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
         </button>
       </header>
 
-      {/* Overlay mobile: links em escala de pôster + seletor de idioma. */}
-      <div
+      {/* Native dialog supplies focus containment, Escape and focus return. */}
+      <dialog
+        ref={mobileMenu}
+        data-lenis-prevent=""
         id="nav-overlay"
-        className={
-          "fixed inset-x-0 top-0 z-overlay flex h-[100dvh] flex-col justify-end bg-paper px-margin pb-10 pt-nav transition-[clip-path] duration-slow ease-in-out-quart md:hidden " +
-          (open ? "[clip-path:inset(0_0_0_0)]" : "pointer-events-none [clip-path:inset(0_0_100%_0)]")
-        }
-        aria-hidden={!open}
+        className="mobile-nav-dialog"
+        aria-label={strings.primary}
+        onCancel={() => setOpen(false)}
+        onClose={() => setOpen(false)}
+        onClick={(event) => { if ((event.target as Element).closest("a[href]")) setOpen(false); }}
       >
+        <div className="mobile-nav-dialog__bar">
+          <Link href={localizePath(locale, "/")} className="font-display font-black tracking-tight" aria-label="MilWeb">{BRAND.mark}</Link>
+          <button type="button" autoFocus className="mobile-nav-dialog__close t-mono" onClick={() => setOpen(false)}>{strings.close}<span aria-hidden="true">×</span></button>
+        </div>
         <ul className="flex flex-col gap-2">
           {links.map((l, i) => (
             <li key={l.key} className="flex items-baseline gap-4 border-t border-ink py-3">
@@ -133,7 +150,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
           <SoundToggle label={strings.sound.label} on={strings.sound.on} off={strings.sound.off} tabbable={open} className="text-ink" />
           <LanguageSwitch current={locale} hrefs={alternates} label={strings.selectLanguage} names={strings.langNames} tabbable={open} className="text-ink" />
         </div>
-      </div>
+      </dialog>
     </>
   );
 }

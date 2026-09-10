@@ -23,7 +23,7 @@ export function Human({ headline, tail, name, role, location, act }: { headline:
 
       <Reveal className="grid-12 mt-24 items-end gap-y-8 md:mt-40">
         <div data-reveal className="col-span-1">
-          <Image src="/avatar.png" alt={name} width={256} height={256} sizes="(min-width: 1080px) 200px, 80px" className="human-portrait w-20 grayscale md:w-28" data-inspect="IMG / RICK" />
+          <Image src="/avatar.png" alt={name} width={256} height={256} sizes="(min-width: 1080px) 200px, 112px" className="human-portrait w-20 grayscale md:w-28" data-inspect="IMG / RICK" />
         </div>
         <div data-reveal className="t-mono col-span-3 md:col-span-4 md:col-start-3">
           <p className="text-ink">{name}</p>

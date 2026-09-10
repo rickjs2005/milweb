@@ -15,6 +15,9 @@ type OrbitalHeroProps = {
 /** An immediate, image-backed opening. Motion enhances it; no GPU is required. */
 export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroProps) {
   const root = useRef<HTMLElement>(null);
+  const world = headline[headline.length - 1];
+  const [article, ...subject] = world.split(" ");
+  const mobileWorld = subject.join(" ") || world;
 
   useGSAP(() => {
     const el = root.current!;
@@ -32,6 +35,13 @@ export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroPro
       if (document.documentElement.dataset.headline === "1") reveal();
       else window.addEventListener("mw:headline", reveal, { once: true });
 
+      return () => {
+        window.removeEventListener("mw:headline", reveal);
+        entrance?.revert();
+      };
+    });
+
+    mm.add(`(min-width: 768px) and ${MQ.noReduce}`, () => {
       gsap.timeline({
         scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: 0.7 },
         defaults: { ease: "none" },
@@ -40,10 +50,14 @@ export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroPro
         .to(el.querySelector("[data-orbit-title]"), { yPercent: -20 }, 0)
         .to(el.querySelector("[data-orbit-note]"), { y: -36, opacity: 0 }, 0);
 
-      return () => {
-        window.removeEventListener("mw:headline", reveal);
-        entrance?.revert();
-      };
+    });
+
+    mm.add(`(max-width: 767px) and ${MQ.noReduce}`, () => {
+      // Touch gets a short image movement; text and CTA stay in normal flow.
+      gsap.to(el.querySelector("[data-orbit-scroll]"), {
+        yPercent: -8, rotation: 6, ease: "none",
+        scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: 0.5 },
+      });
     });
 
     mm.add(`${MQ.fine} and ${MQ.noReduce}`, () => {
@@ -84,16 +98,16 @@ export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroPro
             <div data-orbit-pointer>
               <div data-orbit-intro>
                 <Image src="/art/orbital-sculpture-v2.webp" alt="" width={1254} height={1254}
-                  priority sizes="(max-width: 767px) 100vw, 70vw" className="orbital-hero__sculpture" />
+                  priority sizes="(max-width: 767px) 122vw, 70vw" className="orbital-hero__sculpture" />
               </div>
             </div>
           </div>
         </div>
 
-        <h1 className="orbital-hero__title" data-orbit-title
-          style={{ "--world-chars": headline[headline.length - 1].length } as CSSProperties}>
-          <span className="orbital-hero__lead">{headline.slice(0, -1).join(" ")}</span>
-          <span className="orbital-hero__world">{headline[headline.length - 1]}</span>
+        <h1 className="orbital-hero__title" data-orbit-title aria-label={headline.join(" ")}
+          style={{ "--world-chars": world.length, "--mobile-world-chars": mobileWorld.length } as CSSProperties}>
+          <span className="orbital-hero__lead" aria-hidden="true">{headline.slice(0, -1).join(" ")}<span className="orbital-hero__mobile-article"> {subject.length ? article : ""}</span></span>
+          <span className="orbital-hero__world" aria-hidden="true"><span className="orbital-hero__desktop-article">{subject.length ? `${article} ` : ""}</span>{mobileWorld}</span>
         </h1>
 
         <div className="orbital-hero__bottom">

@@ -69,7 +69,7 @@ export function ProjectGallery({ act, eyebrow, enter, all, clientWork, allHref, 
                     sizes="(max-width: 767px) 92vw, (max-width: 1200px) 60vw, 900px"
                     className="gallery-project__image" />
                 </div>
-                <span className="gallery-project__open" aria-hidden="true">↗</span>
+                <span className="gallery-project__open" aria-hidden="true"><span className="gallery-project__open-label">{enter}</span><span>↗</span></span>
               </div>
               <div className="gallery-project__caption">
                 <span className="gallery-project__number t-mono">({project.n})</span>

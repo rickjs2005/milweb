@@ -1,5 +1,15 @@
 # MilWeb — atualização visual de setembro de 2026
 
+## Revisão mobile — 10 de setembro
+
+- Abertura em fluxo normal no celular, sem o trecho sticky adicional. Manchete recomposta para destacar MUNDO/WORLD em uma linha maior, com texto acessível completo. Escultura maior, enquadrada para retrato, e movimento de scroll independente do desktop.
+- Altura mínima da abertura com expansão para o conteúdo, preservando o acesso ao CTA em telas baixas e com texto ampliado. Áreas principais de toque com 48–52px.
+- Projetos com a largura útil da tela, sem recuos alternados. Títulos e metadados maiores, captura real ampliada e ação de explorar visível em cada imagem.
+- Menu substituído por dialog nativo. O botão de fechar fica dentro do painel, acima da página; Escape, foco modal e retorno do foco são geridos pelo navegador. Fecha ao navegar e ao passar para a largura desktop; rolagem interna liberada do Lenis.
+- Ritmo mobile revisto em capacidades, Lab, interação de quebrar o site, apresentação pessoal e contato. Retrato com 112px; links de contato com áreas de toque maiores. Conteúdo, idiomas e rotas preservados.
+
+Verificação: build de produção, tipos e lint aprovados, com 126 páginas geradas; home com 13,1 KB e primeiro carregamento de JavaScript de 176 KB. Revisão do CSS e dos componentes; conferência em desktop sem overflow horizontal, com os seis links de projeto preservados e menu fechado fora do fluxo. O navegador disponível não oferece emulação de viewport mobile; a composição em celular e o fluxo de abrir/fechar o menu em dispositivo real continuam pendentes de conferência. Não foi executada auditoria Lighthouse.
+
 ## Segunda direção — 10 de setembro
 
 O feedback do Rick foi que a primeira revisão continuava próxima demais da composição anterior. A home agora abre com uma escultura orbital metálica em fundo preto, tipografia em grande escala e uma galeria editorial assimétrica. A mudança é de composição e ritmo, além de acabamento.
