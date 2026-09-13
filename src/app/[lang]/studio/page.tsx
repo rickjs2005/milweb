@@ -8,6 +8,7 @@ import { STUDIO } from "@/data/studio";
 import { pageMetadata } from "@/lib/seo";
 import { getDict } from "@/i18n";
 import { localeFrom, makeT, withLocale, type LangParams } from "@/lib/i18n";
+import { nodeAttrs, nodeOf } from "@/data/milweb-system";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
@@ -22,10 +23,10 @@ export default async function StudioPage({ params }: { params: Promise<LangParam
   const d = getDict(locale);
   return (
     <>
-      <main className="container-page pt-nav" data-inspect="STUDIO">
+      <main className="container-page pt-nav" {...nodeAttrs(nodeOf("human"), locale)} data-inspect="STUDIO">
         <header className="flex min-h-[80svh] flex-col justify-between pb-10 pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>{d.pages.studio}</span>
+            <span><span className="tnum">{nodeOf("human").id}</span> — {d.pages.studio}</span>
             <span className="tnum text-ink-3">{BRAND.index}</span>
           </div>
           <h1 className="t-display t-display-xl text-ink">

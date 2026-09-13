@@ -3,17 +3,20 @@
 import Image from "next/image";
 import { useRef, type CSSProperties } from "react";
 import { gsap, MQ, useGSAP } from "@/animations/gsap";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 type OrbitalHeroProps = {
-  act: string;
+  node: NodeAttrs;
   headline: readonly string[];
   support: readonly string[];
   sub: string;
   cta: string;
 };
 
-/** An immediate, image-backed opening. Motion enhances it; no GPU is required. */
-export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroProps) {
+/** An immediate, image-backed opening. Motion enhances it; no GPU is required.
+ *  É o nó raiz do MilWeb System (MW/001): a origem e a assinatura que ficavam
+ *  no rodapé do hero agora são leitura da HUD. */
+export function OrbitalHero({ node, headline, support, sub, cta }: OrbitalHeroProps) {
   const root = useRef<HTMLElement>(null);
   const world = headline[headline.length - 1];
   const [article, ...subject] = world.split(" ");
@@ -86,7 +89,7 @@ export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroPro
   }, { scope: root });
 
   return (
-    <section ref={root} id="build" data-act={act} className="orbital-hero">
+    <section ref={root} id="build" {...node} className="orbital-hero">
       <div className="orbital-hero__stage">
         <div className="orbital-hero__note" data-orbit-note>
           <p className="orbital-hero__specialty t-mono"><span aria-hidden="true" />{support[0]}</p>
@@ -111,11 +114,9 @@ export function OrbitalHero({ act, headline, support, sub, cta }: OrbitalHeroPro
         </h1>
 
         <div className="orbital-hero__bottom">
-          <span className="t-mono orbital-hero__origin">{support[support.length - 1]}</span>
           <a href="#work" className="orbital-hero__cta t-mono" data-cursor="link">
             <span>{cta.replace(/\s*↓$/, "")}</span><span className="orbital-hero__arrow" aria-hidden="true">↘</span>
           </a>
-          <span className="orbital-hero__signature" aria-hidden="true">MW</span>
         </div>
       </div>
     </section>

@@ -7,6 +7,9 @@ import { TrackConversions } from "@/components/track-conversions";
 import { ViewTransitions } from "@/components/view-transitions";
 import { Nav } from "@/components/nav/nav";
 import { InspectProvider } from "@/features/inspect/inspect-provider";
+import { MilwebSystemProvider } from "@/features/system/system-provider";
+import { SystemHud } from "@/components/system-hud";
+import { ROOT_NODE } from "@/data/milweb-system";
 import { getDict, HTML_LANG, LOCALES } from "@/i18n";
 import { PROFILE, SITE_URL } from "@/lib/content";
 import { localeFrom, type LangParams } from "@/lib/i18n";
@@ -56,6 +59,7 @@ export default async function LangLayout({ children, params }: { children: React
       <body>
     <ScrollProvider>
       <InspectProvider strings={{ title: d.inspect.title, dev: d.inspect.dev }}>
+      <MilwebSystemProvider root={{ id: ROOT_NODE.id, index: ROOT_NODE.index, key: ROOT_NODE.key, title: ROOT_NODE.title[locale], readout: ROOT_NODE.readout?.[locale] ?? null }}>
         <script dangerouslySetInnerHTML={{ __html: QUALITY_SCRIPT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: siteJsonLd(locale) }} />
         <TrackConversions />
@@ -79,8 +83,10 @@ export default async function LangLayout({ children, params }: { children: React
           }}
         />
         {children}
+        <SystemHud strings={d.system} />
         <Analytics />
         <SpeedInsights />
+      </MilwebSystemProvider>
       </InspectProvider>
     </ScrollProvider>
       </body>

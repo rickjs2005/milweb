@@ -8,6 +8,7 @@ import { fitLines } from "@/lib/fit";
 import { CASE_UI } from "@/data/case-extras";
 import { Footer } from "@/components/footer";
 import { WorkIndex, type WorkRow } from "@/sections/work/work-index";
+import { nodeAttrs, ROOT_NODE } from "@/data/milweb-system";
 
 /**
  * /work — o ARQUIVO. Lista editorial eficiente: índice, projeto, tipo,
@@ -41,7 +42,7 @@ export default async function WorkPage({ params }: { params: Promise<LangParams>
 
   return (
     <>
-      <main className="container-page pt-nav" data-inspect="WORK_ARCHIVE">
+      <main className="container-page pt-nav" {...nodeAttrs(ROOT_NODE, locale)} data-inspect="WORK_ARCHIVE">
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
             <span>{d.archive.label}</span>

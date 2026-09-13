@@ -7,6 +7,7 @@ import { LAB, LAB_PAGE, PROFILE } from "@/lib/content";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { getDict } from "@/i18n";
+import { nodeAttrs, nodeOf } from "@/data/milweb-system";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
@@ -25,10 +26,10 @@ export default async function LabPage({ params }: { params: Promise<LangParams> 
 
   return (
     <>
-      <main className="container-page pt-nav" data-inspect="LAB">
+      <main className="container-page pt-nav" {...nodeAttrs(nodeOf("lab"), locale)} data-inspect="LAB">
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between pt-3 t-mono">
-            <span>LAB</span>
+            <span><span className="tnum">{nodeOf("lab").id}</span> — LAB</span>
             <span className="tnum text-ink-3">{String(LAB.length).padStart(3, "0")} {d.lab.experiments}</span>
           </div>
           <h1 className="t-display t-display-xl mt-10 text-ink">

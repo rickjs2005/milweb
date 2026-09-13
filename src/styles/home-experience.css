@@ -12,15 +12,17 @@
 .orbital-hero .orbital-hero__statement { margin-top: 28px; font-size: clamp(1.1rem, 1.8vw, 1.85rem); line-height: 1.3; letter-spacing: -.035em; font-weight: 400; }
 .orbital-hero__art { position: absolute; width: min(65vw, 84svh); right: 5.5%; top: 5svh; pointer-events: none; z-index: 1; }
 .orbital-hero .orbital-hero__sculpture { width: 100%; height: auto; }
-.orbital-hero__title { position: absolute; z-index: 2; bottom: 13svh; left: var(--margin); right: var(--margin); margin: 0; text-shadow: 0 2px 30px #08090970; }
+/* +28px: mesma folga que .orbital-hero__bottom ganhou pra HUD; sem isto o topo da
+   barra (52px + 59px de altura própria = 111px) risca o pé da manchete em qualquer
+   janela abaixo de ~854px de altura — comum em notebook com a barra do navegador. */
+.orbital-hero__title { position: absolute; z-index: 2; bottom: calc(13svh + 28px); left: var(--margin); right: var(--margin); margin: 0; text-shadow: 0 2px 30px #08090970; }
 .orbital-hero .orbital-hero__lead { display: block; font-size: clamp(2rem, 4.8vw, 5.75rem); line-height: 1; letter-spacing: -.065em; font-variation-settings: "wght" 520, "wdth" 100; }
 .orbital-hero .orbital-hero__world { display: block; margin-top: .055em; white-space: nowrap; font-size: min(31svh, calc((100vw - 2 * var(--margin)) / (var(--world-chars, 8) * .64))); line-height: .85; letter-spacing: -.065em; font-variation-settings: "wght" 900, "wdth" 125; }
-.orbital-hero__bottom { position: absolute; z-index: 4; bottom: 24px; left: var(--margin); right: var(--margin); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f2f0ea38; padding-top: 18px; }
-.orbital-hero__origin { color: #a9ada4; }
+/* O rodapé do hero deixa 28px livres para a HUD do sistema (fixa, no rodapé da tela). */
+.orbital-hero__bottom { position: absolute; z-index: 4; bottom: 52px; left: var(--margin); right: var(--margin); display: flex; justify-content: flex-start; align-items: center; border-top: 1px solid #f2f0ea38; padding-top: 18px; }
 .orbital-hero__cta { display: inline-flex; align-items: center; gap: 26px; }
 .orbital-hero__arrow { display: grid; place-items: center; border: 1px solid #f2f0ea80; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; transition: color .3s, background .3s, transform .6s var(--ease-out-expo); }
 .orbital-hero__cta:hover .orbital-hero__arrow, .orbital-hero__cta:focus-visible .orbital-hero__arrow { background: #f2f0ea; color: #080909; transform: rotate(45deg); }
-.orbital-hero__signature { font-size: 26px; font-weight: 800; letter-spacing: -.12em; }
 .orbital-hero__mobile-article, .gallery-project__open-label { display: none; }
 
 /* The mobile menu lives in the top layer, including its close control. */
@@ -73,7 +75,13 @@
 .gallery-project[data-project="aurex-timepieces"] .gallery-project__image { object-fit: contain; }
 .gallery-project[data-project="inkvision"] .gallery-project__capture { inset: 10% 6%; }
 .gallery-project[data-project="logistics-demo"] .gallery-project__capture { inset: 10% 5%; }
-.gallery-project__open { position: absolute; right: 18px; bottom: 18px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; color: #111; background: #f2f0ea; font-size: 28px; transition: transform .6s var(--ease-out-expo), background .3s; }
+/* Loop do projeto: cobre o card na proporção dele, entra por cima da captura só enquanto toca. */
+.gallery-project__motion { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; transition: opacity .3s var(--ease-out-expo); }
+/* No mobile o botão "explorar" vira uma barra opaca de 50px no rodapé do card
+   (z-index acima do vídeo) — sem esta reserva o loop toca escondido atrás dela. */
+@media (max-width: 767px) { .project-gallery .gallery-project__motion { inset: 0 0 50px; } }
+.gallery-project__motion[data-playing="1"] { opacity: 1; }
+.gallery-project__open { position: absolute; z-index: 2; right: 18px; bottom: 18px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; color: #111; background: #f2f0ea; font-size: 28px; transition: transform .6s var(--ease-out-expo), background .3s; }
 .gallery-project__link:hover .gallery-project__image, .gallery-project__link:focus-visible .gallery-project__image { transform: scale(1.035); }
 .gallery-project__link:hover .gallery-project__atmosphere, .gallery-project__link:focus-visible .gallery-project__atmosphere { transform: scale(1.08); }
 .gallery-project__link:hover .gallery-project__open, .gallery-project__link:focus-visible .gallery-project__open { transform: rotate(45deg); background: #b7ff37; }
@@ -94,7 +102,7 @@
   .orbital-hero { height: auto; min-height: 0; }
   .orbital-hero__stage {
     position: relative; height: auto; min-height: max(100svh, 740px); display: flex; flex-direction: column;
-    padding-top: 94px; padding-bottom: max(24px, env(safe-area-inset-bottom));
+    padding-top: 94px; padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 28px);
   }
   .orbital-hero__note { position: relative; top: auto; left: auto; width: 100%; max-width: none; }
   .orbital-hero__specialty { font-size: .75rem; gap: 10px; letter-spacing: .04em; }
@@ -106,9 +114,7 @@
   .orbital-hero__desktop-article { display: none; }
   .orbital-hero .orbital-hero__world { font-size: calc((100vw - 2 * var(--margin)) / (var(--mobile-world-chars, 6) * .64)); margin-top: .1em; }
   .orbital-hero__bottom { position: relative; bottom: auto; left: auto; right: auto; flex-wrap: wrap; gap: 12px 16px; margin-top: 28px; padding-top: 18px; }
-  .orbital-hero__origin { font-size: .75rem; max-width: 12ch; line-height: 1.4; letter-spacing: .025em; }
   .orbital-hero__cta { gap: 12px; font-size: .75rem; min-height: 48px; letter-spacing: .04em; }
-  .orbital-hero__signature { display: none; }
   .orbital-hero__arrow { width: 48px; height: 48px; background: #f2f0ea; color: #080909; flex: none; }
   .project-gallery { padding-top: 64px; padding-bottom: 24px; }
   .project-gallery__heading { display: block; margin-bottom: 32px; }
@@ -169,6 +175,9 @@
 @media (prefers-reduced-motion: reduce) {
   .orbital-hero { height: auto; min-height: 0; }
   .orbital-hero__stage { position: relative; }
+  /* Reforço declarativo: o componente já reage à mudança ao vivo, isto cobre o
+     instante antes do JS montar e qualquer leitura que escape à checagem em JS. */
+  .gallery-project__motion { display: none; }
 }
 
 /* Legacy hero is retained for the experimental routes. */

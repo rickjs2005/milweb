@@ -1,13 +1,14 @@
 import Image from "next/image";
 import { Reveal } from "@/animations/reveal";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 /**
- * ACT 07 — HUMAN. Depois de tanta tecnologia, quase nada: papel, espaço e
+ * MW/011 — HUMAN. Depois de tanta tecnologia, quase nada: papel, espaço e
  * uma frase. O contraste é o ponto — nenhuma caixa, nenhum ícone.
  */
-export function Human({ headline, tail, name, role, location, act }: { headline: readonly string[]; tail: string; name: string; role: string; location: string; act: string }) {
+export function Human({ headline, tail, name, role, location, node }: { headline: readonly string[]; tail: string; name: string; role: string; location: string; node: NodeAttrs }) {
   return (
-    <section id="human" data-act={act} data-inspect="HUMAN" className="human-signature container-page relative flex min-h-[100svh] flex-col justify-center py-32 md:py-48">
+    <section id="human" {...node} data-inspect="HUMAN" className="human-signature container-page relative flex min-h-[100svh] flex-col justify-center py-32 md:py-48">
       <Reveal>
         <h2 className="human-title t-display t-display-lg text-ink" data-inspect="H2">
           {headline.map((l) => (

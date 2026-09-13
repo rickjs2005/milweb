@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
 import { onIdle } from "@/animations/idle";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 export type Capability = { n: string; label: string; react: "depth" | "structure" | "perspective" | "type" | "grid"; reactLabel: string };
 
@@ -17,7 +18,7 @@ export type Capability = { n: string; label: string; react: "depth" | "structure
  *   grid        → as 12 colunas surgem
  * Tudo com quickTo/timeline curtas; nada persiste depois do hover.
  */
-export function Capabilities({ items, eyebrow, act }: { items: Capability[]; eyebrow: string; act: string }) {
+export function Capabilities({ items, eyebrow, node }: { items: Capability[]; eyebrow: string; node: NodeAttrs }) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -105,7 +106,7 @@ export function Capabilities({ items, eyebrow, act }: { items: Capability[]; eye
   );
 
   return (
-    <section ref={root} id="capabilities" data-act={act} data-inspect="CAPABILITIES" className="capabilities-experience container-page relative bg-paper py-24 md:py-40">
+    <section ref={root} id="capabilities" {...node} data-inspect="CAPABILITIES" className="capabilities-experience container-page relative bg-paper py-24 md:py-40">
       {/* grid (reação "grid") */}
       <div data-grid aria-hidden="true" className="pointer-events-none absolute inset-x-margin inset-y-0 grid opacity-0" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>
         {Array.from({ length: 12 }).map((_, i) => (

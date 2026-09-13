@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BRAND } from "@/data/brand";
 import { alternatesOf, internalizePath, localizePath } from "@/i18n/routing";
 import type { Locale } from "@/i18n/config";
+import { useSystem } from "@/features/system/system-provider";
 import { LanguageSwitch } from "./language-switch";
 import { SoundToggle } from "@/features/sound/sound-toggle";
 
@@ -22,10 +23,12 @@ export type NavStrings = {
 };
 
 /**
- * Navegação mínima: wordmark · indicador de ato · links · seletor de idioma.
- * No mobile os links viram um overlay tipográfico. `usePathname` devolve o
- * caminho INTERNO reescrito pelo middleware (/pt/work/…); internalizePath
- * normaliza e permite montar a página equivalente em cada idioma.
+ * Navegação mínima: wordmark · nó atual do MilWeb System (fora da home, onde a
+ * HUD já mostra) · links · seletor de idioma. No mobile os links viram um
+ * dialog nativo. `usePathname` devolve o caminho INTERNO reescrito pelo
+ * middleware (/pt/work/…); internalizePath normaliza e permite montar a página
+ * equivalente em cada idioma. O nó e o breakpoint vêm do provider do sistema:
+ * a nav não observa o DOM nem consulta media queries por conta própria.
  */
 export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }) {
   const raw = usePathname() ?? "/";
@@ -33,7 +36,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   const { internal } = internalizePath(raw.replace(/^\/pt(?=\/|$)/, "") || "/");
   const [open, setOpen] = useState(false);
   const mobileMenu = useRef<HTMLDialogElement>(null);
-  const [act, setAct] = useState<string>("");
+  const { current, media } = useSystem();
 
   const links = [
     { href: localizePath(locale, "/work"), label: strings.work, key: "/work" },
@@ -42,33 +45,6 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
     { href: localizePath(locale, "/contact"), label: strings.contact, key: "/contact" },
   ];
   const alternates = alternatesOf(internal);
-
-  // Indicador de ato: lê [data-act] das seções visíveis (Home).
-  useEffect(() => {
-    const acts = Array.from(document.querySelectorAll<HTMLElement>("[data-act]"));
-    if (!acts.length) {
-      setAct("");
-      return;
-    }
-    const ratios = new Map<Element, number>();
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0));
-        let best: Element | null = null;
-        let max = 0;
-        ratios.forEach((r, el) => {
-          if (r > max) {
-            max = r;
-            best = el;
-          }
-        });
-        if (best) setAct((best as HTMLElement).dataset.act ?? "");
-      },
-      { threshold: [0, 0.1, 0.25, 0.5, 0.75], rootMargin: "-10% 0px -30% 0px" },
-    );
-    acts.forEach((a) => io.observe(a));
-    return () => io.disconnect();
-  }, [raw]);
 
   useEffect(() => {
     setOpen(false);
@@ -84,12 +60,10 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
     };
   }, [open]);
 
+  // O menu mobile não sobrevive à largura de desktop (breakpoint do sistema, não um próprio).
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const closeOnDesktop = () => { if (desktop.matches) setOpen(false); };
-    desktop.addEventListener("change", closeOnDesktop);
-    return () => desktop.removeEventListener("change", closeOnDesktop);
-  }, []);
+    if (media.bp !== "mobile") setOpen(false);
+  }, [media.bp]);
 
   const isCurrent = (key: string) => internal === key || internal.startsWith(key + "/");
 
@@ -100,8 +74,11 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
           {BRAND.mark}
         </Link>
 
-        {internal !== "/" && <span className="hidden tnum opacity-60 md:block" aria-live="polite">
-          {act ? act : BRAND.index}
+        {/* Decorativo: a HUD (aria-hidden) já mostra o mesmo nó. Sem aria-live —
+            ele mudaria a cada scroll, não só a cada rota, e leria códigos internos
+            em voz alta pra quem usa leitor de tela. */}
+        {internal !== "/" && <span className="hidden tnum opacity-60 md:block" aria-hidden="true">
+          {current.id} — {current.title}
         </span>}
 
         <div className="hidden items-center gap-7 md:flex">

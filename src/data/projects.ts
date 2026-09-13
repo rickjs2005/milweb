@@ -62,7 +62,8 @@ const ORDER = [
   "imperio-cafe",
 ];
 
-const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision", "logistics-demo"];
+/** Os seis da Home, na ordem da galeria — também a ordem dos nós MW/002–007 (data/milweb-system.ts). */
+export const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision", "logistics-demo"];
 
 /** displayType explícito para os casos em que a categoria comercial não descreve o trabalho. */
 const DISPLAY: Record<string, DisplayType> = {

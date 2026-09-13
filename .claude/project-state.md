@@ -5,6 +5,123 @@ Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (Scro
 Branch: `main` · produção em https://milweb.com.br (Vercel)
 Último deploy verificado: **05/09/2026 (18h) · `94471c8` = tag `v1.1.0`** (deploy `milweb-6nc6fkg8c`, aliasado em milweb.com.br, `vercel inspect` confirmado; globo com mouse/pulso/arcos validado em produção em 1920 e 390). Anterior: **05/09/2026 · `37501ba` = tag `v1.0.0`** (deploy `milweb-nfpabj4of`, aliasado em milweb.com.br, `vercel inspect` confirmado; a11y desktop 100 em produção). Anterior no mesmo dia: `5c3e71a` (ato 06 validado em produção). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
+## 12/09/2026 — MILWEB SYSTEM, sprints 01 e 02 (local, SEM push — aguardando o Rick)
+
+**Antes de tudo: este arquivo estava desatualizado.** Em 10/09 outra sessão fez um redesign da home
+(commits `9c5ba78`, `df4aed9`, `c176cad`) que trocou o hero do globo por uma escultura orbital em
+WebP com parallax, e o Selected Work em atos por uma galeria editorial de 12 colunas. Esse trabalho
+foi documentado só em `docs/visual-upgrade-2026-09.md` e nunca chegou aqui — por isso os blocos
+abaixo ainda falam do globo e dos atos como se estivessem no ar. **Não estão.** Globo, atos,
+`build-hero.tsx`, `selected-work.tsx`, `work/*`, `features/globe/*` e `features/hero-visual/*`
+continuam no repositório mas nenhuma página os importa.
+
+**O problema que originou este trabalho** (pedido do Rick, comparando a MilWeb com Active Theory,
+Bruno Simon, Cuberto, Basement e Locomotive): as seções pareciam experiências separadas. O redesign
+de 10/09 tinha apagado metade da linguagem `MW/NNN` sem que ninguém percebesse — na home sobraram só
+`MW/008`, `MW/010` e `MW/011`, ou seja, o visitante entrava num sistema que começava no item oito.
+Havia ainda **quatro numerações paralelas** para as mesmas coisas (`MW/NNN`, `ATO 02..09` em
+`data-act`, `MW / 02` de posição no arquivo, `LAB / 001`), coordenadas em três formatos
+incompatíveis e nenhuma ligada a projeto, e `SEGURE PARA INSPECIONAR` nos três dicionários sem
+nenhum leitor.
+
+Spec completa: `docs/superpowers/specs/2026-09-12-milweb-system-design.md` (arquitetura, modelo de
+dados, responsive, performance, a11y, integração futura do Milo, rollout, riscos, aceite, testes).
+
+### Sprint 01 — fundação
+
+- **`src/data/milweb-system.ts`**: fonte canônica dos nós. Deriva de `projects.ts`/`work.ts`/`i18n`,
+  não duplica texto. 13 nós contíguos na home (`MW/001` sistema · `MW/002–007` os seis projetos ·
+  `008` capacidades · `009` LAB · `010` quebra · `011` Rick · `012` feito com · `013` contato) e o
+  arquivo a partir de `MW/014`. Invariantes falham no import, como em `projects.ts`.
+  **É server-only e continua assim** — verificado no bundle, nenhum chunk do cliente contém os nós.
+- **`features/system/system-provider.tsx` + `system-store.ts`**: estado global mínimo. Baixa
+  frequência no contexto React (nó atual, vizinhos, mídia, viewport, áudio); alta frequência fora do
+  React (progresso, direção, velocidade), lido por assinatura. **Nenhum rAF novo** — usa o ticker do
+  GSAP que já rodava. Escreve `data-reduce`, `data-pointer`, `data-bp`, `data-scroll` no `<html>`:
+  uma fonte só, no lugar das sete leituras avulsas de reduced-motion.
+- **HUD** (`components/system-hud.tsx` + `styles/system.css`): barra fixa no rodapé. Desktop mostra
+  `MW/003 — TERRAL · CASA DO TORRADOR` e o progresso real do nó; no nó raiz mostra o que o sistema
+  sabe da sessão (viewport, DPR, tipo de ponteiro, movimento reduzido, som). Celular mostra só
+  `003 / TERRAL`, dentro da área segura. `aria-hidden`, some no boot/inspeção/menu aberto.
+- **`data-act` e `d.acts` saíram** do tipo e dos três dicionários. A nav perdeu o
+  `IntersectionObserver` próprio (8 alvos, que rodava na home mesmo com o indicador escondido) e o
+  `matchMedia` de 768 px: lê o contexto.
+- Cases, `/lab`, `/estudio`, `/contato`, `/projetos` e a imagem OG passaram a estampar o nó.
+  No case, `MW/003 — TERRAL` é a identidade; `02 / 25` continua sendo a posição no arquivo.
+
+### Sprint 02 — os projetos se movem
+
+- Loops de 4–4,5 s do **próprio material** dos projetos (`scripts/project-motion.sh`, a partir dos
+  filmes de 60 s em `~/Videos/TERRAL`, que ficam fora do repo): Terral é o grão e a abertura;
+  Vertex é vedação → fachada, a obra sendo revelada. Nada de efeito genérico igual nos dois.
+- `public/motion/*`: WebM VP9 + MP4 H.264, 24 fps, sem áudio, 720 de altura, 1,1 MB no total, o
+  maior com 409 KB. **Zero bytes no primeiro acesso** — nenhuma `<source>` entra no DOM sem gesto.
+- Desktop: hover ou foco de teclado toca; sair pausa e volta ao início. Celular: um único
+  `IntersectionObserver` decide, só o card dominante baixa e toca, nunca dois.
+
+### O que quebrou no caminho (e o que isso ensina)
+
+1. **Nó dominante por área falhava na galeria de duas colunas** — o card largo da esquerda vencia o
+   estreito que estava de fato no meio da tela. Virou distância entre centros. O `system-check`
+   pegou em 3 dos 6 cards antes de qualquer olho humano.
+2. **Medir os nós durante o carregamento** era uma rajada de reflow forçado dentro da janela do LCP
+   (11 imagens na home, cada uma disparando o `ResizeObserver` do corpo). Agora nada é medido antes
+   do `load`, e o observer só age quando a altura do documento muda de verdade.
+3. **O vídeo tocava o card errado no celular**: cada card recém-carregado chamava `play()` sozinho,
+   então o último a carregar roubava a vez — o Terral tocava e era pausado pelo Vertex, que estava
+   quase fora da tela, e os dois baixavam o arquivo. Armar e tocar viraram coisas separadas.
+4. **`.next` foi invalidado duas vezes** por dev e build dividirem a pasta (armadilha já conhecida),
+   uma delas deixando tipos órfãos que quebraram o build com um erro que não tinha nada a ver.
+
+### Verificação
+
+- `pnpm lint` e `pnpm build` verdes (126 páginas). Home **13,8 kB** (era 13,1) · primeiro
+  carregamento **177 kB** (era 176) · JS inicial **246,0 KB gzip** (limite 250).
+- `scripts/system-check.mjs` — **72 asserções, todas passam**: os 13 nós contíguos em PT/EN/ES, a
+  HUD acompanhando cada nó ao rolar, os atributos do `<html>`, sete rotas internas, formato curto e
+  área segura no celular, e a HUD informando sem animar sob `prefers-reduced-motion`.
+- `scripts/motion-check.mjs` — **13 asserções, todas passam**: zero `<source>` antes do gesto,
+  hover e foco de teclado tocando, um vídeo por vez, só o card dominante baixando, nada tocando
+  fora da galeria, e nada sob movimento reduzido.
+- `.audit/qa-phase7.mjs` — OK (5 transições de rota, back, sem ScrollTrigger órfão). **Precisou de
+  conserto**: ainda checava `.compiler-fallback`, que o redesign de 10/09 removeu. O arquivo está
+  em `.audit`, que é ignorada pelo git — script de QA fora do versionamento apodrece sem aviso.
+
+### Revisão adversarial (12–13/09) — 18 correções aplicadas
+
+Depois dos sprints, uma revisão em 6 dimensões levantou 31 achados; cada um foi verificado por 3
+agentes tentando refutá-lo (limite de sessão bateu no meio — 9 achados de duas dimensões foram
+reverificados manualmente, lendo o código, quando voltou). 18 confirmados, todos corrigidos:
+
+- **Alta**: o provider mantinha o ticker do GSAP acordado pra sempre em toque/movimento reduzido —
+  exatamente onde o `ScrollProvider` deixa o ticker DORMIR de propósito. Agora um laço próprio
+  (`requestAnimationFrame`) só nessas duas condições, que dorme sozinho quando o scroll pára.
+- **Médias**: leitura de layout dentro do loop por quadro (cacheada); `readViewport` sem guarda de
+  no-op (re-renderizava a Nav à toa); progresso nunca chegava a 100% no último nó da página; HUD
+  ilegível sobre fotografia (`mix-blend-mode` trocado por fundo em gradiente); `:has()` sem
+  `@supports` derrubava a regra inteira em navegador sem suporte; troca de rota empilhava os dois
+  rótulos da HUD por 0,7s; título do hero riscava a barra em janelas < 854px de altura; vídeo do
+  Terral tocava escondido atrás do botão "explorar" no celular; **o loop do Vertex estava cortado
+  em 7:5 mas o card dele é 4:5 — 43% do quadro ficava fora, recortado de novo**; reduced-motion só
+  era lido na montagem do vídeo, não ao vivo.
+- **Baixas**: direção do scroll podia ficar presa; velocidade zerada após pausa longa; HUD formatava
+  string antes de comparar; `.t-mono` vencia o tamanho próprio da HUD por especificidade; indicador
+  da nav virou `aria-live` disparado a cada scroll (removido); Selected Work perdeu o rótulo do
+  modo inspeção; `status`/`shortId` mortos removidos de `milweb-system.ts`.
+
+**Verificação final, máquina limpa** (dois servidores esquecidos de passos anteriores contaminaram
+uma leitura no meio do caminho — derrubados antes de valer):
+
+| | mobile perf | mobile TBT | desktop perf | desktop TBT | CLS desktop |
+|---|---|---|---|---|---|
+| antes do MilWeb System | 75 | 440 ms | 94 | 20 ms | 0,016 |
+| depois (sprints + 18 correções) | **82** | **250 ms** | 93 | **0 ms** | 0,029 |
+
+Mobile subiu, TBT caiu quase pela metade. O CLS de 0,029 é anterior a este trabalho (já estava
+assim logo após o redesign de 10/09) e segue dentro do orçamento — registrado como dívida.
+`system-check`: 75/75. `motion-check`: 13/13. `qa-phase7`: OK. Detalhe completo, arquivo por
+arquivo, em `docs/superpowers/specs/2026-09-12-milweb-system-design.md` §"Revisão adversarial".
+
 ## 05/09/2026 (noite) — GLOBO: olha para o mouse, pulsa e manda arcos BRASIL → MUNDO (NO AR em `94471c8` = `v1.1.0`)
 
 Pedido do Rick: "o globo poderia girar de acordo com o mouse e tentar melhorar o globo". Brainstorm curto (bounded): ele escolheu **vida + interação** e **continentes mais bonitos**, e depois aprovou o desenho **sem a máscara nova** (os continentes editoriais ficam). Implementado:
@@ -307,16 +424,36 @@ Sintoma: site congela inteiro (todas as animações, hero ao fim; screenshot em 
 - **`/diagnostico`** e seus componentes (dependency-calc, google-sim, fair-price) ainda usam o shim CSS plano — funcionam, mas destoam do sistema novo.
 - **Vídeos `public/lab/full-*.mp4` (67 MB)** continuam no repo; não entram no primeiro acesso, mas pesam no clone.
 - **`pnpm build` e `next dev` não podem dividir a mesma `.next` ao mesmo tempo**: o build sobrescreve os chunks do dev server (erro "Cannot find module './vendor-chunks/gsap@3.15.0.js'"). Pare o dev, ou rode o build, e depois `rm -rf .next` + subir de novo.
-- **`NEXT_PUBLIC_HERO_VISUAL` é inlined no build**: trocar a variante exige reiniciar o dev server / redeploy. Em produção está `milo`.
+- **`NEXT_PUBLIC_HERO_VISUAL` é inlined no build**: trocar a variante exige reiniciar o dev server / redeploy. **Desde 10/09 não seleciona mais a abertura da home** — o hero é a escultura orbital em WebP (`sections/home/orbital-hero.tsx`), sem WebGL. O globo e o Milo saíram da home.
+- **Este arquivo já ficou desatualizado uma vez**: o redesign de 10/09 foi feito em outra sessão e documentado só em `docs/visual-upgrade-2026-09.md`. Antes de analisar a home, `git fetch` e comparar com `origin/main` — vários blocos abaixo descrevem um site que não está mais no ar.
+- **A HUD do MilWeb System é fixa no rodapé da janela** (`--hud-h`, `styles/system.css`). Qualquer seção nova que encoste no fim da janela precisa reservar essa altura, como o hero e o footer já fazem.
+- **Nada da HUD pode ser inventado**: todo número exibido vem de medição do provider ou de fato já publicado no site. Se for preciso um valor novo, ou ele é medido, ou não entra.
 
 ## Próxima ação (em ordem)
 
-0. **Rick, no Search Console**: remover `/`, `/en`, `/es` da lista de sitemaps (são páginas) e pedir indexação delas pela Inspeção de URL → Fase 15 ✓.
-1. Vercel → Analytics → Events: conferir `whatsapp_click` no painel (POST 200 já confirmado).
-2. Remedir Lighthouse mobile em máquina limpa (61–68 em produção contra 86 local).
-3. Atualizar `hero-frames.mjs`/`layout-check.mjs` para rolar pela roda (o `scrollTo` deles não move mais a página).
-4. Fase 13: Safari/Firefox físicos quando houver aparelho (ou N/A justificado).
-5. Reskin do `/diagnostico` no sistema novo.
+0. **Rick decide sobre os sprints 01 e 02 do MilWeb System**, que estão LOCAIS e sem push. Conferir
+   no navegador e, se aprovar, commitar e deploy. Nada disso está em produção.
+1. **Rick, em aparelho real** (o Playwright cobre a lógica, não a percepção): a HUD no celular, os
+   loops de vídeo do Terral e do Vertex em 4G, e o consumo de bateria com o vídeo tocando.
+2. **Rick, no Search Console**: remover `/`, `/en`, `/es` da lista de sitemaps (são páginas) e pedir
+   indexação delas pela Inspeção de URL → Fase 15 ✓.
+3. Vercel → Analytics → Events: conferir `whatsapp_click` no painel (POST 200 já confirmado).
+4. **Decidir o destino do código morto do redesign de 10/09** — `sections/home/build-hero.tsx`,
+   `selected-work.tsx`, `work/*`, `features/globe/*`, `features/hero-visual/*`,
+   `features/compiler/fallback.tsx`. Hoje compila, não roda e confunde quem lê. Arquivar fora de
+   `src` ou apagar. Atenção: `boot-controller.tsx` e `break-the-website.tsx` ainda escrevem no
+   `features/compiler/store.ts` sem nenhum renderer montado — tweens animando um objeto que
+   ninguém lê.
+5. **Versionar `.audit/qa-phase7.mjs`** (hoje a pasta é ignorada). Ele apodreceu sem aviso: checava
+   `.compiler-fallback`, removido em 10/09, e só quebrou quando foi rodado agora.
+6. Sprints 03 a 05 do MilWeb System, na ordem da spec: continuidade home → case, hero com passes
+   reais do Blender, grafo LAB ↔ cases.
+7. Confirmar com o Rick a **coordenada de origem do estúdio** (o código usa Brasília) e os **anos**
+   dos outros cinco projetos (só a Kavita tem ano confirmado) — os nós ganham essas leituras.
+8. Atualizar `hero-frames.mjs`/`layout-check.mjs` para rolar pela roda (o `scrollTo` deles não move
+   mais a página).
+9. Fase 13: Safari/Firefox físicos quando houver aparelho (ou N/A justificado).
+10. Reskin do `/diagnostico` no sistema novo.
 
 ## Notas de N/A
 

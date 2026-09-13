@@ -5,6 +5,7 @@ import { CASE_STORIES, type CaseStory } from "@/data/case-stories";
 import { getDict } from "@/i18n";
 import { SELECTED_WORK } from "@/data/work";
 import { TOTAL_LABEL, type ProjectEntry } from "@/data/projects";
+import { nodeAttrs, nodeOfProject } from "@/data/milweb-system";
 import { PROFILE, UI } from "@/lib/content";
 import { makeT, withLocale, type Locale } from "@/lib/i18n";
 import { CaseExperience } from "./case-experience";
@@ -82,14 +83,16 @@ export function CaseStudy({ project: p, next, locale }: { project: ProjectEntry;
   const hero = p.image ?? story.fullBleed.src;
   const narrative = p.caseStudy?.narrative ?? [];
   const hasNumber = p.n !== "—";
+  // O id do MilWeb System é a identidade; `n / TOTAL` continua sendo a posição no arquivo.
+  const node = nodeOfProject(p.slug);
 
   return (
-    <article className="case" data-world={p.slug} data-variant={story.variant} data-inspect={`CASE / ${p.slug.toUpperCase()}`}>
+    <article className="case" {...nodeAttrs(node, locale)} data-world={p.slug} data-variant={story.variant} data-inspect={`CASE / ${p.slug.toUpperCase()}`}>
       {/* 00 — INTRO + 01 — HERO */}
       <header className="container-page pt-nav">
         <div className="rule flex items-center justify-between pt-3 t-mono">
           <span>
-            MW / {hasNumber ? p.n : "LAB"} — {p.title.toUpperCase()}
+            <span className="tnum">{node.id}</span> — {p.title.toUpperCase()}
           </span>
           <span className="tnum text-ink-3">
             {p.clientWork ? L.client : L.studio}

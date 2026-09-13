@@ -8,7 +8,7 @@ export const es: Dictionary = {
     siteDescription: "MilWeb es un estudio de desarrollo creativo en Brasil: sitios, sistemas y experiencias digitales con diseño, código, motion y WebGL — del primer wireframe al deploy.",
   },
   nav: { work: "Proyectos", lab: "Lab", studio: "Estudio", services: "Servicios", contact: "Contacto", menu: "Menú", close: "Cerrar", primary: "Navegación principal" },
-  acts: { build: "ACTO 02 / CONSTRUCCIÓN", work: "ACTO 03 / PROYECTOS", capabilities: "ACTO 04 / CAPACIDADES", lab: "ACTO 05 / LAB", brk: "ACTO 06 / RUPTURA", human: "ACTO 07 / HUMANO", builtWith: "ACTO 08 / HECHO CON", contact: "ACTO 09 / CONTACTO" },
+  system: { fine: "PUNTERO FINO", coarse: "TÁCTIL", reduce: "MOVIMIENTO REDUCIDO", sound: "SONIDO" },
   boot: { tagline: "ESTUDIO DE DESARROLLO CREATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiencia", "cargando estructura", "cargando motion", "cargando interacción"], skip: "saltar", compile: "compilando realidad" },
   hero: {
     headline: ["CÓDIGOS MUEVEN", "EL MUNDO."],

@@ -5,7 +5,8 @@
 export type Dictionary = {
   meta: { langName: string; selectLanguage: string; siteTitle: string; siteDescription: string };
   nav: { work: string; lab: string; studio: string; services: string; contact: string; menu: string; close: string; primary: string };
-  acts: { build: string; work: string; capabilities: string; lab: string; brk: string; human: string; builtWith: string; contact: string };
+  /** Leituras reais do dispositivo mostradas pela HUD do MilWeb System no nó raiz. */
+  system: { fine: string; coarse: string; reduce: string; sound: string };
   boot: { tagline: string; origin: string; lines: [string, string, string, string]; skip: string; compile: string };
   hero: {
     headline: [string, string];

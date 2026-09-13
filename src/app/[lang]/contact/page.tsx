@@ -7,6 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getDict } from "@/i18n";
 import { localeFrom, makeT, type LangParams } from "@/lib/i18n";
 import { fitLines } from "@/lib/fit";
+import { nodeAttrs, nodeOf } from "@/data/milweb-system";
 
 export async function generateMetadata({ params }: { params: Promise<LangParams> }): Promise<Metadata> {
   const locale = await localeFrom(params);
@@ -22,10 +23,10 @@ export default async function ContactPage({ params }: { params: Promise<LangPara
   const d = getDict(locale);
   return (
     <>
-      <main className="container-page pt-nav" data-inspect="CONTACT_PAGE">
+      <main className="container-page pt-nav" {...nodeAttrs(nodeOf("contact"), locale)} data-inspect="CONTACT_PAGE">
         <header className="pt-8 md:pt-12">
           <div className="rule flex items-center justify-between gap-4 pt-3 t-mono">
-            <span>{d.pages.contact}</span>
+            <span><span className="tnum">{nodeOf("contact").id}</span> — {d.pages.contact}</span>
             <span className="tnum text-right text-ink-3 [&_span]:whitespace-nowrap">{t(CONTACT_PAGE.location).toUpperCase().split(" · ").map((part, i) => <span key={part}>{i > 0 ? " · " : ""}{part}</span>)}</span>
           </div>
           <h1 className="t-display t-display-xl t-fit mt-10 text-ink" style={fitLines(CONTACT_PAGE.title[locale])}>

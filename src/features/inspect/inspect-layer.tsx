@@ -21,7 +21,10 @@ function labelOf(el: Element): string {
   if (tag === "NAV") return "NAV";
   if (tag === "UL") return "LIST";
   if (tag === "BUTTON") return "BUTTON";
-  if (tag === "SECTION") return el.getAttribute("data-act")?.replace(/^ACT \d+ \/ /, "SECTION / ") ?? "SECTION";
+  if (tag === "SECTION") {
+    const node = el.getAttribute("data-node");
+    return node ? `${node} / ${el.getAttribute("data-node-title") ?? "SECTION"}` : "SECTION";
+  }
   return tag;
 }
 

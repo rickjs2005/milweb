@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { getProject, TOTAL_LABEL } from "@/data/projects";
+import { nodeOfProject } from "@/data/milweb-system";
 import { SELECTED_WORK } from "@/data/work";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "58%", paddingRight: "40px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #111", paddingTop: "12px", fontSize: "20px", letterSpacing: "0.1em" }}>
             <span>MILWEB®</span>
-            <span style={{ color: "#5F5F5A" }}>MW / {p?.n ?? "—"} / {TOTAL_LABEL}</span>
+            <span style={{ color: "#5F5F5A" }}>{p ? nodeOfProject(p.slug).id : "MW/—"} · {p?.n ?? "—"} / {TOTAL_LABEL}</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", fontSize: "72px", lineHeight: 0.92, letterSpacing: "-0.04em", fontWeight: 700 }}>
             {title.map((l) => (

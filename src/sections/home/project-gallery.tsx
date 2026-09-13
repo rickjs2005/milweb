@@ -4,10 +4,16 @@ import Image from "next/image";
 import { useRef } from "react";
 import { gsap, MQ, useGSAP } from "@/animations/gsap";
 import { vtOfSlug } from "@/lib/route-transition";
+import type { NodeAttrs } from "@/data/milweb-system";
+import { ProjectMotion, type MotionSources } from "@/components/project-motion";
 
 export type GalleryProject = {
   n: string;
   slug: string;
+  /** Nó do MilWeb System: o card é quem carrega o nó, não a seção. */
+  node: NodeAttrs;
+  /** Loop curto do próprio projeto (public/motion). Sem ele, o card fica na captura. */
+  motion?: MotionSources;
   name: string;
   title: readonly string[];
   displayType: string;
@@ -19,7 +25,6 @@ export type GalleryProject = {
 };
 
 type ProjectGalleryProps = {
-  act: string;
   eyebrow: string;
   enter: string;
   all: string;
@@ -29,7 +34,7 @@ type ProjectGalleryProps = {
 };
 
 /** A varied, scannable gallery. Captures are always visible, including on touch. */
-export function ProjectGallery({ act, eyebrow, enter, all, clientWork, allHref, items }: ProjectGalleryProps) {
+export function ProjectGallery({ eyebrow, enter, all, clientWork, allHref, items }: ProjectGalleryProps) {
   const root = useRef<HTMLElement>(null);
   useGSAP(() => {
     const mm = gsap.matchMedia();
@@ -47,7 +52,7 @@ export function ProjectGallery({ act, eyebrow, enter, all, clientWork, allHref, 
 
   const words = eyebrow.split(" ");
   return (
-    <section ref={root} id="work" data-act={act} className="project-gallery container-page">
+    <section ref={root} id="work" data-inspect="SELECTED_WORK" className="project-gallery container-page">
       <div className="project-gallery__heading">
         <h2><span>{words[0]}</span><span>{words.slice(1).join(" ")}<span className="project-gallery__period">.</span></span></h2>
         <div className="project-gallery__edition t-mono">
@@ -58,7 +63,7 @@ export function ProjectGallery({ act, eyebrow, enter, all, clientWork, allHref, 
 
       <div className="project-gallery__grid">
         {items.map((project) => (
-          <article key={project.slug} className="gallery-project" data-gallery-project data-project={project.slug}>
+          <article key={project.slug} className="gallery-project" data-gallery-project data-project={project.slug} data-inspect={`CARD / ${project.slug.toUpperCase()}`} {...project.node}>
             <a href={project.href} data-vt={vtOfSlug(project.slug)} data-cursor="link"
               className="gallery-project__link" aria-label={`${enter} — ${project.name}`}>
               <div className="gallery-project__media" style={{ viewTransitionName: `case-media-${project.slug}` }}>
@@ -69,6 +74,7 @@ export function ProjectGallery({ act, eyebrow, enter, all, clientWork, allHref, 
                     sizes="(max-width: 767px) 92vw, (max-width: 1200px) 60vw, 900px"
                     className="gallery-project__image" />
                 </div>
+                {project.motion && <ProjectMotion sources={project.motion} />}
                 <span className="gallery-project__open" aria-hidden="true"><span className="gallery-project__open-label">{enter}</span><span>↗</span></span>
               </div>
               <div className="gallery-project__caption">

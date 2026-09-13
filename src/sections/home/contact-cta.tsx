@@ -1,20 +1,21 @@
 import Link from "next/link";
 import { PROFILE } from "@/lib/content";
 import { fitLines } from "@/lib/fit";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 /**
- * ACT 09 — CONTACT. A última viewport: uma pergunta e uma ação. Ao
+ * MW/013 — CONTACT. A última viewport: uma pergunta e uma ação. Ao
  * aproximar o cursor de PROJECT, a palavra revela a própria estrutura —
  * bounding box, labels e uma cota — só com CSS (group-hover).
  */
-export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, act, label }: { headline: readonly string[]; cta: string; ctaWord: string; href: string; email: string; whatsapp: string; act: string; label: string }) {
+export function ContactCta({ headline, cta, ctaWord, href, email, whatsapp, node, label }: { headline: readonly string[]; cta: string; ctaWord: string; href: string; email: string; whatsapp: string; node: NodeAttrs; label: string }) {
   const [before, after] = cta.split(ctaWord);
   return (
-    <section id="contact" data-act={act} data-inspect="CONTACT" className="contact-finale container-page relative flex min-h-[100svh] flex-col justify-between overflow-hidden pb-8 pt-nav">
+    <section id="contact" {...node} data-inspect="CONTACT" className="contact-finale container-page relative flex min-h-[100svh] flex-col justify-between overflow-hidden pb-12 pt-nav">
       <div className="contact-orbit pointer-events-none absolute" aria-hidden="true"><span /></div>
       <div className="rule flex items-center justify-between pt-3 t-mono">
         <span>{label}</span>
-        <span className="tnum text-ink-3">MW/011</span>
+        <span className="tnum text-ink-3">{node["data-node"]}</span>
       </div>
 
       <h2 className="t-display t-display-xl t-fit relative z-10 text-ink" aria-label={headline.join(" ")} style={fitLines(headline)} data-inspect="H2">

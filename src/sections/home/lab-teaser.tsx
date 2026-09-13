@@ -7,6 +7,7 @@ import { loadSplitText, type SplitTextInstance } from "@/animations/split-text";
 import { onIdle } from "@/animations/idle";
 import { getQuality } from "@/lib/quality";
 import { createHorizon, letterTransform, type HorizonState } from "@/features/lab/event-horizon";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 /**
  * ACT 05 — MILWEB LAB · HORIZONTE DE EVENTOS.
@@ -44,7 +45,7 @@ const fieldK = (p: number) => {
 };
 const swallowOf = (p: number) => (p < 0.88 ? 0 : gsap.parseEase("power2.in")((p - 0.88) / 0.12));
 
-export function LabTeaser({ eyebrow, title, body, enter, href, act, tech }: { eyebrow: string; title: string; body: string; enter: string; href: string; act: string; tech: string }) {
+export function LabTeaser({ eyebrow, title, body, enter, href, node, tech }: { eyebrow: string; title: string; body: string; enter: string; href: string; node: NodeAttrs; tech: string }) {
   const root = useRef<HTMLElement>(null);
   const [first, ...rest] = title.split(" ");
   const longest = Math.max(first.length, rest.join(" ").length);
@@ -211,7 +212,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, act, tech }: { ey
   );
 
   return (
-    <section ref={root} id="lab" data-act={act} data-inspect="LAB_TEASER" className="relative h-[220svh] bg-[#0B0B0B] text-paper max-md:h-[180svh]">
+    <section ref={root} id="lab" {...node} data-inspect="LAB_TEASER" className="relative h-[220svh] bg-[#0B0B0B] text-paper max-md:h-[180svh]">
       {/* o palco: preso, isolado, nada escapa dele */}
       <div data-lab-stage className="isolate sticky top-0 flex h-[100svh] flex-col justify-between overflow-hidden px-margin pb-8 pt-nav">
         {/* a singularidade e o campo de pontos (nível 00) */}
@@ -232,7 +233,7 @@ export function LabTeaser({ eyebrow, title, body, enter, href, act, tech }: { ey
           <p className="max-w-sm normal-case tracking-normal text-paper/70 md:flex-1" style={{ fontFamily: "var(--font-display)", fontSize: "var(--step-0)", letterSpacing: 0, textTransform: "none" }}>
             {body}
           </p>
-          <p className="text-paper/50 md:flex-1 md:text-center">MW/008</p>
+          <p className="text-paper/50 md:flex-1 md:text-center">{node["data-node"]}</p>
           <p className="md:flex-1 md:text-right">
             <Link href={href} data-vt="horizon" data-cta className="act-cta inline-flex items-center gap-1.5 text-paper" data-inspect="CTA">
               <span aria-hidden="true" className="act-cta-br">

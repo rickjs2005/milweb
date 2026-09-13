@@ -8,6 +8,7 @@ import { compiler } from "@/features/compiler/store";
 import { compileTo } from "@/features/compiler/compiler";
 import { getQuality } from "@/lib/quality";
 import { sound } from "@/features/sound/sound";
+import type { NodeAttrs } from "@/data/milweb-system";
 
 /**
  * ACT 06 — BREAK THE WEBSITE. Um botão discreto: DO NOT PRESS. Ao apertar,
@@ -22,7 +23,7 @@ import { sound } from "@/features/sound/sound";
  * transform). LOW: menos corpos e sem arrasto. reduced-motion: sem física
  * — a composição vai direto ao estado final, em silêncio.
  */
-export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, pieces }: { trigger: string; headline: readonly string[]; sub: string; rebuild: string; title: readonly [string, string]; act: string; pieces: readonly [string, string, string, string, string] }) {
+export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, node, pieces }: { trigger: string; headline: readonly string[]; sub: string; rebuild: string; title: readonly [string, string]; node: NodeAttrs; pieces: readonly [string, string, string, string, string] }) {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"idle" | "breaking" | "broken" | "rebuilding">("idle");
@@ -184,7 +185,7 @@ export function BreakTheWebsite({ trigger, headline, sub, rebuild, title, act, p
   const broken = state === "broken";
 
   return (
-    <section ref={root} id="break" data-act={act} data-inspect="BREAK" className="relative overflow-hidden bg-paper">
+    <section ref={root} id="break" {...node} data-inspect="BREAK" className="relative overflow-hidden bg-paper">
       <div ref={stage} className="container-page relative z-10 flex min-h-[100svh] flex-col justify-between pb-8 pt-nav" data-inspect="PHYSICS_STAGE">
         {/* as 12 colunas do grid também se desprendem (não em LOW) */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 inset-y-0 hidden md:grid" style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))", columnGap: "var(--gutter)" }}>

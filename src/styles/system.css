@@ -1,0 +1,73 @@
+/* MilWeb System — HUD persistente. Lê só o que o provider mediu. */
+:root { --hud-h: 28px; }
+
+/* A HUD é fixa no rodapé da janela: o fim do documento reserva a altura dela
+   para a barra não cobrir os links do footer quando se chega ao fundo. */
+footer[data-inspect="FOOTER"] { padding-bottom: calc(2.5rem + var(--hud-h)); }
+
+/* Fundo garantido, não blend: sobre a galeria (fotografia, não uma cor plana), o
+   difference-blend produz contraste imprevisível — em bandas medidas caiu a 1,2:1.
+   Um gradiente escuro sob o texto funciona sobre qualquer conteúdo, sem exceção;
+   sobre o hero (já quase preto) ele é praticamente invisível, o que é o efeito certo. */
+.mw-hud {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-nav);
+  display: flex; justify-content: space-between; align-items: center; gap: 24px;
+  height: 28px; padding: 0 var(--margin);
+  color: #f2f0ea; background: linear-gradient(to top, rgba(8, 9, 9, .88), rgba(8, 9, 9, .68)); pointer-events: none;
+  view-transition-name: mw-hud;
+  opacity: 1; transition: opacity var(--dur-medium) var(--ease-out-expo);
+}
+/* Especificidade maior que a de `.t-mono` (mesma classe do elemento): sem isto o
+   tamanho e o espaçamento próprios da HUD nunca se aplicam — quem ganha é sempre
+   a folha carregada depois no <head>, não a mais específica (empate na especificidade). */
+.mw-hud.t-mono { font-size: 11px; letter-spacing: .1em; line-height: 1; }
+.mw-hud__node { position: relative; display: inline-block; overflow: hidden; white-space: nowrap; min-width: 0; }
+.mw-hud__long { display: inline-block; animation: mw-hud-in var(--dur-medium) var(--ease-out-expo); }
+.mw-hud__short { display: none; }
+.mw-hud__title { color: #f2f0ea; }
+.mw-hud__readout { opacity: .55; }
+.mw-hud__right { display: inline-flex; align-items: center; gap: 24px; white-space: nowrap; }
+.mw-hud__device { opacity: .55; }
+.mw-hud__progress { min-width: 3ch; text-align: right; }
+
+@keyframes mw-hud-in {
+  from { clip-path: inset(0 100% 0 0); transform: translateY(4px); }
+  to { clip-path: inset(0 0 0 0); transform: none; }
+}
+
+/* Estados em que a HUD não deve aparecer. Em regras separadas: um seletor de
+   lista único não é tolerante — se :has() não existisse, a lista inteira cairia,
+   levando junto o boot e o modo inspeção em qualquer navegador sem suporte. */
+html.booting .mw-hud, html.inspecting .mw-hud { opacity: 0; visibility: hidden; }
+@supports selector(:has(*)) {
+  html:has(dialog[open]) .mw-hud { opacity: 0; visibility: hidden; }
+}
+
+/* Sem animação sob reduced-motion (fonte única: data-reduce do provider, com fallback na media query). */
+html[data-reduce] .mw-hud__long, html[data-reduce] .mw-hud { animation: none; transition: none; }
+@media (prefers-reduced-motion: reduce) { .mw-hud__long, .mw-hud { animation: none; transition: none; } }
+
+/* Tablet: sem leitura de dispositivo. */
+@media (max-width: 1079px) { .mw-hud__device { display: none; } }
+
+/* Mobile: só "003 / TÍTULO", dentro da área segura. */
+@media (max-width: 719px) {
+  :root { --hud-h: calc(28px + env(safe-area-inset-bottom)); }
+  .mw-hud {
+    height: auto; justify-content: flex-start;
+    padding: 0 var(--margin) max(12px, env(safe-area-inset-bottom));
+  }
+  .mw-hud.t-mono { font-size: 10px; }
+  .mw-hud__long, .mw-hud__right { display: none; }
+  .mw-hud__short { display: inline-block; animation: mw-hud-in var(--dur-medium) var(--ease-out-expo); }
+  html[data-reduce] .mw-hud__short { animation: none; }
+}
+
+/* Paisagem baixa no celular: a barra roubaria altura útil. */
+@media (max-height: 500px) and (orientation: landscape) { :root { --hud-h: 0px; } .mw-hud { display: none; } }
+
+/* A HUD é fotografada à parte na troca de rota: fica parada enquanto o resto transita.
+   O snapshot antigo precisa sumir (como em case-media-*, globals.css) — sem isto os
+   dois rótulos (o de quem sai e o de quem chega) ficam empilhados e opacos por 0,7s. */
+::view-transition-old(mw-hud) { animation: none; opacity: 0; }
+::view-transition-new(mw-hud) { animation: none; }

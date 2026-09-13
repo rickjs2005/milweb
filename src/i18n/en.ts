@@ -8,7 +8,7 @@ export const en: Dictionary = {
     siteDescription: "MilWeb is a creative development studio in Brazil: websites, systems and digital experiences built with design, code, motion and WebGL — from first wireframe to deploy.",
   },
   nav: { work: "Work", lab: "Lab", studio: "Studio", services: "Services", contact: "Contact", menu: "Menu", close: "Close", primary: "Primary navigation" },
-  acts: { build: "ACT 02 / BUILD", work: "ACT 03 / WORK", capabilities: "ACT 04 / CAPABILITIES", lab: "ACT 05 / LAB", brk: "ACT 06 / BREAK", human: "ACT 07 / HUMAN", builtWith: "ACT 08 / BUILT WITH", contact: "ACT 09 / CONTACT" },
+  system: { fine: "FINE POINTER", coarse: "TOUCH", reduce: "REDUCED MOTION", sound: "SOUND" },
   boot: { tagline: "CREATIVE DEVELOPMENT STUDIO", origin: "BRAZIL — 2026", lines: ["initializing experience", "loading structure", "loading motion", "loading interaction"], skip: "skip", compile: "compiling reality" },
   hero: {
     headline: ["CODE MOVES", "THE WORLD."],
