@@ -1,6 +1,8 @@
 import { Footer } from "@/components/footer";
 import { Boot } from "@/sections/home/boot";
-import { OrbitalHero } from "@/sections/home/orbital-hero";
+import { BuildHero } from "@/sections/home/build-hero";
+import { HeroVisual, HeroVisualDirector } from "@/features/hero-visual/HeroVisual";
+import { getHeroVisualVariant } from "@/features/hero-visual/useHeroVisualVariant";
 import { ProjectGallery } from "@/sections/home/project-gallery";
 import { SELECTED_WORK } from "@/data/work";
 import { SELECTED } from "@/data/projects";
@@ -25,11 +27,13 @@ const WORLD_PLATE: Record<string, string> = {
 };
 const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["depth", "structure", "perspective", "type", "grid"];
 
-/** Loops curtos dos próprios projetos (scripts/project-motion.sh). Só quem tem material real. */
-const MOTION: Record<string, { webm: string; mp4: string }> = {
-  terral: { webm: "/motion/terral.webm", mp4: "/motion/terral.mp4" },
-  "atelier-vertex": { webm: "/motion/atelier-vertex.webm", mp4: "/motion/atelier-vertex.mp4" },
-};
+/**
+ * Loops curtos dos próprios projetos (scripts/project-motion.sh). Só quem tem material real.
+ * DESLIGADO por ora: o crop central 4:5 do master corta o título em cena ("TERRAL" vira
+ * "ERRA", o logo do Vertex vira "VE") — o card volta a mostrar só a captura estática, que
+ * está correta, até o clip ser reexportado com um recorte que não passe por cima do texto.
+ */
+const MOTION: Record<string, { webm: string; mp4: string }> = {};
 
 /**
  * Home — a experiência em nós do MilWeb System (ver
@@ -46,13 +50,23 @@ export default async function Home({ params }: { params: Promise<LangParams> }) 
   return (
     <>
       <Boot mark={BRAND.mark} tagline={d.boot.tagline} origin={d.boot.origin} lines={d.boot.lines} skip={d.boot.skip} compile={d.boot.compile} />
+      <HeroVisual />
+      <HeroVisualDirector />
       <main>
-        <OrbitalHero
+        <BuildHero
           node={node("system")}
-          headline={d.hero.headline}
-          support={d.hero.support}
-          sub={d.hero.sub}
-          cta={d.hero.cta}
+          visual={getHeroVisualVariant()}
+          s={{
+            headline: d.hero.headline,
+            orb: d.hero.orb,
+            support: [...d.hero.support],
+            stages: d.hero.stages,
+            inspect: d.hero.inspect,
+            scroll: d.hero.scroll,
+            sub: d.hero.sub,
+            cta: d.hero.cta,
+          }}
+          workHref="#work"
         />
         <ProjectGallery
           eyebrow={d.work.eyebrow}

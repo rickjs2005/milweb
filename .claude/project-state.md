@@ -5,6 +5,66 @@ Stack: Next.js 15.1 · App Router · React 19 · Tailwind 3.4 · GSAP 3.15 (Scro
 Branch: `main` · produção em https://milweb.com.br (Vercel)
 Último deploy verificado: **05/09/2026 (18h) · `94471c8` = tag `v1.1.0`** (deploy `milweb-6nc6fkg8c`, aliasado em milweb.com.br, `vercel inspect` confirmado; globo com mouse/pulso/arcos validado em produção em 1920 e 390). Anterior: **05/09/2026 · `37501ba` = tag `v1.0.0`** (deploy `milweb-nfpabj4of`, aliasado em milweb.com.br, `vercel inspect` confirmado; a11y desktop 100 em produção). Anterior no mesmo dia: `5c3e71a` (ato 06 validado em produção). Anterior: **01/09/2026 · `a159c19`** — Google Preferred Sources no footer NO AR. **Em 02/09 (madrugada): ato 06 / Logistics Demo commitado e enviado a pedido do Rick (sem validação em produção — o notebook foi desligado logo depois; ver o bloco de 02/09).** Anterior: Google Preferred Sources no footer NO AR (validado em produção: CSP com `script-src`/`frame-src https://news.google.com`, um SDK em modo manual, Enter abre o popup do Google, SDK bloqueado cai no deep link; console só com o aviso de COOP do popup do Google). Anterior: `1ca1cb3` — ato 05/InkVision (validado em produção). Antes: `049ec4e` — LAB / Horizonte de Eventos (validado em produção). Antes: `8602dda` — ato 03/Vertex (validado em produção). Antes: `efc2654` — ato 02/Terral (validado em produção). Antes: `174883b` — ato 01/Kavita refinado (validado em produção em 1920 e 390). Antes: `d3cb274` — **Hero v4 no ar**: "CÓDIGOS MOVEM / O MUNDO.", o globo WebGL nasce do "O" da manchete e o Milo saiu do Hero (deploy `milweb-l1munnr8i`, aliasado em milweb.com.br; validado em produção nos dois breakpoints: `data-globe=on`, console limpo, sem overflow, composição idêntica ao local). Ver o bloco de 31/08 abaixo. Histórico anterior (Hero v3 com o Milo, `8c9e1df`) fica documentado nos blocos seguintes.
 
+## 14/09/2026 — hero do globo de volta (definitivo) + 2 bugs de mobile corrigidos (local, SEM push)
+
+**Pedido do Rick**: "o mobile está completamente fora das medidas" +, no meio da investigação,
+"a gente consegue voltar pra versão que tem o globo no hero?" — respondido que sim (o código
+nunca saiu do repo) e confirmado como troca definitiva, não comparação.
+
+**1. Hero: `OrbitalHero` → `BuildHero` (globo) de novo.** `src/app/[lang]/page.tsx` volta a
+importar `BuildHero` + `HeroVisual`/`HeroVisualDirector`; `HERO_VISUAL_DEFAULT` já era `"globe"`
+(`features/hero-visual/hero-visual.config.ts`), então nenhuma env var precisa mudar na Vercel — o
+valor antigo `NEXT_PUBLIC_HERO_VISUAL=milo` lá já cai no padrão globe, não quebra nada.
+`BuildHero` ganhou uma prop `node?: NodeAttrs` (em vez do `act`/`data-act` morto, que não tinha
+mais nenhum consumidor — só `selected-work.tsx`, que também não é importado) para a HUD do
+MilWeb System continuar reconhecendo o hero como `MW/001 — SISTEMA`. `nextWorld` (a lente que
+revelava o primeiro ato do antigo Selected Work) ficou de fora — não existe mais equivalente na
+`ProjectGallery` atual, e o fallback (`migrate 1.55 · fade 0.62`) cobre a saída sem ele. `d.hero`
+nos três dicionários já tinha `orb`/`stages`/`inspect`/`scroll` (nunca foram removidos, só
+paravam de ser lidos pelo `OrbitalHero`), então zero mudança de conteúdo.
+
+**Efeito colateral bom**: o `BuildHero` usa `--chars`/`--chars-m` (contagem de caracteres da
+maior palavra) pro tamanho da manchete; o `OrbitalHero` usava `--world-chars` só da última
+palavra. Isso por si só corrigia a maior parte do "fora das medidas" — ver item 2.
+
+**2. Dois bugs reais de mobile, achados com Playwright emulando 390×844** (a extensão do Chrome
+não deixa encolher a janela de verdade — `resize_window` não muda `window.innerWidth`; um iframe
+same-origin também não funciona, o CSP do site bloqueia frame-ancestors; Playwright com
+`isMobile:true` foi o caminho):
+
+- **A manchete do hero** ("CÓDIGOS MOVEM O MUNDO.") vazava pela direita no `OrbitalHero` — corrigido
+  ao voltar pro `BuildHero` (item 1), não precisou de CSS novo.
+- **Os cards de Terral e Vertex na galeria mostravam texto ilegível no mobile** ("ERRA" em vez de
+  "TERRAL", "VE" em vez do logo do Vertex) sempre que o loop de vídeo entrava (o
+  `IntersectionObserver` da Sprint 02 autoplay o card dominante). Não é CSS — é o
+  `scripts/project-motion.sh`: o crop central `4:5` a partir do master 1920×1080 corta os dois
+  lados de qualquer título que ocupe mais que ~45% da largura, e a cena escolhida (0,8–4,8s do
+  Terral, título de abertura) tem exatamente isso. Confirmado extraindo frames com `ffmpeg` do
+  master (`/c/Users/rickj/Videos/TERRAL/`) e comparando com o output do crop — sobra só o miolo
+  da palavra. A imagem estática (`sol.webp`, `entregue.webp`) está correta nos dois breakpoints
+  (o texto mora na metade esquerda, dentro da janela visível do `object-fit: cover`); o problema é
+  só do vídeo. **Fix aplicado**: `MOTION` em `page.tsx` esvaziado (cards voltam a mostrar só a
+  captura estática, que é a experiência correta) até o clip ser reexportado com um recorte que não
+  passe em cima do texto — não achei, em ~15 janelas de tempo testadas ao longo do vídeo de 60s,
+  nenhum trecho de 4s livre de texto largo (o site fonte é scrollytelling, quase todo frame tem
+  headline). Precisa de decisão de conteúdo (qual cena mostrar), não só ajuste de crop — fica pro
+  Rick decidir antes de reativar.
+
+**Verificação**: `tsc --noEmit` limpo, `pnpm lint` limpo (só o warning pré-existente de
+`<img>` no opengraph-image), `pnpm build` verde (126 páginas, sem novas rotas). **Cuidado**: rodar
+`pnpm build` com o dev server ligado quebra os chunks do dev (`.next` compartilhado — armadilha já
+conhecida, ver bloco de 12/09); precisei matar e religar o `pnpm dev` depois. Verificação visual
+completa em 390×844 (Playwright, screenshots por seção, scroll completo da home) e comparação
+lado a lado com 1440×900 — sem overflow horizontal em nenhuma seção. `scripts/system-check.mjs`
+NÃO foi rodado nesta sessão (pede servidor de produção na porta 3005, e rodar outro `next build`
+arriscava derrubar o dev server de novo) — validado manualmente que a HUD mostra `MW/001 —
+SISTEMA` e acompanha o progresso do hero, mas vale rodar o check automatizado antes do próximo
+deploy.
+
+**Nada disso foi commitado nem enviado.** Meio dúzia de scripts de investigação (extração de
+frame, screenshots por viewport) ficaram em `scripts/.rsc-audit/tmp/` — `.png` é ignorado pelo
+git, os `.mjs` não, seguem o padrão dos outros scripts avulsos já soltos ali.
+
 ## 12/09/2026 — MILWEB SYSTEM, sprints 01 e 02 (local, SEM push — aguardando o Rick)
 
 **Antes de tudo: este arquivo estava desatualizado.** Em 10/09 outra sessão fez um redesign da home

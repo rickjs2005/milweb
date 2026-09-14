@@ -9,6 +9,7 @@ import type { HeroVisualVariant } from "@/features/hero-visual/hero-visual.types
 import { gsap, EASE, MQ, useGSAP } from "@/animations/gsap";
 import { loadSplitText } from "@/animations/split-text";
 import { onIdle } from "@/animations/idle";
+import type { NodeAttrs } from "@/data/milweb-system";
 import { HeroWorldBridge, type WorldBridge } from "./hero-world-bridge";
 
 export type BuildHeroStrings = {
@@ -109,7 +110,7 @@ function words(line: string, orbAt: number | null) {
  *
  * Reduced-motion: manchete completa e globo em estado final estático (SVG).
  */
-export function BuildHero({ s, act, visual = "globe", workHref = "#work", nextWorld }: { s: BuildHeroStrings; act: string; visual?: HeroVisualVariant; workHref?: string; nextWorld?: WorldBridge }) {
+export function BuildHero({ s, node, visual = "globe", workHref = "#work", nextWorld }: { s: BuildHeroStrings; node?: NodeAttrs; visual?: HeroVisualVariant; workHref?: string; nextWorld?: WorldBridge }) {
   const root = useRef<HTMLElement>(null);
   const getHero = useCallback(() => root.current, []);
   const [orbLine, orbIndex] = s.orb;
@@ -335,7 +336,7 @@ export function BuildHero({ s, act, visual = "globe", workHref = "#work", nextWo
     <section
       ref={root}
       id="top"
-      data-act={act}
+      {...node}
       data-inspect="HERO"
       data-visual={visual}
       className="hero-experience relative flex min-h-[100svh] flex-col overflow-hidden px-margin pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-nav md:pb-8"
