@@ -44,4 +44,9 @@ docs/visual-upgrade-2026-09.md
 shot*.mjs
 preview-*.png
 shot-*.png
-scripts/.rsc-audit/
+
+# RSC/navigation audit: reports and captures stay local, the .mjs probes stay versioned
+scripts/.rsc-audit/**/*.json
+scripts/.rsc-audit/**/*.log
+scripts/.rsc-audit/**/*.png
+scripts/.rsc-audit/**/*.webm
