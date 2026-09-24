@@ -19,28 +19,29 @@ next-env.d.ts
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
-# env
-.env
-.env*.local
+# environment (allow sanitized examples)
+.env*
+!.env.example
 
 # typescript
 *.tsbuildinfo
 
 # vercel
-.vercel
+.vercel/
+
+# local AI state and private work notes
+.claude/
+docs/rebuild/
+docs/superpowers/
+docs/entrega.md
+docs/rsc-bug-investigation.md
+docs/visual-upgrade-2026-09.md
 
 # audit/screenshot artifacts (local only)
 .audit*/
 shot*.mjs
 preview-*.png
 shot-*.png
-*.log
-
-.vercel
-
-# Auditoria RSC/navegação: relatórios e capturas (as sondas .mjs ficam)
-scripts/.rsc-audit/**/*.json
-scripts/.rsc-audit/**/*.log
-scripts/.rsc-audit/**/*.png
-scripts/.rsc-audit/**/*.webm
+scripts/.rsc-audit/
