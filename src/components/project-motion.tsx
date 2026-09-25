@@ -7,7 +7,7 @@ export type MotionSources = { webm: string; mp4: string };
 /**
  * Loop curto do projeto sobre a captura da galeria (MilWeb System, Sprint 02).
  *
- * Regras (docs/superpowers/specs/2026-09-12-milweb-system-design.md):
+ * Regras de carregamento e reprodução:
  *  - O poster (a captura) está sempre lá; o vídeo entra por cima quando toca.
  *  - 0 bytes antes do gesto: as <source> só entram no DOM quando o card é armado.
  *  - Ponteiro fino: hover/foco no link do card toca; sair pausa e volta ao início.
