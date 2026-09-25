@@ -21,7 +21,6 @@ import type { Localized } from "@/lib/content";
  *  - `readout` é sempre um fato já publicado no site. Nada aqui é telemetria
  *    decorativa. Coordenadas só quando verificadas.
  *
- * Ver docs/superpowers/specs/2026-09-12-milweb-system-design.md.
  */
 
 export type SystemNodeType = "system" | "project" | "capabilities" | "lab" | "interaction" | "human" | "technology" | "contact";
