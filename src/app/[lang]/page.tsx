@@ -36,8 +36,7 @@ const REACT: ("depth" | "structure" | "perspective" | "type" | "grid")[] = ["dep
 const MOTION: Record<string, { webm: string; mp4: string }> = {};
 
 /**
- * Home — a experiência em nós do MilWeb System (ver
- * docs/superpowers/specs/2026-09-12-milweb-system-design.md).
+ * Home — a experiência em nós do MilWeb System.
  * Server component: resolve o idioma, lê o dicionário tipado e o registro de
  * nós, e entrega strings e atributos prontos às ilhas client (o conteúdo fica
  * fora do bundle).
