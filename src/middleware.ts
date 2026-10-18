@@ -87,5 +87,6 @@ export function middleware(req: NextRequest) {
 export const config = {
   // Ignora assets estáticos (_next, arquivos com extensão) — o resto passa
   // pelo middleware pra ganhar o segmento de idioma e o CSP.
-  matcher: ["/((?!_next/|.*\\..*).*)"],
+  // /api (JSON dos cases para o MilWeb OS) não é página: fica fora do i18n e do 404.
+  matcher: ["/((?!_next/|api/|.*\\..*).*)"],
 };

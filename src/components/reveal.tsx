@@ -52,6 +52,9 @@ export function Reveal({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     if (reduce || !fine) return;
+    // Dentro de uma janela do MilWeb OS o scrub (amarrado ao scroll da window)
+    // não faz sentido: fica o modo IO, que funciona com qualquer contêiner.
+    if (el.closest("[data-os-scroller]")) return;
     // Alcançabilidade: o fim do range do scrub precisa existir. Elementos
     // na última meia-tela do documento não conseguem subir até lá.
     const elTop = el.getBoundingClientRect().top + window.scrollY;

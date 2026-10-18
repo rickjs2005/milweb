@@ -4,11 +4,11 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProvider } from "@/components/scroll-provider";
 import { TrackConversions } from "@/components/track-conversions";
-import { ViewTransitions } from "@/components/view-transitions";
-import { Nav } from "@/components/nav/nav";
+import { Footer } from "@/components/footer";
+import { OsShell } from "@/features/os/os-shell";
+import { buildOsPayload } from "@/features/os/payload";
 import { InspectProvider } from "@/features/inspect/inspect-provider";
 import { MilwebSystemProvider } from "@/features/system/system-provider";
-import { SystemHud } from "@/components/system-hud";
 import { ROOT_NODE } from "@/data/milweb-system";
 import { getDict, HTML_LANG, LOCALES } from "@/i18n";
 import { PROFILE, SITE_URL } from "@/lib/content";
@@ -49,7 +49,8 @@ export async function generateMetadata({ params }: { params: Promise<LangParams>
   };
 }
 
-export const viewport: Viewport = { themeColor: "#F2F0EA", colorScheme: "light" };
+/** Grafite do MilWeb OS na moldura do navegador; `cover` para a dock respeitar as áreas seguras do telefone. */
+export const viewport: Viewport = { themeColor: "#0F1318", colorScheme: "light", viewportFit: "cover" };
 
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
@@ -66,24 +67,12 @@ export default async function LangLayout({ children, params }: { children: React
         {/* Google Preferred Sources: o SDK oficial UMA vez por página, depois do load, em modo
             manual — quem desenha o botão é a MilWeb (components/google-preferred-source) */}
         <Script src={PREFERRED_SOURCE_SDK} strategy="lazyOnload" {...{ "preferred-sources-control": "manual" }} />
-        <ViewTransitions />
-        <Nav
-          locale={locale}
-          strings={{
-            work: d.nav.work,
-            lab: d.nav.lab,
-            studio: d.nav.studio,
-            contact: d.nav.contact,
-            menu: d.nav.menu,
-            close: d.nav.close,
-            primary: d.nav.primary,
-            selectLanguage: d.meta.selectLanguage,
-            langNames: { pt: getDict("pt").meta.langName, en: getDict("en").meta.langName, es: getDict("es").meta.langName },
-            sound: d.sound,
-          }}
-        />
-        {children}
-        <SystemHud strings={d.system} />
+        {/* MilWeb OS: área de trabalho (desktop) / tela inicial (celular) / modo simples.
+            Navegação, HUD e transições de rota clássicas vivem dentro do shell, só nas
+            rotas que ficam fora do OS (protótipos do Lab, erros) e no modo simples. */}
+        <OsShell locale={locale} payload={buildOsPayload(locale)} footer={<Footer locale={locale} />}>
+          {children}
+        </OsShell>
         <Analytics />
         <SpeedInsights />
       </MilwebSystemProvider>

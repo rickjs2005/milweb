@@ -39,6 +39,9 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (reduce || coarse) return;
+    // MilWeb OS: o documento não rola — cada janela/tela tem o próprio scroll
+    // nativo. O shell marca <html data-os> no layout effect (filho), antes deste.
+    if (document.documentElement.dataset.os === "1") return;
 
     // Lenis só existe em ponteiro fino: carregado sob demanda para não pesar
     // no bundle do mobile (onde o scroll é nativo).

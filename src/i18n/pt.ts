@@ -75,4 +75,27 @@ export const pt: Dictionary = {
   },
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FONTES PREFERIDAS", title: ["MANTENHA A MILWEB", "NAS SUAS FONTES."], cta: "ADICIONAR MILWEB", loading: "ABRINDO O GOOGLE…", retry: "TENTAR DE NOVO", aria: "Adicionar MilWeb às fontes preferidas no Google" },
+  os: {
+    apps: { home: "Destaques", projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", contact: "Contato", settings: "Ajustes", search: "Buscar" },
+    regions: { desktop: "Área de trabalho", icons: "Atalhos da área de trabalho", dock: "Dock", topbar: "Barra do sistema", windows: "Janelas abertas", home: "Tela inicial", appGrid: "Aplicativos" },
+    window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Fechar", keys: "Com a barra de título em foco: setas movem a janela, Shift + setas redimensionam, Esc fecha", resize: "Redimensionar", running: "aberto", focused: "em primeiro plano" },
+    mobile: { back: "Voltar", home: "Início", open: "Abrir", widget: "Projeto em destaque", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
+    home: { lead: "Três trabalhos para começar. Toda a coleção está em Projetos.", all: "Todos os projetos", cta: "Conversar sobre um projeto", welcome: "Bem-vindo ao MilWeb OS.", shortcut: "Atalho para o case" },
+    projects: {
+      back: "Todos os projetos", open: "Abrir case", visit: "Abrir site", code: "Código", stack: "Stack", context: "Contexto", done: "O que foi feito", solutions: "Soluções", gallery: "Telas", result: "Resultado",
+      similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",
+      numbers: "Números", kind: "Tipo", year: "Ano", status: "Status", of: "de", count: "projetos", empty: "Nenhum projeto neste filtro.", interactive: "Interativo",
+    },
+    search: { title: "Buscar no MilWeb OS", placeholder: "Projeto, serviço ou aplicativo…", empty: "Nada encontrado.", hint: "Enter abre o primeiro resultado · Esc fecha · tecla / abre a busca", apps: "Aplicativos", projects: "Projetos", services: "Serviços", open: "Abrir" },
+    settings: {
+      theme: "Tema da área de trabalho", graphite: "Grafite", paper: "Papel", motion: "Movimento", motionSystem: "Seguir o sistema", motionReduce: "Reduzir", mode: "Modo de navegação", modeOs: "Sistema (janelas)", modeSimple: "Simples (lista)",
+      language: "Idioma", sound: "Som", reset: "Reorganizar janelas", about: "O MilWeb OS é uma camada de apresentação sobre o site: cada case, serviço e contato continua acessível por link direto.", saved: "Preferências salvas neste navegador.",
+    },
+    simple: { title: "Navegação simples", toOs: "Abrir o MilWeb OS", skip: "Ir para a navegação simples", nav: "Seções" },
+    contact: { channels: "Canais", lead: "Tem algo que vale construir? Me conta em uma mensagem.", whatsapp: "WhatsApp", email: "E-mail", linkedin: "LinkedIn", github: "GitHub" },
+    lab: { films: "Filmes", experiments: "Experimentos", watch: "Assistir" },
+    services: { all: "Ver todos os serviços", talk: "Pedir orçamento", audit: "Diagnóstico gratuito", deliverables: "Entregas" },
+    studio: { principles: "Princípios", process: "Processo", founder: "Fundador" },
+    time: "Hora local",
+  },
 };

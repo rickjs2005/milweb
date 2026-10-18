@@ -58,4 +58,28 @@ export type Dictionary = {
   };
   footer: { email: string; year: string };
   preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
+  /** MilWeb OS — camada de apresentação em janelas (desktop) e tela inicial (celular). */
+  os: {
+    apps: { home: string; projects: string; studio: string; lab: string; services: string; contact: string; settings: string; search: string };
+    regions: { desktop: string; icons: string; dock: string; topbar: string; windows: string; home: string; appGrid: string };
+    window: { minimize: string; maximize: string; restore: string; close: string; keys: string; resize: string; running: string; focused: string };
+    mobile: { back: string; home: string; open: string; widget: string; apps: string; message: string };
+    home: { lead: string; all: string; cta: string; welcome: string; shortcut: string };
+    projects: {
+      back: string; open: string; visit: string; code: string; stack: string; context: string; done: string; solutions: string; gallery: string; result: string;
+      similar: string; next: string; prev: string; client: string; demo: string; study: string; live: string; detail: string; idea: string; experience: string;
+      numbers: string; kind: string; year: string; status: string; of: string; count: string; empty: string; interactive: string;
+    };
+    search: { title: string; placeholder: string; empty: string; hint: string; apps: string; projects: string; services: string; open: string };
+    settings: {
+      theme: string; graphite: string; paper: string; motion: string; motionSystem: string; motionReduce: string; mode: string; modeOs: string; modeSimple: string;
+      language: string; sound: string; reset: string; about: string; saved: string;
+    };
+    simple: { title: string; toOs: string; skip: string; nav: string };
+    contact: { channels: string; lead: string; whatsapp: string; email: string; linkedin: string; github: string };
+    lab: { films: string; experiments: string; watch: string };
+    services: { all: string; talk: string; audit: string; deliverables: string };
+    studio: { principles: string; process: string; founder: string };
+    time: string;
+  };
 };

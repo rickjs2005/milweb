@@ -75,4 +75,27 @@ export const en: Dictionary = {
   },
   footer: { email: "Email", year: "Brazil" },
   preferred: { eyebrow: "GOOGLE / PREFERRED SOURCES", title: ["KEEP MILWEB", "IN YOUR SOURCES."], cta: "ADD MILWEB", loading: "OPENING GOOGLE…", retry: "TRY AGAIN", aria: "Add MilWeb to Preferred Sources on Google" },
+  os: {
+    apps: { home: "Highlights", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", contact: "Contact", settings: "Settings", search: "Search" },
+    regions: { desktop: "Desktop", icons: "Desktop shortcuts", dock: "Dock", topbar: "System bar", windows: "Open windows", home: "Home screen", appGrid: "Apps" },
+    window: { minimize: "Minimize", maximize: "Maximize", restore: "Restore", close: "Close", keys: "With the title bar focused: arrow keys move the window, Shift + arrows resize, Esc closes", resize: "Resize", running: "open", focused: "in front" },
+    mobile: { back: "Back", home: "Home", open: "Open", widget: "Featured project", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
+    home: { lead: "Three works to start with. The whole collection lives in Projects.", all: "All projects", cta: "Talk about a project", welcome: "Welcome to MilWeb OS.", shortcut: "Shortcut to the case" },
+    projects: {
+      back: "All projects", open: "Open case", visit: "Open site", code: "Code", stack: "Stack", context: "Context", done: "What was done", solutions: "Solutions", gallery: "Screens", result: "Result",
+      similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",
+      numbers: "Numbers", kind: "Type", year: "Year", status: "Status", of: "of", count: "projects", empty: "No project matches this filter.", interactive: "Interactive",
+    },
+    search: { title: "Search MilWeb OS", placeholder: "Project, service or app…", empty: "Nothing found.", hint: "Enter opens the first result · Esc closes · press / to search", apps: "Apps", projects: "Projects", services: "Services", open: "Open" },
+    settings: {
+      theme: "Desktop theme", graphite: "Graphite", paper: "Paper", motion: "Motion", motionSystem: "Follow the system", motionReduce: "Reduce", mode: "Navigation mode", modeOs: "System (windows)", modeSimple: "Simple (list)",
+      language: "Language", sound: "Sound", reset: "Rearrange windows", about: "MilWeb OS is a presentation layer over the site: every case, service and contact remains reachable by direct link.", saved: "Preferences are saved in this browser.",
+    },
+    simple: { title: "Simple navigation", toOs: "Open MilWeb OS", skip: "Skip to simple navigation", nav: "Sections" },
+    contact: { channels: "Channels", lead: "Got something worth building? Tell me in a message.", whatsapp: "WhatsApp", email: "Email", linkedin: "LinkedIn", github: "GitHub" },
+    lab: { films: "Films", experiments: "Experiments", watch: "Watch" },
+    services: { all: "See all services", talk: "Request a quote", audit: "Free audit", deliverables: "Deliverables" },
+    studio: { principles: "Principles", process: "Process", founder: "Founder" },
+    time: "Local time",
+  },
 };

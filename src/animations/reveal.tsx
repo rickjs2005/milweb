@@ -18,7 +18,9 @@ export function Reveal({ children, className = "", as: Tag = "div", delay = 0 }:
         const rule = el.querySelector<HTMLElement>("[data-rule]");
         const items = el.querySelectorAll<HTMLElement>("[data-reveal]");
         const targets = items.length ? items : [el];
-        const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top 85%", once: true }, delay });
+        // Dentro de uma janela do MilWeb OS quem rola é o corpo dela, não a window.
+        const scroller = el.closest<HTMLElement>("[data-os-scroller]") ?? undefined;
+        const tl = gsap.timeline({ scrollTrigger: { trigger: el, scroller, start: "top 85%", once: true }, delay });
         if (rule) tl.from(rule, { scaleX: 0, transformOrigin: "left", duration: 0.9, ease: EASE.outExpo }, 0);
         tl.from(targets, { y: 24, autoAlpha: 0, stagger: 0.08, duration: 0.8, ease: EASE.outExpo }, 0.05);
       });
