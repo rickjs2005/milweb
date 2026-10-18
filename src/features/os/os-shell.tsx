@@ -77,9 +77,14 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
   const route = parseRoute(internal);
   const router = useRouter();
   const [store] = useState(() => createOsStore(internal));
-  const ownNav = useRef<string | null>(null);
-  const internalRef = useRef(internal);
-  internalRef.current = internal;
+  /**
+   * Navegações pedidas pelo próprio shell que ainda não chegaram ao `pathname`.
+   * Um conjunto, não um valor: duas ações no mesmo gesto (focar ao pressionar e
+   * fechar ao soltar) disparam duas navegações antes de a primeira chegar.
+   */
+  const ownNav = useRef(new Set<string>());
+  /** Para onde a URL está indo (a última pedida), ou onde está quando nada está em voo. */
+  const headed = useRef(internal);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const shell = useStore(store, (s) => s.shell);
@@ -88,8 +93,12 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
 
   const navigate = useCallback(
     (target: string, mode: "push" | "replace" = "push", sync = false) => {
-      if (target === internalRef.current) return;
-      ownNav.current = sync ? null : target;
+      // Compara com o destino em voo, não com a URL atual: senão "fechar" logo depois
+      // de "focar" acha que já está no lugar e a URL fica para trás.
+      if (target === headed.current) return;
+      headed.current = target;
+      if (sync) ownNav.current.delete(target);
+      else ownNav.current.add(target);
       const href = localizePath(locale, target);
       if (mode === "push") router.push(href, { scroll: false });
       else router.replace(href, { scroll: false });
@@ -99,11 +108,14 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
 
   // 1) URL → janelas (Voltar/Avançar, link direto, Links internos).
   useLayoutEffect(() => {
-    if (ownNav.current === internal) {
-      ownNav.current = null;
+    if (ownNav.current.has(internal)) {
+      ownNav.current.delete(internal);
+      if (ownNav.current.size === 0) headed.current = internal;
       return;
     }
-    ownNav.current = null;
+    // Navegação externa: nada que o shell pediu antes continua valendo.
+    ownNav.current.clear();
+    headed.current = internal;
     if (route.app) store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
     // A raiz é a área de trabalho: nenhum app em primeiro plano (Voltar, Início, marca, link direto).
     else if (route.kind === "desktop") store.getState().blur({ source: "route" });

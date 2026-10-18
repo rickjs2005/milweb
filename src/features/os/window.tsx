@@ -233,7 +233,10 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
       inert={win.min ? true : undefined}
       aria-hidden={win.min || undefined}
       style={style}
-      onPointerDownCapture={() => {
+      onPointerDownCapture={(e) => {
+        // Fechar ou minimizar uma janela de trás não precisa trazê-la para frente antes:
+        // focar aqui e fechar no clique seriam duas navegações no mesmo gesto.
+        if ((e.target as HTMLElement).closest('[data-action="close"], [data-action="min"]')) return;
         if (!focused && !win.min) store.getState().focus(id, { source: "user", mode: "push" });
       }}
       onPointerMove={onPointerMove}
