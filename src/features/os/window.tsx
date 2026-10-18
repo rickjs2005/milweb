@@ -12,14 +12,20 @@ import { Glyph } from "./icons";
  *
  * Desktop: flutuante, arrasto pela barra de título (Pointer Events +
  * setPointerCapture, escrita direta nas variáveis CSS durante o gesto e
- * commit no store ao soltar), três alças de redimensionamento, controles
- * fechar/minimizar/maximizar, teclado na barra de título (setas movem,
- * Shift + setas redimensionam, Enter maximiza, Esc fecha).
+ * commit no store ao soltar), três alças de redimensionamento, luzes
+ * fechar/minimizar/maximizar à la macOS (vermelho, amarelo, verde; símbolo
+ * ao pairar, ao focar e sempre no toque), teclado na barra de título (setas
+ * movem, Shift + setas redimensionam, Enter maximiza) e Esc fechando a
+ * janela em primeiro plano esteja o foco onde estiver (fora de campos, da
+ * busca e de outras janelas).
  *
  * Celular (mesmo DOM, CSS diferente): a janela em foco ocupa a área útil;
- * a barra vira cabeçalho com Voltar e Início; nada de arrasto.
+ * a barra vira cabeçalho com Voltar, Início (mantém o app aberto, como no
+ * telefone) e Fechar (encerra o app); nada de arrasto.
  *
- * Minimizar não desmonta: `inert` + invisível, geometria preservada.
+ * Fechar sai com uma animação curta e só então deixa o store; minimizar não
+ * desmonta: `inert` + invisível, geometria preservada; maximizar/restaurar
+ * interpola a geometria apenas durante o gesto.
  */
 
 const KEY_STEP = 24;
@@ -63,7 +69,9 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
   const ref = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<Drag | null>(null);
-  const [anim, setAnim] = useState<"icon" | "in" | null>(null);
+  const lastDown = useRef({ t: 0, x: 0, y: 0 });
+  const [anim, setAnim] = useState<"icon" | "in" | "out" | null>(null);
+  const closing = useRef(false);
 
   const mobile = shell === "mobile";
   const isRouteApp = route.app === id;
@@ -113,11 +121,62 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
     store.getState().setScroll(id, bodyRef.current.scrollTop);
   }, [id, showsDetail, store]);
 
-  const close = useCallback(() => {
-    const opener = store.getState().wins[id].openedBy;
+  // Fechar: saída curta (escala 1 → .96 e some) e só então a janela deixa o store; o foco de
+  // teclado volta ao controle que a abriu. Sem movimento (sistema ou Ajustes) a saída é imediata.
+  const finishClose = useCallback(() => {
+    closing.current = false;
+    const w = store.getState().wins[id];
+    if (!w.open) return;
     store.getState().close(id);
-    if (opener) document.getElementById(opener)?.focus();
+    if (w.openedBy) document.getElementById(w.openedBy)?.focus();
   }, [id, store]);
+
+  const close = useCallback(() => {
+    if (closing.current) return;
+    closing.current = true;
+    setAnim("out");
+  }, []);
+
+  useEffect(() => {
+    if (anim !== "out") return;
+    const el = ref.current;
+    if (!el || getComputedStyle(el).animationName === "none") {
+      finishClose();
+      return;
+    }
+    // Rede de segurança: uma aba em segundo plano pode nunca disparar animationend.
+    const t = window.setTimeout(finishClose, 600);
+    return () => window.clearTimeout(t);
+  }, [anim, finishClose]);
+
+  // Maximizar/restaurar interpola a geometria só durante o gesto (mover por teclado e o
+  // recálculo ao redimensionar o navegador continuam instantâneos).
+  const zoom = useCallback(() => {
+    const el = ref.current;
+    if (el) {
+      el.dataset.zooming = "1";
+      window.setTimeout(() => delete el.dataset.zooming, 380);
+    }
+    store.getState().toggleMax(id);
+  }, [id, store]);
+
+  // Esc fecha a janela em primeiro plano esteja o foco onde estiver (desktop) — menos dentro de
+  // campos, da busca, de <details> aberto ou de outra janela. No celular, Esc é Voltar (abaixo).
+  useEffect(() => {
+    if (!focused || mobile) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("input, textarea, select, [contenteditable=true], dialog[open], details[open] summary")) return;
+      if (document.querySelector("dialog[open]")) return;
+      const other = t?.closest<HTMLElement>(".os-window");
+      if (other && other.dataset.app !== id) return;
+      e.preventDefault();
+      close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [focused, mobile, id, close]);
 
   const minimize = useCallback(() => {
     const el = ref.current;
@@ -149,6 +208,16 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
   };
   const onBarPointerDown = (e: ReactPointerEvent) => {
     if ((e.target as HTMLElement).closest("button, a, input, [data-no-drag]")) return;
+    // Duplo clique/toque na barra maximiza ou restaura. Detectado aqui, no pointerdown: a captura do
+    // ponteiro do arraste redireciona pointerup e click para a janela, e o dblclick da barra nunca chega.
+    const prev = lastDown.current;
+    lastDown.current = { t: e.timeStamp, x: e.clientX, y: e.clientY };
+    if (!mobile && e.button === 0 && e.timeStamp - prev.t < 400 && Math.abs(e.clientX - prev.x) < 6 && Math.abs(e.clientY - prev.y) < 6) {
+      lastDown.current.t = 0;
+      e.preventDefault();
+      zoom();
+      return;
+    }
     begin(e, "move");
   };
   const onPointerMove = (e: ReactPointerEvent) => {
@@ -185,6 +254,8 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
     try {
       el.releasePointerCapture(e.pointerId);
     } catch {}
+    // Só um clique na barra (nada se moveu) não vira geometria "escolhida pelo visitante".
+    if (d.cur.x === d.x && d.cur.y === d.y && d.cur.w === d.w && d.cur.h === d.h) return;
     if (d.mode === "move") store.getState().move(id, d.cur.x, d.cur.y);
     else store.getState().resize(id, d.cur.w, d.cur.h);
   };
@@ -193,10 +264,9 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
   const onKeyDown = (e: ReactKeyboardEvent) => {
     const t = e.target as HTMLElement;
     if (e.key === "Escape") {
-      if (t.closest("input, textarea, select, [contenteditable=true], details[open] summary")) return;
+      if (!mobile || t.closest("input, textarea, select, [contenteditable=true], details[open] summary")) return;
       e.preventDefault();
-      if (mobile) back();
-      else close();
+      back();
       return;
     }
     if (!t.classList.contains("os-window__title") || mobile) return;
@@ -210,7 +280,7 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
       else store.getState().move(id, r.x + v[0] * KEY_STEP, r.y + v[1] * KEY_STEP);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      store.getState().toggleMax(id);
+      zoom();
     }
   };
 
@@ -236,7 +306,7 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
       onPointerDownCapture={(e) => {
         // Fechar ou minimizar uma janela de trás não precisa trazê-la para frente antes:
         // focar aqui e fechar no clique seriam duas navegações no mesmo gesto.
-        if ((e.target as HTMLElement).closest('[data-action="close"], [data-action="min"]')) return;
+        if ((e.target as HTMLElement).closest('[data-action="close"], [data-action="min"], .os-window__close')) return;
         if (!focused && !win.min) store.getState().focus(id, { source: "user", mode: "push" });
       }}
       onPointerMove={onPointerMove}
@@ -244,19 +314,21 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
       onPointerCancel={onPointerUp}
       onKeyDown={onKeyDown}
       onAnimationEnd={(e) => {
-        if (e.target === ref.current) setAnim(null);
+        if (e.target !== ref.current) return;
+        if (anim === "out") finishClose();
+        else setAnim(null);
       }}
     >
-      <header className="os-window__bar" data-no-inspect onPointerDown={onBarPointerDown} onDoubleClick={() => !mobile && store.getState().toggleMax(id)}>
+      <header className="os-window__bar" data-no-inspect onPointerDown={onBarPointerDown}>
         <div className="os-window__controls" role="group" aria-label={title}>
-          <button type="button" className="os-window__btn" data-action="close" aria-label={`${s.window.close} · ${title}`} onClick={close}>
-            <Glyph name="close" />
+          <button type="button" className="os-window__btn" data-action="close" title={s.window.close} aria-label={`${s.window.close} · ${title}`} onClick={close}>
+            <Glyph name="close" size={8} />
           </button>
-          <button type="button" className="os-window__btn" data-action="min" aria-label={`${s.window.minimize} · ${title}`} onClick={minimize}>
-            <Glyph name="min" />
+          <button type="button" className="os-window__btn" data-action="min" title={s.window.minimize} aria-label={`${s.window.minimize} · ${title}`} onClick={minimize}>
+            <Glyph name="min" size={8} />
           </button>
-          <button type="button" className="os-window__btn" data-action="max" aria-label={`${win.max ? s.window.restore : s.window.maximize} · ${title}`} aria-pressed={win.max} onClick={() => store.getState().toggleMax(id)}>
-            <Glyph name={win.max ? "restore" : "max"} />
+          <button type="button" className="os-window__btn" data-action="max" title={win.max ? s.window.restore : s.window.maximize} aria-label={`${win.max ? s.window.restore : s.window.maximize} · ${title}`} aria-pressed={win.max} onClick={zoom}>
+            <Glyph name={win.max ? "restore" : "max"} size={8} />
           </button>
         </div>
         <button type="button" className="os-window__back" onClick={back}>
@@ -269,6 +341,9 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
         </h2>
         <button type="button" className="os-window__home" onClick={home} aria-label={s.mobile.home}>
           <Glyph name="home" size={14} />
+        </button>
+        <button type="button" className="os-window__close" onClick={close} aria-label={`${s.window.close} · ${title}`}>
+          <Glyph name="close" size={14} />
         </button>
         <span className="os-window__serial tnum" aria-hidden="true">
           MW/OS

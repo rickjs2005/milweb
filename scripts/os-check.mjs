@@ -5,9 +5,11 @@
  *
  * Cobre os riscos reais do shell: histórico/rotas (link direto, Voltar,
  * recarregar), estado das janelas (abrir, focar, minimizar, restaurar,
- * maximizar, fechar, arrastar com clamp, teclado), troca de modo
- * (desktop ↔ celular preservando o case) e contato a uma ação. Emulação
- * de navegador, não aparelho físico: cobre a lógica, não a percepção.
+ * maximizar, fechar, arrastar com clamp, teclado), os controles de janela
+ * (grupo `controls`: luzes, saída animada, Esc global, celular, Hold to
+ * Inspect), troca de modo (desktop ↔ celular preservando o case) e contato
+ * a uma ação. Emulação de navegador, não aparelho físico: cobre a lógica,
+ * não a percepção.
  */
 import { chromium, devices } from "playwright";
 import { mkdirSync } from "node:fs";
@@ -19,7 +21,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,mobile,resize,simple").split(",");
+const ONLY = opt("--only", "desktop,controls,mobile,resize,simple").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -410,6 +412,250 @@ if (ONLY.includes("mobile")) {
     check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
     await ctx.close();
   }
+}
+
+// ----------------------------------------------------------------- controls
+// Os nove fluxos do pedido de 18/10 (controles de janela): abrir e fechar, duas janelas e fechar uma,
+// minimizar/restaurar, maximizar/restaurar, alternar sobrepostas, fechar todas, celular, controles depois
+// de navegar entre seções. Mais: luzes coloridas com símbolo no hover, saída animada, Esc global, reduced
+// motion e a regressão do Hold to Inspect (um hold cancelado não pode engolir o clique seguinte).
+if (ONLY.includes("controls")) {
+  current = "controls";
+  console.log("\n# controles de janela 1440×900");
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+  const page = await ctx.newPage();
+  const errs = errorsOf(page);
+  // Estado lido do DOM (o store só é exposto em desenvolvimento; a suíte roda também no build de produção).
+  const st = () => page.evaluate(() => {
+    const ws = [...document.querySelectorAll(".os-window")];
+    return { focused: ws.find((w) => w.dataset.focused === "1")?.dataset.app ?? null, order: ws.sort((a, b) => Number(getComputedStyle(a).zIndex) - Number(getComputedStyle(b).zIndex)).map((w) => w.dataset.app), open: ws.map((w) => w.dataset.app) };
+  });
+  const light = (app, action) => win(page, app).locator(`[data-action="${action}"]`);
+  const bg = (app, action) => light(app, action).evaluate((e) => getComputedStyle(e, "::before").backgroundColor);
+  const toRoot = () => page.waitForURL((u) => u.pathname === "/", { timeout: 20000 }).then(() => true, () => false);
+  const zTop = async (app) => Number(await win(page, app).evaluate((e) => getComputedStyle(e).zIndex));
+  await page.goto(`${BASE}/`, { waitUntil: "load" });
+  await settle(page, 1200);
+
+  // 1. abrir Projetos e fechar pelo vermelho
+  await page.click("#os-icon-projects");
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 500);
+  const lights = [await bg("projects", "close"), await bg("projects", "min"), await bg("projects", "max")];
+  check("luzes: vermelho, amarelo, verde", lights.join("|") === "rgb(255, 95, 87)|rgb(254, 188, 46)|rgb(40, 200, 64)", lights.join(" "));
+  check("símbolos escondidos sem hover", await light("projects", "close").locator("svg").evaluate((e) => getComputedStyle(e).opacity === "0"));
+  await light("projects", "close").hover();
+  await settle(page, 250);
+  check("hover mostra os símbolos dos três", await win(page, "projects").locator(".os-window__btn svg").evaluateAll((els) => els.every((e) => getComputedStyle(e).opacity === "1")));
+  check("tooltip nativo (title) nos controles", (await light("projects", "close").getAttribute("title")) === "Fechar" && (await light("projects", "min").getAttribute("title")) === "Minimizar" && (await light("projects", "max").getAttribute("title")) === "Maximizar");
+  const hit = await light("projects", "close").boundingBox();
+  check("área de clique ≥ 24px", hit && hit.width >= 24 && hit.height >= 24, JSON.stringify(hit));
+  await light("projects", "close").click();
+  await page.waitForTimeout(60);
+  check("saída animada: janela ainda no DOM com data-anim=out", (await page.locator('.os-window[data-app="projects"][data-anim="out"]').count()) === 1);
+  await toRoot();
+  await settle(page, 500);
+  check("1. Projetos fechado: sem janela, URL raiz, dock sem indicador", (await page.locator(".os-window").count()) === 0 && path(page) === "/" && (await page.getAttribute('[data-dock-id="projects"]', "data-open")) === "0" && (await st()).focused === null, path(page));
+  check("1. wallpaper e olho à vista", await page.locator(".os-eye").isVisible());
+
+  // 2. abrir Lab e fechar
+  await page.click('[data-dock-id="lab"]');
+  await urlIs(page, /\/lab$/);
+  await settle(page, 500);
+  check("2. Lab abre pela dock com indicador", (await win(page, "lab").count()) === 1 && (await page.getAttribute('[data-dock-id="lab"]', "data-open")) === "1");
+  await light("lab", "close").click();
+  await toRoot();
+  await settle(page, 500);
+  check("2. Lab fechado pelo vermelho", (await page.locator(".os-window").count()) === 0 && path(page) === "/", path(page));
+
+  // 3. duas janelas, fechar só uma: a outra fica no lugar e assume o foco
+  await page.click("#os-icon-projects");
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 400);
+  const pr = await rectOf(win(page, "projects"));
+  await page.click("#os-icon-lab");
+  await urlIs(page, /\/lab$/);
+  await settle(page, 400);
+  check("3. duas janelas abertas, Lab na frente", (await page.locator(".os-window").count()) === 2 && (await st()).order.join(",") === "projects,lab");
+  await light("lab", "close").click();
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 500);
+  const pr2 = await rectOf(win(page, "projects"));
+  check("3. só o Lab fechou; Projetos fica no lugar e em foco", (await win(page, "lab").count()) === 0 && (await win(page, "projects").count()) === 1 && (await st()).focused === "projects" && JSON.stringify(pr) === JSON.stringify(pr2), `${JSON.stringify(pr)} → ${JSON.stringify(pr2)}`);
+  await page.click("#os-icon-lab");
+  await urlIs(page, /\/lab$/);
+  await settle(page, 400);
+  await page.click('[data-dock-id="lab"]');
+  await settle(page, 400);
+  check("3. reabrir pelo ícone e clicar na dock não duplica a janela", (await win(page, "lab").count()) === 1 && (await page.locator(".os-window").count()) === 2);
+
+  // 4. minimizar pelo amarelo e restaurar pela dock
+  const lr = await rectOf(win(page, "lab"));
+  await light("lab", "min").click();
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 600);
+  check("4. amarelo minimiza: oculta e inerte, dock com anel", (await win(page, "lab").evaluate((e) => getComputedStyle(e).visibility === "hidden" && e.hasAttribute("inert"))) && (await page.getAttribute('[data-dock-id="lab"]', "data-min")) === "1" && (await page.getAttribute('[data-dock-id="lab"]', "data-open")) === "1");
+  await page.click('[data-dock-id="lab"]');
+  await urlIs(page, /\/lab$/);
+  await settle(page, 600);
+  const lr2 = await rectOf(win(page, "lab"));
+  check("4. dock restaura com a mesma geometria e foco", JSON.stringify(lr) === JSON.stringify(lr2) && (await st()).focused === "lab" && (await page.getAttribute('[data-dock-id="lab"]', "data-min")) === "0", `${JSON.stringify(lr)} → ${JSON.stringify(lr2)}`);
+
+  // 5. maximizar pelo verde e restaurar
+  const layer = await rectOf(page.locator(".os-windows"));
+  await light("lab", "max").click();
+  await page.waitForTimeout(100);
+  check("5. maximizar interpola (data-zooming durante o gesto)", await win(page, "lab").evaluate((e) => e.hasAttribute("data-zooming")));
+  await settle(page, 500);
+  const mx = await rectOf(win(page, "lab"));
+  check("5. verde maximiza na área útil (entre barra e dock)", Math.abs(mx.w - layer.w) <= 1 && Math.abs(mx.h - layer.h) <= 1 && mx.x === layer.x && mx.y === layer.y, JSON.stringify({ mx, layer }));
+  check("5. sem rolagem horizontal maximizada", await page.evaluate(() => { const b = document.querySelector('.os-window[data-app="lab"] .os-window__body'); return document.documentElement.scrollWidth <= window.innerWidth && b.scrollWidth <= b.clientWidth + 1; }));
+  check("5. verde vira Restaurar", (await light("lab", "max").getAttribute("title")) === "Restaurar" && (await light("lab", "max").getAttribute("aria-pressed")) === "true" && (await win(page, "lab").evaluate((e) => !e.hasAttribute("data-zooming"))));
+  await light("lab", "max").click();
+  await settle(page, 600);
+  const rs = await rectOf(win(page, "lab"));
+  check("5. restaurar volta à geometria anterior", JSON.stringify(rs) === JSON.stringify(lr2), `${JSON.stringify(lr2)} → ${JSON.stringify(rs)}`);
+  await win(page, "lab").locator(".os-window__bar").dblclick({ position: { x: 300, y: 20 } });
+  await settle(page, 600);
+  check("5. duplo clique na barra maximiza", (await win(page, "lab").getAttribute("data-max")) === "1");
+  await win(page, "lab").locator(".os-window__bar").dblclick({ position: { x: 300, y: 20 } });
+  await settle(page, 600);
+  check("5. duplo clique de novo restaura", (await win(page, "lab").getAttribute("data-max")) === "0" && JSON.stringify(await rectOf(win(page, "lab"))) === JSON.stringify(lr2));
+
+  // 6. alternar entre janelas sobrepostas
+  const pb = await rectOf(win(page, "projects"));
+  const lb = await rectOf(win(page, "lab"));
+  const z1 = { p: await zTop("projects"), l: await zTop("lab") };
+  const inside = (p, r) => p[0] >= r.x && p[0] <= r.x + r.w && p[1] >= r.y && p[1] <= r.y + r.h;
+  const free = [[pb.x + pb.w - 12, pb.y + pb.h / 2], [pb.x + 12, pb.y + pb.h / 2], [pb.x + pb.w / 2, pb.y + pb.h - 6], [pb.x + pb.w / 2, pb.y + 12]].find((p) => !inside(p, lb));
+  await page.mouse.click(free[0], free[1]);
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 500);
+  check("6. clicar na parte visível da janela de trás traz para frente", z1.l > z1.p && (await zTop("projects")) > (await zTop("lab")) && (await st()).focused === "projects", JSON.stringify({ z1, free }));
+  await page.click('[data-dock-id="lab"]');
+  await urlIs(page, /\/lab$/);
+  await settle(page, 500);
+  check("6. dock alterna de volta para o Lab", (await zTop("lab")) > (await zTop("projects")) && (await st()).focused === "lab");
+  check("6. as duas continuam abertas e íntegras", (await page.locator('.os-window[data-min="0"]').count()) === 2 && (await win(page, "projects").locator(".os-projects").count()) === 1);
+
+  // Esc com o foco fora da janela fecha a da frente; dentro da busca, só fecha a busca
+  await page.evaluate(() => { document.activeElement?.blur?.(); document.body.focus(); });
+  await page.keyboard.press("Escape");
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 500);
+  check("Esc com foco fora da janela fecha a da frente (Lab)", (await win(page, "lab").count()) === 0 && (await st()).focused === "projects");
+  await page.keyboard.press("/");
+  await settle(page, 300);
+  await page.keyboard.press("Escape");
+  await settle(page, 400);
+  check("Esc na busca só fecha a busca", (await page.locator("dialog.os-search[open]").count()) === 0 && (await win(page, "projects").count()) === 1);
+
+  // 9. controles continuam funcionando depois de navegar entre seções (case → Serviços → Voltar)
+  await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
+  await page.waitForURL(/\/projetos\/terral$/);
+  await settle(page, 800);
+  await page.click('[data-dock-id="services"]');
+  await urlIs(page, /\/servicos$/);
+  await settle(page, 600);
+  await page.goBack();
+  await page.waitForURL(/\/projetos\/terral$/);
+  await settle(page, 600);
+  check("9. case → Serviços → Voltar: Projetos em foco com o case", (await st()).focused === "projects" && (await win(page, "projects").locator(".os-case").count()) === 1);
+  await light("projects", "min").click();
+  await urlIs(page, /\/servicos$/);
+  await settle(page, 500);
+  check("9. amarelo ainda minimiza (foco passa a Serviços)", (await win(page, "projects").getAttribute("data-min")) === "1" && (await st()).focused === "services");
+  await light("services", "max").click();
+  await settle(page, 600);
+  check("9. verde ainda maximiza Serviços", (await win(page, "services").getAttribute("data-max")) === "1");
+  await light("services", "close").click();
+  await toRoot();
+  await settle(page, 600);
+  check("9. vermelho fecha a maximizada; a minimizada não rouba o foco", (await win(page, "services").count()) === 0 && (await st()).focused === null && path(page) === "/", path(page));
+
+  // 7. fechar todas → só o wallpaper
+  await page.click('[data-dock-id="projects"]');
+  await urlIs(page, /\/projetos\/terral$/);
+  await settle(page, 500);
+  await page.click('[data-dock-id="settings"]');
+  await settle(page, 500);
+  await light("settings", "close").click();
+  await settle(page, 500);
+  await light("projects", "close").click();
+  await toRoot();
+  await settle(page, 600);
+  check("7. fechar todas: só o wallpaper, nenhum app aberto, dock sem indicadores", (await page.locator(".os-window").count()) === 0 && (await st()).open.length === 0 && (await page.locator('.os-dock__item[data-open="1"]').count()) === 0 && (await page.locator(".os-eye").isVisible()));
+  await shot(page, "c01-closed-all");
+
+  // regressão: Hold to Inspect cancelado (sem click) não engole o clique seguinte em Fechar
+  await page.click("#os-icon-studio");
+  await urlIs(page, /\/estudio$/);
+  await settle(page, 500);
+  await page.evaluate(() => window.dispatchEvent(new PointerEvent("pointerdown", { button: 0, clientX: 700, clientY: 500, pointerType: "touch" })));
+  await page.waitForTimeout(450);
+  const inspecting = await page.evaluate(() => document.documentElement.hasAttribute("data-mode"));
+  await page.evaluate(() => window.dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch" })));
+  await settle(page, 200);
+  await light("studio", "close").click();
+  await toRoot();
+  await settle(page, 500);
+  check("hold cancelado não engole o clique em Fechar", inspecting && (await win(page, "studio").count()) === 0, `inspect ligou: ${inspecting}`);
+
+  // reduced motion: fechar é imediato
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.click("#os-icon-studio");
+  await urlIs(page, /\/estudio$/);
+  await settle(page, 500);
+  await light("studio", "close").click();
+  await page.waitForTimeout(80);
+  check("reduced motion: fechar é imediato", (await win(page, "studio").count()) === 0);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+  await ctx.close();
+
+  // 8. celular: Início mantém o app aberto; Fechar (×) encerra e volta à tela inicial
+  console.log("\n# controles no celular 390×844");
+  const mctx = await browser.newContext({ ...devices["iPhone 13"], locale: "pt-BR" });
+  const mpage = await mctx.newPage();
+  const merrs = errorsOf(mpage);
+  await mpage.goto(`${BASE}/`, { waitUntil: "load" });
+  await settle(mpage, 1200);
+  await mpage.tap("#os-icon-projects");
+  await mpage.waitForURL(/\/projetos$/);
+  await settle(mpage, 700);
+  const mclose = win(mpage, "projects").locator(".os-window__close");
+  const mhome = win(mpage, "projects").locator(".os-window__home");
+  const sizes = [await mclose.boundingBox(), await mhome.boundingBox()];
+  check("8. cabeçalho com Início e Fechar visíveis, ≥ 44px", sizes.every((b) => b && b.width >= 44 && b.height >= 44), JSON.stringify(sizes));
+  check("8. luzes do desktop não aparecem no celular", (await win(mpage, "projects").locator(".os-window__controls").isVisible()) === false);
+  await mhome.tap();
+  await mpage.waitForURL((u) => u.pathname === "/");
+  await settle(mpage, 500);
+  check("8. Início volta à tela inicial e mantém o app aberto (dock marca)", (await mpage.locator('.os-window[data-screen="1"]').count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "1");
+  await mpage.tap('[data-dock-id="projects"]');
+  await mpage.waitForURL(/\/projetos$/);
+  await settle(mpage, 500);
+  await win(mpage, "projects").locator('.os-project__link[href="/projetos/terral"]').tap();
+  await mpage.waitForURL(/\/projetos\/terral$/);
+  await settle(mpage, 800);
+  await mclose.tap();
+  await mpage.waitForURL((u) => u.pathname === "/");
+  await settle(mpage, 600);
+  check("8. Fechar (×) a partir do case encerra o app: tela inicial, sem janela, dock sem indicador", (await mpage.locator(".os-window").count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "0");
+  await mpage.tap("#os-icon-projects");
+  await mpage.waitForURL(/\/projetos$/);
+  await settle(mpage, 600);
+  check("8. reaberto na pasta (não no case)", (await win(mpage, "projects").locator(".os-projects").count()) === 1);
+  await mpage.tap('[data-dock-id="studio"]');
+  await mpage.waitForURL(/\/estudio$/);
+  await settle(mpage, 600);
+  await win(mpage, "studio").locator(".os-window__close").tap();
+  await mpage.waitForURL((u) => u.pathname === "/");
+  await settle(mpage, 600);
+  check("8. fechar com outro app aberto volta à tela inicial (Projetos segue aberto atrás)", (await mpage.locator('.os-window[data-screen="1"]').count()) === 0 && (await win(mpage, "projects").count()) === 1 && (await win(mpage, "studio").count()) === 0);
+  check("8. sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
+  await shot(mpage, "c02-mobile-home-after-close");
+  await mctx.close();
 }
 
 // ------------------------------------------------------------------- resize

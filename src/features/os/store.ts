@@ -5,8 +5,10 @@ import { APPS, APP_IDS, parseRoute, type AppId } from "./registry";
  * WindowManager do MilWeb OS — estado das janelas, fora do React.
  *
  * Regras (ver docs/milweb-os-references.md):
- *  - z-order é a posição na pilha `order` (fundo → topo); nenhum contador
- *    que cresce sem teto. Foco = mover para o fim da pilha.
+ *  - Cada janela: `open` (está na área de trabalho), `min` (minimizada),
+ *    `max` (maximizada), `rect` (posição + tamanho) e a posição em `order`
+ *    (z-index). z-order é a posição na pilha `order` (fundo → topo); nenhum
+ *    contador que cresce sem teto. Foco = mover para o fim da pilha.
  *  - Minimizar NÃO desmonta: a janela fica `inert` e invisível, e a dock a
  *    restaura com a geometria preservada.
  *  - Toda geometria é clampada à área útil (entre a barra superior e a dock).
@@ -189,7 +191,9 @@ export function createOsStore(initialInternal: string) {
       close: (id) => {
         set((s) => {
           const order = s.order.filter((x) => x !== id);
-          const focused = s.focused === id ? (order.filter((x) => !s.wins[x].min).at(-1) ?? null) : s.focused;
+          // Desktop: a próxima janela visível da pilha assume o foco (e a URL). Celular: fechar
+          // um app volta à tela inicial, como no telefone — nunca cai dentro de outro app.
+          const focused = s.focused === id ? (s.shell === "mobile" ? null : (order.filter((x) => !s.wins[x].min).at(-1) ?? null)) : s.focused;
           // Fechar encerra o conteúdo: a próxima abertura mostra a raiz do app (a pasta, não o último case).
           return { wins: { ...s.wins, [id]: { ...s.wins[id], open: false, min: false, max: false, origin: null, route: APPS[id].route, scroll: 0 } }, order, focused, ...bump("user", "replace") };
         });

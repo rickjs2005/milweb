@@ -21,6 +21,10 @@ const HOLD_MS_TOUCH = 380;
  *
  * Um clique curto nunca dispara (limiar de 260 ms). Se o hold começou sobre
  * um link, o click do release é engolido para não navegar por acidente.
+ * Esse "engolir" vale só para o click do MESMO gesto: um hold que termina
+ * sem click (rolagem no toque → pointercancel, janela perdeu o foco, soltou
+ * fora da aba) não pode deixar a marca armada para o próximo clique — senão
+ * o visitante toca em Fechar e nada acontece.
  */
 export function InspectProvider({ children, strings }: { children: ReactNode; strings: { title: string; dev: string } }) {
   const [active, setActive] = useState(false);
@@ -53,6 +57,7 @@ export function InspectProvider({ children, strings }: { children: ReactNode; st
       // Campos e controles interativos de formulário ficam de fora.
       if (t?.closest?.("input, textarea, select, [data-no-inspect]")) return;
       pointer.current = { x: e.clientX, y: e.clientY };
+      swallowClick.current = false;
       cancel();
       const ms = e.pointerType === "touch" ? HOLD_MS_TOUCH : HOLD_MS;
       timer.current = window.setTimeout(() => {
@@ -60,8 +65,10 @@ export function InspectProvider({ children, strings }: { children: ReactNode; st
         on();
       }, ms);
     };
-    const up = () => {
+    const up = (e?: Event) => {
       cancel();
+      // Sem pointerup não vem click nenhum: a marca não pode sobrar para o próximo gesto.
+      if (e?.type !== "pointerup") swallowClick.current = false;
       if (root.hasAttribute("data-mode")) off();
     };
     const move = (e: PointerEvent) => {

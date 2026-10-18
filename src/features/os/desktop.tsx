@@ -156,6 +156,7 @@ export function Dock() {
                 aria-label={state ? `${s.apps[id]} · ${state}` : s.apps[id]}
                 aria-current={focused === id ? "true" : undefined}
                 data-open={w.open ? "1" : "0"}
+                data-min={w.open && w.min ? "1" : "0"}
                 onClick={(e) => launch(e, id)}
               >
                 <AppGlyph kind={id} size={40} />

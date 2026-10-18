@@ -97,11 +97,11 @@ export function Glyph({ name, size = 12 }: { name: "close" | "min" | "max" | "re
   const d: Record<string, React.ReactNode> = {
     close: <path d="M3 3l10 10M13 3L3 13" />,
     min: <path d="M3 8h10" />,
-    max: <rect x="3" y="3" width="10" height="10" rx="1" />,
+    max: <path d="M8 3.5v9M3.5 8h9" />,
     restore: (
       <>
-        <rect x="5" y="5" width="8" height="8" rx="1" />
-        <path d="M3 11V4a1 1 0 0 1 1-1h7" />
+        <path d="M13 3L9 7M9 4v3h3" />
+        <path d="M3 13l4-4M7 12V9H4" />
       </>
     ),
     back: <path d="M10 3L5 8l5 5" />,

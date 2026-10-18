@@ -177,6 +177,11 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-window[data-dragging] .os-window__body { pointer-events: none; }
 @keyframes os-win-in { from { opacity: 0; transform: scale(.96) translateY(10px); } to { opacity: 1; transform: none; } }
 .os-window[data-anim="in"] { animation: os-win-in .32s var(--os-ease) both; }
+/* Fechar: saída curta; a janela só deixa o store no animationend (window.tsx). Sem movimento, imediata. */
+@keyframes os-win-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.96); } }
+.os-window[data-anim="out"] { animation: os-win-out .2s var(--os-ease) both; pointer-events: none; }
+/* Maximizar/restaurar: a geometria interpola só durante o gesto (atributo transitório posto em window.tsx). */
+.os-window[data-zooming] { transition: left .3s var(--os-ease), top .3s var(--os-ease), width .3s var(--os-ease), height .3s var(--os-ease), border-radius .3s var(--os-ease), box-shadow .25s; }
 
 .os-window__bar {
   display: flex; align-items: center; gap: 12px; flex: none; height: 40px; padding: 0 12px;
@@ -184,17 +189,29 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
   cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
 }
 .os-window[data-dragging="move"] .os-window__bar { cursor: grabbing; }
-.os-window__controls { display: flex; gap: 4px; }
+/* Luzes à la macOS: vermelho fecha, amarelo minimiza, verde maximiza/restaura. Luz de 12px numa área
+   de 24px; o símbolo aparece ao pairar sobre o grupo, ao focar pelo teclado e sempre onde não há hover
+   (toque). Na janela de trás as luzes ficam esmaecidas até o ponteiro chegar à barra. */
+.os-window__controls { display: flex; gap: 8px; margin-right: 2px; }
 .os-window__btn {
-  position: relative; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
-  background: transparent; color: transparent; cursor: pointer;
+  position: relative; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: transparent; color: rgb(0 0 0 / 0.62); cursor: pointer; touch-action: manipulation;
 }
-.os-window__btn::before { content: ""; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--ink) / 0.22); transition: background .15s; }
-.os-window__btn svg { position: relative; width: 9px; height: 9px; }
-.os-window__controls:hover .os-window__btn, .os-window__btn:focus-visible { color: rgb(var(--paper)); }
-.os-window__controls:hover .os-window__btn::before, .os-window__btn:focus-visible::before { background: rgb(var(--ink) / 0.85); }
-.os-window__btn[data-action="close"]:hover::before { background: rgb(var(--ink)); }
-.os-window__btn:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: 1px; }
+.os-window__btn::before {
+  content: ""; position: absolute; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--os-light); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.16); transition: filter .15s, opacity .2s;
+}
+.os-window__btn[data-action="close"] { --os-light: #ff5f57; }
+.os-window__btn[data-action="min"] { --os-light: #febc2e; }
+.os-window__btn[data-action="max"] { --os-light: #28c840; }
+.os-window__btn svg { position: relative; width: 8px; height: 8px; stroke-width: 2.2; opacity: 0; transition: opacity .12s; }
+.os-window__controls:hover .os-window__btn svg, .os-window__controls:focus-within .os-window__btn svg { opacity: 1; }
+.os-window__btn:hover::before { filter: brightness(.9); }
+.os-window__btn:active::before { filter: brightness(.78); }
+.os-window__btn:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: 0; }
+.os-window[data-focused="0"] .os-window__btn::before { opacity: .55; }
+.os-window[data-focused="0"] .os-window__bar:hover .os-window__btn::before { opacity: 1; }
+@media (hover: none) { .os-window__btn svg { opacity: 1; } }
 .os-window__title {
   flex: 1; min-width: 0; margin: 0; padding: 4px 8px; border-radius: 6px; text-align: center;
   font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--ink-2));
@@ -203,7 +220,7 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-window__title:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: -2px; }
 .os-window__detail { color: rgb(var(--ink)); }
 .os-window__serial { font-size: 10px; opacity: .5; }
-.os-window__back, .os-window__home { display: none; }
+.os-window__back, .os-window__home, .os-window__close { display: none; }
 .os-window__body {
   flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
   padding: 24px; container-type: inline-size;
@@ -254,6 +271,8 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-dock__item::after { content: ""; position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--os-fg) / 0.55); opacity: 0; }
 .os-dock__item[data-open="1"]::after { opacity: 1; }
 .os-dock__item[aria-current="true"]::after { background: rgb(var(--os-signal)); }
+/* Minimizada: anel em vez de ponto — o app continua aberto, só está fora da área de trabalho. */
+.os-dock__item[data-min="1"]::after { background: transparent; box-shadow: inset 0 0 0 1px rgb(var(--os-fg) / 0.75); }
 .os-dock__sep { width: 1px; align-self: stretch; margin: 7px 5px; background: var(--os-line); }
 
 /* ---- busca ------------------------------------------------------------ */
@@ -502,8 +521,9 @@ details[open] .os-case__plus { transform: rotate(45deg); }
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; padding: 0 8px; border-radius: 8px;
     font: 11px/1 var(--font-mono), monospace; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--ink));
   }
-  .os-window__home { display: grid; place-items: center; min-width: 44px; min-height: 44px; border-radius: 8px; color: rgb(var(--ink)); }
-  .os-window__back:focus-visible, .os-window__home:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: -2px; }
+  /* Início mantém o app aberto (como no telefone); Fechar (×) encerra o app e volta à tela inicial. */
+  .os-window__home, .os-window__close { display: grid; place-items: center; min-width: 44px; min-height: 44px; border-radius: 8px; color: rgb(var(--ink)); }
+  .os-window__back:focus-visible, .os-window__home:focus-visible, .os-window__close:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: -2px; }
   .os-window__title { text-align: center; }
   .os-window__body { padding: 16px 16px calc(var(--os-mdock) + 24px); }
   .os-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 120; transform: none; padding: 0 10px calc(8px + env(safe-area-inset-bottom, 0px)); }
