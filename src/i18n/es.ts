@@ -76,11 +76,11 @@ export const es: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FUENTES PREFERIDAS", title: ["MANTÉN A MILWEB", "ENTRE TUS FUENTES."], cta: "AÑADIR MILWEB", loading: "ABRIENDO GOOGLE…", retry: "INTENTAR DE NUEVO", aria: "Añadir MilWeb a fuentes preferidas en Google" },
   os: {
-    apps: { home: "Destacados", projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
+    apps: { projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Escritorio", icons: "Accesos directos del escritorio", dock: "Dock", topbar: "Barra del sistema", windows: "Ventanas abiertas", home: "Pantalla de inicio", appGrid: "Aplicaciones" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Cerrar", keys: "Con la barra de título enfocada: las flechas mueven la ventana, Shift + flechas redimensionan, Esc cierra", resize: "Redimensionar", running: "abierta", focused: "al frente" },
-    mobile: { back: "Volver", home: "Inicio", open: "Abrir", widget: "Proyecto destacado", apps: "Aplicaciones", message: "Sitios, sistemas y experiencias digitales con diseño, código y motion." },
-    home: { lead: "Tres trabajos para empezar. Toda la colección está en Proyectos.", all: "Todos los proyectos", cta: "Hablar sobre un proyecto", welcome: "Bienvenido a MilWeb OS.", shortcut: "Acceso directo al caso" },
+    mobile: { back: "Volver", home: "Inicio", open: "Abrir", apps: "Aplicaciones", message: "Sitios, sistemas y experiencias digitales con diseño, código y motion." },
+    sign: { craft: "Desarrollo creativo", origin: "Brasil → Mundo", motto: "Códigos mueven el mundo." },
     projects: {
       back: "Todos los proyectos", open: "Abrir caso", visit: "Abrir sitio", code: "Código", stack: "Stack", context: "Contexto", done: "Qué se hizo", solutions: "Soluciones", gallery: "Pantallas", result: "Resultado",
       similar: "Quiero algo parecido", next: "Siguiente proyecto", prev: "Proyecto anterior", client: "Trabajo para cliente", demo: "Demostración", study: "Proyecto propio", live: "En línea", detail: "Detalle técnico", idea: "La idea", experience: "Experiencia",

@@ -10,12 +10,13 @@ import { AppContent } from "./apps/app-content";
 /**
  * Modo simples — os mesmos apps, cases e contatos como uma página comum:
  * navegação clássica, uma coluna, sem janelas nem arrasto. É o modo para
- * leitores de tela, teclado só, ou quem prefere uma lista.
+ * leitores de tela, teclado só, ou quem prefere uma lista. Na raiz mostra a
+ * marca, a mensagem curta e a coleção de projetos.
  */
 export function SimpleShell({ footer, content }: { footer: ReactNode; content: ReactNode | null }) {
   const { payload, route, store } = useOs();
   const s = payload.s;
-  const app = route.app ?? "home";
+  const app = route.app;
   return (
     <>
       <Nav locale={payload.locale} strings={payload.nav} />
@@ -34,8 +35,20 @@ export function SimpleShell({ footer, content }: { footer: ReactNode; content: R
           ))}
         </nav>
         {/* Com um case/página na rota, o h1 é o do próprio conteúdo; aqui fica só o nome do app. */}
-        {content ? <p className="t-mono mt-8 text-ink-3">{s.apps[app].toUpperCase()}</p> : <h1 className="t-display t-display-md mt-8 text-ink">{s.apps[app]}</h1>}
-        <div className="os-simple__content">{content ?? <AppContent id={app} active />}</div>
+        {content ? (
+          <p className="t-mono mt-8 text-ink-3">{app ? s.apps[app].toUpperCase() : payload.brand.mark}</p>
+        ) : app ? (
+          <h1 className="t-display t-display-md mt-8 text-ink">{s.apps[app]}</h1>
+        ) : (
+          <header className="mt-8">
+            <h1 className="t-display t-display-md text-ink">{s.sign.motto}</h1>
+            <p className="t-mono mt-3 text-ink-3">
+              {payload.brand.mark} · {s.sign.craft} · {s.sign.origin}
+            </p>
+            <p className="mt-4 max-w-[52ch] text-ink-2">{s.mobile.message}</p>
+          </header>
+        )}
+        <div className="os-simple__content">{content ?? <AppContent id={app ?? "projects"} active />}</div>
       </main>
       {footer}
     </>

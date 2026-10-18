@@ -108,9 +108,14 @@ export const HOME_COORD = { lon: -47.9, lat: -15.8 } as const;
 
 export const EARTH_MASK_SIZE = { w: 256, h: 128 } as const;
 
-/** Rasteriza a máscara equirretangular. Terra = branco, água = preto. */
-export function createEarthMask(): HTMLCanvasElement {
-  const { w, h } = EARTH_MASK_SIZE;
+/**
+ * Rasteriza a máscara equirretangular. Terra = branco, água = preto.
+ * `scale` multiplica a resolução (o globo do OS, que pinta continentes
+ * cheios em vez de pontilhado, usa 2× para a costa não serrilhar).
+ */
+export function createEarthMask(scale = 1): HTMLCanvasElement {
+  const w = EARTH_MASK_SIZE.w * scale;
+  const h = EARTH_MASK_SIZE.h * scale;
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;

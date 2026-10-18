@@ -2,15 +2,19 @@
  * MilWeb OS — AppRegistry.
  *
  * Fonte única dos aplicativos do sistema: id, rota interna que cada um
- * "possui", ícone, geometria padrão da janela e onde aparece (área de
+ * "possui", geometria padrão da janela e onde aparece (coluna da área de
  * trabalho, dock, grade do celular). Compartilhado pelo DesktopShell, pelo
  * MobileShell, pela busca e pelo WindowManager — nenhum deles tem lista
  * própria. Rótulos vivem nos dicionários (`d.os.apps`), nunca aqui.
+ *
+ * A raiz (`/`) não pertence a app nenhum: é a área de trabalho vazia —
+ * wallpaper, aplicativos e dock. Nada abre sozinho; os cases moram em
+ * Projetos e aparecem quando o visitante abre a pasta.
  */
 
-export type AppId = "home" | "projects" | "studio" | "lab" | "services" | "contact" | "settings";
+export type AppId = "projects" | "studio" | "lab" | "services" | "contact" | "settings";
 
-export const APP_IDS = ["home", "projects", "studio", "lab", "services", "contact", "settings"] as const satisfies readonly AppId[];
+export const APP_IDS = ["projects", "studio", "lab", "services", "contact", "settings"] as const satisfies readonly AppId[];
 
 export type AppDef = {
   id: AppId;
@@ -20,7 +24,7 @@ export type AppDef = {
   size: { w: number; h: number };
   /** Mínimo ao redimensionar. */
   min: { w: number; h: number };
-  /** Aparece na dock do desktop / do celular / como atalho na área de trabalho / na grade do celular. */
+  /** Aparece na dock do desktop / na dock do celular / na coluna da área de trabalho / na grade do celular. */
   dock: boolean;
   mobileDock: boolean;
   desktopIcon: boolean;
@@ -28,7 +32,6 @@ export type AppDef = {
 };
 
 export const APPS = {
-  home: { id: "home", route: "/", size: { w: 760, h: 520 }, min: { w: 360, h: 300 }, dock: false, mobileDock: false, desktopIcon: true, mobileGrid: false },
   projects: { id: "projects", route: "/work", size: { w: 1080, h: 700 }, min: { w: 420, h: 320 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
   studio: { id: "studio", route: "/studio", size: { w: 820, h: 640 }, min: { w: 380, h: 300 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
   lab: { id: "lab", route: "/lab", size: { w: 900, h: 660 }, min: { w: 400, h: 320 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
@@ -40,11 +43,8 @@ export const APPS = {
 /** Ordem na dock do desktop e na dock do celular. */
 export const DOCK_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
 export const MOBILE_DOCK: AppId[] = ["projects", "studio", "lab", "contact"];
-/** Ordem dos atalhos na área de trabalho / grade do celular (atalhos de projeto entram depois de Projetos). */
-export const ICON_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings", "home"];
-
-/** Atalhos de projetos reais na área de trabalho (cases da coleção, não inventados). */
-export const SHORTCUT_SLUGS = ["kavita-drones", "terral", "atelier-vertex"] as const;
+/** Ordem da coluna de aplicativos (desktop) e da grade (celular). */
+export const ICON_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou
@@ -56,11 +56,12 @@ export const MOBILE_SHELL_MQ = "(max-width: 719px), ((max-height: 499px) and (ma
 
 /** Altura da barra superior e espaço reservado à dock no desktop (px) — iguais aos tokens do CSS. */
 export const TOPBAR_H = 36;
-export const DOCK_SPACE = 92;
+export const DOCK_SPACE = 84;
 
-export type RouteKind = "root" | "project" | "page" | "fullpage";
+/** desktop = a raiz (nenhum app) · root = raiz de um app · project/page = conteúdo dentro do app · fullpage = fora do OS. */
+export type RouteKind = "desktop" | "root" | "project" | "page" | "fullpage";
 export type RouteInfo = {
-  /** App dono da rota (null quando a rota não pertence ao OS). */
+  /** App dono da rota (null na área de trabalho e fora do OS). */
   app: AppId | null;
   kind: RouteKind;
   /** Slug do case ou chave da página interna, quando `kind` é project/page. */
@@ -73,7 +74,7 @@ const SERVICE_PAGES = new Set(["criacao-de-sites", "catalogo-whatsapp", "landing
 /** Caminho INTERNO (/work/terral) → app dono + tipo de conteúdo. */
 export function parseRoute(internal: string): RouteInfo {
   const clean = internal.replace(/\/+$/, "") || "/";
-  if (clean === "/") return { app: "home", kind: "root", detail: null };
+  if (clean === "/") return { app: null, kind: "desktop", detail: null };
   const [, first = "", second, ...rest] = clean.split("/");
   if (first === "work") {
     if (!second) return { app: "projects", kind: "root", detail: null };

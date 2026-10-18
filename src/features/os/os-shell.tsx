@@ -27,7 +27,8 @@ import { SimpleShell } from "./simple-shell";
  * hidratação não troca de árvore.
  *
  * Rota → janela: o app dono da rota abre/foca quando o caminho muda por
- * fora (Voltar, link direto, Link interno). Janela → rota: ações do
+ * fora (Voltar, link direto, Link interno); a raiz tira o foco de todas
+ * (área de trabalho vazia — nada abre sozinho). Janela → rota: ações do
  * visitante (ícone, dock, foco, fechar) navegam para a rota da janela em
  * foco. `ownNav` evita o eco entre as duas direções.
  *
@@ -104,6 +105,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     }
     ownNav.current = null;
     if (route.app) store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
+    // A raiz é a área de trabalho: nenhum app em primeiro plano (Voltar, Início, marca, link direto).
+    else if (route.kind === "desktop") store.getState().blur({ source: "route" });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `route` deriva de `internal`
   }, [internal, store]);
 

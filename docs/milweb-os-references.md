@@ -92,7 +92,7 @@ Não estava disponível nesta sessão: nenhuma ferramenta `list_browser_targets`
 - `features/os/store.ts` — WindowManager (Zustand vanilla, criado por shell, nasce da rota: SSR e cliente iguais; preferências e geometria salvas entram depois da hidratação, validadas).
 - `features/os/os-shell.tsx` — DesktopShell + MobileShell no mesmo DOM; URL ↔ janela nas duas direções com guarda contra eco; modo simples; `/` abre a busca.
 - `features/os/window.tsx` — janela: arraste, alças, teclado, `inert`, transição do ícone, foco.
-- `features/os/apps/*` — Destaques, Projetos, Estúdio, Lab, Serviços, Contato, Ajustes, Busca, caso remoto.
+- `features/os/apps/*` — Projetos, Estúdio, Lab, Serviços, Contato, Ajustes, Busca, caso remoto (Destaques saiu na revisão 2, abaixo).
 - `features/os/payload.ts` (servidor) — carga leve por idioma; `features/os/project-data.ts` + `/api/os/project/[lang]/[slug]` — dados do case (JSON estático gerado no build) para a janela sem foco; `project-detail-view.tsx` — a mesma view na página canônica e no JSON.
 - Rotas canônicas preservadas (`/projetos/x`, `/en/work/x`, `/es/proyectos/x`, serviços, diagnóstico), metadata, canonical, hreflang, sitemap, robots, JSON-LD e analytics (`TrackConversions`) intactos. Protótipos do Lab (`/lab/milo-null`) e erros ficam fora do OS, com a navegação clássica.
 - Animação: só CSS no sistema (transições/keyframes); GSAP continua nos componentes de conteúdo que já o usavam (`TerralHold`, `Reveal` com `scroller` apontando para o corpo da janela). Lenis não liga no OS (`<html data-os>`). `prefers-reduced-motion` e o ajuste "Reduzir" desligam tudo.
@@ -103,3 +103,44 @@ Não estava disponível nesta sessão: nenhuma ferramenta `list_browser_targets`
 - `tsc --noEmit` e `eslint` limpos; `pnpm build` (lint + build, como o CI) — ver `project-state.md`.
 - `scripts/os-check.mjs` (Playwright/Chromium): 103 verificações — desktop 1440×900 (abrir, focar, pilha, minimizar/restaurar, arraste com clamp, teclado, maximizar, alça, case na janela, cache remoto, Esc, atalho, busca, contato, reload, página de serviço, EN), celular 360/390/430 (tela inicial, toque, Voltar do app e do navegador, Início, contato, ES, alvos ≥ 44 px, sem rolagem horizontal), redimensionamento 1440→390→1920→844×390→768×1024, modo simples. Emulação de navegador, não aparelho físico.
 - Sem erros de console nem de hidratação nos fluxos cobertos.
+
+## Revisão 2 (18/10/2026) — entrada limpa e globo
+
+Pedido: raiz sem janela automática, sem Destaques, sem atalhos de case, sem widget no celular; a escultura orbital dá lugar a um globo terrestre em grafite; desktop recomposto (coluna de apps à esquerda, globo no centro/direita, assinatura pequena, dock compacta); celular como tela inicial de iPhone.
+
+### O que mudou na origem (não em CSS)
+
+- `registry.ts`: o app `home` deixou de existir. `parseRoute("/")` devolve `{ app: null, kind: "desktop" }` — a raiz é a área de trabalho, não a rota de um app. `SHORTCUT_SLUGS`, `payload.shortcuts` e `payload.featured` saíram; `ICON_ORDER` = Projetos, Estúdio, Lab, Serviços, Contato (Ajustes só na dock e na grade do celular).
+- `store.ts`: a loja nasce sem janela na raiz; nova ação `blur()` (nenhum app em primeiro plano, janelas ficam onde estão). `close()` devolve a rota da janela à raiz do app — fechar Projetos num case e reabrir pelo ícone mostra a pasta, não o último case.
+- `os-shell.tsx`: rota → store aplica `blur` na raiz (Voltar do navegador, Início do celular, marca da barra); a URL continua sendo a fonte do app em foco.
+- `window.tsx`: sem casos especiais de `home`; `data-screen` = janela em foco.
+- `apps/highlights.tsx` removido; `app-content.tsx`, `simple-shell.tsx` (raiz do modo simples = lema + mensagem + coleção) e os três dicionários (`os.apps.home`, `os.home.*`, `os.mobile.widget` removidos; `os.sign.{craft,origin,motto}` adicionados) acompanham.
+- Elementos retirados não existem mais no DOM — nada fica recebendo foco invisível (conferido pela suíte: `#os-icon-home`, `[data-shortcut]`, `.os-highlights`, `.os-home__widget` = 0).
+
+### Globo (`features/os/globe/`)
+
+- **Reaproveitado** do globo do Hero antigo: o renderer WebGL 1 compartilhado (`webgl/renderer.ts`: um quad, loop só com `hold`, pausa em `visibilitychange`, perda de contexto tratada) e a máscara de terra em polígonos (`webgl/earth-mask.ts`, agora com `scale` para 512×256). **Não reaproveitado**: a lógica de letra "O", migração, saída e scroll (`globe-store`, `orb-metrics`, `GLOBE_LIFE` com arcos e pontos viajantes) — nada disso entra no bundle do OS.
+- `globe-frag.ts` é um shader novo derivado do anterior: esfera analítica, continentes cheios (não pontilhado), relevo pelas costas (gradiente da máscara perturbando a normal), luz lateral macia com brilho acetinado largo, limbo claro do lado da luz, graticule a 3 %, um ponto lima no Brasil com anel fino e pulso lento (`uLive`), sombra de contato curta. Sem arcos, partículas, estrelas ou bloom.
+- `os-globe.tsx`: camada visual pura (`pointer-events: none`, `aria-hidden`). O HTML entrega a **imagem** (`public/art/globe-still.webp` 1600 px / 85 KB e `-800` / 34 KB), gerada pelo mesmo shader na pose de repouso por `scripts/globe-still.mjs` (Playwright + SwiftShader; rodar de novo quando shader, máscara ou config mudarem). No desktop, com movimento permitido e GPU aprovada por sonda (frame real em buffer 0,12× medido com `gl.finish`, teto 4 ms), o canvas monta em idle e entra por crossfade; gira a 0,03 rad/s (uma volta em ~3,5 min, sentido leste), segue o cursor com inércia (yaw ±0,3 / pitch ±0,1 rad), para com a aba oculta e quando uma janela maximizada o cobre (`store.subscribe` solta o `hold`), e volta para a imagem com `prefers-reduced-motion` ou Ajustes › Reduzir. No celular nunca monta WebGL (só a imagem — fluidez no iPhone 11).
+- A escultura orbital saiu do OS (preload, `.os-wallpaper__art`, grade, linhas, manchete gigante). O arquivo `public/art/orbital-sculpture-v2.webp` continua no repositório porque a home antiga (`sections/home/orbital-hero.tsx`, sem rota) ainda o referencia.
+- Chunks: o shader fica num chunk preguiçoso de 4,8 KB; a raiz não o baixa até o canvas montar.
+
+### Composição
+
+- Desktop: barra superior (marca, app em foco, busca, idiomas, hora); coluna à esquerda (5 apps × 90 px; quebra em duas colunas abaixo de ~700 px de altura); globo `min(60vh, 44vw)` em 63 % / 47 %; assinatura no canto inferior esquerdo — lema "Códigos movem o mundo." como `h1` da raiz (fora dela, parágrafo) e a linha `MILWEB® · Desenvolvimento criativo · Brasil → Mundo` com o destino em lima (no tema papel, em tinta); dock compacta (ícones 40 px). Fundo: grafite com uma claridade radial atrás do globo e uma vinheta embaixo.
+- Ícones: placa grafite fosca com borda fina, sem brilho nem relevo; traço 1,5 px; um acento lima por app; estados hover/active/focus na placa.
+- Celular: cabeçalho (marca + busca + navegação simples, 44 px), globo `min(66vw, 38svh)` (viewport pequena: cabe com as barras do Safari à vista), assinatura centrada, grade 4 colunas (56 px), dock fixa Projetos/Estúdio/Lab/Contato. Paisagem (≤ 499 px de altura): grade em duas colunas à esquerda, globo à direita. Safe areas nos quatro lados, `100dvh`, alvos ≥ 44 px, sem arrasto.
+- Armadilhas encontradas: (1) o wallpaper `position: fixed` do celular pintava por cima do conteúdo estático (rótulos e assinatura sumiam) — `z-index: -1` dentro do contexto da área de trabalho; (2) o bloco "tablet" (`min-width: 720px`) pegava o telefone deitado e empurrava o globo para fora — ganhou `and (min-height: 500px)`.
+
+### REA
+
+Não foi usado: nenhuma dúvida concreta sobre interação de referência surgiu nesta revisão (o comportamento pedido — nada abrir na raiz, pasta → case — já estava observado nas referências A e B na primeira rodada).
+
+### Verificações (revisão 2)
+
+- `tsc --noEmit`, `eslint` (só o aviso pré-existente do `<img>` em `opengraph-image.tsx`) e `pnpm build` (204 páginas) verdes.
+- `scripts/os-check.mjs`: **128/128** no dev e no build de produção. Novos: raiz sem janela e sem foco; sem Destaques/atalhos; coluna de apps na ordem pedida; `h1` = lema; globo como imagem, `pointer-events: none`, sem a escultura; sem sobreposição entre globo, assinatura, apps e dock (desktop e 360/390/430); Voltar do navegador para a raiz tira o foco e Avançar refoca; pasta → card → case em duas ações; `prefers-reduced-motion` e Ajustes › Reduzir mantêm a imagem (sem `__mwOsGlobe`); celular: grade com rótulos legíveis, dock com os quatro apps, tela inicial cabe sem rolar, sem WebGL.
+- Canvas vivo conferido num Chrome real com GPU (extensão): `data-state="live"`, frames avançando, `held` = false com janela maximizada e true ao restaurar/minimizar/fechar. A taxa de quadros real **não foi medida** (a janela da extensão fica em segundo plano e o Chrome estrangula o rAF a ~1,5 Hz ali).
+- `scripts/i18n-audit.mjs`: 117 rotas; as mesmas 2 ocorrências pré-existentes no Logistics Demo (conteúdo).
+- Capturas (emulação Playwright, build de produção) em `.audit/os-rev/review/`: 1024, 1440, 1920, 768, 1440 com Projetos, 1440 com case, reduced motion, papel; 360, 390, 430, 390 com Projetos, 844×390.
+- Limitações: emulação de navegador, não aparelho físico (Safari iOS, teclado virtual, `svh` real, gestos de borda); fps do globo não medido; Lighthouse não rodado.

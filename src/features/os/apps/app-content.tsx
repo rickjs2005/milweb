@@ -1,7 +1,6 @@
 "use client";
 
 import type { AppId } from "../registry";
-import { HighlightsApp } from "./highlights";
 import { ProjectsApp } from "./projects";
 import { StudioApp } from "./studio";
 import { LabApp } from "./lab";
@@ -12,8 +11,6 @@ import { SettingsApp } from "./settings";
 /** Raiz de cada app, desenhada a partir da carga do OS (mesma em desktop, celular e modo simples). */
 export function AppContent({ id, active }: { id: AppId; active: boolean }) {
   switch (id) {
-    case "home":
-      return <HighlightsApp />;
     case "projects":
       return <ProjectsApp />;
     case "studio":

@@ -62,6 +62,8 @@ export type OsState = {
   open: (id: AppId, opts?: { route?: string | null; origin?: Rect | null; openedBy?: string | null; source?: Source; mode?: NavMode; focus?: boolean }) => void;
   close: (id: AppId) => void;
   focus: (id: AppId, opts?: { source?: Source; mode?: NavMode }) => void;
+  /** Nenhum app em primeiro plano (a URL é a raiz): as janelas ficam onde estão, nenhuma em foco. */
+  blur: (opts?: { source?: Source; mode?: NavMode }) => void;
   minimize: (id: AppId) => void;
   restore: (id: AppId, opts?: { mode?: NavMode }) => void;
   toggleMax: (id: AppId) => void;
@@ -129,6 +131,7 @@ export function createOsStore(initialInternal: string) {
   const info = parseRoute(initialInternal);
   const wins = Object.fromEntries(APP_IDS.map((id) => [id, blankWin(id)])) as Record<AppId, Win>;
   const order: AppId[] = [];
+  // Só a rota de um app abre janela. Na raiz (`kind: "desktop"`) a área de trabalho nasce vazia.
   if (info.app) {
     wins[info.app] = { ...wins[info.app], open: true, route: initialInternal, placed: "auto" };
     order.push(info.app);
@@ -187,7 +190,8 @@ export function createOsStore(initialInternal: string) {
         set((s) => {
           const order = s.order.filter((x) => x !== id);
           const focused = s.focused === id ? (order.filter((x) => !s.wins[x].min).at(-1) ?? null) : s.focused;
-          return { wins: { ...s.wins, [id]: { ...s.wins[id], open: false, min: false, max: false, origin: null } }, order, focused, ...bump("user", "replace") };
+          // Fechar encerra o conteúdo: a próxima abertura mostra a raiz do app (a pasta, não o último case).
+          return { wins: { ...s.wins, [id]: { ...s.wins[id], open: false, min: false, max: false, origin: null, route: APPS[id].route, scroll: 0 } }, order, focused, ...bump("user", "replace") };
         });
       },
 
@@ -204,6 +208,11 @@ export function createOsStore(initialInternal: string) {
             ...bump(source, mode),
           };
         });
+      },
+
+      blur: (opts = {}) => {
+        const { source = "route", mode = "replace" } = opts;
+        set((s) => (s.focused === null ? {} : { focused: null, ...bump(source, mode) }));
       },
 
       minimize: (id) => {

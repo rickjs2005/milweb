@@ -5,13 +5,17 @@ import { alternatesOf } from "@/i18n/routing";
 import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
-import { AppGlyph, Glyph, ProjectTile } from "./icons";
-import { HighlightsApp } from "./apps/highlights";
+import { AppGlyph, Glyph } from "./icons";
+import { OsGlobe } from "./globe/os-globe";
 
 /**
- * Área de trabalho e tela inicial: barra superior, wallpaper autoral,
- * atalhos (coluna à esquerda no desktop, grade no celular), widget do
- * celular e a dock. Tudo lê o registro; nada tem lista própria.
+ * Área de trabalho e tela inicial.
+ *
+ * Desktop: barra superior, wallpaper com o globo (centro/direita), coluna
+ * de aplicativos à esquerda, assinatura pequena numa área livre e a dock.
+ * Celular: cabeçalho com marca e ferramentas, globo, assinatura, grade de
+ * aplicativos e dock fixa. Nada abre sozinho; os cases moram em Projetos.
+ * Tudo lê o registro; nada tem lista própria.
  */
 
 /** Abre um app a partir de um controle (ícone, dock, busca). Mantém Ctrl/Cmd-clique nativo (nova aba). */
@@ -79,85 +83,53 @@ export function TopBar() {
 export function Desktop() {
   const { payload, route, openSearch, store } = useOs();
   const s = payload.s;
-  const Headline = route.app === "home" ? "h1" : "p";
-  const shortcuts = payload.shortcuts.map((slug) => payload.projects.find((p) => p.slug === slug)!).filter(Boolean);
   const launch = useLaunch();
+  // O lema é o h1 da raiz (a página é a área de trabalho); com um app na URL, o h1 é do conteúdo.
+  const Motto = route.kind === "desktop" ? "h1" : "p";
 
   return (
     <div className="os-desktop" aria-label={s.regions.desktop}>
-      <div className="os-wallpaper" aria-hidden="true">
-        <div className="os-wallpaper__grid" />
-        <svg className="os-wallpaper__lines" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor">
-          <line x1="120" y1="700" x2="520" y2="620" strokeWidth="2" />
-          <line x1="980" y1="120" x2="1320" y2="260" strokeWidth="1" />
-          <line x1="300" y1="200" x2="380" y2="560" strokeWidth="2" />
-          <line x1="860" y1="760" x2="1240" y2="700" strokeWidth="1" />
-          <line x1="640" y1="80" x2="700" y2="300" strokeWidth="2" />
-          <line x1="1100" y1="480" x2="1400" y2="430" strokeWidth="1" />
-          <rect x="960" y="330" width="260" height="150" strokeWidth="1" />
-          <rect x="1030" y="390" width="120" height="70" strokeWidth="1" />
-          <circle cx="1090" cy="425" r="3" className="os-wallpaper__dot" />
-        </svg>
-        {/* A escultura orbital (arte existente) só entra no desktop: fundo CSS atrás de media query,
-            com preload condicionado — o celular nunca baixa os 210 KB. */}
-        <link rel="preload" as="image" href="/art/orbital-sculpture-v2.webp" media="(min-width: 720px) and (min-height: 500px)" />
-        <div className="os-wallpaper__art" />
-      </div>
+      <div className="os-wallpaper" aria-hidden="true" />
 
-      {/* Marca e manchete: tipografia editorial reservada ao wallpaper. H1 só na raiz. */}
-      <div className="os-wallpaper__type">
-        <p className="os-wallpaper__eyebrow t-mono">
-          <span>{payload.brand.mark}</span>
-          <span className="os-wallpaper__tagline"> — {payload.brand.tagline.toUpperCase()}</span>
-          <span> · {payload.brand.origin.toUpperCase()}</span>
-        </p>
-        <Headline className="os-wallpaper__headline t-display">
-          <span className="block">{payload.brand.headline[0]}</span>
-          <span className="block">{payload.brand.headline[1]}</span>
-        </Headline>
-        <p className="os-wallpaper__support t-mono">{payload.brand.support.join(" · ")}</p>
-      </div>
-
-      {/* Tela inicial do celular: identificação, mensagem curta, widget real, grade. */}
-      <div className="os-home" aria-label={s.regions.home}>
-        <div className="os-home__brand">
-          <p className="os-home__message">{s.mobile.message}</p>
-          <div className="os-home__tools">
-            <button type="button" className="os-home__tool" onClick={openSearch} aria-keyshortcuts="/">
-              <Glyph name="search" size={14} />
-              <span>{s.apps.search}</span>
-            </button>
-            <button type="button" className="os-home__tool" onClick={() => store.getState().setPrefs({ simple: true })}>
-              <span aria-hidden="true">≡</span>
-              <span>{s.simple.title}</span>
-            </button>
-          </div>
+      {/* Cabeçalho da tela inicial (só no celular): marca à esquerda, busca e navegação simples à direita. */}
+      <div className="os-home__head" data-no-inspect>
+        <p className="t-mono os-home__brand">{payload.brand.mark}</p>
+        <div className="os-home__tools">
+          <button type="button" className="os-home__tool" onClick={openSearch} aria-label={s.apps.search} aria-keyshortcuts="/">
+            <Glyph name="search" size={16} />
+          </button>
+          <button type="button" className="os-home__tool" onClick={() => store.getState().setPrefs({ simple: true })} aria-label={s.simple.title}>
+            <Glyph name="list" size={16} />
+          </button>
         </div>
-        <section className="os-home__widget" aria-label={s.mobile.widget}>
-          <HighlightsApp compact />
-        </section>
-
-        <nav className="os-icons" aria-label={s.regions.icons}>
-          <ul>
-            {ICON_ORDER.filter((id) => APPS[id].desktopIcon || APPS[id].mobileGrid).map((id) => (
-              <li key={id} data-desktop={APPS[id].desktopIcon ? "1" : "0"} data-mobile={APPS[id].mobileGrid ? "1" : "0"}>
-                <a id={`os-icon-${id}`} href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"} className="os-icon-btn" onClick={(e) => launch(e, id)} data-no-inspect>
-                  <AppGlyph kind={id} />
-                  <span className="os-icon-btn__label">{s.apps[id]}</span>
-                </a>
-              </li>
-            ))}
-            {shortcuts.map((p) => (
-              <li key={p.slug} data-desktop="1" data-mobile="1" data-shortcut>
-                <a id={`os-icon-${p.slug}`} href={p.href} className="os-icon-btn" onClick={(e) => launch(e, "projects", `/work/${p.slug}`)} data-no-inspect aria-label={`${p.name} · ${s.home.shortcut}`}>
-                  <ProjectTile src={p.image} alt="" />
-                  <span className="os-icon-btn__label">{p.name}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
       </div>
+
+      <OsGlobe />
+
+      {/* Assinatura: pequena, numa área livre (canto inferior esquerdo no desktop; sob o globo no celular). */}
+      <div className="os-sign">
+        <Motto className="os-sign__motto">{s.sign.motto}</Motto>
+        <p className="os-sign__line t-mono">
+          <span className="os-sign__mark">{payload.brand.mark} · </span>
+          <span>{s.sign.craft}</span>
+          <span> · </span>
+          <span className="os-sign__origin">{s.sign.origin}</span>
+        </p>
+      </div>
+
+      {/* Aplicativos: coluna à esquerda no desktop, grade no celular. */}
+      <nav className="os-icons" aria-label={s.regions.icons}>
+        <ul>
+          {ICON_ORDER.filter((id) => APPS[id].desktopIcon || APPS[id].mobileGrid).map((id) => (
+            <li key={id} data-desktop={APPS[id].desktopIcon ? "1" : "0"} data-mobile={APPS[id].mobileGrid ? "1" : "0"}>
+              <a id={`os-icon-${id}`} href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"} className="os-icon-btn" onClick={(e) => launch(e, id)} data-no-inspect>
+                <AppGlyph kind={id} size={52} />
+                <span className="os-icon-btn__label">{s.apps[id]}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 }
@@ -186,7 +158,7 @@ export function Dock() {
                 data-open={w.open ? "1" : "0"}
                 onClick={(e) => launch(e, id)}
               >
-                <AppGlyph kind={id} size={44} />
+                <AppGlyph kind={id} size={40} />
                 <span className="os-dock__label">{s.apps[id]}</span>
               </a>
             </li>
@@ -195,7 +167,7 @@ export function Dock() {
         <li className="os-dock__sep" aria-hidden="true" />
         <li data-mobile="0">
           <button type="button" className="os-dock__item" onClick={openSearch} aria-label={s.apps.search} aria-keyshortcuts="/">
-            <AppGlyph kind="search" size={44} />
+            <AppGlyph kind="search" size={40} />
             <span className="os-dock__label">{s.apps.search}</span>
           </button>
         </li>

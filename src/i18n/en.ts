@@ -76,11 +76,11 @@ export const en: Dictionary = {
   footer: { email: "Email", year: "Brazil" },
   preferred: { eyebrow: "GOOGLE / PREFERRED SOURCES", title: ["KEEP MILWEB", "IN YOUR SOURCES."], cta: "ADD MILWEB", loading: "OPENING GOOGLE…", retry: "TRY AGAIN", aria: "Add MilWeb to Preferred Sources on Google" },
   os: {
-    apps: { home: "Highlights", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", contact: "Contact", settings: "Settings", search: "Search" },
+    apps: { projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", contact: "Contact", settings: "Settings", search: "Search" },
     regions: { desktop: "Desktop", icons: "Desktop shortcuts", dock: "Dock", topbar: "System bar", windows: "Open windows", home: "Home screen", appGrid: "Apps" },
     window: { minimize: "Minimize", maximize: "Maximize", restore: "Restore", close: "Close", keys: "With the title bar focused: arrow keys move the window, Shift + arrows resize, Esc closes", resize: "Resize", running: "open", focused: "in front" },
-    mobile: { back: "Back", home: "Home", open: "Open", widget: "Featured project", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
-    home: { lead: "Three works to start with. The whole collection lives in Projects.", all: "All projects", cta: "Talk about a project", welcome: "Welcome to MilWeb OS.", shortcut: "Shortcut to the case" },
+    mobile: { back: "Back", home: "Home", open: "Open", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
+    sign: { craft: "Creative development", origin: "Brazil → World", motto: "Code moves the world." },
     projects: {
       back: "All projects", open: "Open case", visit: "Open site", code: "Code", stack: "Stack", context: "Context", done: "What was done", solutions: "Solutions", gallery: "Screens", result: "Result",
       similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",

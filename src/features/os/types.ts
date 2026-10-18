@@ -46,10 +46,6 @@ export type OsPayload = {
   /** URLs públicas localizadas das raízes de cada app. */
   hrefs: { home: string; projects: string; studio: string; lab: string; services: string; contact: string };
   projects: OsProject[];
-  /** Slugs dos atalhos da área de trabalho (ordem). */
-  shortcuts: string[];
-  /** Slugs dos destaques (ordem da Home). */
-  featured: string[];
   filters: { all: string; client: string; scroll: string; webgl: string; product: string };
   displayType: Record<string, string>;
   studio: {

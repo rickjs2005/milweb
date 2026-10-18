@@ -76,11 +76,11 @@ export const pt: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FONTES PREFERIDAS", title: ["MANTENHA A MILWEB", "NAS SUAS FONTES."], cta: "ADICIONAR MILWEB", loading: "ABRINDO O GOOGLE…", retry: "TENTAR DE NOVO", aria: "Adicionar MilWeb às fontes preferidas no Google" },
   os: {
-    apps: { home: "Destaques", projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", contact: "Contato", settings: "Ajustes", search: "Buscar" },
+    apps: { projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", contact: "Contato", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Área de trabalho", icons: "Atalhos da área de trabalho", dock: "Dock", topbar: "Barra do sistema", windows: "Janelas abertas", home: "Tela inicial", appGrid: "Aplicativos" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Fechar", keys: "Com a barra de título em foco: setas movem a janela, Shift + setas redimensionam, Esc fecha", resize: "Redimensionar", running: "aberto", focused: "em primeiro plano" },
-    mobile: { back: "Voltar", home: "Início", open: "Abrir", widget: "Projeto em destaque", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
-    home: { lead: "Três trabalhos para começar. Toda a coleção está em Projetos.", all: "Todos os projetos", cta: "Conversar sobre um projeto", welcome: "Bem-vindo ao MilWeb OS.", shortcut: "Atalho para o case" },
+    mobile: { back: "Voltar", home: "Início", open: "Abrir", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
+    sign: { craft: "Desenvolvimento criativo", origin: "Brasil → Mundo", motto: "Códigos movem o mundo." },
     projects: {
       back: "Todos os projetos", open: "Abrir case", visit: "Abrir site", code: "Código", stack: "Stack", context: "Contexto", done: "O que foi feito", solutions: "Soluções", gallery: "Telas", result: "Resultado",
       similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",

@@ -72,8 +72,20 @@ if (ONLY.includes("desktop")) {
   await settle(page, 1200);
   check("shell = desktop", (await page.getAttribute("html", "data-shell")) === "desktop");
   check("documento não rola", await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1));
-  check("Destaques aberta na raiz", (await win(page, "home").count()) === 1 && (await win(page, "home").getAttribute("data-focused")) === "1");
-  check("h1 na raiz é a manchete", (await page.locator("h1").count()) === 1);
+  check("raiz sem janela aberta", (await page.locator(".os-window").count()) === 0 && (await page.evaluate(() => window.__milwebOs?.getState().focused ?? null)) === null);
+  check("sem Destaques nem atalhos de case na área de trabalho", (await page.locator("#os-icon-home, [data-shortcut], .os-highlights, #os-icon-kavita-drones").count()) === 0);
+  check("coluna de aplicativos: Projetos, Estúdio, Lab, Serviços, Contato", (await page.locator('.os-icons li[data-desktop="1"]:visible .os-icon-btn__label').allInnerTexts()).join("|") === "PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO");
+  check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
+  check("globo presente como imagem (fallback estático)", await page.evaluate(() => { const i = document.querySelector(".os-globe img"); return !!i && i.complete && i.naturalWidth > 0; }));
+  check("globo não intercepta o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-globe")).pointerEvents === "none"));
+  check("sem a escultura orbital (preload e arte)", (await page.locator('link[href*="orbital-sculpture"], .os-wallpaper__art').count()) === 0);
+  const overlap = await page.evaluate(() => {
+    const r = (s) => document.querySelector(s)?.getBoundingClientRect();
+    const g = r(".os-globe"), sg = r(".os-sign"), ic = r(".os-icons"), dk = r(".os-dock ul");
+    const hit = (a, b) => a && b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    return { globeSign: hit(g, sg), globeIcons: hit(g, ic), globeDock: hit(g, dk), signDock: hit(sg, dk), signIcons: hit(sg, ic) };
+  });
+  check("globo, assinatura, aplicativos e dock não se sobrepõem", Object.values(overlap).every((v) => !v), JSON.stringify(overlap));
   await shot(page, "d01-home");
 
   // abrir pela dock (um clique) → janela + URL
@@ -82,8 +94,17 @@ if (ONLY.includes("desktop")) {
   await settle(page);
   check("dock abre Estúdio e muda a URL", (await win(page, "studio").count()) === 1 && toStudio, path(page));
   const zTop = async (app) => Number(await win(page, app).evaluate((e) => getComputedStyle(e).zIndex));
-  check("Estúdio em foco acima de Destaques", (await zTop("studio")) > (await zTop("home")));
   check("foco de teclado foi para a janela", await page.evaluate(() => document.activeElement?.closest(".os-window")?.dataset.app === "studio"));
+
+  // Voltar do navegador para a raiz: a janela fica, mas nenhuma em foco; Avançar refoca
+  await page.goBack();
+  await page.waitForURL((u) => u.pathname === "/");
+  await settle(page, 500);
+  check("Voltar para a raiz tira o foco (janela continua aberta)", (await win(page, "studio").count()) === 1 && (await win(page, "studio").getAttribute("data-focused")) === "0" && (await page.locator('.os-window[data-focused="1"]').count()) === 0);
+  await page.goForward();
+  await urlIs(page, /\/estudio$/);
+  await settle(page, 500);
+  check("Avançar refoca o Estúdio", (await win(page, "studio").getAttribute("data-focused")) === "1");
 
   // segunda janela (Ajustes, menor: não cobre a barra do Estúdio) → clicar na de trás foca
   await page.click('[data-dock-id="settings"]');
@@ -202,7 +223,7 @@ if (ONLY.includes("desktop")) {
   await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
   await page.waitForURL(/\/projetos\/terral$/);
   await settle(page, 800);
-  check("case abre dentro da janela de Projetos", (await win(page, "projects").locator(".os-case").count()) === 1 && (await page.locator(".os-window").count()) === 3);
+  check("case abre dentro da janela de Projetos", (await win(page, "projects").locator(".os-case").count()) === 1 && (await page.locator(".os-window").count()) === 2);
   check("título da janela mostra o case", /TERRAL/i.test(await win(page, "projects").locator(".os-window__title").innerText()));
   check("case tem h1 próprio e link real para o site", (await win(page, "projects").locator("h1").count()) === 1 && (await win(page, "projects").locator('a[href="https://terral-cafe.vercel.app"]').count()) >= 1);
   await shot(page, "d03-case-in-window");
@@ -225,13 +246,16 @@ if (ONLY.includes("desktop")) {
   check("Esc fecha a janela em foco", (await win(page, "projects").count()) === 0);
   check("fechar devolve a URL ao próximo app", path(page) === "/estudio", path(page));
 
-  // atalho de projeto na área de trabalho → Projetos no case certo (o Estúdio cobre a coluna de atalhos: minimiza antes)
+  // os cases só aparecem depois de abrir Projetos: pasta → card → case (duas ações)
   await win(page, "studio").locator('[data-action="min"]').click();
   await settle(page, 500);
-  await page.click("#os-icon-kavita-drones");
+  await page.click("#os-icon-projects");
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 600);
+  await win(page, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').click();
   await page.waitForURL(/\/projetos\/kavita-drones$/);
   await settle(page, 800);
-  check("atalho abre Projetos no case Kavita", (await win(page, "projects").locator('.os-case[data-world="kavita-drones"]').count()) === 1);
+  check("pasta Projetos → card abre o case Kavita (≤ 2 ações)", (await win(page, "projects").locator('.os-case[data-world="kavita-drones"]').count()) === 1);
 
   // busca: tecla / → resultado → abre (Projetos minimizada para a busca abrir o case numa janela sem foco e depois restaurá-la)
   await win(page, "projects").locator('[data-action="min"]').click();
@@ -271,9 +295,29 @@ if (ONLY.includes("desktop")) {
   await urlIs(page, /\/en$/);
   await settle(page);
   check("EN: fechar leva à raiz do idioma", path(page) === "/en", path(page));
+  check("EN: raiz sem janela em foco", (await page.locator('.os-window[data-focused="1"]').count()) === 0);
 
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await ctx.close();
+
+  // movimento reduzido: o globo fica na imagem, sem canvas vivo
+  console.log("\n# desktop 1440×900 · prefers-reduced-motion");
+  const rctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", reducedMotion: "reduce" });
+  const rpage = await rctx.newPage();
+  await rpage.goto(`${BASE}/`, { waitUntil: "load" });
+  await settle(rpage, 2500);
+  check("reduced motion: globo estático (imagem), sem WebGL", (await rpage.getAttribute(".os-globe", "data-state")) === "still" && (await rpage.evaluate(() => typeof window.__mwOsGlobe === "undefined")));
+  await rctx.close();
+
+  // ajuste "Reduzir movimento" salvo: mesmo resultado
+  const pctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+  const ppage = await pctx.newPage();
+  await ppage.goto(`${BASE}/`, { waitUntil: "load" });
+  await ppage.evaluate(() => localStorage.setItem("milweb-os:prefs", JSON.stringify({ theme: "graphite", motion: "reduce", simple: false })));
+  await ppage.reload({ waitUntil: "load" });
+  await settle(ppage, 2500);
+  check("Ajustes › Reduzir: globo estático", (await ppage.getAttribute(".os-globe", "data-state")) === "still" && (await ppage.getAttribute("html", "data-os-motion")) === "reduce");
+  await pctx.close();
 }
 
 // ------------------------------------------------------------------- mobile
@@ -292,10 +336,20 @@ if (ONLY.includes("mobile")) {
     await settle(page, 1200);
     check("shell = mobile", (await page.getAttribute("html", "data-shell")) === "mobile");
     check("sem rolagem horizontal", await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
-    check("tela inicial sem app aberto", (await page.locator('.os-window[data-screen="1"]').count()) === 0);
-    check("widget com imagem real do projeto", (await page.locator(".os-home__widget img").count()) >= 1);
+    check("tela inicial sem app aberto", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && (await page.locator(".os-window").count()) === 0);
+    check("sem case, destaque ou atalho na entrada", (await page.locator(".os-highlights, .os-home__widget, [data-shortcut], #os-icon-home").count()) === 0);
+    check("globo como imagem (sem WebGL no celular)", (await page.evaluate(() => { const i = document.querySelector(".os-globe img"); return !!i && i.complete && i.naturalWidth > 0 && typeof window.__mwOsGlobe === "undefined"; })));
+    check("grade com rótulos legíveis", await page.evaluate(() => [...document.querySelectorAll('.os-icons li[data-mobile="1"] .os-icon-btn__label')].every((l) => { const r = l.getBoundingClientRect(); return r.height > 8 && getComputedStyle(l).visibility === "visible"; })));
+    check("dock com Projetos, Estúdio, Lab e Contato", (await page.locator('.os-dock li[data-mobile="1"]:visible [data-dock-id]').evaluateAll((els) => els.map((e) => e.dataset.dockId).join(","))) === "projects,studio,lab,contact");
     const dockBox = await rectOf(page.locator(".os-dock"));
     check("dock dentro da viewport", dockBox && dockBox.y + dockBox.h <= (await page.evaluate(() => window.innerHeight)) + 1, JSON.stringify(dockBox));
+    const fit = await page.evaluate(() => {
+      const r = (s) => document.querySelector(s)?.getBoundingClientRect();
+      const ic = r(".os-icons"), dk = r(".os-dock ul"), g = r(".os-globe"), sg = r(".os-sign");
+      return { iconsBottom: Math.round(ic.bottom), dockTop: Math.round(dk.top), globeBottom: Math.round(g.bottom), signTop: Math.round(sg.top), signBottom: Math.round(sg.bottom), iconsTop: Math.round(ic.top), scroll: document.querySelector(".os-desktop").scrollHeight, vh: innerHeight };
+    });
+    check("globo, assinatura, grade e dock sem sobreposição", fit.globeBottom <= fit.signTop && fit.signBottom <= fit.iconsTop && fit.iconsBottom <= fit.dockTop, JSON.stringify(fit));
+    check("tela inicial cabe sem rolar", fit.scroll <= fit.vh + 1, `${fit.scroll} vs ${fit.vh}`);
     const tooSmall = await page.evaluate(() => [...document.querySelectorAll(".os-dock a, .os-dock button, .os-icon-btn, .os-home__tool")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.width < 44 || r.height < 44); }).map((e) => e.getAttribute("aria-label") || e.textContent.trim()));
     check("alvos de toque ≥ 44px", tooSmall.length === 0, tooSmall.join(", "));
     await shot(page, `m-${label.split(" ")[0]}-home`);

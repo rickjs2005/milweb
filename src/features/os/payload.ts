@@ -4,13 +4,12 @@
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { BRAND } from "@/data/brand";
-import { PROJECT_INDEX, FEATURED } from "@/data/projects";
+import { PROJECT_INDEX } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
 import { DELIVERABLES, LAB, LAB_PAGE, PROFILE, QUOTE, UI, type Localized } from "@/lib/content";
 import { makeT, withLocale } from "@/lib/i18n";
-import { SHORTCUT_SLUGS } from "./registry";
 import type { OsPayload, OsProject } from "./types";
 
 /**
@@ -97,8 +96,6 @@ export function buildOsPayload(locale: Locale): OsPayload {
       contact: withLocale(locale, "/contact"),
     },
     projects,
-    shortcuts: SHORTCUT_SLUGS.filter((s) => projects.some((p) => p.slug === s)),
-    featured: FEATURED.filter((s) => projects.some((p) => p.slug === s)),
     filters: d.archive.filters,
     displayType: d.displayType,
     studio: {

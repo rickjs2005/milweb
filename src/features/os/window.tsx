@@ -27,7 +27,6 @@ const KEY_STEP = 24;
 export function WindowsLayer({ children }: { children: ReactNode }) {
   const { store, payload, route } = useOs();
   const order = useOsStore((s) => s.order);
-  const shell = useOsStore((s) => s.shell);
   const ref = useRef<HTMLDivElement>(null);
 
   // A área útil é medida, não suposta: tudo que a janela sabe sobre limites vem daqui.
@@ -41,8 +40,7 @@ export function WindowsLayer({ children }: { children: ReactNode }) {
     return () => ro.disconnect();
   }, [store]);
 
-  // No celular a janela "Destaques" não é uma tela: vira o widget da tela inicial (desktop.tsx).
-  const ids = APP_IDS.filter((id) => order.includes(id) && !(shell === "mobile" && id === "home"));
+  const ids = APP_IDS.filter((id) => order.includes(id));
 
   return (
     <div ref={ref} className="os-windows" role="group" aria-label={payload.s.regions.windows}>
@@ -230,7 +228,7 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
       data-focused={focused ? "1" : "0"}
       data-min={win.min ? "1" : "0"}
       data-max={win.max ? "1" : "0"}
-      data-screen={focused && id !== "home" ? "1" : "0"}
+      data-screen={focused ? "1" : "0"}
       data-anim={anim ?? undefined}
       inert={win.min ? true : undefined}
       aria-hidden={win.min || undefined}

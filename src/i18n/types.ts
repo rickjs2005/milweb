@@ -60,11 +60,12 @@ export type Dictionary = {
   preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
   /** MilWeb OS — camada de apresentação em janelas (desktop) e tela inicial (celular). */
   os: {
-    apps: { home: string; projects: string; studio: string; lab: string; services: string; contact: string; settings: string; search: string };
+    apps: { projects: string; studio: string; lab: string; services: string; contact: string; settings: string; search: string };
     regions: { desktop: string; icons: string; dock: string; topbar: string; windows: string; home: string; appGrid: string };
     window: { minimize: string; maximize: string; restore: string; close: string; keys: string; resize: string; running: string; focused: string };
-    mobile: { back: string; home: string; open: string; widget: string; apps: string; message: string };
-    home: { lead: string; all: string; cta: string; welcome: string; shortcut: string };
+    mobile: { back: string; home: string; open: string; apps: string; message: string };
+    /** Assinatura do wallpaper: "MILWEB® · craft · origin" e o lema (h1 da raiz). */
+    sign: { craft: string; origin: string; motto: string };
     projects: {
       back: string; open: string; visit: string; code: string; stack: string; context: string; done: string; solutions: string; gallery: string; result: string;
       similar: string; next: string; prev: string; client: string; demo: string; study: string; live: string; detail: string; idea: string; experience: string;
