@@ -6,14 +6,14 @@ import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
-import { OsGlobe } from "./globe/os-globe";
+import { OsEye } from "./eye/os-eye";
 
 /**
  * Área de trabalho e tela inicial.
  *
- * Desktop: barra superior, wallpaper com o globo (centro/direita), coluna
- * de aplicativos à esquerda, assinatura pequena numa área livre e a dock.
- * Celular: cabeçalho com marca e ferramentas, globo, assinatura, grade de
+ * Desktop: barra superior, wallpaper com o olho (centro), coluna de
+ * aplicativos à esquerda, assinatura pequena numa área livre e a dock.
+ * Celular: cabeçalho com marca e ferramentas, olho, assinatura, grade de
  * aplicativos e dock fixa. Nada abre sozinho; os cases moram em Projetos.
  * Tudo lê o registro; nada tem lista própria.
  */
@@ -104,9 +104,9 @@ export function Desktop() {
         </div>
       </div>
 
-      <OsGlobe />
+      <OsEye />
 
-      {/* Assinatura: pequena, numa área livre (canto inferior esquerdo no desktop; sob o globo no celular). */}
+      {/* Assinatura: pequena, numa área livre (canto inferior esquerdo no desktop; sob o olho no celular). */}
       <div className="os-sign">
         <Motto className="os-sign__motto">{s.sign.motto}</Motto>
         <p className="os-sign__line t-mono">

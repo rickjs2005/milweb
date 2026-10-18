@@ -1,0 +1,251 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { onIdle } from "@/animations/idle";
+import { getQuality, probeGpu } from "@/lib/quality";
+import { MOBILE_SHELL_MQ } from "../registry";
+import { useOs, useOsStore } from "../os-shell";
+import { OS_EYE, OS_EYE_STILL } from "./eye.config";
+
+/**
+ * O olho do wallpaper — os Six Eyes, vivos.
+ *
+ * Camada visual, nunca interativa: `pointer-events: none`, aria-hidden. O
+ * HTML entrega a IMAGEM (olho aberto, gerada pelo mesmo shader): é o que
+ * aparece sem WebGL, com movimento reduzido, com GPU reprovada na sonda, e
+ * até o canvas assentar. Com GPU, o canvas monta em idle e entra por
+ * crossfade — microanimações contínuas (pupila respira, reflexos derivam,
+ * fibras cintilam), o olhar segue o cursor com inércia (desktop) ou deriva
+ * devagar (toque), piscadas espontâneas de vez em quando.
+ *
+ * Piscar ao clicar/tocar: um `pointerdown` em qualquer lugar da página
+ * (ouvido na captura, passivo — nunca bloqueia o clique que o disparou)
+ * fecha o olho em ~140 ms, segura ~70 ms e reabre em ~400 ms com um brilho
+ * azul na íris. Cliques repetidos no meio da reabertura fecham de novo a
+ * partir de onde a pálpebra está — nada salta.
+ *
+ * Para quando a aba está oculta (renderer) e quando nada do olho está à
+ * vista: janela maximizada no desktop, tela aberta no celular.
+ */
+type Phase = "open" | "closing" | "hold" | "opening";
+
+const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+const easeOut = (u: number) => 1 - Math.pow(1 - u, 3);
+
+export function OsEye() {
+  const { store } = useOs();
+  const shell = useOsStore((s) => s.shell);
+  const motion = useOsStore((s) => s.prefs.motion);
+  const ref = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const fig = ref.current;
+    const canvas = canvasRef.current;
+    if (!fig || !canvas) return;
+    if (shell === "auto" || shell === "simple" || motion === "reduce") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!getQuality().webgl) return;
+
+    let disposed = false;
+    let cleanup: (() => void) | null = null;
+    const cancelIdle = onIdle(() => void boot(), 800);
+    const mobile = shell === "mobile";
+    const frame = mobile ? OS_EYE.mobile : OS_EYE.desktop;
+
+    async function boot() {
+      if (disposed) return;
+      const gq = probeGpu();
+      if (!gq.webgl) return;
+      const [{ createRenderer }, { OS_EYE_FRAG }] = await Promise.all([import("@/webgl/renderer"), import("./eye-frag")]);
+      if (disposed || !canvas) return;
+      const r = createRenderer(canvas, { dpr: Math.min(gq.dpr, mobile ? 1.25 : 1.5), alpha: true });
+      if (!r) return;
+      try {
+        r.addProgram("eye", OS_EYE_FRAG);
+      } catch (e) {
+        console.error(e);
+        r.destroy();
+        return;
+      }
+
+      // ---- estado da cena (fora do React: muda a cada frame) ----
+      const eye = { phase: "open" as Phase, lid: 0, from: 0, t0: 0, glow: 0, dilate: 0, nextAuto: 0 };
+      const gaze = { x: 0, y: 0, tx: 0, ty: 0, mouseAt: -1e9 };
+      const B = OS_EYE.blink;
+      const blink = () => {
+        if (eye.phase === "closing" || eye.phase === "hold") return;
+        eye.phase = "closing";
+        eye.from = eye.lid;
+        eye.t0 = -1; // marcado no próximo frame
+        r.invalidate();
+      };
+      const onDown = (e: PointerEvent) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        blink();
+      };
+      const onMove = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        gaze.tx = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1));
+        gaze.ty = -Math.max(-1, Math.min(1, (e.clientY / window.innerHeight) * 2 - 1));
+        gaze.mouseAt = performance.now() / 1000;
+      };
+      const onLeave = () => {
+        gaze.mouseAt = -1e9;
+      };
+
+      let painted = false;
+      r.onFrame((t, dt) => {
+        r.clear();
+        // ---- piscar ----
+        if (eye.phase === "closing") {
+          if (eye.t0 < 0) eye.t0 = t;
+          const dur = B.close * (1 - eye.from) + 0.04;
+          const u = Math.min(1, (t - eye.t0) / dur);
+          eye.lid = eye.from + (1 - eye.from) * easeInOut(u);
+          if (u >= 1) {
+            eye.phase = "hold";
+            eye.t0 = t;
+          }
+        } else if (eye.phase === "hold") {
+          eye.lid = 1;
+          if (t - eye.t0 >= B.hold) {
+            eye.phase = "opening";
+            eye.t0 = t;
+            eye.glow = 1;
+            eye.dilate = 1;
+          }
+        } else if (eye.phase === "opening") {
+          const u = Math.min(1, (t - eye.t0) / B.open);
+          eye.lid = 1 - easeOut(u);
+          if (u >= 1) {
+            eye.phase = "open";
+            eye.lid = 0;
+          }
+        }
+        eye.glow *= Math.exp(-dt / (B.glow * 0.3));
+        eye.dilate *= Math.exp(-dt / (B.dilate * 0.4));
+        // piscadas espontâneas
+        if (eye.nextAuto === 0) eye.nextAuto = t + OS_EYE.auto.min + Math.random() * (OS_EYE.auto.max - OS_EYE.auto.min);
+        if (eye.phase === "open" && t >= eye.nextAuto) {
+          blink();
+          eye.nextAuto = t + OS_EYE.auto.min + Math.random() * (OS_EYE.auto.max - OS_EYE.auto.min);
+        }
+        // ---- olhar: cursor recente manda; senão deriva devagar ----
+        const recent = t - gaze.mouseAt < 4;
+        const tx = recent ? gaze.tx : 0.22 * Math.sin(t * 0.23) + 0.08 * Math.sin(t * 0.71);
+        const ty = recent ? gaze.ty : 0.10 * Math.sin(t * 0.17 + 1.0);
+        const k = 1 - Math.pow(1 - OS_EYE.gaze.damp, dt * 60);
+        gaze.x += (tx - gaze.x) * k;
+        gaze.y += (ty - gaze.y) * k;
+
+        r.draw("eye", {
+          uRes: [canvas.width, canvas.height],
+          uAspect: canvas.width / Math.max(1, canvas.height),
+          uScale: frame.scale,
+          uTime: t,
+          uBlink: eye.lid,
+          uGaze: [gaze.x, gaze.y],
+          uGlow: eye.glow,
+          uDilate: eye.dilate,
+          uFade: 1,
+          uEdge: frame.edge,
+        });
+        if (!painted) {
+          painted = true;
+          fig!.dataset.state = "live";
+        }
+      });
+
+      // Sonda: um frame do shader real num buffer minúsculo, medido com gl.finish — sem GPU
+      // utilizável a imagem fica e nenhum pixel visível foi gasto.
+      const before = r.dpr;
+      r.setDpr(0.12);
+      r.resize();
+      const p0 = performance.now();
+      r.draw("eye", { uRes: [canvas.width, canvas.height], uAspect: frame.aspect, uScale: frame.scale, uTime: 0, uBlink: 0, uGaze: [0, 0], uGlow: 0, uDilate: 0, uFade: 1, uEdge: frame.edge });
+      r.gl.finish();
+      const cost = performance.now() - p0;
+      r.setDpr(before);
+      if (cost > OS_EYE.probeBudgetMs) {
+        r.destroy();
+        return;
+      }
+      r.setFpsCap(gq.tier === "high" && cost < 1 ? OS_EYE.fpsHigh : OS_EYE.fpsLow);
+      r.onSlow(() => r.setDpr(Math.max(1, r.dpr - 0.25)));
+
+      // Frames contínuos só com o olho à vista: a aba oculta já para no renderer; uma janela
+      // maximizada (desktop) ou uma tela aberta (celular) soltam o hold — zero rAF até voltar.
+      let held: (() => void) | null = null;
+      const sync = () => {
+        const s = store.getState();
+        const covered = s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
+        if (!covered && !held) held = r.hold();
+        if (covered && held) {
+          held();
+          held = null;
+        }
+      };
+      const unsub = store.subscribe(sync);
+      sync();
+      window.addEventListener("pointerdown", onDown, { passive: true, capture: true });
+      if (gq.fine) {
+        window.addEventListener("pointermove", onMove, { passive: true });
+        document.documentElement.addEventListener("pointerleave", onLeave);
+      }
+      r.invalidate();
+
+      if (process.env.NODE_ENV !== "production") {
+        (window as unknown as { __mwOsEye?: unknown }).__mwOsEye = {
+          blink,
+          get lid() {
+            return eye.lid;
+          },
+          get phase() {
+            return eye.phase;
+          },
+          get frames() {
+            return r.frames;
+          },
+          get held() {
+            return !!held;
+          },
+          get dpr() {
+            return r.dpr;
+          },
+          gaze,
+        };
+      }
+
+      cleanup = () => {
+        unsub();
+        held?.();
+        window.removeEventListener("pointerdown", onDown, { capture: true });
+        window.removeEventListener("pointermove", onMove);
+        document.documentElement.removeEventListener("pointerleave", onLeave);
+        fig!.dataset.state = "still";
+        r.destroy();
+        if (process.env.NODE_ENV !== "production") delete (window as unknown as { __mwOsEye?: unknown }).__mwOsEye;
+      };
+    }
+
+    return () => {
+      disposed = true;
+      cancelIdle();
+      cleanup?.();
+    };
+  }, [shell, motion, store]);
+
+  const d = OS_EYE_STILL.desktop;
+  const m = OS_EYE_STILL.mobile;
+  return (
+    <figure ref={ref} className="os-eye" data-state="still" aria-hidden="true" data-no-inspect>
+      <picture>
+        <source media={MOBILE_SHELL_MQ} srcSet={m.src} width={m.w} height={m.h} />
+        {/* eslint-disable-next-line @next/next/no-img-element -- WebP já otimizado, gerado do próprio shader; a dimensão é fixa pelo CSS */}
+        <img src={d.src} width={d.w} height={d.h} alt="" decoding="async" fetchPriority="high" className="os-eye__still" />
+      </picture>
+      <canvas ref={canvasRef} className="os-eye__canvas" />
+    </figure>
+  );
+}

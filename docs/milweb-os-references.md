@@ -144,3 +144,23 @@ Não foi usado: nenhuma dúvida concreta sobre interação de referência surgiu
 - `scripts/i18n-audit.mjs`: 117 rotas; as mesmas 2 ocorrências pré-existentes no Logistics Demo (conteúdo).
 - Capturas (emulação Playwright, build de produção) em `.audit/os-rev/review/`: 1024, 1440, 1920, 768, 1440 com Projetos, 1440 com case, reduced motion, papel; 360, 390, 430, 390 com Projetos, 844×390.
 - Limitações: emulação de navegador, não aparelho físico (Safari iOS, teclado virtual, `svh` real, gestos de borda); fps do globo não medido; Lighthouse não rodado.
+
+## Revisão 3 (18/10/2026) — o olho (Six Eyes) no lugar do globo
+
+Pedido: trocar o globo do wallpaper por uma representação sofisticada do olho de Satoru Gojo (Six Eyes): íris azul-clara detalhada, camadas e padrões radiais, profundidade e refração, pálpebras orgânicas, olho vivo; piscar ao clicar/tocar (fecha, pausa, reabre com brilho), sem bloquear cliques nos apps; desktop e celular; reduced motion; fallback sem WebGL; sem dependência nova.
+
+### Escolha técnica
+
+- **2.5D em fragment shader**, sobre o renderer WebGL 1 já existente (`webgl/renderer.ts`) — o mesmo caminho do globo. R3F/three estão no projeto só para `/lab/milo-null` e trariam ~150 KB ao OS para desenhar um objeto que um shader analítico resolve com mais controle de direção (íris procedural, refração, pálpebras por curvas). GSAP ficou de fora da pálpebra de propósito: a timeline do piscar são três fases com easing próprio (~40 linhas), e carregar o GSAP na raiz só para isso custaria mais do que entrega.
+- `features/os/eye/eye-frag.ts`: globo ocular = esfera analítica; íris = disco côncavo atrás da córnea alcançado por **refração** do raio de visão (profundidade e paralaxe reais quando o olhar muda); íris procedural (gradiente azul-gelo → azul fundo, três anéis concêntricos, fibras radiais em ruído, facetas, colarete, anel limbar azul-marinho, pupila pequena que respira); esclera fria sombreada pelas pálpebras com sombra curta no limbo; reflexos de córnea (janela, ponto, specular) e linha úmida na pálpebra inferior; pálpebras = duas curvas (olho alongado, canto externo mais alto) com pele grafite que esmaece para o wallpaper, vinco e cílios com ponta erguida; brilho ciano só na reabertura (`uGlow`), bloom contido; grão fino contra banding.
+- `features/os/eye/os-eye.tsx`: imagem estática no HTML (`public/art/eye-still.webp` 1600×800 / 121 KB e `eye-still-mobile.webp` 1040×800 / 60 KB, geradas pelo mesmo shader por `scripts/eye-still.mjs`, que também exporta quadros de revisão com `--blink`/`--glow`); canvas monta em idle após sonda de GPU (frame real a 0,12× medido com `gl.finish`, teto 5 ms), crossfade, 30–40 fps, DPR ≤ 1,5 (desktop) / 1,25 (celular); olhar segue o cursor com inércia ou deriva devagar no toque; piscadas espontâneas a cada 6–11 s; **piscar ao clicar**: `pointerdown` na captura, passivo, em qualquer lugar da página — fecha 140 ms (ease in-out), segura 70 ms, reabre 400 ms (ease out) com brilho e dilatação decaindo; novo clique durante a reabertura fecha de novo a partir da pálpebra atual. Para com aba oculta (renderer), janela maximizada (desktop) e tela aberta (celular). `prefers-reduced-motion` ou Ajustes › Reduzir = imagem, sem canvas.
+- Enquadramento: desktop 2:1 centrado (`min(60vw, 112vh)`), olho inteiro com margem; celular 1,3:1 sangrando até as bordas com o olho maior que o quadro (close-up: cantos saem, íris inteira), limitado por `40svh`; paisagem em coluna à direita. O esmaecimento lateral pelo quadro é um uniform (`uEdge`) porque o corte do celular precisa ser mais largo que o do desktop.
+- Removidos: `features/os/globe/*`, `scripts/globe-still.mjs`, `public/art/globe-still*.webp`. O globo do Hero antigo (`features/globe`, `webgl/earth-mask.ts`) fica — a home antiga sem rota ainda o usa.
+
+### Verificações (revisão 3)
+
+- `tsc`, `eslint` (só o aviso antigo do OG image) e `pnpm build` (204 páginas) verdes; o shader fica num chunk preguiçoso de 8,5 KB.
+- `scripts/os-check.mjs`: **130/130** no dev e no build de produção (os checks do wallpaper passaram a olhar `.os-eye`).
+- Chromium **visível com GPU** (Playwright headed, `blink-check`): canvas vivo a 30 fps no desktop (DPR 1,5) e no celular emulado (DPR 1,15); clique fecha em ~200 ms e reabre por completo em ~750 ms; toque pisca; cliques repetidos não travam o estado; `held` cai com janela maximizada e com tela aberta no celular; zero erros de console. Quadros do piscar em `.audit/eye-review/`.
+- `i18n-audit`: 117 rotas, as mesmas 2 ocorrências antigas.
+- Limitações: Safari iOS e aparelho físico não testados; fps em aparelho intermediário real não medido (a sonda de GPU e o teto de DPR são a proteção); Lighthouse não rodado.
