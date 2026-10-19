@@ -89,7 +89,7 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
     category: t(CATEGORY[p.category] ?? UI.sections.projectsFilterAll),
     year: p.year ?? null,
     clientName: p.clientWork ? p.clientName ?? null : null,
-    kind: p.clientWork ? "client" : p.live ? "demo" : "study",
+    kind: p.clientWork ? "client" : p.live || p.demo ? "demo" : "study",
     status: p.live ? s.live : p.status ? t(p.status) : null,
     live: p.live ?? null,
     repos: p.repos ?? [],

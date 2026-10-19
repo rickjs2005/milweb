@@ -1,6 +1,7 @@
 import { PROJECTS_1 } from "./content-projects-1";
 import { PROJECTS_2 } from "./content-projects-2";
 import { PROJECTS_3 } from "./content-projects-3";
+import { PROJECTS_4 } from "./content-projects-4";
 import { GH } from "./content-shared";
 /**
  * Conteúdo do site MilWeb — fonte única, bilíngue (pt/en).
@@ -183,6 +184,12 @@ export type Project = {
   /** Nome do cliente, exibido no selo do card de entrega. */
   clientName?: string;
   /**
+   * true = demonstração/proposta comercial SEM URL pública ainda (ex.: demo atrás
+   * do login da Vercel). Mantém o selo "demo" em vez de "autoral" enquanto `live`
+   * não existe. Com `live` preenchido o campo é redundante.
+   */
+  demo?: boolean;
+  /**
    * true = sem card nas listagens (home e /projetos), mas a página de case
    * continua no ar. Uso: MilLead, que já se apresenta na seção de
    * diagnóstico/preço justo e é ferramenta interna — card duplicado só diluía.
@@ -230,7 +237,7 @@ export type Project = {
     gallery?: { src: string; alt: Localized }[];
   };
 };
-export const PROJECTS: Project[] = [...PROJECTS_1, ...PROJECTS_2, ...PROJECTS_3];
+export const PROJECTS: Project[] = [...PROJECTS_1, ...PROJECTS_2, ...PROJECTS_3, ...PROJECTS_4];
 
 /** COMO EU TRABALHO — processo em 4 passos. */
 export type Step = { n: string; title: Localized; desc: Localized };

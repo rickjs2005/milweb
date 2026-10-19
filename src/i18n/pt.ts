@@ -48,7 +48,7 @@ export const pt: Dictionary = {
   archive: {
     label: "PROJETOS / ARQUIVO",
     title: ["TODOS OS", "PROJETOS."],
-    filters: { all: "TODOS", client: "CLIENTES", scroll: "EXPERIÊNCIAS NO SCROLL", webgl: "WEBGL / 3D", product: "PRODUTOS DIGITAIS" },
+    filters: { all: "TODOS", client: "CLIENTES", demo: "DEMOS", tourism: "TURISMO & GUIAS", scroll: "EXPERIÊNCIAS NO SCROLL", webgl: "WEBGL / 3D", product: "PRODUTOS DIGITAIS" },
     columns: { index: "ÍNDICE", project: "PROJETO", type: "TIPO", year: "ANO", studio: "ESTÚDIO" },
   },
   caseUi: {
@@ -85,6 +85,9 @@ export const pt: Dictionary = {
       back: "Todos os projetos", open: "Abrir case", visit: "Abrir site", code: "Código", stack: "Stack", context: "Contexto", done: "O que foi feito", solutions: "Soluções", gallery: "Telas", result: "Resultado",
       similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",
       numbers: "Números", kind: "Tipo", year: "Ano", status: "Status", of: "de", count: "projetos", empty: "Nenhum projeto neste filtro.", interactive: "Interativo",
+      dossier: "DOSSIÊ", rank: "CASO", classLabel: "CLASSE", lead: "Cada projeto é uma missão. Abra o cartaz para ler o dossiê.",
+      stamp: { client: "CLIENTE", demo: "DEMO", study: "AUTORAL", live: "NO AR" },
+      mission: { "CLIENT WORK": "ENTREGA", "SCROLL EXPERIENCE": "TRAVESSIA", "WEBGL EXPERIENCE": "EXPLORAÇÃO", "INTERACTIVE COMMERCE": "MISSÃO COMERCIAL", "DIGITAL PRODUCT": "SISTEMA", "CREATIVE DEVELOPMENT": "PROJETO ESPECIAL", EXPERIMENTAL: "EXPERIMENTO" },
     },
     search: { title: "Buscar no MilWeb OS", placeholder: "Projeto, serviço ou aplicativo…", empty: "Nada encontrado.", hint: "Enter abre o primeiro resultado · Esc fecha · tecla / abre a busca", apps: "Aplicativos", projects: "Projetos", services: "Serviços", open: "Abrir" },
     settings: {

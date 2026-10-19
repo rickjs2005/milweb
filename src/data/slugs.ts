@@ -32,6 +32,12 @@ export const PROJECT_SLUGS = [
   "rjjstore",
   "rjs-laticinios",
   "imperio-cafe",
+  "debby-tour",
+  "ace-diving-miami",
+  "legends-of-hollywood-tours",
+  "said-zanzibar",
+  "mabrouk-zanzibar",
+  "serengeti-wildlife-safaris",
 ] as const;
 
 export function isProjectSlug(s: string): boolean {

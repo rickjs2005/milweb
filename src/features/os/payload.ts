@@ -54,6 +54,11 @@ export function buildOsPayload(locale: Locale): OsPayload {
       webgl: p.displayType === "WEBGL EXPERIENCE",
       scroll: p.displayType === "SCROLL EXPERIENCE",
       product: p.displayType === "DIGITAL PRODUCT",
+      tourism: p.tourism,
+      kind: p.clientWork ? "client" : p.live || p.demo ? "demo" : "study",
+      kindKey: p.displayType,
+      status: p.status ? t(p.status) : null,
+      metric: p.metric ? t(p.metric) : null,
     };
   });
 

@@ -21,7 +21,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,mobile,resize,simple").split(",");
+const ONLY = opt("--only", "desktop,controls,projects,mobile,resize,simple").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -44,8 +44,9 @@ const errorsOf = (page) => {
   page.on("pageerror", (e) => errs.push(`pageerror: ${e.message}`));
   page.on("console", (m) => {
     const t = m.text();
-    // Ruído do ambiente local: os scripts do Vercel Analytics/Speed Insights só existem no deploy.
-    if (m.type() === "error" && !/favicon|404 \(Not Found\)|_vercel\/|vercel-scripts|net::ERR|Refused to execute script/.test(t)) errs.push(`console.error: ${t.slice(0, 200)}`);
+    // Ruído do ambiente local: os scripts do Vercel Analytics/Speed Insights só existem no deploy; o SDK do Google
+    // Preferred Sources dispara um aviso de CSP report-only (frame-ancestors) que não é do OS.
+    if (m.type() === "error" && !/favicon|404 \(Not Found\)|_vercel\/|vercel-scripts|net::ERR|Refused to execute script|Content Security Policy|news\.google\.com/.test(t)) errs.push(`console.error: ${t.slice(0, 200)}`);
     if (/hydrat/i.test(t)) errs.push(`hydration: ${t.slice(0, 200)}`);
   });
   return errs;
@@ -655,6 +656,105 @@ if (ONLY.includes("controls")) {
   check("8. fechar com outro app aberto volta à tela inicial (Projetos segue aberto atrás)", (await mpage.locator('.os-window[data-screen="1"]').count()) === 0 && (await win(mpage, "projects").count()) === 1 && (await win(mpage, "studio").count()) === 0);
   check("8. sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
   await shot(mpage, "c02-mobile-home-after-close");
+  await mctx.close();
+}
+
+// ----------------------------------------------------------------- projects
+// A pasta Projetos como cartazes: contagem (31, Kavita só duas vezes e só com o link interno do case),
+// seis projetos de turismo presentes, entrada por rolagem, hover (inclinação + foto em cor), filtros
+// novos (demos, turismo), cases novos abrindo na janela, reduced motion, EN e celular.
+if (ONLY.includes("projects")) {
+  current = "projects";
+  console.log("\n# pasta Projetos (cartazes) 1440×900");
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+  const page = await ctx.newPage();
+  const errs = errorsOf(page);
+  await page.goto(`${BASE}/projetos`, { waitUntil: "load" });
+  await settle(page, 1500);
+  const board = win(page, "projects").locator(".os-projects__board");
+  const posters = board.locator(".os-project");
+  const total = await posters.count();
+  check("31 cartazes; a grade antiga sumiu", total === 31 && (await page.locator(".os-projects__grid, .os-project__caption").count()) === 0, String(total));
+  check("cada cartaz tem número, nome, foto, carimbo, classe e etiquetas", await posters.evaluateAll((els) => els.every((e) => e.querySelector(".os-project__n") && e.querySelector(".os-project__title")?.textContent.trim() && e.querySelector(".os-project__img") && e.querySelector(".os-project__stamp")?.textContent.trim() && e.querySelector(".os-project__meta") && e.querySelectorAll(".os-project__tags span").length > 0)));
+  check("primeiros cartazes entraram; os de baixo esperam a rolagem", (await posters.nth(0).getAttribute("data-in")) === "1" && (await posters.nth(20).getAttribute("data-in")) === "0");
+  check("carimbo assentado e foto carregada no primeiro cartaz", await posters.nth(0).evaluate((e) => { const st = getComputedStyle(e.querySelector(".os-project__stamp")); const img = e.querySelector(".os-project__img"); return Number(st.opacity) > 0.8 && img.complete && img.naturalWidth > 0; }));
+  check("Kavita aparece exatamente duas vezes (sem duplicar)", (await board.locator('.os-project[data-slug^="kavita"]').count()) === 2 && (await board.locator('.os-project[data-slug="kavita-drones"]').count()) === 1 && (await board.locator('.os-project[data-slug="kavita-institucional"]').count()) === 1);
+  check("Kavita: só o link interno do case, nenhum link externo novo", await board.locator('.os-project[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
+  const novos = ["debby-tour", "ace-diving-miami", "legends-of-hollywood-tours", "said-zanzibar", "mabrouk-zanzibar", "serengeti-wildlife-safaris"];
+  check("seis projetos de turismo presentes, cada um com o link do case", (await Promise.all(novos.map((sl) => board.locator(`.os-project[data-slug="${sl}"] .os-project__link[href="/projetos/${sl}"]`).count()))).every((n) => n === 1));
+  check("Mabrouk é cliente; Said e Debby são demos", (await board.locator('.os-project[data-slug="mabrouk-zanzibar"]').getAttribute("data-kind")) === "client" && (await board.locator('.os-project[data-slug="said-zanzibar"]').getAttribute("data-kind")) === "demo" && (await board.locator('.os-project[data-slug="debby-tour"]').getAttribute("data-kind")) === "demo");
+  const body = win(page, "projects").locator(".os-window__body");
+  await body.evaluate((e) => e.scrollTo({ top: e.scrollHeight }));
+  await settle(page, 1200);
+  check("rolar até o fim revela todos os cartazes", (await board.locator('.os-project[data-in="0"]').count()) === 0);
+  await body.evaluate((e) => e.scrollTo({ top: 0 }));
+  await settle(page, 400);
+  const second = posters.nth(1);
+  const b = await second.boundingBox();
+  await page.mouse.move(b.x + b.width * 0.7, b.y + b.height * 0.3);
+  await settle(page, 900);
+  const tilt = await second.evaluate((e) => ({ ry: e.style.getPropertyValue("--ry"), filter: getComputedStyle(e.querySelector(".os-project__img")).filter, hover: matchMedia("(hover: hover) and (pointer: fine)").matches }));
+  check("hover inclina o cartaz (--ry) e tira o filtro da foto", tilt.ry !== "" && tilt.filter === "none", JSON.stringify(tilt));
+  await page.mouse.move(10, 400);
+  await settle(page, 300);
+  check("sair do cartaz zera a inclinação", await second.evaluate((e) => e.style.getPropertyValue("--ry") === ""));
+  const chips = win(page, "projects").locator(".os-projects__filters .os-chip");
+  check("sete filtros com contagem", (await chips.count()) === 7 && (await chips.allInnerTexts()).join("|").replace(/\s+/g, " ").includes("TURISMO & GUIAS"));
+  await chips.nth(3).click();
+  await settle(page, 900);
+  check("filtro Turismo & guias = os seis novos", (await posters.count()) === 6 && (await posters.evaluateAll((els) => els.map((e) => e.dataset.slug).sort().join(","))) === [...novos].sort().join(","));
+  await chips.nth(1).click();
+  await settle(page, 900);
+  check("filtro Clientes = Kavita (2) + Mabrouk", (await posters.count()) === 3 && (await board.locator('.os-project[data-slug="mabrouk-zanzibar"]').count()) === 1);
+  await chips.nth(2).click();
+  await settle(page, 900);
+  check("filtro Demos exclui clientes e inclui Said (sem URL pública)", (await board.locator('.os-project[data-kind="client"]').count()) === 0 && (await board.locator('.os-project[data-slug="said-zanzibar"]').count()) === 1);
+  await chips.nth(0).click();
+  await settle(page, 900);
+  await board.locator('.os-project__link[href="/projetos/debby-tour"]').click();
+  await page.waitForURL(/\/projetos\/debby-tour$/);
+  await settle(page, 1200);
+  check("cartaz abre o case do Debby Tour na janela, com o site ao vivo", (await win(page, "projects").locator(".os-case").count()) === 1 && /DEBBY/i.test(await win(page, "projects").locator("h1").innerText()) && (await win(page, "projects").locator('a[href="https://debby-tour.vercel.app"]').count()) >= 1);
+  await page.goBack();
+  await page.waitForURL(/\/projetos$/);
+  await settle(page, 1000);
+  check("Voltar devolve a pasta de cartazes", (await board.count()) === 1);
+  await board.locator('.os-project__link[href="/projetos/said-zanzibar"]').click();
+  await page.waitForURL(/\/projetos\/said-zanzibar$/);
+  await settle(page, 1200);
+  check("case do Said: sem link externo (URL privada), selo de demo", (await win(page, "projects").locator('a[href*="said-zanzibar.vercel.app"]').count()) === 0 && (await win(page, "projects").locator('[data-badge="demo"]').count()) === 1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`${BASE}/projetos`, { waitUntil: "load" });
+  await settle(page, 600);
+  check("reduced motion: cartazes visíveis de imediato, sem animação", await page.locator(".os-project").evaluateAll((els) => els.every((e) => getComputedStyle(e).opacity === "1" && getComputedStyle(e).animationName === "none")));
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto(`${BASE}/en/work`, { waitUntil: "load" });
+  await settle(page, 1200);
+  check("EN: rótulos do cartaz traduzidos", /DOSSIER · CASE 01/.test(await page.locator(".os-project").first().locator(".os-project__top").innerText()) && (await page.locator('.os-project[data-slug="kavita-drones"] .os-project__stamp').innerText()) === "CLIENT" && (await page.locator(".os-projects__filters .os-chip").nth(3).innerText()).includes("TOURISM & GUIDES"));
+  check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+  await shot(page, "p01-board-en");
+  await ctx.close();
+
+  console.log("\n# pasta Projetos no celular 390×844");
+  const mctx = await browser.newContext({ ...devices["iPhone 13"], locale: "pt-BR" });
+  const mpage = await mctx.newPage();
+  const merrs = errorsOf(mpage);
+  await mpage.goto(`${BASE}/projetos`, { waitUntil: "load" });
+  await settle(mpage, 1500);
+  const mboard = win(mpage, "projects").locator(".os-projects__board");
+  check("coluna única: cartaz na largura da tela", await mboard.locator(".os-project").first().evaluate((e) => { const r = e.getBoundingClientRect(); return r.width > window.innerWidth * 0.85 && r.width <= window.innerWidth; }));
+  check("sem rolagem horizontal; filtros numa linha rolável", await mpage.evaluate(() => { const f = document.querySelector(".os-projects__filters"); return document.documentElement.scrollWidth <= window.innerWidth && f.scrollWidth > f.clientWidth && getComputedStyle(f).overflowX === "auto"; }));
+  check("sem inclinação no celular", await mboard.locator(".os-project__sheet").first().evaluate((e) => getComputedStyle(e).transform === "none"));
+  check("alvos de toque: filtros ≥ 32px, cartaz ≥ 44px", await mpage.evaluate(() => [...document.querySelectorAll(".os-projects__filters .os-chip")].every((c) => c.getBoundingClientRect().height >= 32) && document.querySelector(".os-project__link").getBoundingClientRect().height >= 44));
+  const mlink = mboard.locator('.os-project__link[href="/projetos/ace-diving-miami"]');
+  await mlink.scrollIntoViewIfNeeded();
+  await settle(mpage, 800);
+  await mlink.tap();
+  await mpage.waitForURL(/\/projetos\/ace-diving-miami$/);
+  await settle(mpage, 1200);
+  check("tocar no cartaz abre o case na tela", (await win(mpage, "projects").locator(".os-case").count()) === 1);
+  check("sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
+  await shot(mpage, "p02-mobile");
   await mctx.close();
 }
 

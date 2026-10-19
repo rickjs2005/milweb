@@ -34,6 +34,16 @@ export type OsProject = {
   webgl: boolean;
   scroll: boolean;
   product: boolean;
+  /** Turismo e guias (filtro próprio). */
+  tourism: boolean;
+  /** Selo do cartaz: cliente pagante, demonstração/proposta, projeto autoral. */
+  kind: "client" | "demo" | "study";
+  /** Chave do tipo criativo (para o rótulo de "missão" do cartaz). */
+  kindKey: keyof Dictionary["displayType"];
+  /** Status honesto já localizado ("Proposta comercial · demo"), quando existe. */
+  status: string | null;
+  /** Métrica/fato de destaque, já localizado. */
+  metric: string | null;
 };
 
 export type OsService = { slug: string; label: string; sub: string; href: string };
@@ -46,7 +56,7 @@ export type OsPayload = {
   /** URLs públicas localizadas das raízes de cada app. */
   hrefs: { home: string; projects: string; studio: string; lab: string; services: string; contact: string };
   projects: OsProject[];
-  filters: { all: string; client: string; scroll: string; webgl: string; product: string };
+  filters: Dictionary["archive"]["filters"];
   displayType: Record<string, string>;
   studio: {
     manifesto: string[];

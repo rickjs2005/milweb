@@ -29,6 +29,8 @@ export type ProjectEntry = Project & {
   year?: number;
   /** 1..6 para os Selected Works da Home. */
   featuredOrder?: number;
+  /** Turismo e guias (filtro "Turismo & guias" da pasta Projetos). */
+  tourism: boolean;
   prevSlug: string;
   nextSlug: string;
 };
@@ -43,6 +45,13 @@ const ORDER = [
   "aurex-motors",
   "lumen-architecture",
   "alva-odontologia",
+  // turismo e guias (demos comerciais e conceitos de 2026)
+  "debby-tour",
+  "ace-diving-miami",
+  "legends-of-hollywood-tours",
+  "said-zanzibar",
+  "mabrouk-zanzibar",
+  "serengeti-wildlife-safaris",
   "as-copas",
   "age-of-dragons",
   "one-piece",
@@ -79,10 +88,25 @@ const DISPLAY: Record<string, DisplayType> = {
   "logistics-demo": "SCROLL EXPERIENCE",
   milsaca: "DIGITAL PRODUCT",
   millead: "DIGITAL PRODUCT",
+  // rolar é descer (controlador próprio) / três atos presos ao scroll
+  "ace-diving-miami": "SCROLL EXPERIENCE",
+  "serengeti-wildlife-safaris": "SCROLL EXPERIENCE",
+  "mabrouk-zanzibar": "CLIENT WORK",
 };
 
-/** Anos confirmados (brief do Rick, 28/08/2026). */
-const YEAR: Record<string, number> = { "kavita-drones": 2026 };
+/** Turismo e guias — demos comerciais e conceitos (Melbourne, Miami, Los Angeles, Zanzibar, Tanzânia). */
+export const TOURISM = new Set(["debby-tour", "ace-diving-miami", "legends-of-hollywood-tours", "said-zanzibar", "mabrouk-zanzibar", "serengeti-wildlife-safaris"]);
+
+/** Anos confirmados (brief do Rick, 28/08/2026; demos de turismo: repositórios e READMEs de set–out/2026). */
+const YEAR: Record<string, number> = {
+  "kavita-drones": 2026,
+  "debby-tour": 2026,
+  "ace-diving-miami": 2026,
+  "legends-of-hollywood-tours": 2026,
+  "said-zanzibar": 2026,
+  "mabrouk-zanzibar": 2026,
+  "serengeti-wildlife-safaris": 2026,
+};
 
 function inferDisplay(p: Project): DisplayType {
   if (DISPLAY[p.slug]) return DISPLAY[p.slug];
@@ -113,6 +137,7 @@ export const PROJECT_INDEX: ProjectEntry[] = listed.map((slug, i) => {
     displayType: inferDisplay(p),
     year: YEAR[slug],
     featuredOrder: FEATURED.includes(slug) ? FEATURED.indexOf(slug) + 1 : undefined,
+    tourism: TOURISM.has(slug),
     prevSlug: listed[(i - 1 + listed.length) % listed.length],
     nextSlug: listed[(i + 1) % listed.length],
   };
@@ -130,7 +155,7 @@ export function getProject(slug: string): ProjectEntry | undefined {
   if (listedEntry) return listedEntry;
   const p = bySlug.get(slug);
   if (!p) return undefined;
-  return { ...p, order: 0, n: "—", displayType: inferDisplay(p), prevSlug: listed[listed.length - 1], nextSlug: listed[0] };
+  return { ...p, order: 0, n: "—", displayType: inferDisplay(p), tourism: TOURISM.has(slug), prevSlug: listed[listed.length - 1], nextSlug: listed[0] };
 }
 
 /** Todos os slugs com página (listados + ocultos) — para generateStaticParams. */
