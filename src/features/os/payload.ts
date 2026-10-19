@@ -130,6 +130,8 @@ export function buildOsPayload(locale: Locale): OsPayload {
       email: PROFILE.email,
       whatsapp: PROFILE.whatsapp,
       waHref: `https://wa.me/${PROFILE.whatsapp}`,
+      /** Chamada curta da tela inicial do celular ("Falar no WhatsApp"), a mesma do Lab. */
+      cta: t(LAB_PAGE.ctaButton),
       linkedin: PROFILE.linkedin,
       github: PROFILE.github,
       quote: {

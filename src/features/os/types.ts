@@ -86,6 +86,8 @@ export type OsPayload = {
     email: string;
     whatsapp: string;
     waHref: string;
+    /** "Falar no WhatsApp" — chamada da tela inicial do celular. */
+    cta: string;
     linkedin: string;
     github: string;
     quote: {

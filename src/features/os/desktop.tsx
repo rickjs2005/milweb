@@ -119,6 +119,11 @@ export function Desktop() {
           <span> · </span>
           <span className="os-sign__origin">{s.sign.origin}</span>
         </p>
+        {/* Só no celular (CSS): o que a MilWeb faz e o contato principal na primeira tela. */}
+        <p className="os-sign__desc">{s.mobile.message}</p>
+        <a className="os-sign__cta os-cta" href={payload.contact.waHref} target="_blank" rel="noopener noreferrer">
+          {payload.contact.cta} ↗
+        </a>
       </div>
 
       {/* Aplicativos: coluna à esquerda no desktop, grade no celular. */}

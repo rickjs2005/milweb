@@ -21,7 +21,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,projects,mobile,resize,simple").split(",");
+const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -432,11 +432,12 @@ if (ONLY.includes("mobile")) {
     const fit = await page.evaluate(() => {
       const r = (s) => document.querySelector(s)?.getBoundingClientRect();
       const ic = r(".os-icons"), dk = r(".os-dock ul"), g = r(".os-eye"), sg = r(".os-sign");
-      return { iconsBottom: Math.round(ic.bottom), dockTop: Math.round(dk.top), globeBottom: Math.round(g.bottom), signTop: Math.round(sg.top), signBottom: Math.round(sg.bottom), iconsTop: Math.round(ic.top), scroll: document.querySelector(".os-desktop").scrollHeight, vh: innerHeight };
+      const cta = r(".os-sign__cta");
+      return { iconsBottom: Math.round(ic.bottom), dockTop: Math.round(dk.top), globeBottom: Math.round(g.bottom), signTop: Math.round(sg.top), signBottom: Math.round(sg.bottom), iconsTop: Math.round(ic.top), ctaBottom: Math.round(cta.bottom), scroll: document.querySelector(".os-desktop").scrollHeight, vh: innerHeight };
     });
-    check("olho, assinatura, grade e dock sem sobreposição", fit.globeBottom <= fit.signTop && fit.signBottom <= fit.iconsTop && fit.iconsBottom <= fit.dockTop, JSON.stringify(fit));
-    check("tela inicial cabe sem rolar", fit.scroll <= fit.vh + 1, `${fit.scroll} vs ${fit.vh}`);
-    check("redes em fileira compacta sob o olho, dentro da tela, sem circuitos", await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const h = r(".os-hud"), e = r(".os-eye"), sg = r(".os-sign"); const ps = [...document.querySelectorAll(".os-hud__panel")].map((p) => p.getBoundingClientRect()); return ps.length === 3 && h.top >= e.bottom - 1 && h.bottom <= sg.top + 1 && ps.every((p) => p.left >= 0 && p.right <= innerWidth) && document.querySelectorAll(".os-hud__wires path").length === 0; }));
+    check("olho, assinatura e grade em sequência, sem sobreposição", fit.globeBottom <= fit.signTop && fit.signBottom <= fit.iconsTop, JSON.stringify(fit));
+    check("primeira tela: olho, lema e WhatsApp acima da dock (o resto rola naturalmente)", fit.ctaBottom <= fit.dockTop + 1, `${fit.ctaBottom} vs ${fit.dockTop}`);
+    check("redes em fileira compacta entre a assinatura e os aplicativos, dentro da tela, sem circuitos", await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const h = r(".os-hud"), sg = r(".os-sign"), ic = r(".os-icons"); const ps = [...document.querySelectorAll(".os-hud__panel")].map((p) => p.getBoundingClientRect()); return ps.length === 3 && h.top >= sg.bottom - 1 && h.bottom <= ic.top + 1 && ps.every((p) => p.left >= 0 && p.right <= innerWidth) && document.querySelectorAll(".os-hud__wires path").length === 0; }));
     const tooSmall = await page.evaluate(() => [...document.querySelectorAll(".os-dock a, .os-dock button, .os-icon-btn, .os-home__tool, .os-hud__panel")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.width < 44 || r.height < 44); }).map((e) => e.getAttribute("aria-label") || e.textContent.trim()));
     check("alvos de toque ≥ 44px", tooSmall.length === 0, tooSmall.join(", "));
     await shot(page, `m-${label.split(" ")[0]}-home`);
@@ -885,7 +886,8 @@ if (ONLY.includes("projects")) {
   await settle(mpage, 2800);
   const mm = win(mpage, "projects").locator(".bounty");
   const mact = mm.locator('.bounty__slot[data-active="1"]');
-  check("um cartaz inteiro na tela, vizinho espiando", (await mact.evaluate((e) => { const r = e.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.width > innerWidth * 0.6; })) && (await mm.locator('.bounty__slot[data-d="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); return r.left < innerWidth && r.right > innerWidth; })));
+  const mrect = await mact.evaluate((e) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), w: Math.round(r.width), vw: innerWidth }; });
+  check("um cartaz inteiro na tela, vizinho espiando", mrect.l >= 0 && mrect.r <= mrect.vw && mrect.w > mrect.vw * 0.55 && (await mm.locator('.bounty__slot[data-d="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); return r.left < innerWidth && r.right > innerWidth; })), JSON.stringify(mrect));
   check("sem rolagem horizontal; pé acima da dock", await mpage.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= document.querySelector(".os-dock ul").getBoundingClientRect().top + 1));
   const st = await rectOf(mm.locator(".bounty__stage"));
   await mpage.mouse.move(st.x + st.w * 0.7, st.y + st.h / 2);
@@ -906,6 +908,158 @@ if (ONLY.includes("projects")) {
   check("sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
   await shot(mpage, "p02-mural-mobile");
   await mctx.close();
+}
+
+// ------------------------------------------------------------------- phones
+// Celulares (revisão 8): a matriz pedida — 360×640, 375×667, 390×844, 414×896 (iPhone 11), 430×932 e deitados
+// 844×390 / 932×430. Em cada um: tela inicial (sem rolagem horizontal, nada aberto, WhatsApp na primeira tela,
+// rótulos ≥ 12 px sem cortes, dock com nomes, alvos ≥ 48 px), Projetos (controles 48 px, cartaz legível e inteiro,
+// swipe horizontal avança e gesto vertical não), case em coluna (texto 16 px, voltar 48 px), "Ver todos", Contato
+// (opções 48 px com estado ativo). Mais: busca num viewport curto (teclado aberto). Emulação, não aparelho físico.
+if (ONLY.includes("phones")) {
+  current = "phones";
+  const PHONES = [
+    ["360×640", { viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+    ["375×667", { viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+    ["390×844", { ...devices["iPhone 13"] }],
+    ["414×896 (iPhone 11)", { viewport: { width: 414, height: 896 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+    ["430×932", { ...devices["iPhone 14 Pro Max"] }],
+    ["844×390 deitado", { ...devices["iPhone 13 landscape"] }],
+    ["932×430 deitado", { ...devices["iPhone 14 Pro Max landscape"] }],
+  ];
+  const sizes = (page, sel) => page.evaluate((sel) => [...document.querySelectorAll(sel)].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== "hidden"; }).filter((e) => { const r = e.getBoundingClientRect(); return r.width < 48 || r.height < 48; }).map((e) => (e.getAttribute("aria-label") || e.textContent.trim()).slice(0, 24)), sel);
+  for (const [label, opts] of PHONES) {
+    console.log(`\n# celular ${label}`);
+    const landscape = opts.viewport.width > opts.viewport.height;
+    const ctx = await browser.newContext({ ...opts, locale: "pt-BR" });
+    const page = await ctx.newPage();
+    const errs = errorsOf(page);
+    await page.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(page, 1500);
+    const home = await page.evaluate(() => {
+      const r = (s) => document.querySelector(s)?.getBoundingClientRect();
+      const dock = r(".os-dock ul"), cta = r(".os-sign__cta"), desc = r(".os-sign__desc");
+      const labels = [...document.querySelectorAll('.os-icons li[data-mobile="1"] .os-icon-btn__label')];
+      const dockLabels = [...document.querySelectorAll(".os-dock li[data-mobile=\"1\"] .os-dock__label")];
+      return {
+        shell: document.documentElement.dataset.shell,
+        noX: document.documentElement.scrollWidth <= innerWidth,
+        nothingOpen: document.querySelectorAll('.os-window[data-screen="1"], .os-window').length === 0,
+        ctaFirst: !!cta && cta.width > 0 && cta.bottom <= dock.top + 1 && cta.top >= 0,
+        desc: !!desc && desc.height > 0,
+        labelPx: Math.min(...labels.map((l) => parseFloat(getComputedStyle(l).fontSize))),
+        labelCut: labels.some((l) => l.scrollWidth > l.clientWidth + 1),
+        dockNames: dockLabels.length === 4 && dockLabels.every((l) => { const b = l.getBoundingClientRect(); return b.height > 8 && getComputedStyle(l).visibility === "visible"; }),
+      };
+    });
+    check("tela inicial: celular, sem rolagem horizontal, nada aberto", home.shell === "mobile" && home.noX && home.nothingOpen, JSON.stringify(home));
+    check("WhatsApp e descrição na primeira tela, acima da dock", home.ctaFirst && home.desc);
+    check("rótulos ≥ 12 px sem cortes; dock com os nomes", home.labelPx >= 12 && !home.labelCut && home.dockNames, JSON.stringify({ px: home.labelPx, cut: home.labelCut, dock: home.dockNames }));
+    const smallHome = await sizes(page, ".os-dock a, .os-dock button, .os-home__tool, .os-hud__panel, .os-sign__cta, .os-icon-btn");
+    check("alvos ≥ 48 px na tela inicial (dock, busca, redes, WhatsApp, aplicativos)", smallHome.length === 0, smallHome.join(", "));
+    await shot(page, `ph-${label.split(" ")[0]}-home`);
+
+    // Projetos
+    await page.tap("#os-icon-projects");
+    await page.waitForURL(/\/projetos$/);
+    await settle(page, 2600);
+    if (landscape) {
+      await page.locator(".bounty__filters-btn").tap();
+      await settle(page, 300);
+    }
+    const smallProj = await sizes(page, ".os-window__back, .os-window__home, .os-window__close, .bounty__arrow, .bounty__all-btn, .bounty__pill, .bounty__filters-btn");
+    if (landscape) {
+      await page.locator(".bounty__filters-btn").tap();
+      await settle(page, 300);
+    }
+    check("Projetos: Voltar, Início, Fechar, setas, filtros e Ver todos ≥ 48 px", smallProj.length === 0, smallProj.join(", "));
+    const poster = await page.evaluate(() => {
+      const a = document.querySelector('.bounty__slot[data-active="1"]');
+      const r = a.getBoundingClientRect();
+      const n = a.querySelector('.bounty__slot[data-d="1"], .bounty__slot');
+      const nb = document.querySelector('.bounty__slot[data-d="1"]')?.getBoundingClientRect();
+      const px = (s) => parseFloat(getComputedStyle(a.querySelector(s)).fontSize);
+      return { whole: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, name: px(".bounty__name"), line: px(".bounty__line"), id: px(".bounty__id"), peek: !!nb && nb.left < innerWidth && (nb.right > innerWidth || innerWidth > innerHeight), noX: document.documentElement.scrollWidth <= innerWidth, touch: getComputedStyle(document.querySelector(".bounty__stage")).touchAction, ticks: getComputedStyle(document.querySelector(".bounty__ticks")).display === "none", progress: getComputedStyle(document.querySelector(".bounty__progress")).display !== "none", footAboveDock: document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= document.querySelector(".os-dock ul").getBoundingClientRect().top + 1, n: !!n };
+    });
+    check("Projetos: cartaz inteiro e legível (nome ≥ 21/15 px, frase ≥ 13/11 px), vizinho espiando, sem rolagem horizontal", poster.whole && poster.name >= (landscape ? 15 : 21) && poster.line >= (landscape ? 11 : 13) && poster.peek && poster.noX, JSON.stringify(poster));
+    check("Projetos: rolagem vertical livre (pan-y), fita trocada por barra de progresso, pé acima da dock", /pan-y/.test(poster.touch) && poster.ticks && (landscape || poster.progress) && poster.footAboveDock, JSON.stringify({ touch: poster.touch, ticks: poster.ticks, progress: poster.progress }));
+    const st = await rectOf(page.locator(".bounty__stage"));
+    await page.mouse.move(st.x + st.w * 0.7, st.y + st.h / 2);
+    await page.mouse.down();
+    await page.mouse.move(st.x + st.w * 0.3, st.y + st.h / 2, { steps: 8 });
+    await page.mouse.up();
+    await settle(page, 900);
+    const after1 = await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug");
+    await page.mouse.move(st.x + st.w / 2, st.y + st.h * 0.3);
+    await page.mouse.down();
+    await page.mouse.move(st.x + st.w / 2 + 4, st.y + st.h * 0.7, { steps: 8 });
+    await page.mouse.up();
+    await settle(page, 700);
+    const after2 = await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug");
+    check("swipe horizontal avança; gesto vertical não troca de cartaz", after1 !== "kavita-drones" && after2 === after1, `${after1} → ${after2}`);
+    const openSlug = after2;
+    await shot(page, `ph-${label.split(" ")[0]}-projetos`);
+
+    // case em coluna
+    await page.locator('.bounty__slot[data-active="1"] .bounty__link').tap();
+    await page.waitForURL(new RegExp(`/projetos/${openSlug}$`));
+    await settle(page, 2000);
+    const dossier = await page.evaluate(() => {
+      const d = document.querySelector(".bounty__dossier"), c = document.querySelector(".bounty__close");
+      const text = document.querySelector(".bounty__case .os-case__text");
+      const side = document.querySelector(".bounty__dossier-side").getBoundingClientRect();
+      const cb = c.getBoundingClientRect();
+      return { open: document.querySelector(".bounty").dataset.phase === "open", text: text ? parseFloat(getComputedStyle(text).fontSize) : 0, close: cb.height >= 48 && cb.top >= 0, noX: d.scrollWidth <= d.clientWidth + 1 && document.documentElement.scrollWidth <= innerWidth, column: side.width < innerWidth * 0.6, title: document.querySelector(".os-window__title").textContent.includes("/") };
+    });
+    check("case: dossiê em coluna, texto ≥ 16 px, Voltar à coleção ≥ 48 px, sem rolagem horizontal", dossier.open && dossier.text >= (landscape ? 15 : 16) && dossier.close && dossier.noX && dossier.column && dossier.title, JSON.stringify(dossier));
+    await page.locator(".bounty__close").tap();
+    await page.waitForURL(/\/projetos$/);
+    await settle(page, 1200);
+    check("Voltar à coleção devolve o mesmo cartaz", (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === openSlug);
+    await page.locator(".bounty__all-btn").tap();
+    await settle(page, 400);
+    const allItems = await page.locator(".bounty__all-item").count();
+    await page.locator(".bounty__all-item").nth(9).tap();
+    await settle(page, 900);
+    check("Ver todos: grade com os 31 e salto direto (10)", allItems === 31 && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "ace-diving-miami");
+
+    // Contato
+    await page.locator(".os-window__close").tap();
+    await page.waitForURL((u) => u.pathname === "/");
+    await settle(page, 500);
+    await page.tap('[data-dock-id="contact"]');
+    await urlIs(page, /\/contato$/);
+    await settle(page, 900);
+    const opt = page.locator(".os-contact__composer button[aria-pressed]").first();
+    await opt.tap();
+    await settle(page, 200);
+    const smallContact = await sizes(page, ".os-contact__composer button[aria-pressed], .os-cta, .os-contact__composer a[data-inspect]");
+    check("Contato: opções do compositor e WhatsApp ≥ 48 px; opção marcada com estado ativo evidente", smallContact.length === 0 && (await opt.getAttribute("aria-pressed")) === "true" && (await opt.evaluate((e) => getComputedStyle(e).backgroundColor !== "rgba(0, 0, 0, 0)")), smallContact.join(", "));
+    check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await ctx.close();
+  }
+
+  // busca com o teclado aberto (viewport curto): campo, resultado e fechar acessíveis
+  console.log("\n# celular 390×420 · busca com teclado aberto");
+  const kctx = await browser.newContext({ ...devices["iPhone 13"], viewport: { width: 390, height: 420 }, locale: "pt-BR" });
+  const kpage = await kctx.newPage();
+  await kpage.goto(`${BASE}/`, { waitUntil: "load" });
+  await settle(kpage, 1200);
+  await kpage.locator(".os-home__tool").first().tap();
+  await settle(kpage, 500);
+  await kpage.keyboard.type("terral");
+  await settle(kpage, 600);
+  const kb = await kpage.evaluate(() => {
+    const inp = document.querySelector(".os-search__form input").getBoundingClientRect();
+    const close = document.querySelector(".os-search__close").getBoundingClientRect();
+    const hit = document.querySelector(".os-search__hit")?.getBoundingClientRect();
+    return { input: inp.top >= 0 && inp.bottom <= innerHeight && inp.height >= 48, close: close.width >= 48 && close.height >= 48 && close.bottom <= innerHeight, hit: !!hit && hit.top >= 0 && hit.bottom <= innerHeight, font: parseFloat(getComputedStyle(document.querySelector(".os-search__form input")).fontSize) };
+  });
+  check("busca num viewport curto: campo (16 px, 48 px), primeiro resultado e fechar visíveis", kb.input && kb.close && kb.hit && kb.font >= 16, JSON.stringify(kb));
+  await kpage.locator(".os-search__hit").first().tap();
+  await kpage.waitForURL(/\/projetos\/terral$/);
+  check("resultado da busca abre o case", true);
+  await kctx.close();
 }
 
 // ------------------------------------------------------------------- resize

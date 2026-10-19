@@ -84,6 +84,8 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const [phase, setPhase] = useState<Phase>(() => (slug ? "open" : "closed"));
   const [pending, setPending] = useState<string | null>(null);
   const [allOpen, setAllOpen] = useState(false);
+  // Telefone deitado: os filtros ficam recolhidos atrás de um botão (CSS só aplica o atributo lá).
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Enquanto o voo de volta acontece a rota já é a raiz: o dossiê lembra o último slug até fechar.
   const lastRef = useRef<string | null>(slug);
   if (slug ?? pending) lastRef.current = slug ?? pending;
@@ -98,7 +100,7 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const originRef = useRef<DOMRect | null>(null);
   const gsapRef = useRef<Promise<Gsap> | null>(null);
   const seqRef = useRef(0);
-  const drag = useRef({ on: false, x0: 0, t0: 0, dx: 0, moved: false });
+  const drag = useRef({ on: false, x0: 0, y0: 0, t0: 0, dx: 0, moved: false, axis: null as null | "x" | "y" });
   const wheel = useRef({ acc: 0, lock: false, timer: 0 });
   const prevSlug = useRef<string | null>(slug);
 
@@ -122,6 +124,7 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   // ---- filtro: mantém o projeto em foco quando ele continua na lista; senão, o primeiro ----
   const pickFilter = (f: Filter) => {
     setFilter(f);
+    setFiltersOpen(false);
     const next = all.filter((p) => matchesFilter(p, f));
     if (!next.some((p) => p.slug === activeSlug) && next[0]) setActiveSlug(next[0].slug);
   };
@@ -290,24 +293,55 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const onPointerDown = (e: ReactPointerEvent) => {
     if (phase !== "closed" || allOpen || e.button !== 0) return;
     if ((e.target as HTMLElement).closest("button")) return;
-    drag.current = { on: true, x0: e.clientX, t0: performance.now(), dx: 0, moved: false };
+    drag.current = { on: true, x0: e.clientX, y0: e.clientY, t0: performance.now(), dx: 0, moved: false, axis: null };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", cancel);
+    };
+    // O arraste só vira navegação depois de se declarar horizontal; um gesto vertical (rolagem,
+    // `touch-action: pan-y` no celular) ou um pointercancel abandona sem trocar de cartaz.
     const move = (ev: PointerEvent) => {
       const d = drag.current;
       if (!d.on) return;
       d.dx = ev.clientX - d.x0;
-      if (!d.moved && Math.abs(d.dx) > 6) {
+      const dy = ev.clientY - d.y0;
+      if (!d.axis) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(d.dx)) {
+          // Gesto vertical: a navegação sai de cena, mas o click que fecha o gesto (mouse/caneta)
+          // ainda é descartado — arrastar não é tocar. `up`/`cancel` limpam `moved`.
+          d.axis = "y";
+          d.moved = true;
+          d.on = false;
+          window.removeEventListener("pointermove", move);
+          return;
+        }
+        if (Math.abs(d.dx) <= 8) return;
+        d.axis = "x";
+      }
+      if (!d.moved) {
         d.moved = true;
         rootRef.current?.setAttribute("data-dragging", "1");
       }
-      if (d.moved) rootRef.current?.style.setProperty("--drag", `${d.dx}px`);
+      rootRef.current?.style.setProperty("--drag", `${d.dx}px`);
+    };
+    const cancel = () => {
+      const d = drag.current;
+      d.on = false;
+      stop();
+      rootRef.current?.removeAttribute("data-dragging");
+      rootRef.current?.style.setProperty("--drag", "0px");
+      window.setTimeout(() => (drag.current.moved = false), 60);
     };
     const up = () => {
       const d = drag.current;
       d.on = false;
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("pointercancel", up);
+      stop();
       if (!d.moved) return;
+      if (d.axis === "y") {
+        window.setTimeout(() => (drag.current.moved = false), 60);
+        return;
+      }
       const root = rootRef.current;
       root?.removeAttribute("data-dragging");
       root?.style.setProperty("--drag", "0px");
@@ -319,7 +353,7 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
-    window.addEventListener("pointercancel", up);
+    window.addEventListener("pointercancel", cancel);
   };
   const onKeyDown = (e: ReactKeyboardEvent) => {
     if (phase !== "closed" || allOpen) return;
@@ -345,13 +379,13 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const style = { "--mood-r": mr, "--mood-g": mg, "--mood-b": mb } as CSSProperties;
 
   return (
-    <div ref={rootRef} className="os-projects bounty" data-phase={phase} data-mobile={mobile ? "1" : "0"} style={style}>
+    <div ref={rootRef} className="os-projects bounty" data-phase={phase} data-mobile={mobile ? "1" : "0"} data-filters={filtersOpen ? "1" : "0"} style={style}>
       {/* barra: coleção + filtros compactos */}
       <div className="bounty__bar">
         <p className="bounty__eyebrow">
           {P.collection} · <b className="tnum">{String(total).padStart(2, "0")}</b> {P.missions}
         </p>
-        <div className="bounty__filters" role="group" aria-label={P.kind}>
+        <div id="bounty-filters" className="bounty__filters" role="group" aria-label={P.kind}>
           {FILTERS.map((f) => (
             <button key={f} type="button" className="bounty__pill" aria-pressed={filter === f} onClick={() => pickFilter(f)}>
               {payload.filters[f]}
@@ -402,6 +436,9 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
 
       {/* pé: posição, fita e acesso direto */}
       <div className="bounty__foot">
+        <button type="button" className="bounty__filters-btn" aria-expanded={filtersOpen} aria-controls="bounty-filters" onClick={() => setFiltersOpen((v) => !v)}>
+          {payload.filters[filter]} <small className="tnum">{counts[filter]}</small>
+        </button>
         <p className="bounty__count" aria-live="polite">
           <b className="tnum">{String(active + 1).padStart(2, "0")}</b> <span aria-hidden="true">/</span> <span className="sr-only">{P.of}</span> <span className="tnum">{String(list.length).padStart(2, "0")}</span>
         </p>
@@ -420,6 +457,10 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
         </div>
         <span className="bounty__hint t-mono" aria-hidden="true">
           {mobile ? P.swipe : P.hint}
+        </span>
+        {/* celular: barra de progresso no lugar da fita de traços (CSS esconde no desktop) */}
+        <span className="bounty__progress" aria-hidden="true">
+          <span style={{ width: `${list.length > 1 ? (active / (list.length - 1)) * 100 : 100}%` }} />
         </span>
         <button type="button" className="bounty__all-btn" aria-expanded={allOpen} onClick={() => setAllOpen(true)}>
           {P.viewAll}

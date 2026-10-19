@@ -275,3 +275,31 @@ Pedido (com imagem de referência): LinkedIn num painel à esquerda do olho; Git
 - `i18n-audit` no build de produção: sem vazamento novo.
 - Capturas em `.audit/os-rev/hud/` (1440, 1920, 1366, tablet 1024, reduced motion, celular e paisagem; hover).
 - Fora do escopo verificado: aparelho físico (iPhone/Android reais); o piscar com clique nos painéis foi conferido pela natureza do ouvinte (global, passivo), não num Chrome com GPU.
+
+## Revisão 8 (19/10/2026) — celular com o acabamento do desktop (só o modo celular muda)
+
+Pedido: refinar a experiência em smartphones (home, dock, controles, Projetos/cartazes, case, contato, busca, teclado, safe areas) com o mesmo nível do desktop, **alterando apenas o modo celular**: desktop visual e funcionalmente igual, verificado por regressão em 1024/1440/1920; reutilizar a definição de celular (`MOBILE_SHELL_MQ`, incluindo o telefone deitado); não ampliar a container query compartilhada de janela estreita; alvos de 48 × 48; contato na primeira tela; rótulos ≥ 12 px; dock com nomes; cartazes legíveis em toda a faixa (o problema do `@container (max-width: 420px)` que deixava o 430 px com a apresentação de desktop); swipe previsível com rolagem vertical e zoom livres; validação na matriz 360×640, 375×667, 390×844, 414×896, 430×932, 844×390 e 932×430.
+
+### Isolamento
+
+- Todo o CSS novo vive num bloco `@media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px))` próprio (a MESMA regra do registro) e no bloco do telefone deitado; a container query `@container (max-width: 420px)` (janela estreita do desktop) ficou intocada. Os únicos acréscimos fora de media query são regras `display: none` para elementos que só existem no celular (`.os-sign .os-sign__desc/.os-sign__cta`, `.bounty__progress`, `.bounty__filters-btn`) — com especificidade dupla, porque `.os-cta` mais abaixo define `display` por conta própria (foi exatamente isso que a primeira rodada de regressão pegou: a chamada do WhatsApp aparecendo no desktop).
+- Regressão do desktop (scratch `regress.mjs`): 27 capturas (8 rotas × 3 larguras + Projetos maximizada), movimento reduzido, relógio mascarado, comparação pixel a pixel por canvas → **0 capturas com diferença** (dev × dev, depois da correção acima). A comparação final, feita com o build de produção contra as referências do dev, acusa só o selo do Next dev no canto inferior esquerdo (caixa de ~35 × 35 px em x 20–55 px), que o servidor de desenvolvimento desenha e o `next start` não.
+- A única mudança de comportamento comum a todos os modos é no arraste do mural (abaixo); não tem efeito visual.
+
+### O que mudou no celular
+
+- **Tela inicial**: cabeçalho → olho (32 svh) → lema + descrição curta (`os.mobile.message`) + **"Falar no WhatsApp"** (lima, 48 px, `wa.me` real; string existente `LAB_PAGE.ctaButton` exposta em `payload.contact.cta`) → redes (cartões de 48 px) → aplicativos com rótulos de 12 px. A primeira tela traz olho, lema e WhatsApp acima da dock até em 360×640; o resto rola naturalmente (o teste de "cabe sem rolar" virou "contato na primeira tela").
+- **Dock** com os nomes permanentes (11 px), itens de 64 px; `--os-mdock` passa a 88 px (76 px deitado) só no celular, e todas as telas reservam esse espaço.
+- **Alvos de 48 px**: busca e navegação da home, Voltar/Início/Fechar (barra de 56 px), chips de filtro/Ajustes, canais e opções do compositor de contato (agora pílulas com estado ativo preenchido, continuam opcionais), setas, "Ver todos", filtros do mural, "Voltar à coleção", busca (campo 48 px/16 px e Fechar 48 px, lista com itens de 56 px, altura em `dvh` para caber com o teclado).
+- **Projetos**: o mural passa a ser dimensionado pelo **palco** (`.bounty__stage` vira `container-type: size` só no celular): `--poster-w = min(74cqw, 84cqh·.75)` — largura E altura disponíveis — então 360, 390, 414 e 430 recebem o cartaz inteiro com o vizinho espiando; textos do cartaz com piso legível (`max(21px, 10.5cqw)` no nome, 13 px na frase, 11 px no identificador); setas e "Ver todos" de 48 px; a fita de traços dá lugar a uma barra de progresso; `touch-action: pan-y pinch-zoom` com reconhecimento de direção no arraste. Deitado: filtros recolhidos atrás de um botão de 48 px no pé (mostra o filtro ativo), eyebrow oculto, cartaz por `min(40cqw, 94cqh·.75)`.
+- **Arraste com direção** (`mural.tsx`, vale em todos os modos): o gesto só vira navegação depois de se declarar horizontal (> 8 px); vertical ou `pointercancel` não troca de cartaz. Com mouse/caneta, o click que fecha um arraste vertical também é descartado (`moved` fica armado até o `pointerup`) — a suíte inteira pegou isso em 844×390: o gesto vertical abria o dossiê. No toque o `pan-y` já entrega `pointercancel` sem click.
+- **Case**: dossiê em coluna (cartaz no topo a 44 %, botão de voltar de 48 px fora do cartaz), corpo a 16 px/1,6.
+- **Olho**: nada mudou (imagem estática, sonda de GPU, DPR ≤ 1,25, pisca ao toque).
+
+### Verificações (revisão 8)
+
+- `tsc`, `next lint` (só o aviso antigo do OG image) e `pnpm build` verdes.
+- `scripts/os-check.mjs` › grupo **`phones`** (matriz 360×640, 375×667, 390×844, 414×896, 430×932, 844×390, 932×430 + busca em 390×420 "com teclado"): celular sem rolagem horizontal e nada aberto; WhatsApp e descrição na primeira tela; rótulos ≥ 12 px sem cortes e dock com nomes; alvos ≥ 48 px na home; Voltar/Início/Fechar/setas/filtros/Ver todos ≥ 48 px; cartaz inteiro e legível com vizinho; `pan-y`, barra de progresso, pé acima da dock; swipe horizontal avança e gesto vertical não; case em coluna com texto ≥ 16 px e Voltar de 48 px; Voltar à coleção devolve o cartaz; Ver todos com os 31; Contato com opções de 48 px e estado ativo; busca curta com campo, resultado e Fechar visíveis. Suíte inteira: **320/320** no dev e no build de produção.
+- `i18n-audit` no build de produção: só as 3 ocorrências antigas do Logistics Demo (`capabilities`/`screens`), fora do escopo.
+- Capturas antes/depois em `.audit/regress/before` e `.audit/regress/after` (desktop e celular) e as do grupo `phones` em `.audit/os-prod/ph-*.png`.
+- Emulação (Playwright/Chromium), não aparelho físico: iPhone/Android reais, Safari iOS, teclado de verdade e fps não foram medidos. Nada de Lighthouse nesta revisão.

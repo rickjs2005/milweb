@@ -103,6 +103,9 @@ html[data-os-theme="paper"] .os-eye { opacity: .96; }
 
 /* Assinatura: canto inferior esquerdo, pequena. O lema é o h1 da raiz. */
 .os-sign { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); max-width: min(60vw, 64ch); }
+/* descrição e chamada do WhatsApp existem só na tela inicial do celular (bloco de celular abaixo);
+   especificidade dupla porque `.os-cta` (mais abaixo no arquivo) define display por conta própria */
+.os-sign .os-sign__desc, .os-sign .os-sign__cta { display: none; }
 .os-sign__motto { margin: 0; font-family: var(--font-display), sans-serif; font-weight: 600; font-size: clamp(1rem, 1.25vw, 1.3rem); line-height: 1.1; letter-spacing: -.02em; }
 .os-sign__line { margin-top: 8px; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; color: rgb(var(--os-fg) / 0.62); }
 .os-sign__origin { color: rgb(var(--os-signal)); }
@@ -541,6 +544,7 @@ html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
 .bounty__tick:hover { background: rgb(var(--os-fg) / .6); transform: scaleY(1.3); }
 .bounty__tick[aria-current="true"] { background: rgb(var(--os-signal)); }
 .bounty__hint { font-size: 9px; letter-spacing: .1em; color: rgb(var(--os-fg) / .45); white-space: nowrap; }
+.bounty__progress, .bounty__filters-btn { display: none; }
 
 /* ver todos: salto direto a qualquer cartaz */
 .bounty__all { position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; background: rgb(var(--os-bg) / .96); animation: bounty-fade .25s both; }
@@ -794,6 +798,82 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-search { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); margin: 8px auto; }
 }
 
+/* ---- celular: refinamento (revisão 8) — a MESMA regra de celular do registro; nada daqui toca o desktop ---- */
+/* Tela inicial com o contato na primeira tela, dock com nomes, alvos de 48 px, mural dimensionado pelo palco
+   (largura E altura disponíveis) com texto nunca menor que o legível, dossiê em coluna, compositor de contato
+   com opções tocáveis. As regras de janela estreita do desktop (`@container (max-width: 420px)`) ficam como estão. */
+@media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
+  :root { --os-mdock: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  /* tela inicial: cabeçalho → olho → lema + descrição + WhatsApp → redes → aplicativos (rola se precisar) */
+  .os-home__head { min-height: 48px; }
+  .os-home__tool { width: 48px; height: 48px; min-width: 48px; min-height: 48px; }
+  .os-sign { order: 3; margin-top: 10px; }
+  .os-hud { order: 4; margin-top: 14px; }
+  .os-sign__motto { font-size: 1.35rem; line-height: 1.1; }
+  .os-sign__line { font-size: 11px; }
+  .os-sign .os-sign__desc { display: block; margin: 8px auto 0; max-width: 34ch; font-size: 14px; line-height: 1.45; color: rgb(var(--os-fg) / .78); }
+  .os-sign .os-sign__cta { display: inline-flex; margin-top: 12px; min-height: 48px; padding: 0 20px; border-radius: 999px; font-size: 12px; background: rgb(var(--os-signal)); color: rgb(var(--signal-ink)); }
+  .os-hud__card { height: 48px; }
+  .os-icon-btn { min-height: 48px; }
+  .os-icon-btn__label { max-width: 88px; font-size: 12px; line-height: 1.2; }
+  /* dock com nomes permanentes */
+  .os-dock__item { min-height: 64px; padding: 6px 2px; gap: 3px; }
+  .os-dock__item .os-icon { width: 40px !important; height: 40px !important; }
+  .os-dock__label { position: static; width: auto; height: auto; margin: 0; padding: 0; overflow: visible; clip: auto; border: 0; background: none; font-size: 11px; line-height: 1; letter-spacing: .04em; color: rgb(var(--os-fg) / .85); pointer-events: none; }
+  .os-dock__item::after { bottom: auto; top: 3px; }
+  /* cabeçalho das telas: Voltar (nível anterior), Início (mantém o app), Fechar (encerra) — todos 48 px */
+  .os-window__bar { min-height: 56px; }
+  .os-window__back { min-height: 48px; min-width: 48px; padding: 0 10px; font-size: 12px; }
+  .os-window__home, .os-window__close { min-width: 48px; min-height: 48px; }
+  /* controles tocáveis dentro dos apps (filtros, ajustes, canais, compositor) */
+  .os-chip { min-height: 48px; padding: 0 14px; font-size: 12px; }
+  .os-cta { min-height: 48px; padding: 0 18px; font-size: 12px; }
+  .os-contact__composer button[aria-pressed] { display: inline-flex; align-items: center; min-height: 48px; padding: 0 14px; border: 1px solid rgb(var(--ink) / .35); border-radius: 999px; font-size: 12px; background-image: none; }
+  .os-contact__composer button[aria-pressed="true"] { background: rgb(var(--ink)); color: rgb(var(--paper)); border-color: rgb(var(--ink)); }
+  .os-contact__composer a[data-inspect="CTA / WHATSAPP"] { display: inline-flex; align-items: center; min-height: 48px; padding: 0 18px; background: rgb(var(--ink)); color: rgb(var(--paper)); background-image: none; font-size: 12px; }
+  /* busca: cabe com o teclado aberto (dvh), campo e fechar de 48 px */
+  .os-search { width: calc(100vw - 12px); max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px)); margin: calc(6px + env(safe-area-inset-top, 0px)) auto auto; }
+  .os-search__form { gap: 8px; padding: 6px 8px 6px 14px; }
+  .os-search__form input { min-height: 48px; }
+  .os-search__close { min-height: 48px; min-width: 48px; padding: 0 12px; font-size: 11px; }
+  .os-search__hit { min-height: 56px; }
+  .os-search__hint { display: none; }
+  /* Projetos: mural pelo palco (largura e altura), sem 3D; swipe horizontal com rolagem vertical e zoom livres */
+  .bounty { --poster-w: min(74cqw, calc(84cqh * .75)); --step: calc(var(--poster-w) + 14px); padding-bottom: calc(var(--os-mdock) + 6px); }
+  .bounty__bar { padding: 8px 12px 0; flex-wrap: wrap; gap: 8px; }
+  .bounty__filters { gap: 6px; width: 100%; padding-bottom: 2px; }
+  .bounty__pill { height: 48px; padding: 0 14px; font-size: 12px; }
+  .bounty__pill small { font-size: 11px; }
+  .bounty__stage { container-type: size; touch-action: pan-y pinch-zoom; cursor: default; }
+  .bounty__track { perspective: none; }
+  .bounty__slot { transform: translate3d(calc(var(--d) * var(--step) + var(--drag)), 0, 0); opacity: calc(1 - min(var(--ad), 3) * .3); }
+  .bounty__paper { transition: none; }
+  .bounty__link:hover .bounty__paper { --lift: 0px; }
+  .bounty__tier { font-size: max(16px, 9.4cqw); }
+  .bounty__tier[data-tier="most"] { font-size: max(13px, 6.7cqw); }
+  .bounty__tier[data-tier="special"] { font-size: max(12px, 6.4cqw); }
+  .bounty__name { font-size: max(21px, 10.5cqw); }
+  .bounty__id { font-size: max(11px, 3.3cqw); }
+  .bounty__seal { font-size: max(10px, 3.6cqw); }
+  .bounty__line { font-size: max(13px, 4.1cqw); -webkit-line-clamp: 3; }
+  .bounty__foot { flex-wrap: wrap; padding: 8px 12px; gap: 8px 10px; }
+  .bounty__count { font-size: 13px; }
+  .bounty__arrow { height: 48px; min-width: 48px; font-size: 16px; }
+  .bounty__all-btn { height: 48px; padding: 0 16px; font-size: 12px; margin-left: auto; }
+  .bounty__ticks, .bounty__hint { display: none; }
+  .bounty__progress { display: block; flex: 1 1 100%; order: 10; height: 3px; border-radius: 2px; background: rgb(var(--os-fg) / .18); overflow: hidden; }
+  .bounty__progress > span { display: block; height: 100%; background: rgb(var(--os-signal)); transition: width .5s var(--ease-out-expo); }
+  .bounty__dossier { display: block; inset: 6px; padding: 72px 16px calc(var(--os-mdock) + 24px); }
+  .bounty__dossier-side { position: static; width: 44%; margin: 0 auto 16px; }
+  .bounty__case { container-type: normal; }
+  .bounty__case .os-case__text { font-size: 16px; line-height: 1.6; }
+  .bounty__case .os-case__text--strong { font-size: 18px; line-height: 1.4; }
+  .bounty__close { top: 14px; right: 14px; height: 48px; padding: 0 16px; font-size: 12px; }
+  .bounty__all-head .bounty__all-btn { margin-left: 0; }
+  .bounty__all-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 8px; padding: 0 12px calc(var(--os-mdock) + 20px); }
+  .bounty__all-name { font-size: 11px; }
+}
+
 /* telefone deitado: globo à direita, grade à esquerda, dock baixa */
 @media (max-height: 499px) and (max-width: 1079px) {
   :root { --os-mdock: calc(56px + env(safe-area-inset-bottom, 0px)); }
@@ -806,9 +886,28 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-hud__panel { flex: 0 1 auto; }
   .os-icons ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 4px; }
   .os-icon-btn .os-icon { width: 44px !important; height: 44px !important; }
-  .os-dock__item { min-height: 44px; padding: 4px 2px; }
-  .os-dock__item .os-icon { width: 36px !important; height: 36px !important; }
-  .os-window__bar { min-height: 44px; }
+  :root { --os-mdock: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .os-dock__item { min-height: 56px; padding: 4px 2px; gap: 2px; }
+  .os-dock__item .os-icon { width: 32px !important; height: 32px !important; }
+  .os-dock__label { font-size: 10px; }
+  .os-window__bar { min-height: 48px; }
+  .os-sign .os-sign__desc { margin: 6px 0 0; max-width: 40ch; font-size: 13px; }
+  .os-sign .os-sign__cta { margin-top: 8px; }
+  /* Projetos deitado: filtros recolhidos atrás de um botão de 48 px no pé; a altura vai para o mural */
+  .bounty { --poster-w: min(40cqw, calc(94cqh * .75)); padding-bottom: calc(var(--os-mdock) + 2px); }
+  .bounty__bar { display: none; padding: 6px 12px 0; }
+  .bounty[data-filters="1"] .bounty__bar { display: flex; }
+  .bounty__eyebrow { display: none; }
+  .bounty__filters-btn { display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 14px; border: 1px solid rgb(var(--os-fg) / .3); border-radius: 999px; background: transparent; color: rgb(var(--os-fg)); font: 12px/1 var(--font-mono), monospace; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+  .bounty__filters-btn small { font-size: 11px; opacity: .6; }
+  .bounty__filters-btn[aria-expanded="true"] { background: rgb(var(--os-fg)); color: rgb(var(--os-bg)); }
+  .bounty__foot { padding: 4px 12px; }
+  .bounty__foot { flex-wrap: nowrap; }
+  .bounty__progress { display: none; }
+  .bounty__name { font-size: max(15px, 10.5cqw); }
+  .bounty__line { font-size: max(11px, 4.1cqw); -webkit-line-clamp: 2; }
+  .bounty__id { font-size: max(9px, 3.3cqw); }
+  .bounty__dossier-side { width: 26%; }
 }
 
 /* ---- tablet / notebook estreito (área de trabalho mais compacta; o telefone deitado NÃO entra aqui) ---- */
