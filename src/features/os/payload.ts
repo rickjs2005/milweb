@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 import { BRAND } from "@/data/brand";
 import { MOOD, NO_EXTERNAL, PROJECT_INDEX } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
+import { SOCIAL } from "@/data/social";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
 import { DELIVERABLES, LAB, LAB_PAGE, PROFILE, QUOTE, UI, type Localized } from "@/lib/content";
@@ -103,6 +104,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
       contact: withLocale(locale, "/contact"),
     },
     projects,
+    social: { linkedin: SOCIAL.linkedin, github: SOCIAL.github, instagram: SOCIAL.instagram },
     filters: d.archive.filters,
     displayType: d.displayType,
     studio: {

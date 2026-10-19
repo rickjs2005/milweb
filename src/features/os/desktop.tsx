@@ -7,6 +7,7 @@ import { DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
 import { OsEye } from "./eye/os-eye";
+import { SocialHud } from "./social-hud";
 
 /**
  * Área de trabalho e tela inicial.
@@ -105,6 +106,9 @@ export function Desktop() {
       </div>
 
       <OsEye />
+
+      {/* Redes do estúdio: painéis HUD ligados ao olho por circuitos (celular: fileira sob o olho). */}
+      <SocialHud />
 
       {/* Assinatura: pequena, numa área livre (canto inferior esquerdo no desktop; sob o olho no celular). */}
       <div className="os-sign">

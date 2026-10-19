@@ -96,6 +96,7 @@ export const es: Dictionary = {
     },
     simple: { title: "Navegación simple", toOs: "Abrir MilWeb OS", skip: "Ir a la navegación simple", nav: "Secciones" },
     contact: { channels: "Canales", lead: "¿Tienes algo que vale la pena construir? Cuéntamelo en un mensaje.", whatsapp: "WhatsApp", email: "Correo", linkedin: "LinkedIn", github: "GitHub" },
+    social: { label: "Redes del estudio", linkedin: "CONEXIONES Y OPORTUNIDADES", github: "CÓDIGO Y EXPERIMENTOS", instagram: "DETRÁS DE CÁMARAS Y PROCESO CREATIVO", external: "se abre en una pestaña nueva" },
     lab: { films: "Películas", experiments: "Experimentos", watch: "Ver" },
     services: { all: "Ver todos los servicios", talk: "Pedir presupuesto", audit: "Diagnóstico gratuito", deliverables: "Entregas" },
     studio: { principles: "Principios", process: "Proceso", founder: "Fundador" },

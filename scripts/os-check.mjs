@@ -91,6 +91,50 @@ if (ONLY.includes("desktop")) {
   check("olho, assinatura, aplicativos e dock não se sobrepõem", Object.values(overlap).every((v) => !v), JSON.stringify(overlap));
   await shot(page, "d01-home");
 
+  // redes do estúdio ao redor do olho (HUD social)
+  await settle(page, 1600); // circuitos se desenham até ~1,9 s depois do load
+  const hud = await page.evaluate(() => {
+    const h = document.querySelector(".os-hud");
+    const eye = document.querySelector(".os-eye").getBoundingClientRect();
+    const cx = eye.left + eye.width / 2;
+    const p = (k) => h.querySelector(`.os-hud__panel[data-social="${k}"]`);
+    const r = (k) => p(k).getBoundingClientRect();
+    const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    const others = [".os-icons", ".os-sign", ".os-dock ul", ".os-topbar"].map((sel) => document.querySelector(sel).getBoundingClientRect());
+    const panels = ["linkedin", "github", "instagram"].map(r);
+    const lines = [...h.querySelectorAll(".os-hud__line:not(.os-hud__line--glow)")];
+    return {
+      sides: r("linkedin").right < cx && r("github").left > cx && r("instagram").left > cx && r("github").bottom <= r("instagram").top,
+      links: ["linkedin", "github", "instagram"].every((k) => p(k).target === "_blank" && p(k).rel.includes("noopener") && p(k).rel.includes("noreferrer")),
+      hrefs: p("github").href === "https://github.com/rickjs2005" && p("instagram").href === "https://www.instagram.com/milweb01/" && /^https:\/\/www\.linkedin\.com\/in\//.test(p("linkedin").href),
+      clear: panels.every((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight && others.every((o) => !hit(b, o))),
+      wires: getComputedStyle(h.querySelector(".os-hud__wires")).pointerEvents === "none" && lines.length === 3 && lines.every((l) => l.getAttribute("d")?.startsWith("M") && parseFloat(getComputedStyle(l).strokeDashoffset) < 0.01),
+      micro: ["linkedin", "github", "instagram"].every((k) => p(k).querySelector(".os-hud__micro")?.textContent.trim().length > 8),
+    };
+  });
+  check("HUD social: LinkedIn à esquerda do olho, GitHub sobre Instagram à direita", hud.sides, JSON.stringify(hud));
+  check("HUD social: links reais em nova aba (noopener noreferrer) e microtextos", hud.links && hud.hrefs && hud.micro);
+  check("HUD social: painéis dentro da viewport, sem cobrir ícones, assinatura, dock ou barra", hud.clear);
+  check("HUD social: circuitos em SVG decorativo (pointer-events none), desenhados até o olho", hud.wires);
+  const ghPanel = page.locator('.os-hud__panel[data-social="github"]');
+  await ghPanel.hover();
+  await settle(page, 350);
+  check("HUD social: hover eleva o cartão e dispara um pulso no circuito", (await ghPanel.evaluate((e) => getComputedStyle(e.querySelector(".os-hud__card")).transform !== "none")) && (await page.evaluate(() => document.querySelector('.os-hud__wire[data-social="github"]')?.dataset.hot === "1")));
+  const [popup] = await Promise.all([ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null), ghPanel.click()]);
+  check("HUD social: clique abre o GitHub em nova aba", !!popup && popup.url().startsWith("https://github.com/rickjs2005"), popup ? popup.url() : "sem nova aba");
+  if (popup) await popup.close();
+  await page.mouse.move(700, 620); // sobre o olho (sem ponteiro): longe da dock
+  await settle(page, 300);
+  await page.locator(".os-topbar__brand").focus();
+  let reached = false;
+  for (let i = 0; i < 14 && !reached; i++) {
+    await page.keyboard.press("Tab");
+    reached = await page.evaluate(() => document.activeElement?.classList.contains("os-hud__panel"));
+  }
+  check("HUD social: painéis alcançáveis pelo teclado (Tab) com foco visível", reached && (await page.evaluate(() => getComputedStyle(document.activeElement.querySelector(".os-hud__card")).outlineStyle !== "none")));
+  await page.mouse.click(700, 620);
+  check("HUD social: olho continua sem interceptar o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-eye")).pointerEvents === "none"));
+
   // abrir pela dock (um clique) → janela + URL
   await page.click('[data-dock-id="studio"]');
   const toStudio = await urlIs(page, /\/estudio$/);
@@ -321,12 +365,34 @@ if (ONLY.includes("desktop")) {
   await ctx.close();
 
   // movimento reduzido: o globo fica na imagem, sem canvas vivo
+  for (const [w, h] of [[1920, 1080], [1366, 768]]) {
+    console.log(`\n# desktop ${w}×${h} · HUD social`);
+    const c = await browser.newContext({ viewport: { width: w, height: h }, locale: "pt-BR" });
+    const pg = await c.newPage();
+    await pg.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(pg, 2600);
+    const ok = await pg.evaluate(() => {
+      const h = document.querySelector(".os-hud");
+      const eye = document.querySelector(".os-eye").getBoundingClientRect();
+      const cx = eye.left + eye.width / 2;
+      const r = (k) => h.querySelector(`.os-hud__panel[data-social="${k}"]`).getBoundingClientRect();
+      const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      const others = [".os-icons", ".os-sign", ".os-dock ul", ".os-topbar"].map((sel) => document.querySelector(sel).getBoundingClientRect());
+      const panels = ["linkedin", "github", "instagram"].map(r);
+      const lines = [...h.querySelectorAll(".os-hud__line:not(.os-hud__line--glow)")];
+      return r("linkedin").right < cx && r("github").left > cx && panels.every((b) => b.left >= 0 && b.right <= innerWidth && others.every((o) => !hit(b, o))) && lines.length === 3 && lines.every((l) => parseFloat(getComputedStyle(l).strokeDashoffset) < 0.01);
+    });
+    check(`HUD social em ${w}×${h}: lados certos, sem sobreposição, circuitos desenhados`, ok);
+    await c.close();
+  }
+
   console.log("\n# desktop 1440×900 · prefers-reduced-motion");
   const rctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", reducedMotion: "reduce" });
   const rpage = await rctx.newPage();
   await rpage.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(rpage, 2500);
   check("reduced motion: olho estático (imagem), sem WebGL", (await rpage.getAttribute(".os-eye", "data-state")) === "still" && (await rpage.evaluate(() => typeof window.__mwOsEye === "undefined")));
+  check("reduced motion: HUD social pronto, sem animação nem pulsos", await rpage.evaluate(() => [...document.querySelectorAll(".os-hud__panel")].every((p) => getComputedStyle(p).opacity === "1" && getComputedStyle(p).animationName === "none") && [...document.querySelectorAll(".os-hud__pulse")].every((p) => getComputedStyle(p).display === "none")));
   await rctx.close();
 
   // ajuste "Reduzir movimento" salvo: mesmo resultado
@@ -370,7 +436,8 @@ if (ONLY.includes("mobile")) {
     });
     check("olho, assinatura, grade e dock sem sobreposição", fit.globeBottom <= fit.signTop && fit.signBottom <= fit.iconsTop && fit.iconsBottom <= fit.dockTop, JSON.stringify(fit));
     check("tela inicial cabe sem rolar", fit.scroll <= fit.vh + 1, `${fit.scroll} vs ${fit.vh}`);
-    const tooSmall = await page.evaluate(() => [...document.querySelectorAll(".os-dock a, .os-dock button, .os-icon-btn, .os-home__tool")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.width < 44 || r.height < 44); }).map((e) => e.getAttribute("aria-label") || e.textContent.trim()));
+    check("redes em fileira compacta sob o olho, dentro da tela, sem circuitos", await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const h = r(".os-hud"), e = r(".os-eye"), sg = r(".os-sign"); const ps = [...document.querySelectorAll(".os-hud__panel")].map((p) => p.getBoundingClientRect()); return ps.length === 3 && h.top >= e.bottom - 1 && h.bottom <= sg.top + 1 && ps.every((p) => p.left >= 0 && p.right <= innerWidth) && document.querySelectorAll(".os-hud__wires path").length === 0; }));
+    const tooSmall = await page.evaluate(() => [...document.querySelectorAll(".os-dock a, .os-dock button, .os-icon-btn, .os-home__tool, .os-hud__panel")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.width < 44 || r.height < 44); }).map((e) => e.getAttribute("aria-label") || e.textContent.trim()));
     check("alvos de toque ≥ 44px", tooSmall.length === 0, tooSmall.join(", "));
     await shot(page, `m-${label.split(" ")[0]}-home`);
 

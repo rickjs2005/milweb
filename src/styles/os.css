@@ -78,7 +78,7 @@ html[data-os], html[data-os] body { height: 100%; overflow: hidden; overscroll-b
 .os-topbar :focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 2px; }
 
 /* ---- área de trabalho ---------------------------------------------- */
-.os-desktop { position: relative; z-index: 1; min-height: 0; overflow: hidden; isolation: isolate; }
+.os-desktop { --eye-w: min(60vw, 112vh); position: relative; z-index: 1; min-height: 0; overflow: hidden; isolation: isolate; }
 /* Fundo: grafite com uma claridade fria e discreta atrás do olho — ele emerge da sombra.
    z-index negativo dentro do contexto da área de trabalho: no celular ele vira `fixed` e, sem isso,
    pintaria por cima do conteúdo estático (rótulos, assinatura). */
@@ -151,6 +151,58 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-icon__fill { fill: rgb(var(--os-signal)); stroke: none; }
 .os-icon__knob { fill: #1c2229; }
 .os-icon--tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+
+/* ---- redes do estúdio: módulos HUD ao redor do olho ----------------------------------- */
+/* Vidro escuro, borda ciano fina, brilho contido; circuitos num SVG decorativo (pointer-events none)
+   que se desenham na entrada; pulsos por SMIL. Posições relativas ao quadro do olho (--eye-w): o painel
+   entra 16% no quadro, sobre a pele esmaecida, nunca sobre o globo. */
+.os-hud { --hud: 96 204 236; position: absolute; inset: 0; z-index: 2; pointer-events: none; font-family: var(--font-mono), monospace; }
+.os-hud__wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.os-hud__line { fill: none; stroke: rgb(var(--hud) / .6); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.os-hud__line--glow { stroke: rgb(var(--hud) / .16); stroke-width: 4; }
+.os-hud__wires[data-ready="1"] .os-hud__line { animation: os-hud-draw .9s var(--ease-out-quint) forwards; animation-delay: calc(.6s + var(--i, 0) * .15s); }
+@keyframes os-hud-draw { to { stroke-dashoffset: 0; } }
+.os-hud__node { fill: rgb(var(--hud)); }
+.os-hud__ring { fill: none; stroke: rgb(var(--hud) / .55); stroke-width: 1; }
+.os-hud__node--near { fill: rgb(var(--hud) / .9); }
+.os-hud__node, .os-hud__ring { opacity: 0; }
+.os-hud__wires[data-ready="1"] .os-hud__node, .os-hud__wires[data-ready="1"] .os-hud__ring { animation: os-hud-fade .4s both; animation-delay: calc(1.4s + var(--i, 0) * .15s); }
+@keyframes os-hud-fade { to { opacity: 1; } }
+.os-hud__wire[data-hot="1"] .os-hud__line { stroke: rgb(var(--hud) / .95); }
+.os-hud__wire[data-hot="1"] .os-hud__ring { animation: os-hud-ring .85s ease-out; }
+@keyframes os-hud-ring { from { r: 5.5; opacity: 1; } to { r: 14; opacity: 0; } }
+.os-hud__pulse { fill: rgb(var(--hud)); filter: drop-shadow(0 0 4px rgb(var(--hud))); }
+.os-hud__pulse--hot { opacity: 0; }
+.os-hud__wire[data-hot="1"] .os-hud__pulse--hot { opacity: 1; }
+.os-hud__panel { position: absolute; pointer-events: auto; display: block; width: max-content; color: rgb(var(--os-fg)); text-decoration: none; outline: none; }
+.os-hud[data-in="1"] .os-hud__panel { animation: os-hud-in .6s var(--ease-out-quint) both; animation-delay: calc(1s + var(--i, 0) * .18s); }
+@keyframes os-hud-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.os-hud__panel[data-social="linkedin"] { top: calc(46% - 28px); right: calc(50% + var(--eye-w) * .34); }
+.os-hud__panel[data-social="github"] { top: calc(46% - var(--eye-w) * .13 - 28px); left: calc(50% + var(--eye-w) * .34); }
+.os-hud__panel[data-social="instagram"] { top: calc(46% + var(--eye-w) * .03 - 28px); left: calc(50% + var(--eye-w) * .34); }
+.os-hud__card {
+  position: relative; display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 16px 0 10px; border: 1px solid rgb(var(--hud) / .42); border-radius: 12px;
+  background: rgb(8 14 20 / .66); box-shadow: 0 0 0 1px rgb(var(--hud) / .05), 0 14px 32px rgb(0 0 0 / .45), inset 0 0 22px rgb(var(--hud) / .05);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: transform .3s var(--ease-out-quint), border-color .25s, box-shadow .3s;
+}
+/* detalhes técnicos: cantos marcados e um indicador que respira */
+.os-hud__card::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgb(var(--hud) / .14); border-radius: 9px; pointer-events: none; }
+.os-hud__dot { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--hud)); box-shadow: 0 0 6px rgb(var(--hud)); animation: os-hud-breathe 2.6s ease-in-out infinite; }
+@keyframes os-hud-breathe { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+/* ícones nas cores oficiais das redes */
+.os-hud__icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 8px; color: #fff; box-shadow: 0 2px 10px rgb(0 0 0 / .4); transition: transform .3s var(--ease-out-quint); }
+.os-hud__icon[data-social="linkedin"] { background: #0a66c2; }
+.os-hud__icon[data-social="github"] { background: #0d1117; border-radius: 50%; box-shadow: 0 0 0 1px rgb(255 255 255 / .16), 0 2px 10px rgb(0 0 0 / .4); }
+.os-hud__icon[data-social="instagram"] { background: linear-gradient(45deg, #f9ce34 0%, #ee2a7b 55%, #6228d7 100%); }
+.os-hud__name { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+.os-hud__arrow { display: grid; place-items: center; margin-left: 8px; color: rgb(var(--os-fg) / .85); transition: transform .25s var(--ease-out-quint), color .25s; }
+.os-hud__micro { display: block; max-width: 150px; margin: 10px 0 0 24px; font-size: 9px; letter-spacing: .16em; line-height: 1.5; text-transform: uppercase; color: rgb(var(--os-fg) / .6); }
+.os-hud__panel:hover .os-hud__card, .os-hud__panel:focus-visible .os-hud__card { transform: translateY(-3px); border-color: rgb(var(--hud) / .95); box-shadow: 0 0 0 1px rgb(var(--hud) / .15), 0 18px 36px rgb(0 0 0 / .5), 0 0 26px rgb(var(--hud) / .22), inset 0 0 22px rgb(var(--hud) / .09); }
+.os-hud__panel:hover .os-hud__icon, .os-hud__panel:focus-visible .os-hud__icon { transform: scale(1.08); }
+.os-hud__panel:hover .os-hud__arrow, .os-hud__panel:focus-visible .os-hud__arrow { transform: translate(2px, -2px); color: rgb(var(--hud)); }
+.os-hud__panel:focus-visible .os-hud__card { outline: 2px solid rgb(var(--os-signal)); outline-offset: 2px; }
+html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
 
 /* ---- janelas --------------------------------------------------------- */
 /* Irmã da área de trabalho no DOM (o contêiner é .os): começa abaixo da barra e termina acima da dock. */
@@ -679,14 +731,26 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   /* O olho sangra até as bordas (close-up vertical: os cantos saem, a íris fica grande) e é limitado
      pela viewport PEQUENA (svh): com as barras do Safari à vista, tudo cabe sem rolar. */
   .os-eye {
-    order: 2; position: relative; left: 50%; top: auto; width: 100vw; max-width: calc(40vh * 1.3); max-width: calc(40svh * 1.3);
+    order: 2; position: relative; left: 50%; top: auto; width: 100vw; max-width: calc(32vh * 1.3); max-width: calc(32svh * 1.3);
     aspect-ratio: 1.3 / 1; margin: 0; transform: translateX(-50%);
   }
-  .os-sign { order: 3; position: static; margin-top: 12px; max-width: none; text-align: center; }
+  /* redes: fileira compacta sob o olho, sem circuitos */
+  .os-hud { order: 3; position: static; inset: auto; display: flex; justify-content: center; gap: 6px; margin-top: 6px; pointer-events: auto; }
+  .os-hud__wires { display: none; }
+  .os-hud__panel { position: static; width: auto; min-width: 0; flex: 1 1 0; animation: none !important; opacity: 1; transform: none; }
+  .os-hud__card { gap: 7px; height: 44px; padding: 0 8px 0 6px; border-radius: 10px; justify-content: center; }
+  .os-hud__card::before { inset: 2px; border-radius: 8px; }
+  .os-hud__icon { width: 28px; height: 28px; border-radius: 7px; }
+  .os-hud__icon svg { width: 15px; height: 15px; }
+  .os-hud__name { font-size: 9px; letter-spacing: .08em; }
+  .os-hud__arrow { margin-left: 2px; }
+  .os-hud__arrow svg { width: 11px; height: 11px; }
+  .os-hud__micro, .os-hud__dot { display: none; }
+  .os-sign { order: 4; position: static; margin-top: 8px; max-width: none; text-align: center; }
   .os-sign__mark { display: none; }
   .os-sign__motto { font-size: 1.2rem; }
   .os-sign__line { margin-top: 6px; font-size: 10px; white-space: normal; }
-  .os-icons { order: 4; position: static; margin-top: 18px; }
+  .os-icons { order: 5; position: static; margin-top: 18px; }
   .os-icons ul { display: grid; grid-auto-flow: row; grid-template-rows: none; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-columns: auto; gap: 10px 4px; height: auto; }
   .os-icons li[data-desktop="0"] { display: block; }
   .os-icons li[data-mobile="0"] { display: none; }
@@ -738,6 +802,8 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-eye { grid-column: 2; grid-row: 2 / span 2; left: auto; width: min(60vh * 1.3, 46vw); max-width: none; margin: 0 auto; align-self: center; transform: none; }
   .os-sign { grid-column: 1; grid-row: 2; margin-top: 6px; text-align: left; }
   .os-icons { grid-column: 1; grid-row: 3; margin-top: 10px; }
+  .os-hud { grid-column: 1; grid-row: 4; margin-top: 8px; justify-content: flex-start; }
+  .os-hud__panel { flex: 0 1 auto; }
   .os-icons ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 4px; }
   .os-icon-btn .os-icon { width: 44px !important; height: 44px !important; }
   .os-dock__item { min-height: 44px; padding: 4px 2px; }
@@ -751,6 +817,13 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-icon-btn { width: 82px; }
   .os-icon-btn .os-icon { width: 46px !important; height: 46px !important; }
   .os-eye { width: min(64vw, 100vh); }
+  .os-desktop { --eye-w: min(64vw, 100vh); }
+  .os-hud__panel[data-social="linkedin"] { right: calc(50% + var(--eye-w) * .33); }
+  .os-hud__panel[data-social="github"], .os-hud__panel[data-social="instagram"] { left: calc(50% + var(--eye-w) * .33); }
+  .os-hud__card { gap: 10px; height: 48px; padding: 0 12px 0 8px; }
+  .os-hud__icon { width: 30px; height: 30px; }
+  .os-hud__name { font-size: 11px; letter-spacing: .1em; }
+  .os-hud__micro { max-width: 140px; margin-left: 18px; font-size: 8px; letter-spacing: .12em; }
 }
 
 /* ---- movimento reduzido (sistema ou Ajustes) ------------------------------- */
@@ -761,6 +834,19 @@ html[data-reduce] .os-window, html[data-os-motion="reduce"] .os-window,
 html[data-reduce] .os-dock__item, html[data-os-motion="reduce"] .os-dock__item,
 html[data-reduce] .os-dock__item .os-icon, html[data-os-motion="reduce"] .os-dock__item .os-icon,
 html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-eye__canvas { transition: none !important; animation: none !important; }
+/* redes sem movimento: circuitos e painéis prontos, sem pulsos nem respiração */
+@media (prefers-reduced-motion: reduce) {
+  .os-hud__panel, .os-hud__line, .os-hud__node, .os-hud__ring, .os-hud__dot, .os-hud__card, .os-hud__icon, .os-hud__arrow { animation: none !important; transition: none !important; }
+  .os-hud__panel { opacity: 1 !important; transform: none !important; }
+  .os-hud__line { stroke-dashoffset: 0 !important; }
+  .os-hud__node, .os-hud__ring, .os-hud__dot { opacity: 1 !important; }
+  .os-hud__pulse { display: none !important; }
+}
+html[data-os-motion="reduce"] .os-hud__panel, html[data-os-motion="reduce"] .os-hud__line, html[data-os-motion="reduce"] .os-hud__node, html[data-os-motion="reduce"] .os-hud__ring, html[data-os-motion="reduce"] .os-hud__dot, html[data-os-motion="reduce"] .os-hud__card, html[data-os-motion="reduce"] .os-hud__icon, html[data-os-motion="reduce"] .os-hud__arrow { animation: none !important; transition: none !important; }
+html[data-os-motion="reduce"] .os-hud__panel { opacity: 1 !important; transform: none !important; }
+html[data-os-motion="reduce"] .os-hud__line { stroke-dashoffset: 0 !important; }
+html[data-os-motion="reduce"] .os-hud__node, html[data-os-motion="reduce"] .os-hud__ring, html[data-os-motion="reduce"] .os-hud__dot { opacity: 1 !important; }
+html[data-os-motion="reduce"] .os-hud__pulse { display: none !important; }
 /* mural sem movimento: nada entra voando, nada inclina, o dossiê aparece pronto */
 @media (prefers-reduced-motion: reduce) {
   .bounty, .bounty__track, .bounty__slot, .bounty__paper, .bounty__shadow, .bounty__img, .bounty__veil, .bounty__dossier, .bounty__case, .bounty__close, .bounty__all, .bounty__tick, .bounty__all-thumb { transition: none !important; animation: none !important; }

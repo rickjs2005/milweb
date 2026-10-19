@@ -59,6 +59,8 @@ export type OsPayload = {
   /** URLs públicas localizadas das raízes de cada app. */
   hrefs: { home: string; projects: string; studio: string; lab: string; services: string; contact: string };
   projects: OsProject[];
+  /** Redes do estúdio (data/social.ts). null = sem URL confirmada: o painel não aparece. */
+  social: { linkedin: string | null; github: string | null; instagram: string | null };
   filters: Dictionary["archive"]["filters"];
   displayType: Record<string, string>;
   studio: {

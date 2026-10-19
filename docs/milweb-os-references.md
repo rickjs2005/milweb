@@ -253,3 +253,25 @@ Pedido: descartar a grade de cartazes da revisão 5 ("documentos corporativos") 
 - `i18n-audit` no build de produção: sem vazamento novo.
 - Capturas em `.audit/os-rev/bounty/` (entrada, repouso, hover, voo, dossiê, fechamento, End, ver todos, filtro, maximizada, celular).
 - Fora do escopo verificado: aparelho físico; fps medido só por amostragem de transform em Chromium headless.
+
+## Revisão 7 (18/10/2026) — redes do estúdio ao redor do olho (SOCIAL CONNECTIONS)
+
+Pedido (com imagem de referência): LinkedIn num painel à esquerda do olho; GitHub e Instagram em dois painéis à direita, um sobre o outro; módulos de HUD em vidro escuro com borda ciano fina, ícones reconhecíveis, seta de link externo e microtextos ("Conexões e oportunidades", "Código e experimentos", "Bastidores e processo criativo"); circuitos finos ligando os painéis ao olho, com pontos e pulsos; entrada progressiva sem bloquear; hover que eleva, ilumina e manda um pulso; clique em nova aba; links reais numa configuração central; celular com fileira compacta sob o olho; nada do OS alterado (olho, piscar, dock, barra, janelas, apps, idiomas); commit `feat: add animated social connections to MilWeb OS homepage`.
+
+### Decisões
+
+- **Links** em `src/data/social.ts` (`SOCIAL`): LinkedIn e GitHub vêm de `PROFILE` (`lib/content.ts`, já existiam: `linkedin.com/in/rick-januario-41211b238` e `github.com/rickjs2005`); Instagram é o único novo (`instagram.com/milweb01`). `null` = sem URL confirmada → o painel não existe, nunca um link quebrado. O payload do OS expõe `social`.
+- **Composição** (`features/os/social-hud.tsx` + `os.css` › "redes do estúdio"): posições em CSS relativas ao quadro do olho (`--eye-w`, o mesmo `min(60vw, 112vh)` do olho; `min(64vw, 100vh)` no tablet): o painel entra 16 % no quadro, sobre a pele esmaecida, nunca sobre o globo; LinkedIn na altura do olho, GitHub a 13 % acima e Instagram a 3 % abaixo. Cartão = pílula de vidro escuro (`rgb(8 14 20 / .66)`, blur 10 px) com borda `rgb(96 204 236 / .42)`, linha interna, ponto que respira no canto, ícone da rede em cores oficiais (placa azul do LinkedIn, círculo preto do GitHub com o octicon, degradê do Instagram), nome em mono e seta ↗; microtexto FORA do cartão, abaixo, em até duas linhas. Nada de neon forte: o brilho só cresce no hover.
+- **Circuitos**: um SVG sobre a área de trabalho (`pointer-events: none`), medido no cliente (ResizeObserver no desktop e no olho, redesenhado ao redimensionar): toco de 34 px a partir da borda do painel até um ponto, e dali reto até um nó no olho — canto externo esquerdo (−20,5 % da largura, −4 % da altura), sobrancelha direita (+16 %, −19 %) e cílios inferiores direitos (+16,5 %, +12 %), valores medidos sobre a imagem do shader (o globo ocupa ~40 % do quadro). Nós com anel; a linha tem um duplo (fina + brilho largo).
+- **Movimento**: circuitos se desenham com `stroke-dashoffset` (`pathLength=1`, 0,6 s + 0,15 s por painel), nós aparecem, painéis entram em fade + 12 px (1 s + 0,18 s por painel), pulsos azuis percorrem cada linha a cada 2,8 s por **SMIL `animateMotion`** (zero JS por quadro); no hover/foco um pulso extra corre a linha (`beginElement`) e o anel do nó pulsa. Tudo começa no load pelo CSS (`data-in` estático no HTML: sem JS o HUD fica visível). `prefers-reduced-motion`/Ajustes › Reduzir: tudo pronto e parado, pulsos escondidos. Sem GSAP nem WebGL: o root do OS não ganhou biblioteca.
+- **Olho intacto**: o `pointerdown` global e passivo do olho continua; clicar num painel também pisca. O olho segue `pointer-events: none`.
+- **Celular**: o olho encolheu de 40 para 32 svh para abrir espaço; os três módulos viram uma fileira de 44 px sob o olho (ícone + nome + seta, sem microtexto, sem circuitos); paisagem: fileira na coluna esquerda, sob a grade. Tudo cabe sem rolar nos três aparelhos emulados.
+- **Teclado**: os painéis são `<a target="_blank" rel="noopener noreferrer">`, alcançáveis por Tab, com anel de foco lima e o mesmo hover (`:focus-visible`).
+
+### Verificações (revisão 7)
+
+- `tsc`, `next lint` (só o aviso antigo do OG image) e `pnpm build` verdes.
+- `scripts/os-check.mjs`: checks novos — desktop 1440: lados certos (LinkedIn à esquerda, GitHub sobre Instagram à direita), links reais em nova aba com `noopener noreferrer` e microtextos, painéis dentro da viewport sem cobrir ícones/assinatura/dock/barra, circuitos em SVG decorativo desenhados até o olho, hover eleva + pulso, clique abre o GitHub em nova aba, Tab alcança os painéis com foco visível, olho sem ponteiro; 1920×1080 e 1366×768: lados, sobreposição e circuitos; reduced motion: HUD pronto sem animação nem pulsos; celular (360/390/430): fileira sob o olho dentro da tela, sem circuitos, alvos ≥ 44 px, tela inicial sem rolar. Suíte inteira: **227/227** no dev e no build de produção.
+- `i18n-audit` no build de produção: sem vazamento novo.
+- Capturas em `.audit/os-rev/hud/` (1440, 1920, 1366, tablet 1024, reduced motion, celular e paisagem; hover).
+- Fora do escopo verificado: aparelho físico (iPhone/Android reais); o piscar com clique nos painéis foi conferido pela natureza do ouvinte (global, passivo), não num Chrome com GPU.
