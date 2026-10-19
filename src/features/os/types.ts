@@ -44,6 +44,9 @@ export type OsProject = {
   status: string | null;
   /** Métrica/fato de destaque, já localizado. */
   metric: string | null;
+  /** Luz do cartaz no mural ("r g b") e foco do recorte do hero — direção de arte (data/projects.ts › MOOD). */
+  mood: string | null;
+  focus: string | null;
 };
 
 export type OsService = { slug: string; label: string; sub: string; href: string };

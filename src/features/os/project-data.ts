@@ -2,7 +2,7 @@
 // layout podem importar este módulo (nunca um client component).
 import { CASE_STORIES } from "@/data/case-stories";
 import { SELECTED_WORK } from "@/data/work";
-import { getProject, TOTAL_LABEL } from "@/data/projects";
+import { getProject, NO_EXTERNAL, TOTAL_LABEL } from "@/data/projects";
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { PROFILE, UI, type Localized } from "@/lib/content";
@@ -91,8 +91,9 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
     clientName: p.clientWork ? p.clientName ?? null : null,
     kind: p.clientWork ? "client" : p.live || p.demo ? "demo" : "study",
     status: p.live ? s.live : p.status ? t(p.status) : null,
-    live: p.live ?? null,
-    repos: p.repos ?? [],
+    // Kavita: sem link externo nem botão de visita (NO_EXTERNAL); o texto de status continua.
+    live: NO_EXTERNAL.has(p.slug) ? null : (p.live ?? null),
+    repos: NO_EXTERNAL.has(p.slug) ? [] : (p.repos ?? []),
     stack: p.stack,
     hero,
     problem: t(p.problem),

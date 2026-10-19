@@ -4,7 +4,7 @@
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { BRAND } from "@/data/brand";
-import { PROJECT_INDEX } from "@/data/projects";
+import { MOOD, NO_EXTERNAL, PROJECT_INDEX } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
@@ -45,8 +45,10 @@ export function buildOsPayload(locale: Locale): OsPayload {
       year: p.year ?? null,
       client: p.clientWork ? p.clientName ?? d.archive.filters.client : null,
       clientWork: !!p.clientWork,
-      live: p.live ?? null,
+      live: NO_EXTERNAL.has(p.slug) ? null : (p.live ?? null),
       image: p.image ?? "/shots/" + p.slug + ".webp",
+      mood: MOOD[p.slug]?.rgb ?? null,
+      focus: MOOD[p.slug]?.focus ?? null,
       tagline: t(p.tagline),
       stack: p.stack,
       featured: p.featuredOrder ?? null,

@@ -350,7 +350,19 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
         </span>
       </header>
       <div ref={bodyRef} id={`os-${id}`} className="os-window__body" data-os-scroller={id} data-lenis-prevent="" onScroll={onScroll}>
-        {isRouteApp && routeContent && info?.kind !== "root" ? routeContent : remoteProject ? <ProjectRemote slug={remoteProject.slug} locale={payload.locale} name={remoteProject.name} href={remoteProject.href} openLabel={s.projects.open} /> : <AppContent id={id} active={active} />}
+        {id === "projects" ? (
+          // Projetos: o mural fica montado sempre; o case (rota ou JSON) entra como dossiê por cima dele.
+          <AppContent
+            id={id}
+            active={active}
+            slug={info?.kind === "project" ? info.detail : null}
+            dossier={isRouteApp && routeContent && info?.kind === "project" ? routeContent : remoteProject ? <ProjectRemote slug={remoteProject.slug} locale={payload.locale} name={remoteProject.name} href={remoteProject.href} openLabel={s.projects.open} /> : null}
+          />
+        ) : isRouteApp && routeContent && info?.kind !== "root" ? (
+          routeContent
+        ) : (
+          <AppContent id={id} active={active} />
+        )}
       </div>
       <div className="os-window__resize" data-no-inspect aria-hidden="true">
         <span data-dir="e" onPointerDown={(e) => begin(e, "e")} />

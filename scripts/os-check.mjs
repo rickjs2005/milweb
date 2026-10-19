@@ -234,7 +234,7 @@ if (ONLY.includes("desktop")) {
   // Projetos: card → case dentro da mesma janela, URL do case, título da janela
   await page.click('[data-dock-id="projects"]');
   await urlIs(page, /\/projetos$/);
-  await settle(page);
+  await settle(page, 2800); // os cartazes chegam voando (~2 s); o clique espera o pouso
   await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
   await page.waitForURL(/\/projetos\/terral$/);
   await settle(page, 800);
@@ -256,6 +256,10 @@ if (ONLY.includes("desktop")) {
   // Esc fecha a janela em foco; foco volta ao gatilho
   await win(page, "projects").locator(".os-window__title").focus();
   await page.keyboard.press("Escape");
+  await urlIs(page, /\/projetos$/);
+  await settle(page, 1200);
+  check("Esc com o dossiê aberto fecha o dossiê (mural fica)", path(page) === "/projetos" && (await win(page, "projects").locator(".bounty").count()) === 1 && (await win(page, "projects").locator(".bounty__dossier").count()) === 0, path(page));
+  await page.keyboard.press("Escape");
   await urlIs(page, /\/estudio$/);
   await settle(page, 600);
   check("Esc fecha a janela em foco", (await win(page, "projects").count()) === 0);
@@ -267,6 +271,7 @@ if (ONLY.includes("desktop")) {
   await page.click("#os-icon-projects");
   await urlIs(page, /\/projetos$/);
   await settle(page, 600);
+  await settle(page, 2800);
   await win(page, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').click();
   await page.waitForURL(/\/projetos\/kavita-drones$/);
   await settle(page, 800);
@@ -380,10 +385,11 @@ if (ONLY.includes("mobile")) {
     check("cabeçalho com Voltar e Início", (await win(page, "projects").locator(".os-window__back:visible").count()) === 1 && (await win(page, "projects").locator(".os-window__home:visible").count()) === 1);
 
     // pasta → projeto imediato
-    await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').tap();
-    await page.waitForURL(/\/projetos\/terral$/);
-    await settle(page, 800);
-    check("tocar no projeto abre o case na mesma tela", (await win(page, "projects").locator(".os-case").count()) === 1);
+    await settle(page, 2600);
+    await win(page, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').tap();
+    await page.waitForURL(/\/projetos\/kavita-drones$/);
+    await settle(page, 1800);
+    check("tocar no cartaz principal abre o case na mesma tela", (await win(page, "projects").locator(".os-case").count()) === 1);
     await shot(page, `m-${label.split(" ")[0]}-case`);
 
     // Voltar do cabeçalho → coleção; Voltar do navegador → tela inicial
@@ -392,8 +398,8 @@ if (ONLY.includes("mobile")) {
     await settle(page, 600);
     check("Voltar do app volta à coleção", (await win(page, "projects").locator(".os-projects").count()) === 1);
     await page.goBack();
-    await page.waitForURL(/\/projetos\/terral$/);
-    await settle(page, 600);
+    await page.waitForURL(/\/projetos\/kavita-drones$/);
+    await settle(page, 1200);
     check("Voltar do navegador reabre o case", (await win(page, "projects").locator(".os-case").count()) === 1);
     await win(page, "projects").locator(".os-window__home").tap();
     await page.waitForURL((u) => u.pathname === "/");
@@ -528,7 +534,8 @@ if (ONLY.includes("controls")) {
   const lb = await rectOf(win(page, "lab"));
   const z1 = { p: await zTop("projects"), l: await zTop("lab") };
   const inside = (p, r) => p[0] >= r.x && p[0] <= r.x + r.w && p[1] >= r.y && p[1] <= r.y + r.h;
-  const free = [[pb.x + pb.w - 12, pb.y + pb.h / 2], [pb.x + 12, pb.y + pb.h / 2], [pb.x + pb.w / 2, pb.y + pb.h - 6], [pb.x + pb.w / 2, pb.y + 12]].find((p) => !inside(p, lb));
+  // a barra de título primeiro: dentro do corpo um clique cai num cartaz do mural e abre o dossiê
+  const free = [[pb.x + pb.w / 2, pb.y + 12], [pb.x + pb.w - 12, pb.y + pb.h / 2], [pb.x + 12, pb.y + pb.h / 2], [pb.x + pb.w / 2, pb.y + pb.h - 6]].find((p) => !inside(p, lb));
   await page.mouse.click(free[0], free[1]);
   await urlIs(page, /\/projetos$/);
   await settle(page, 500);
@@ -552,6 +559,7 @@ if (ONLY.includes("controls")) {
   check("Esc na busca só fecha a busca", (await page.locator("dialog.os-search[open]").count()) === 0 && (await win(page, "projects").count()) === 1);
 
   // 9. controles continuam funcionando depois de navegar entre seções (case → Serviços → Voltar)
+  await settle(page, 1200);
   await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
   await page.waitForURL(/\/projetos\/terral$/);
   await settle(page, 800);
@@ -636,9 +644,10 @@ if (ONLY.includes("controls")) {
   await mpage.tap('[data-dock-id="projects"]');
   await mpage.waitForURL(/\/projetos$/);
   await settle(mpage, 500);
-  await win(mpage, "projects").locator('.os-project__link[href="/projetos/terral"]').tap();
-  await mpage.waitForURL(/\/projetos\/terral$/);
-  await settle(mpage, 800);
+  await settle(mpage, 2400);
+  await win(mpage, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').tap();
+  await mpage.waitForURL(/\/projetos\/kavita-drones$/);
+  await settle(mpage, 1600);
   await mclose.tap();
   await mpage.waitForURL((u) => u.pathname === "/");
   await settle(mpage, 600);
@@ -660,101 +669,175 @@ if (ONLY.includes("controls")) {
 }
 
 // ----------------------------------------------------------------- projects
-// A pasta Projetos como cartazes: contagem (31, Kavita só duas vezes e só com o link interno do case),
-// seis projetos de turismo presentes, entrada por rolagem, hover (inclinação + foto em cor), filtros
-// novos (demos, turismo), cases novos abrindo na janela, reduced motion, EN e celular.
+// Projetos como THE BOUNTY COLLECTION: 31 cartazes no mural (um principal, vizinhos em degraus, distantes
+// ocultos e sem imagem), cartaz íntegro (faixa/nome dentro do papel), filtros compactos, Kavita só com o link
+// interno, navegação por setas/Home/End/roda/arraste/fita/"ver todos", hover (inclinação), o voo do dossiê
+// (cartaz se desprende, outros recuam, folha com o cartaz à esquerda e o case ao lado), Esc e "voltar" revertem
+// o voo mantendo o ponto da coleção, link direto já aberto, maximizar/restaurar, reduced motion, EN e celular.
 if (ONLY.includes("projects")) {
   current = "projects";
-  console.log("\n# pasta Projetos (cartazes) 1440×900");
+  console.log("\n# Projetos: THE BOUNTY COLLECTION 1440×900");
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
   const page = await ctx.newPage();
   const errs = errorsOf(page);
-  await page.goto(`${BASE}/projetos`, { waitUntil: "load" });
-  await settle(page, 1500);
-  const board = win(page, "projects").locator(".os-projects__board");
-  const posters = board.locator(".os-project");
-  const total = await posters.count();
-  check("31 cartazes; a grade antiga sumiu", total === 31 && (await page.locator(".os-projects__grid, .os-project__caption").count()) === 0, String(total));
-  check("cada cartaz tem número, nome, foto, carimbo, classe e etiquetas", await posters.evaluateAll((els) => els.every((e) => e.querySelector(".os-project__n") && e.querySelector(".os-project__title")?.textContent.trim() && e.querySelector(".os-project__img") && e.querySelector(".os-project__stamp")?.textContent.trim() && e.querySelector(".os-project__meta") && e.querySelectorAll(".os-project__tags span").length > 0)));
-  check("primeiros cartazes entraram; os de baixo esperam a rolagem", (await posters.nth(0).getAttribute("data-in")) === "1" && (await posters.nth(20).getAttribute("data-in")) === "0");
-  check("carimbo assentado e foto carregada no primeiro cartaz", await posters.nth(0).evaluate((e) => { const st = getComputedStyle(e.querySelector(".os-project__stamp")); const img = e.querySelector(".os-project__img"); return Number(st.opacity) > 0.8 && img.complete && img.naturalWidth > 0; }));
-  check("Kavita aparece exatamente duas vezes (sem duplicar)", (await board.locator('.os-project[data-slug^="kavita"]').count()) === 2 && (await board.locator('.os-project[data-slug="kavita-drones"]').count()) === 1 && (await board.locator('.os-project[data-slug="kavita-institucional"]').count()) === 1);
-  check("Kavita: só o link interno do case, nenhum link externo novo", await board.locator('.os-project[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
-  const novos = ["debby-tour", "ace-diving-miami", "legends-of-hollywood-tours", "said-zanzibar", "mabrouk-zanzibar", "serengeti-wildlife-safaris"];
-  check("seis projetos de turismo presentes, cada um com o link do case", (await Promise.all(novos.map((sl) => board.locator(`.os-project[data-slug="${sl}"] .os-project__link[href="/projetos/${sl}"]`).count()))).every((n) => n === 1));
-  check("Mabrouk é cliente; Said e Debby são demos", (await board.locator('.os-project[data-slug="mabrouk-zanzibar"]').getAttribute("data-kind")) === "client" && (await board.locator('.os-project[data-slug="said-zanzibar"]').getAttribute("data-kind")) === "demo" && (await board.locator('.os-project[data-slug="debby-tour"]').getAttribute("data-kind")) === "demo");
-  const body = win(page, "projects").locator(".os-window__body");
-  await body.evaluate((e) => e.scrollTo({ top: e.scrollHeight }));
-  await settle(page, 1200);
-  check("rolar até o fim revela todos os cartazes", (await board.locator('.os-project[data-in="0"]').count()) === 0);
-  await body.evaluate((e) => e.scrollTo({ top: 0 }));
-  await settle(page, 400);
-  const second = posters.nth(1);
-  const b = await second.boundingBox();
-  await page.mouse.move(b.x + b.width * 0.7, b.y + b.height * 0.3);
-  await settle(page, 900);
-  const tilt = await second.evaluate((e) => ({ ry: e.style.getPropertyValue("--ry"), filter: getComputedStyle(e.querySelector(".os-project__img")).filter, hover: matchMedia("(hover: hover) and (pointer: fine)").matches }));
-  check("hover inclina o cartaz (--ry) e tira o filtro da foto", tilt.ry !== "" && tilt.filter === "none", JSON.stringify(tilt));
-  await page.mouse.move(10, 400);
-  await settle(page, 300);
-  check("sair do cartaz zera a inclinação", await second.evaluate((e) => e.style.getPropertyValue("--ry") === ""));
-  const chips = win(page, "projects").locator(".os-projects__filters .os-chip");
-  check("sete filtros com contagem", (await chips.count()) === 7 && (await chips.allInnerTexts()).join("|").replace(/\s+/g, " ").includes("TURISMO & GUIAS"));
-  await chips.nth(3).click();
-  await settle(page, 900);
-  check("filtro Turismo & guias = os seis novos", (await posters.count()) === 6 && (await posters.evaluateAll((els) => els.map((e) => e.dataset.slug).sort().join(","))) === [...novos].sort().join(","));
-  await chips.nth(1).click();
-  await settle(page, 900);
-  check("filtro Clientes = Kavita (2) + Mabrouk", (await posters.count()) === 3 && (await board.locator('.os-project[data-slug="mabrouk-zanzibar"]').count()) === 1);
-  await chips.nth(2).click();
-  await settle(page, 900);
-  check("filtro Demos exclui clientes e inclui Said (sem URL pública)", (await board.locator('.os-project[data-kind="client"]').count()) === 0 && (await board.locator('.os-project[data-slug="said-zanzibar"]').count()) === 1);
-  await chips.nth(0).click();
-  await settle(page, 900);
-  await board.locator('.os-project__link[href="/projetos/debby-tour"]').click();
-  await page.waitForURL(/\/projetos\/debby-tour$/);
-  await settle(page, 1200);
-  check("cartaz abre o case do Debby Tour na janela, com o site ao vivo", (await win(page, "projects").locator(".os-case").count()) === 1 && /DEBBY/i.test(await win(page, "projects").locator("h1").innerText()) && (await win(page, "projects").locator('a[href="https://debby-tour.vercel.app"]').count()) >= 1);
-  await page.goBack();
-  await page.waitForURL(/\/projetos$/);
+  await page.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(page, 1000);
-  check("Voltar devolve a pasta de cartazes", (await board.count()) === 1);
-  await board.locator('.os-project__link[href="/projetos/said-zanzibar"]').click();
-  await page.waitForURL(/\/projetos\/said-zanzibar$/);
+  await page.click("#os-icon-projects");
+  await urlIs(page, /\/projetos$/);
+  let moving = false;
+  for (let i = 0; i < 25 && !moving; i++) {
+    await page.waitForTimeout(60);
+    moving = await page.evaluate(() => [...document.querySelectorAll(".bounty__paper")].some((p) => { const t = getComputedStyle(p).transform; return t !== "none" && t !== "matrix(1, 0, 0, 1, 0, 0)"; }));
+  }
+  check("entrada: cartazes chegam voando (transform em curso)", moving);
+  await settle(page, 2600);
+  const mural = win(page, "projects").locator(".bounty");
+  const slots = mural.locator(".bounty__slot");
+  const activeSlug = () => mural.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug");
+  const centered = () => mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); const s = e.closest(".bounty__stage").getBoundingClientRect(); return Math.abs(r.left + r.width / 2 - (s.left + s.width / 2)) < 3; });
+  check("31 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 31 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
+  check("cartaz principal: faixa, imagem, nome, identificador, selo e frase", await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => ["bounty__tier", "bounty__img", "bounty__name", "bounty__id", "bounty__seal", "bounty__line"].every((c) => e.querySelector("." + c))));
+  check("faixa e nome cabem no papel (sem estourar)", await mural.locator('.bounty__slot[data-active="1"] .bounty__sheet').evaluate((s) => { const r = s.getBoundingClientRect(); return [...s.querySelectorAll(".bounty__tier, .bounty__name, .bounty__line")].every((el) => { const b = el.getBoundingClientRect(); return b.right <= r.right + 1 && el.scrollWidth <= el.clientWidth + 1; }); }));
+  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 7 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 24 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
+  check("só os cartazes próximos carregam imagem", (await mural.locator(".bounty__img:not(.bounty__img--empty)").count()) <= 10);
+  check("filtros compactos (7) com contagem e ativo marcado", (await mural.locator(".bounty__pill").count()) === 7 && (await mural.locator('.bounty__pill[aria-pressed="true"]').innerText()).includes("TODOS") && (await mural.locator(".bounty__pill").first().evaluate((e) => e.getBoundingClientRect().height <= 30)));
+  check("Kavita: só o link interno do case, sem link externo", await mural.locator('.bounty__slot[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
+  check("seis projetos de turismo no mural", (await mural.locator('.bounty__slot[data-slug="debby-tour"], .bounty__slot[data-slug="ace-diving-miami"], .bounty__slot[data-slug="legends-of-hollywood-tours"], .bounty__slot[data-slug="said-zanzibar"], .bounty__slot[data-slug="mabrouk-zanzibar"], .bounty__slot[data-slug="serengeti-wildlife-safaris"]').count()) === 6);
+  check("principal centrado", await centered());
+
+  // navegação: teclado, roda, fita, ver todos, arraste
+  await mural.locator(".bounty__stage").focus();
+  await page.keyboard.press("ArrowRight");
+  await settle(page, 300);
+  await page.keyboard.press("ArrowRight");
+  await settle(page, 900);
+  check("setas movem o principal (→ → = 03) e o contador acompanha", (await activeSlug()) === "atelier-vertex" && (await mural.locator(".bounty__count").innerText()).startsWith("03") && (await centered()));
+  await page.keyboard.press("End");
+  await settle(page, 900);
+  check("End vai ao último (31)", (await activeSlug()) === "imperio-cafe");
+  await page.keyboard.press("Home");
+  await settle(page, 900);
+  await page.mouse.move(720, 480);
+  await page.mouse.wheel(0, 140);
+  await settle(page, 800);
+  check("roda do mouse avança", (await activeSlug()) === "terral");
+  await mural.locator(".bounty__tick").nth(9).click();
+  await settle(page, 900);
+  check("fita de posição salta direto (10 = Ace Diving)", (await activeSlug()) === "ace-diving-miami" && /ACE/i.test(await mural.locator('.bounty__tick[aria-current="true"]').getAttribute("aria-label")));
+  await mural.locator(".bounty__all-btn").click();
+  await settle(page, 400);
+  check("ver todos: grade com os 31", (await mural.locator(".bounty__all-item").count()) === 31);
+  await mural.locator(".bounty__all-item").nth(13).click();
+  await settle(page, 900);
+  check("ver todos salta e fecha (14 = Serengeti)", (await activeSlug()) === "serengeti-wildlife-safaris" && (await mural.locator(".bounty__all").count()) === 0);
+  const stage = await rectOf(mural.locator(".bounty__stage"));
+  await page.mouse.move(stage.x + stage.w * 0.6, stage.y + stage.h / 2);
+  await page.mouse.down();
+  await page.mouse.move(stage.x + stage.w * 0.3, stage.y + stage.h / 2, { steps: 8 });
+  await page.mouse.up();
+  await settle(page, 900);
+  check("arrastar para a esquerda avança (distância vira passos)", ["as-copas", "age-of-dragons"].includes(await activeSlug()), await activeSlug());
+  const act = mural.locator('.bounty__slot[data-active="1"] .bounty__link');
+  const ab = await act.boundingBox();
+  await page.mouse.move(ab.x + ab.width * 0.75, ab.y + ab.height * 0.3);
+  await settle(page, 400);
+  check("hover inclina o cartaz ao cursor e o levanta", await act.locator(".bounty__paper").evaluate((e) => e.style.getPropertyValue("--ry") !== "" && getComputedStyle(e).getPropertyValue("--lift").trim() === "34px"));
+  await page.mouse.move(stage.x + 20, stage.y + 20);
+
+  // filtros
+  await mural.locator(".bounty__pill").nth(3).click();
   await settle(page, 1200);
-  check("case do Said: sem link externo (URL privada), selo de demo", (await win(page, "projects").locator('a[href*="said-zanzibar.vercel.app"]').count()) === 0 && (await win(page, "projects").locator('[data-badge="demo"]').count()) === 1);
+  check("filtro Turismo & guias: 6 cartazes e contador 06", (await slots.count()) === 6 && (await mural.locator(".bounty__count").innerText()).includes("06") && (await mural.locator('.bounty__pill[aria-pressed="true"]').innerText()).includes("TURISMO"));
+  await mural.locator(".bounty__pill").nth(2).click();
+  await settle(page, 1200);
+  check("filtro Demos: sem clientes, com Said", (await mural.locator('.bounty__slot[data-slug="said-zanzibar"]').count()) === 1 && (await mural.locator('.bounty__slot[data-slug^="kavita"]').count()) === 0);
+  await mural.locator(".bounty__pill").nth(0).click();
+  await settle(page, 1200);
+
+  // abrir: o voo e o dossiê
+  await mural.locator(".bounty__tick").nth(8).click();
+  await settle(page, 900);
+  const before = await activeSlug();
+  await mural.locator('.bounty__slot[data-active="1"] .bounty__link').click();
+  await page.waitForTimeout(260);
+  const mid = await mural.evaluate((r) => { const f = r.querySelector(".bounty__flyer"); return { phase: r.dataset.phase, flyer: !!f && f.dataset.visible === "1" && getComputedStyle(f).transform !== "none", dim: Number(getComputedStyle(r.querySelector(".bounty__track")).opacity) < 1 }; });
+  check("clique: o cartaz se desprende (voador em voo) e os outros recuam", mid.phase === "opening" && mid.flyer && mid.dim, JSON.stringify(mid));
+  await page.waitForURL(/\/projetos\/debby-tour$/);
+  await settle(page, 2000);
+  check("dossiê: cartaz à esquerda, case ao lado, URL do case e título da janela", (await mural.evaluate((r) => r.dataset.phase === "open" && !!r.querySelector(".bounty__dossier-slot .bounty__paper") && !!r.querySelector(".bounty__case .os-case"))) && /DEBBY/i.test(await win(page, "projects").locator(".os-window__title").innerText()));
+  check("dossiê: seções do case e botão do site (URL válida)", (await mural.locator(".bounty__case .os-case__section").count()) >= 3 && (await mural.locator('.bounty__case a[href="https://debby-tour.vercel.app"]').count()) >= 1);
+  check("dossiê rola por dentro; véu sobre o mural", (await mural.locator(".bounty__dossier").evaluate((e) => { e.scrollTop = 400; return e.scrollTop > 100; })) && (await mural.locator(".bounty__veil").evaluate((e) => getComputedStyle(e).opacity === "1")));
+  await page.keyboard.press("Escape");
+  await page.waitForURL(/\/projetos$/);
+  await settle(page, 1400);
+  check("Esc fecha o dossiê, reverte o voo e mantém o ponto da coleção", (await mural.getAttribute("data-phase")) === "closed" && (await activeSlug()) === before && (await mural.locator(".bounty__dossier").count()) === 0 && (await win(page, "projects").count()) === 1);
+
+  // link direto e Kavita sem navegação externa
+  await page.goto(`${BASE}/projetos/kavita-drones`, { waitUntil: "load" });
+  await settle(page, 1500);
+  check("link direto: dossiê já aberto sobre o mural; Kavita sem link externo", (await mural.getAttribute("data-phase")) === "open" && (await mural.locator(".bounty__case .os-case").count()) === 1 && (await mural.locator('.bounty__case .os-case__links a, .bounty__case a[href^="http"][href*="kavita"]').count()) === 0 && (await activeSlug()) === "kavita-drones");
+  await mural.locator(".bounty__close").click();
+  await page.waitForURL(/\/projetos$/);
+  await settle(page, 1400);
+  check("Voltar à coleção fecha o dossiê", (await mural.getAttribute("data-phase")) === "closed");
+
+  // a janela muda de tamanho: o mural acompanha
+  const w0 = await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => e.getBoundingClientRect().width);
+  await win(page, "projects").locator('[data-action="max"]').click();
+  await settle(page, 900);
+  const w1 = await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => e.getBoundingClientRect().width);
+  check("maximizar: cartazes crescem com a janela e seguem centrados", w1 > w0 && (await centered()), `${Math.round(w0)} → ${Math.round(w1)}`);
+  await win(page, "projects").locator('[data-action="max"]').click();
+  await settle(page, 900);
+  check("restaurar: volta ao tamanho anterior", Math.abs((await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => e.getBoundingClientRect().width)) - w0) <= 1);
+
+  // reduced motion
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`${BASE}/projetos`, { waitUntil: "load" });
-  await settle(page, 600);
-  check("reduced motion: cartazes visíveis de imediato, sem animação", await page.locator(".os-project").evaluateAll((els) => els.every((e) => getComputedStyle(e).opacity === "1" && getComputedStyle(e).animationName === "none")));
+  await settle(page, 800);
+  check("reduced motion: mural pronto, sem animação", await mural.locator('.bounty__slot[data-active="1"] .bounty__paper').evaluate((e) => ["none", "matrix(1, 0, 0, 1, 0, 0)"].includes(getComputedStyle(e).transform)));
+  await mural.locator('.bounty__slot[data-active="1"] .bounty__link').click();
+  await page.waitForURL(/\/projetos\/kavita-drones$/);
+  await settle(page, 500);
+  check("reduced motion: dossiê abre direto", (await mural.getAttribute("data-phase")) === "open");
   await page.emulateMedia({ reducedMotion: "no-preference" });
+
+  // EN
   await page.goto(`${BASE}/en/work`, { waitUntil: "load" });
-  await settle(page, 1200);
-  check("EN: rótulos do cartaz traduzidos", /DOSSIER · CASE 01/.test(await page.locator(".os-project").first().locator(".os-project__top").innerText()) && (await page.locator('.os-project[data-slug="kavita-drones"] .os-project__stamp').innerText()) === "CLIENT" && (await page.locator(".os-projects__filters .os-chip").nth(3).innerText()).includes("TOURISM & GUIDES"));
+  await settle(page, 1500);
+  check("EN: faixa, selo e coleção traduzidos", (await mural.locator('.bounty__slot[data-active="1"] .bounty__tier').innerText()) === "MOST WANTED" && (await mural.locator('.bounty__slot[data-active="1"] .bounty__seal').innerText()) === "CLIENT PROJECT" && (await mural.locator(".bounty__eyebrow").first().innerText()).includes("BOUNTY COLLECTION"));
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
-  await shot(page, "p01-board-en");
+  await shot(page, "p01-mural-en");
   await ctx.close();
 
-  console.log("\n# pasta Projetos no celular 390×844");
+  console.log("\n# mural no celular 390×844");
   const mctx = await browser.newContext({ ...devices["iPhone 13"], locale: "pt-BR" });
   const mpage = await mctx.newPage();
   const merrs = errorsOf(mpage);
   await mpage.goto(`${BASE}/projetos`, { waitUntil: "load" });
-  await settle(mpage, 1500);
-  const mboard = win(mpage, "projects").locator(".os-projects__board");
-  check("coluna única: cartaz na largura da tela", await mboard.locator(".os-project").first().evaluate((e) => { const r = e.getBoundingClientRect(); return r.width > window.innerWidth * 0.85 && r.width <= window.innerWidth; }));
-  check("sem rolagem horizontal; filtros numa linha rolável", await mpage.evaluate(() => { const f = document.querySelector(".os-projects__filters"); return document.documentElement.scrollWidth <= window.innerWidth && f.scrollWidth > f.clientWidth && getComputedStyle(f).overflowX === "auto"; }));
-  check("sem inclinação no celular", await mboard.locator(".os-project__sheet").first().evaluate((e) => getComputedStyle(e).transform === "none"));
-  check("alvos de toque: filtros ≥ 32px, cartaz ≥ 44px", await mpage.evaluate(() => [...document.querySelectorAll(".os-projects__filters .os-chip")].every((c) => c.getBoundingClientRect().height >= 32) && document.querySelector(".os-project__link").getBoundingClientRect().height >= 44));
-  const mlink = mboard.locator('.os-project__link[href="/projetos/ace-diving-miami"]');
-  await mlink.scrollIntoViewIfNeeded();
-  await settle(mpage, 800);
-  await mlink.tap();
-  await mpage.waitForURL(/\/projetos\/ace-diving-miami$/);
-  await settle(mpage, 1200);
-  check("tocar no cartaz abre o case na tela", (await win(mpage, "projects").locator(".os-case").count()) === 1);
+  await settle(mpage, 2800);
+  const mm = win(mpage, "projects").locator(".bounty");
+  const mact = mm.locator('.bounty__slot[data-active="1"]');
+  check("um cartaz inteiro na tela, vizinho espiando", (await mact.evaluate((e) => { const r = e.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.width > innerWidth * 0.6; })) && (await mm.locator('.bounty__slot[data-d="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); return r.left < innerWidth && r.right > innerWidth; })));
+  check("sem rolagem horizontal; pé acima da dock", await mpage.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= document.querySelector(".os-dock ul").getBoundingClientRect().top + 1));
+  const st = await rectOf(mm.locator(".bounty__stage"));
+  await mpage.mouse.move(st.x + st.w * 0.7, st.y + st.h / 2);
+  await mpage.mouse.down();
+  await mpage.mouse.move(st.x + st.w * 0.25, st.y + st.h / 2, { steps: 8 });
+  await mpage.mouse.up();
+  await settle(mpage, 900);
+  check("swipe avança um cartaz", (await mact.getAttribute("data-slug")) === "terral");
+  await mact.locator(".bounty__link").tap();
+  await mpage.waitForURL(/\/projetos\/terral$/);
+  await settle(mpage, 2000);
+  check("toque abre o dossiê: cartaz no topo, case abaixo", (await mm.getAttribute("data-phase")) === "open" && (await mm.locator(".bounty__dossier-slot .bounty__paper").count()) === 1 && (await mm.locator(".bounty__case .os-case").count()) === 1);
+  check("botão de voltar não cobre o cartaz", await mm.evaluate((r) => r.querySelector(".bounty__close").getBoundingClientRect().bottom <= r.querySelector(".bounty__dossier-slot").getBoundingClientRect().top + 1));
+  await mm.locator(".bounty__close").tap();
+  await mpage.waitForURL(/\/projetos$/);
+  await settle(mpage, 1400);
+  check("fecha e continua no mesmo cartaz", (await mm.getAttribute("data-phase")) === "closed" && (await mact.getAttribute("data-slug")) === "terral");
   check("sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
-  await shot(mpage, "p02-mobile");
+  await shot(mpage, "p02-mural-mobile");
   await mctx.close();
 }
 

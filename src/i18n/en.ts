@@ -48,7 +48,7 @@ export const en: Dictionary = {
   archive: {
     label: "WORK / ARCHIVE",
     title: ["ALL", "WORK."],
-    filters: { all: "ALL", client: "CLIENT", demo: "DEMOS", tourism: "TOURISM & GUIDES", scroll: "SCROLL EXPERIENCES", webgl: "WEBGL / 3D", product: "DIGITAL PRODUCTS" },
+    filters: { all: "ALL", client: "CLIENT", demo: "DEMOS", tourism: "TOURISM & GUIDES", experiment: "EXPERIMENTS", scroll: "SCROLL EXPERIENCES", webgl: "WEBGL / 3D", product: "DIGITAL PRODUCTS" },
     columns: { index: "INDEX", project: "PROJECT", type: "TYPE", year: "YEAR", studio: "STUDIO" },
   },
   caseUi: {
@@ -85,9 +85,9 @@ export const en: Dictionary = {
       back: "All projects", open: "Open case", visit: "Open site", code: "Code", stack: "Stack", context: "Context", done: "What was done", solutions: "Solutions", gallery: "Screens", result: "Result",
       similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",
       numbers: "Numbers", kind: "Type", year: "Year", status: "Status", of: "of", count: "projects", empty: "No project matches this filter.", interactive: "Interactive",
-      dossier: "DOSSIER", rank: "CASE", classLabel: "CLASS", lead: "Every project is a mission. Open the poster to read the dossier.",
-      stamp: { client: "CLIENT", demo: "DEMO", study: "STUDIO", live: "LIVE" },
-      mission: { "CLIENT WORK": "DELIVERY", "SCROLL EXPERIENCE": "CROSSING", "WEBGL EXPERIENCE": "EXPLORATION", "INTERACTIVE COMMERCE": "COMMERCIAL MISSION", "DIGITAL PRODUCT": "SYSTEM", "CREATIVE DEVELOPMENT": "SPECIAL PROJECT", EXPERIMENTAL: "EXPERIMENT" },
+      dossier: "DOSSIER", rank: "CASE", collection: "THE BOUNTY COLLECTION", missions: "missions", wall: "Poster wall", position: "Position in the collection", hint: "arrows navigate · enter opens · esc closes", swipe: "swipe to navigate", viewAll: "View all", backToCollection: "Back to the collection",
+      tier: { wanted: "WANTED", most: "MOST WANTED", special: "SPECIAL MISSION" },
+      seal: { client: "CLIENT PROJECT", demo: "DEMO", experiment: "EXPERIMENT", webgl: "WEBGL EXPERIENCE", product: "DIGITAL PRODUCT" },
     },
     search: { title: "Search MilWeb OS", placeholder: "Project, service or app…", empty: "Nothing found.", hint: "Enter opens the first result · Esc closes · press / to search", apps: "Apps", projects: "Projects", services: "Services", open: "Open" },
     settings: {

@@ -36,7 +36,7 @@ export type Dictionary = {
   human: { headline: [string, string, string]; tail: string };
   builtWith: { eyebrow: string; big: [string, string, string, string] };
   contact: { headline: [string, string]; cta: string; ctaWord: string; email: string; label: string };
-  archive: { label: string; title: [string, string]; filters: { all: string; client: string; demo: string; tourism: string; scroll: string; webgl: string; product: string }; columns: { index: string; project: string; type: string; year: string; studio: string } };
+  archive: { label: string; title: [string, string]; filters: { all: string; client: string; demo: string; tourism: string; experiment: string; scroll: string; webgl: string; product: string }; columns: { index: string; project: string; type: string; year: string; studio: string } };
   caseUi: {
     project: string; idea: string; experience: string; hood: string; details: string; result: string; screens: string; next: string;
     client: string; studio: string; type: string; year: string; status: string; live: string; visit: string; code: string; builtWith: string; allWork: string; expand: string; similar: string; screen: string;
@@ -70,10 +70,10 @@ export type Dictionary = {
       back: string; open: string; visit: string; code: string; stack: string; context: string; done: string; solutions: string; gallery: string; result: string;
       similar: string; next: string; prev: string; client: string; demo: string; study: string; live: string; detail: string; idea: string; experience: string;
       numbers: string; kind: string; year: string; status: string; of: string; count: string; empty: string; interactive: string;
-      /** Cartazes da pasta: rótulos do dossiê, carimbo por tipo e a "missão" por tipo criativo. */
-      dossier: string; rank: string; classLabel: string; lead: string;
-      stamp: { client: string; demo: string; study: string; live: string };
-      mission: { "CLIENT WORK": string; "SCROLL EXPERIENCE": string; "WEBGL EXPERIENCE": string; "INTERACTIVE COMMERCE": string; "DIGITAL PRODUCT": string; "CREATIVE DEVELOPMENT": string; EXPERIMENTAL: string };
+      /** Mural de cartazes (THE BOUNTY COLLECTION): faixa do cartaz, selo por tipo, navegação e dossiê. */
+      dossier: string; rank: string; collection: string; missions: string; wall: string; position: string; hint: string; swipe: string; viewAll: string; backToCollection: string;
+      tier: { wanted: string; most: string; special: string };
+      seal: { client: string; demo: string; experiment: string; webgl: string; product: string };
     };
     search: { title: string; placeholder: string; empty: string; hint: string; apps: string; projects: string; services: string; open: string };
     settings: {

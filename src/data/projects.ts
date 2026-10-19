@@ -94,6 +94,48 @@ const DISPLAY: Record<string, DisplayType> = {
   "mabrouk-zanzibar": "CLIENT WORK",
 };
 
+/**
+ * Luz de cada cartaz do mural (rgb) e, quando o alto do hero não é o melhor recorte, o foco da
+ * imagem. Direção de arte (não fato): sem entrada, o cartaz usa o grafite neutro.
+ */
+export const MOOD: Record<string, { rgb: string; focus?: string }> = {
+  "kavita-drones": { rgb: "46 140 96" },
+  "kavita-institucional": { rgb: "40 128 92" },
+  terral: { rgb: "122 74 40" },
+  "atelier-vertex": { rgb: "112 110 104" },
+  "aurex-timepieces": { rgb: "128 136 150" },
+  "aurex-motors": { rgb: "96 104 118" },
+  "lumen-architecture": { rgb: "150 140 120" },
+  "alva-odontologia": { rgb: "70 150 170" },
+  "debby-tour": { rgb: "34 118 104", focus: "center 30%" },
+  "ace-diving-miami": { rgb: "16 122 176", focus: "center 40%" },
+  "legends-of-hollywood-tours": { rgb: "178 122 36", focus: "center 35%" },
+  "said-zanzibar": { rgb: "16 152 146", focus: "center 30%" },
+  "mabrouk-zanzibar": { rgb: "204 112 72", focus: "center 30%" },
+  "serengeti-wildlife-safaris": { rgb: "192 122 52", focus: "center 35%" },
+  "as-copas": { rgb: "40 120 70" },
+  "age-of-dragons": { rgb: "150 60 30" },
+  "one-piece": { rgb: "186 42 42" },
+  rockverse: { rgb: "96 44 124" },
+  inkvision: { rgb: "66 44 116" },
+  "logistics-demo": { rgb: "204 92 40" },
+  milsaca: { rgb: "40 110 150" },
+  millead: { rgb: "60 120 110" },
+  ecoa: { rgb: "60 130 80" },
+  "loja-iphone": { rgb: "70 80 96" },
+  "loja-de-iphone": { rgb: "80 88 100" },
+  "ecommerce-do-agro": { rgb: "56 130 70" },
+  akatsuki: { rgb: "160 32 44" },
+  "loja-joias": { rgb: "166 130 70" },
+  "nexus-geek": { rgb: "80 60 150" },
+  rjjstore: { rgb: "60 90 140" },
+  "rjs-laticinios": { rgb: "90 120 160" },
+  "imperio-cafe": { rgb: "110 70 40" },
+};
+
+/** Kavita (drones e institucional): sem link externo nem botão de visita no OS — pedido do Rick (18/10/2026). O case continua aberto. */
+export const NO_EXTERNAL = new Set(["kavita-drones", "kavita-institucional"]);
+
 /** Turismo e guias — demos comerciais e conceitos (Melbourne, Miami, Los Angeles, Zanzibar, Tanzânia). */
 export const TOURISM = new Set(["debby-tour", "ace-diving-miami", "legends-of-hollywood-tours", "said-zanzibar", "mabrouk-zanzibar", "serengeti-wildlife-safaris"]);
 

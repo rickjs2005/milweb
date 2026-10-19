@@ -48,7 +48,7 @@ export const es: Dictionary = {
   archive: {
     label: "PROYECTOS / ARCHIVO",
     title: ["TODOS LOS", "PROYECTOS."],
-    filters: { all: "TODOS", client: "CLIENTES", demo: "DEMOS", tourism: "TURISMO Y GUÍAS", scroll: "EXPERIENCIAS EN SCROLL", webgl: "WEBGL / 3D", product: "PRODUCTOS DIGITALES" },
+    filters: { all: "TODOS", client: "CLIENTES", demo: "DEMOS", tourism: "TURISMO Y GUÍAS", experiment: "EXPERIMENTOS", scroll: "EXPERIENCIAS EN SCROLL", webgl: "WEBGL / 3D", product: "PRODUCTOS DIGITALES" },
     columns: { index: "ÍNDICE", project: "PROYECTO", type: "TIPO", year: "AÑO", studio: "ESTUDIO" },
   },
   caseUi: {
@@ -85,9 +85,9 @@ export const es: Dictionary = {
       back: "Todos los proyectos", open: "Abrir caso", visit: "Abrir sitio", code: "Código", stack: "Stack", context: "Contexto", done: "Qué se hizo", solutions: "Soluciones", gallery: "Pantallas", result: "Resultado",
       similar: "Quiero algo parecido", next: "Siguiente proyecto", prev: "Proyecto anterior", client: "Trabajo para cliente", demo: "Demostración", study: "Proyecto propio", live: "En línea", detail: "Detalle técnico", idea: "La idea", experience: "Experiencia",
       numbers: "Números", kind: "Tipo", year: "Año", status: "Estado", of: "de", count: "proyectos", empty: "Ningún proyecto con este filtro.", interactive: "Interactivo",
-      dossier: "DOSIER", rank: "CASO", classLabel: "CLASE", lead: "Cada proyecto es una misión. Abre el cartel para leer el dosier.",
-      stamp: { client: "CLIENTE", demo: "DEMO", study: "PROPIO", live: "EN LÍNEA" },
-      mission: { "CLIENT WORK": "ENTREGA", "SCROLL EXPERIENCE": "TRAVESÍA", "WEBGL EXPERIENCE": "EXPLORACIÓN", "INTERACTIVE COMMERCE": "MISIÓN COMERCIAL", "DIGITAL PRODUCT": "SISTEMA", "CREATIVE DEVELOPMENT": "PROYECTO ESPECIAL", EXPERIMENTAL: "EXPERIMENTO" },
+      dossier: "DOSIER", rank: "CASO", collection: "COLECCIÓN DE RECOMPENSAS", missions: "misiones", wall: "Mural de carteles", position: "Posición en la colección", hint: "flechas navegan · enter abre · esc cierra", swipe: "desliza para navegar", viewAll: "Ver todos", backToCollection: "Volver a la colección",
+      tier: { wanted: "SE BUSCA", most: "MÁS BUSCADO", special: "MISIÓN ESPECIAL" },
+      seal: { client: "CLIENTE", demo: "DEMO", experiment: "EXPERIMENTO", webgl: "WEBGL", product: "PRODUCTO DIGITAL" },
     },
     search: { title: "Buscar en MilWeb OS", placeholder: "Proyecto, servicio o aplicación…", empty: "No se encontró nada.", hint: "Enter abre el primer resultado · Esc cierra · tecla / abre la búsqueda", apps: "Aplicaciones", projects: "Proyectos", services: "Servicios", open: "Abrir" },
     settings: {
