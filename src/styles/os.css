@@ -7,36 +7,65 @@
    nos dois lugares (aqui só o bloco de tablet; o resto em os-mobile.css);
    scripts/os-check.mjs confere que batem.
 
-   Paleta: grafite profundo no sistema, papel nas janelas (os tokens do
-   site continuam valendo dentro do conteúdo), lima só como acento.
-   Composição: globo no centro/direita, aplicativos à esquerda, assinatura
-   pequena no canto, dock compacta. Nada compete pela mesma área.
+   Dois temas, uma fonte de estado (features/os/theme.ts + store):
+     OBITO (escuro) — preto carvão, vermelho do Mangekyō só como acento
+       (estados ativos, foco, circuitos do HUD, claridade atrás do olho).
+     GOJO (claro)   — branco gelo com profundidade sutil, azul dos Six Eyes
+       como acento; textos escuros e superfícies claras em dock, HUD e placas.
+   O <html data-os-theme> escolhe; sem atributo vale o Obito. Papel nas
+   janelas nos dois temas (os tokens do site continuam valendo no conteúdo).
+   Composição: olho no centro, aplicativos à esquerda, assinatura pequena no
+   canto, dock compacta. Nada compete pela mesma área.
    ===================================================================== */
 :root {
   --os-top: 36px;
   --os-dock-space: 84px;
-  --os-bg: 15 19 24;          /* #0F1318 grafite */
-  --os-bg-2: 28 34 42;
-  --os-fg: 242 240 234;       /* papel */
-  --os-signal: 183 255 55;    /* lima — acento, nunca botão */
+  /* ---- OBITO (padrão) ---- */
+  --os-bg: 10 10 12;           /* #0A0A0C carvão */
+  --os-bg-2: 30 20 22;         /* claridade quente atrás do olho */
+  --os-fg: 242 240 234;        /* papel */
+  --os-signal: 230 57 70;      /* vermelho — acento, estados ativos, foco; nunca botão */
+  --os-glow: 196 28 40;        /* vermelho do papel de parede, bem diluído */
+  --os-hud: 230 57 70;         /* circuitos e bordas dos painéis das redes */
+  --os-hud-glass: rgb(12 8 10 / 0.70);
+  --os-hud-shadow: 0 14px 32px rgb(0 0 0 / 0.45);
   --os-glass: rgb(242 240 234 / 0.08);
   --os-glass-2: rgb(242 240 234 / 0.14);
   --os-line: rgb(242 240 234 / 0.14);
+  --os-tile: 28 30 34;         /* placa dos ícones */
+  --os-tile-fg: rgb(236 234 228 / 0.92);
+  --os-tile-line: rgb(242 240 234 / 0.12);
+  --os-tile-shadow: 0 2px 6px rgb(0 0 0 / 0.28);
+  --os-dock-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  --os-vignette: rgb(0 0 0 / 0.5);
   --os-radius: 14px;
   --os-shadow: 0 8px 10px rgb(0 0 0 / 0.35), 0 48px 80px rgb(0 0 0 / 0.55);
   --os-shadow-soft: 0 6px 8px rgb(0 0 0 / 0.22), 0 24px 40px rgb(0 0 0 / 0.32);
   --os-ease: var(--ease-out-expo);
+  /* a troca de tema acontece com a pálpebra fechada (~260 ms): a interface cruza nesse tempo */
+  --os-theme-ease: .28s var(--ease-smooth);
   --os-mdock: calc(74px + env(safe-area-inset-bottom, 0px));
 }
-html[data-os-theme="paper"] {
-  --os-bg: 226 224 218;
-  --os-bg-2: 238 236 230;
-  --os-fg: 17 17 17;
-  --os-glass: rgb(17 17 17 / 0.06);
-  --os-glass-2: rgb(17 17 17 / 0.1);
-  --os-line: rgb(17 17 17 / 0.14);
-  --os-shadow: 0 8px 10px rgb(0 0 0 / 0.14), 0 48px 80px rgb(0 0 0 / 0.24);
-  --os-shadow-soft: 0 6px 8px rgb(0 0 0 / 0.1), 0 24px 40px rgb(0 0 0 / 0.16);
+html[data-os-theme="gojo"] {
+  --os-bg: 243 245 248;        /* #F3F5F8 branco gelo */
+  --os-bg-2: 255 255 255;
+  --os-fg: 17 20 26;
+  --os-signal: 24 104 224;     /* azul dos Six Eyes (5:1 sobre o gelo) */
+  --os-glow: 90 150 255;
+  --os-hud: 24 104 224;
+  --os-hud-glass: rgb(255 255 255 / 0.76);
+  --os-hud-shadow: 0 14px 32px rgb(20 30 50 / 0.14);
+  --os-glass: rgb(255 255 255 / 0.62);
+  --os-glass-2: rgb(255 255 255 / 0.88);
+  --os-line: rgb(17 20 26 / 0.12);
+  --os-tile: 255 255 255;
+  --os-tile-fg: rgb(17 20 26 / 0.86);
+  --os-tile-line: rgb(17 20 26 / 0.14);
+  --os-tile-shadow: 0 2px 6px rgb(20 30 50 / 0.12);
+  --os-dock-shadow: 0 10px 30px rgb(20 30 50 / 0.14);
+  --os-vignette: rgb(40 60 100 / 0.14);
+  --os-shadow: 0 8px 10px rgb(20 30 50 / 0.10), 0 48px 80px rgb(20 30 50 / 0.18);
+  --os-shadow-soft: 0 6px 8px rgb(20 30 50 / 0.08), 0 24px 40px rgb(20 30 50 / 0.12);
 }
 
 /* O documento não rola no OS: quem rola é o corpo de cada janela/tela. */
@@ -48,6 +77,7 @@ html[data-os], html[data-os] body { height: 100%; overflow: hidden; overscroll-b
   background: rgb(var(--os-bg)); color: rgb(var(--os-fg));
   font-family: var(--font-display), system-ui, sans-serif;
   overflow: hidden; isolation: isolate;
+  transition: background-color var(--os-theme-ease), color var(--os-theme-ease);
 }
 .os-skip {
   position: absolute; left: 16px; top: -200px; z-index: 400;
@@ -64,6 +94,7 @@ html[data-os], html[data-os] body { height: 100%; overflow: hidden; overscroll-b
   /* Quase opaca e sem blur: o blur de fundo amostra pixels além da borda e
      a janela encostada logo abaixo vazava papel claro para dentro da barra. */
   background: rgb(var(--os-bg) / 0.94); border-bottom: 1px solid var(--os-line);
+  transition: background-color var(--os-theme-ease), color var(--os-theme-ease), border-color var(--os-theme-ease);
 }
 .os-topbar__brand { font-family: var(--font-display), sans-serif; font-weight: 900; font-size: 13px; letter-spacing: -.02em; text-transform: none; color: inherit; text-decoration: none; }
 .os-topbar__app { opacity: .72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -80,34 +111,50 @@ html[data-os], html[data-os] body { height: 100%; overflow: hidden; overscroll-b
 
 /* ---- área de trabalho ---------------------------------------------- */
 .os-desktop { --eye-w: min(60vw, 112vh); position: relative; z-index: 1; min-height: 0; overflow: hidden; isolation: isolate; }
-/* Fundo: grafite com uma claridade fria e discreta atrás do olho — ele emerge da sombra.
-   z-index negativo dentro do contexto da área de trabalho: no celular ele vira `fixed` e, sem isso,
-   pintaria por cima do conteúdo estático (rótulos, assinatura). */
-.os-wallpaper {
-  position: absolute; inset: 0; z-index: -1;
+/* Fundo: dois papéis de parede sobrepostos (::before = Obito, ::after = Gojo) que cruzam por opacidade
+   na troca de tema — degradês não interpolam, opacidade sim. z-index negativo dentro do contexto da
+   área de trabalho: no celular ele vira `fixed` e, sem isso, pintaria por cima do conteúdo estático. */
+.os-wallpaper { position: absolute; inset: 0; z-index: -1; background: rgb(var(--os-bg)); transition: background-color var(--os-theme-ease); }
+.os-wallpaper::before, .os-wallpaper::after { content: ""; position: absolute; inset: 0; transition: opacity var(--os-theme-ease); }
+/* Obito: carvão, claridade quente atrás do olho, vermelho muito diluído em volta dele e numa grade de pontos, vinheta no pé */
+.os-wallpaper::before {
   background:
-    radial-gradient(46% 40% at 50% 46%, rgb(var(--os-bg-2)) 0%, rgb(var(--os-bg-2) / 0) 100%),
-    radial-gradient(120% 90% at 50% 100%, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0) 60%),
-    rgb(var(--os-bg));
+    radial-gradient(46% 40% at 50% 46%, rgb(30 20 22) 0%, rgb(30 20 22 / 0) 100%),
+    radial-gradient(64% 30% at 50% 46%, rgb(196 28 40 / 0.11) 0%, rgb(196 28 40 / 0) 100%),
+    radial-gradient(120% 90% at 50% 100%, rgb(0 0 0 / 0.35) 0%, rgb(0 0 0 / 0) 60%),
+    radial-gradient(circle at 1px 1px, rgb(196 28 40 / 0.11) 1px, transparent 1.5px) 0 0 / 28px 28px;
 }
+/* Gojo: gelo com luz fria atrás do olho, um pouco de profundidade no pé e a mesma grade em azul */
+.os-wallpaper::after {
+  background:
+    radial-gradient(46% 40% at 50% 46%, rgb(255 255 255) 0%, rgb(255 255 255 / 0) 100%),
+    radial-gradient(60% 34% at 50% 48%, rgb(90 150 255 / 0.16) 0%, rgb(90 150 255 / 0) 100%),
+    radial-gradient(120% 90% at 50% 100%, rgb(60 90 140 / 0.12) 0%, rgb(60 90 140 / 0) 60%),
+    radial-gradient(circle at 1px 1px, rgb(24 104 224 / 0.09) 1px, transparent 1.5px) 0 0 / 28px 28px;
+  opacity: 0;
+}
+html[data-os-theme="gojo"] .os-wallpaper::before { opacity: 0; }
+html[data-os-theme="gojo"] .os-wallpaper::after { opacity: 1; }
 
 /* O olho: camada visual pura (sem ponteiro); imagem embaixo, canvas por cima quando vivo.
-   Proporção 2:1 no desktop (mesma do shader/imagem), centrado na área de trabalho. */
+   Proporção 2:1 no desktop (mesma do shader/imagem), centrado na área de trabalho.
+   A imagem é um fundo CSS escolhido pelo tema do <html> — só a do tema em vigor é baixada, e o tema
+   claro nunca mostra o olho escuro (nem no carregamento, nem sem WebGL, nem com movimento reduzido). */
 .os-eye {
   position: absolute; left: 50%; top: 46%; width: min(60vw, 112vh); aspect-ratio: 2 / 1; margin: 0;
   transform: translate(-50%, -50%); pointer-events: none; user-select: none;
 }
-.os-eye picture, .os-eye__still, .os-eye__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.os-eye__still, .os-eye__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.os-eye__still { background: url("/art/eye-obito.webp") center / 100% 100% no-repeat; }
+html[data-os-theme="gojo"] .os-eye__still { background-image: url("/art/eye-gojo.webp"); }
 .os-eye__canvas { opacity: 0; transition: opacity .7s var(--os-ease); }
 .os-eye[data-state="live"] .os-eye__canvas { opacity: 1; }
-html[data-os-theme="paper"] .os-eye { opacity: .96; }
 
 /* Assinatura: canto inferior esquerdo, pequena. O lema é o h1 da raiz. */
 .os-sign { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); max-width: min(60vw, 64ch); }
 .os-sign__motto { margin: 0; font-family: var(--font-display), sans-serif; font-weight: 600; font-size: clamp(1rem, 1.25vw, 1.3rem); line-height: 1.1; letter-spacing: -.02em; }
 .os-sign__line { margin-top: 8px; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; color: rgb(var(--os-fg) / 0.62); }
 .os-sign__origin { color: rgb(var(--os-signal)); }
-html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 
 /* ---- aplicativos ------------------------------------------------------ */
 /* Coluna única até ~700 px de altura de janela (5 apps × 90 px); abaixo disso quebra em duas colunas. */
@@ -122,7 +169,7 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
   border-radius: 10px; color: rgb(var(--os-fg)); text-decoration: none; text-align: center; cursor: default;
 }
 .os-icon-btn:hover, .os-icon-btn:focus-visible { background: var(--os-glass); outline: none; }
-.os-icon-btn:hover .os-icon { box-shadow: inset 0 0 0 1px rgb(242 240 234 / 0.3), 0 2px 6px rgb(0 0 0 / 0.28); }
+.os-icon-btn:hover .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-fg) / 0.3), var(--os-tile-shadow); }
 .os-icon-btn:active .os-icon { transform: scale(.96); }
 .os-icon-btn:focus-visible .os-icon { box-shadow: 0 0 0 2px rgb(var(--os-signal)); }
 .os-icon-btn__label {
@@ -130,24 +177,29 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
   font: 10.5px/1.25 var(--font-mono), monospace; letter-spacing: .06em; text-transform: uppercase;
 }
 
-/* placa dos ícones: grafite fosco, borda fina, sem brilho nem relevo */
+/* placa dos ícones: fosca, borda fina, sem brilho nem relevo — carvão no Obito, branca no Gojo */
 .os-icon {
   position: relative; display: inline-grid; place-items: center; flex: none; border-radius: 24%; overflow: hidden;
-  color: rgb(236 234 228 / 0.92); background: #1c2229;
-  box-shadow: inset 0 0 0 1px rgb(242 240 234 / 0.12), 0 2px 6px rgb(0 0 0 / 0.28);
-  transition: box-shadow .18s, transform .18s var(--os-ease);
+  color: var(--os-tile-fg); background: rgb(var(--os-tile));
+  box-shadow: inset 0 0 0 1px var(--os-tile-line), var(--os-tile-shadow);
+  transition: box-shadow .18s, transform .18s var(--os-ease), background-color var(--os-theme-ease), color var(--os-theme-ease);
 }
 .os-icon svg { width: 70%; height: 70%; }
 .os-icon__accent { stroke: rgb(var(--os-signal)); }
 .os-icon__fill { fill: rgb(var(--os-signal)); stroke: none; }
-.os-icon__knob { fill: #1c2229; }
+.os-icon__knob { fill: rgb(var(--os-tile)); }
+/* sol/lua: o glifo mostra para onde o clique leva — lua no tema claro, sol no escuro */
+.os-theme__moon { display: none; }
+html[data-os-theme="gojo"] .os-theme__moon { display: initial; }
+html[data-os-theme="gojo"] .os-theme__sun { display: none; }
 .os-icon--tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
 
 /* ---- redes do estúdio: módulos HUD ao redor do olho ----------------------------------- */
-/* Vidro escuro, borda ciano fina, brilho contido; circuitos num SVG decorativo (pointer-events none)
-   que se desenham na entrada; pulsos por SMIL. Posições relativas ao quadro do olho (--eye-w): o painel
-   entra 16% no quadro, sobre a pele esmaecida, nunca sobre o globo. */
-.os-hud { --hud: 96 204 236; position: absolute; inset: 0; z-index: 2; pointer-events: none; font-family: var(--font-mono), monospace; }
+/* Vidro na cor do tema (escuro no Obito, branco no Gojo, texto sempre em --os-fg), borda fina na cor do
+   acento do tema (--os-hud: vermelho / azul), brilho contido; circuitos num SVG decorativo (pointer-events
+   none) que se desenham na entrada; pulsos por SMIL. Posições relativas ao quadro do olho (--eye-w): o
+   painel entra 16% no quadro, nunca sobre o globo. */
+.os-hud { --hud: var(--os-hud); position: absolute; inset: 0; z-index: 2; pointer-events: none; font-family: var(--font-mono), monospace; }
 .os-hud__wires { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .os-hud__line { fill: none; stroke: rgb(var(--hud) / .6); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .os-hud__line--glow { stroke: rgb(var(--hud) / .16); stroke-width: 4; }
@@ -173,9 +225,9 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-hud__panel[data-social="instagram"] { top: calc(46% + var(--eye-w) * .03 - 28px); left: calc(50% + var(--eye-w) * .34); }
 .os-hud__card {
   position: relative; display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 16px 0 10px; border: 1px solid rgb(var(--hud) / .42); border-radius: 12px;
-  background: rgb(8 14 20 / .66); box-shadow: 0 0 0 1px rgb(var(--hud) / .05), 0 14px 32px rgb(0 0 0 / .45), inset 0 0 22px rgb(var(--hud) / .05);
+  background: var(--os-hud-glass); box-shadow: 0 0 0 1px rgb(var(--hud) / .05), var(--os-hud-shadow), inset 0 0 22px rgb(var(--hud) / .05);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  transition: transform .3s var(--ease-out-quint), border-color .25s, box-shadow .3s;
+  transition: transform .3s var(--ease-out-quint), border-color .25s, box-shadow .3s, background-color var(--os-theme-ease);
 }
 /* detalhes técnicos: cantos marcados e um indicador que respira */
 .os-hud__card::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgb(var(--hud) / .14); border-radius: 9px; pointer-events: none; }
@@ -188,12 +240,11 @@ html[data-os-theme="paper"] .os-sign__origin { color: rgb(var(--os-fg) / 0.9); }
 .os-hud__icon[data-social="instagram"] { background: linear-gradient(45deg, #f9ce34 0%, #ee2a7b 55%, #6228d7 100%); }
 .os-hud__name { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
 .os-hud__arrow { display: grid; place-items: center; margin-left: 8px; color: rgb(var(--os-fg) / .85); transition: transform .25s var(--ease-out-quint), color .25s; }
-.os-hud__micro { display: block; max-width: 150px; margin: 10px 0 0 24px; font-size: 9px; letter-spacing: .16em; line-height: 1.5; text-transform: uppercase; color: rgb(var(--os-fg) / .6); }
-.os-hud__panel:hover .os-hud__card, .os-hud__panel:focus-visible .os-hud__card { transform: translateY(-3px); border-color: rgb(var(--hud) / .95); box-shadow: 0 0 0 1px rgb(var(--hud) / .15), 0 18px 36px rgb(0 0 0 / .5), 0 0 26px rgb(var(--hud) / .22), inset 0 0 22px rgb(var(--hud) / .09); }
+.os-hud__micro { display: block; max-width: 150px; margin: 10px 0 0 24px; font-size: 9px; letter-spacing: .16em; line-height: 1.5; text-transform: uppercase; color: rgb(var(--os-fg) / .72); }
+.os-hud__panel:hover .os-hud__card, .os-hud__panel:focus-visible .os-hud__card { transform: translateY(-3px); border-color: rgb(var(--hud) / .95); box-shadow: 0 0 0 1px rgb(var(--hud) / .15), var(--os-hud-shadow), 0 0 26px rgb(var(--hud) / .22), inset 0 0 22px rgb(var(--hud) / .09); }
 .os-hud__panel:hover .os-hud__icon, .os-hud__panel:focus-visible .os-hud__icon { transform: scale(1.08); }
 .os-hud__panel:hover .os-hud__arrow, .os-hud__panel:focus-visible .os-hud__arrow { transform: translate(2px, -2px); color: rgb(var(--hud)); }
 .os-hud__panel:focus-visible .os-hud__card { outline: 2px solid rgb(var(--os-signal)); outline-offset: 2px; }
-html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
 
 /* ---- janelas --------------------------------------------------------- */
 /* Irmã da área de trabalho no DOM (o contêiner é .os): começa abaixo da barra e termina acima da dock. */
@@ -292,7 +343,8 @@ html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
 .os-dock ul {
   display: flex; align-items: flex-end; gap: 2px; margin: 0; padding: 5px 7px; list-style: none;
   border-radius: 18px; background: var(--os-glass); border: 1px solid var(--os-line);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--os-dock-shadow); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: background-color var(--os-theme-ease), border-color var(--os-theme-ease), box-shadow var(--os-theme-ease);
 }
 .os-dock li[data-desktop="0"] { display: none; }
 .os-dock__item {
@@ -317,6 +369,10 @@ html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
 /* Minimizada: anel em vez de ponto — o app continua aberto, só está fora da área de trabalho. */
 .os-dock__item[data-min="1"]::after { background: transparent; box-shadow: inset 0 0 0 1px rgb(var(--os-fg) / 0.75); }
 .os-dock__sep { width: 1px; align-self: stretch; margin: 7px 5px; background: var(--os-line); }
+/* sol/lua: mesmo item da dock (alvo 50 × 53 px), sem ponto de "aberto"; o estado é o próprio tema */
+.os-dock__theme { border: 0; font: inherit; }
+.os-dock__theme::after { display: none; }
+.os-dock__theme[aria-checked="true"] .os-icon, .os-dock__theme[aria-checked="false"] .os-icon { color: rgb(var(--os-signal)); }
 
 /* ---- busca ------------------------------------------------------------ */
 .os-search {
@@ -378,14 +434,14 @@ html[data-os-theme="paper"] .os-hud__card { background: rgb(14 22 30 / .82); }
   --poster-w: min(30cqw, calc(66cqh * .72)); --step: calc(var(--poster-w) * .68); --drag: 0px;
   position: relative; height: 100%; display: flex; flex-direction: column; overflow: hidden;
   background: rgb(var(--os-bg)); color: rgb(var(--os-fg)); font-family: var(--font-display), system-ui, sans-serif;
-  transition: --mood-r .9s, --mood-g .9s, --mood-b .9s;
+  transition: --mood-r .9s, --mood-g .9s, --mood-b .9s, background-color var(--os-theme-ease), color var(--os-theme-ease);
 }
-/* a parede: luz na cor do projeto em foco, vinheta embaixo e grão */
+/* a parede: luz na cor do projeto em foco, vinheta embaixo (preta no Obito, azulada e leve no Gojo) e grão */
 .bounty::before {
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
     radial-gradient(60% 55% at 50% 46%, rgb(var(--mood) / .34), transparent 70%),
-    radial-gradient(130% 100% at 50% 110%, rgb(0 0 0 / .5), transparent 60%),
+    radial-gradient(130% 100% at 50% 110%, var(--os-vignette), transparent 60%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: auto, auto, 220px 220px;
 }
@@ -721,13 +777,17 @@ details[open] .os-case__plus { transform: rotate(45deg); }
 }
 
 /* ---- movimento reduzido (sistema ou Ajustes) ------------------------------- */
+/* inclui a troca de tema: sem olho vivo ela é imediata, e a interface muda de uma vez (sem cruzar) */
 @media (prefers-reduced-motion: reduce) {
-  .os-window, .os-dock__item, .os-dock__item .os-icon, .os-icon, .os-project__img, .os-eye__canvas { transition: none !important; animation: none !important; }
+  .os-window, .os-dock__item, .os-dock__item .os-icon, .os-icon, .os-project__img, .os-eye__canvas,
+  .os, .os-topbar, .os-wallpaper, .os-wallpaper::before, .os-wallpaper::after, .os-dock ul, .os-hud__card, .bounty { transition: none !important; animation: none !important; }
 }
 html[data-reduce] .os-window, html[data-os-motion="reduce"] .os-window,
 html[data-reduce] .os-dock__item, html[data-os-motion="reduce"] .os-dock__item,
 html[data-reduce] .os-dock__item .os-icon, html[data-os-motion="reduce"] .os-dock__item .os-icon,
-html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-eye__canvas { transition: none !important; animation: none !important; }
+html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-eye__canvas,
+html[data-os-motion="reduce"] .os, html[data-os-motion="reduce"] .os-topbar, html[data-os-motion="reduce"] .os-wallpaper, html[data-os-motion="reduce"] .os-wallpaper::before, html[data-os-motion="reduce"] .os-wallpaper::after,
+html[data-os-motion="reduce"] .os-dock ul, html[data-os-motion="reduce"] .os-hud__card, html[data-os-motion="reduce"] .bounty { transition: none !important; animation: none !important; }
 /* redes sem movimento: circuitos e painéis prontos, sem pulsos nem respiração */
 @media (prefers-reduced-motion: reduce) {
   .os-hud__panel, .os-hud__line, .os-hud__node, .os-hud__ring, .os-hud__dot, .os-hud__card, .os-hud__icon, .os-hud__arrow { animation: none !important; transition: none !important; }

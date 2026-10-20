@@ -92,7 +92,7 @@ export const en: Dictionary = {
     },
     search: { title: "Search MilWeb OS", placeholder: "Project, service or app…", empty: "Nothing found.", hint: "Enter opens the first result · Esc closes · press / to search", apps: "Apps", projects: "Projects", services: "Services", open: "Open" },
     settings: {
-      theme: "Desktop theme", graphite: "Graphite", paper: "Paper", motion: "Motion", motionSystem: "Follow the system", motionReduce: "Reduce", mode: "Navigation mode", modeOs: "System (windows)", modeSimple: "Simple (list)",
+      theme: "Theme", gojo: "Gojo · light", obito: "Obito · dark", themeSwitch: "Dark theme (Obito)", themeShort: "Theme", motion: "Motion", motionSystem: "Follow the system", motionReduce: "Reduce", mode: "Navigation mode", modeOs: "System (windows)", modeSimple: "Simple (list)",
       language: "Language", sound: "Sound", reset: "Rearrange windows", about: "MilWeb OS is a presentation layer over the site: every case, service and contact remains reachable by direct link.", saved: "Preferences are saved in this browser.",
     },
     simple: { title: "Simple navigation", toOs: "Open MilWeb OS", skip: "Skip to simple navigation", nav: "Sections" },

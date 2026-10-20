@@ -22,7 +22,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple").split(",");
+const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -80,7 +80,7 @@ if (ONLY.includes("desktop")) {
   check("sem Destaques nem atalhos de case na área de trabalho", (await page.locator("#os-icon-home, [data-shortcut], .os-highlights, #os-icon-kavita-drones").count()) === 0);
   check("coluna de aplicativos: Projetos, Estúdio, Lab, Serviços, Contato", (await page.locator('.os-icons li[data-desktop="1"]:visible .os-icon-btn__label').allInnerTexts()).join("|") === "PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO");
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
-  check("olho presente como imagem (fallback estático)", await page.evaluate(() => { const i = document.querySelector(".os-eye img"); return !!i && i.complete && i.naturalWidth > 0; }));
+  check("olho presente como imagem (fallback estático, fundo CSS do tema)", await page.evaluate(() => /eye-(gojo|obito)\.webp/.test(getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage)));
   check("olho não intercepta o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-eye")).pointerEvents === "none"));
   check("sem a escultura orbital (preload e arte)", (await page.locator('link[href*="orbital-sculpture"], .os-wallpaper__art').count()) === 0);
   const overlap = await page.evaluate(() => {
@@ -400,7 +400,7 @@ if (ONLY.includes("desktop")) {
   const pctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
   const ppage = await pctx.newPage();
   await ppage.goto(`${BASE}/`, { waitUntil: "load" });
-  await ppage.evaluate(() => localStorage.setItem("milweb-os:prefs", JSON.stringify({ theme: "graphite", motion: "reduce", simple: false })));
+  await ppage.evaluate(() => localStorage.setItem("milweb-os:prefs", JSON.stringify({ theme: "obito", motion: "reduce", simple: false })));
   await ppage.reload({ waitUntil: "load" });
   await settle(ppage, 2500);
   check("Ajustes › Reduzir: olho estático", (await ppage.getAttribute(".os-eye", "data-state")) === "still" && (await ppage.getAttribute("html", "data-os-motion")) === "reduce");
@@ -448,12 +448,14 @@ if (ONLY.includes("mobile")) {
         heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
         noDesktopBits: !vis(".os-hud") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
         eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
-        eyeImg: (() => { const i = document.querySelector(".os-eye img"); return !!i && i.complete && i.naturalWidth > 0; })(),
+        eyeImg: /eye-(gojo|obito)-mobile\.webp/.test(getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage),
         eyeNoPointer: getComputedStyle(document.querySelector(".os-eye")).pointerEvents === "none",
         gridAboveDock: grid.bottom <= dock.top + 1,
         dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth,
-        dockHrefs: [...document.querySelectorAll(".os-mdock__item")].map((a) => a.href),
-        dockRel: [...document.querySelectorAll(".os-mdock__item")].every((a) => a.target === "_blank" && a.rel.includes("noopener") && a.rel.includes("noreferrer")),
+        // as quatro redes são links; o quinto item é o sol/lua do tema (botão, revisão 10)
+        dockHrefs: [...document.querySelectorAll("a.os-mdock__item")].map((a) => a.href),
+        dockRel: [...document.querySelectorAll("a.os-mdock__item")].every((a) => a.target === "_blank" && a.rel.includes("noopener") && a.rel.includes("noreferrer")),
+        dockTheme: !!document.querySelector('button.os-mdock__item.os-mdock__theme[role="switch"]') && document.querySelectorAll(".os-mdock__item").length === 5,
         dockSmall: [...document.querySelectorAll(".os-mdock__item")].filter((a) => { const b = a.getBoundingClientRect(); return b.width < 48 || b.height < 48; }).length,
         dockLabels: [...document.querySelectorAll(".os-mdock__label")].map((l) => l.textContent.trim()).join(","),
         noScroll: document.querySelector(".os-desktop").scrollHeight <= document.querySelector(".os-desktop").clientHeight + 1,
@@ -463,7 +465,7 @@ if (ONLY.includes("mobile")) {
     check("launcher: ícones ≥ 56 px, rótulos ≥ 11 px sem cortes, item inteiro ≥ 48 px", home.iconPx >= 56 && home.labelPx >= 11 && !home.labelCut && home.small === 0, JSON.stringify({ icon: home.iconPx, label: home.labelPx, cut: home.labelCut, small: home.small }));
     check("sem lema, descrição, botões, HUD, dock do desktop ou barra à vista (h1 continua no DOM)", home.heroHidden && home.noDesktopBits);
     check("olho como papel de parede entre o status e a grade, imagem pronta, sem ponteiro", home.eyeBetween && home.eyeImg && home.eyeNoPointer);
-    check("dock de redes: WhatsApp, LinkedIn, GitHub, Instagram em nova aba segura, ≥ 48 px, dentro da tela, abaixo da grade", home.dockHrefs.length === 4 && home.dockHrefs[0].startsWith("https://wa.me/") && /linkedin\.com/.test(home.dockHrefs[1]) && /github\.com/.test(home.dockHrefs[2]) && /instagram\.com/.test(home.dockHrefs[3]) && home.dockRel && home.dockSmall === 0 && home.dockIn && home.gridAboveDock, JSON.stringify({ hrefs: home.dockHrefs, labels: home.dockLabels }));
+    check("dock de redes: WhatsApp, LinkedIn, GitHub, Instagram em nova aba segura + sol/lua do tema, ≥ 48 px, dentro da tela, abaixo da grade", home.dockHrefs.length === 4 && home.dockHrefs[0].startsWith("https://wa.me/") && /linkedin\.com/.test(home.dockHrefs[1]) && /github\.com/.test(home.dockHrefs[2]) && /instagram\.com/.test(home.dockHrefs[3]) && home.dockRel && home.dockTheme && home.dockSmall === 0 && home.dockIn && home.gridAboveDock, JSON.stringify({ hrefs: home.dockHrefs, labels: home.dockLabels }));
     check("tela inicial cabe sem rolar", home.noScroll);
     await shot(page, `m-${label.split(" ")[0]}-home`);
 
@@ -1028,7 +1030,7 @@ if (ONLY.includes("phones")) {
         overlap: tiles.some((t, i) => tiles.slice(i + 1).some((u) => { const a = t.getBoundingClientRect(), b = u.getBoundingClientRect(); return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; })),
         gridIn: grid.left >= 0 && grid.right <= innerWidth && grid.bottom <= dock.top + 1 && grid.top >= status.bottom - 1,
         eyeOk: !!eye && eye.width > 0 && eye.height > 0 && (innerWidth > innerHeight ? eye.left >= grid.right - 1 : eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2),
-        dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth && document.querySelectorAll(".os-mdock__item").length === 4,
+        dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth && document.querySelectorAll(".os-mdock__item").length === 5 && [...document.querySelectorAll(".os-mdock__label")].every((l) => l.scrollWidth <= l.clientWidth + 1),
         fits: desk.scrollHeight <= desk.clientHeight + 1,
       };
     });
@@ -1176,6 +1178,212 @@ if (ONLY.includes("resize")) {
   check("tablet retrato (768×1024) fica no desktop", (await page.getAttribute("html", "data-shell")) === "desktop");
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await ctx.close();
+}
+
+// ------------------------------------------------------------------- theme
+// Gojo (claro) / Obito (escuro) — revisão 10: tema antes da hidratação (script inline), tema do sistema sem
+// preferência salva, sol/lua na dock (desktop e celular) sincronizado com Ajustes, persistência, movimento
+// reduzido (troca imediata, sem canvas), contraste dos painéis das redes e dos rótulos, sem mancha escura em
+// volta do olho no tema claro, sem rolagem horizontal em 320/360/390/430. A transição com o olho VIVO
+// (fecha → troca fechado → reabre) só roda se o canvas montar neste ambiente (?quality=high; SwiftShader
+// precisa de --enable-unsafe-swiftshader) — senão fica registrada como pulada, não como verde.
+if (ONLY.includes("theme")) {
+  current = "theme";
+  console.log("\n# tema: Gojo (claro) / Obito (escuro)");
+  const prefs = (theme) => JSON.stringify({ theme, motion: "system", simple: false });
+  // `window.__milwebOs` só existe em desenvolvimento: no build de produção o estado é lido do <html> e do localStorage.
+  const themeOf = (page) => page.evaluate(() => { const st = window.__milwebOs?.getState(); const saved = localStorage.getItem("milweb-os:prefs"); const attr = document.documentElement.dataset.osTheme; return { attr, theme: st ? st.prefs.theme : attr, auto: st ? st.prefs.themeAuto : !/"theme"/.test(saved ?? ""), pending: st ? st.themePending : null, saved }; });
+  const settled = (page) => page.waitForFunction(() => !window.__milwebOs || window.__milwebOs.getState().themePending === null, null, { timeout: 4000 }).catch(() => {});
+  /** Contraste WCAG entre o texto e o fundo efetivo (cor translúcida composta sobre a base). */
+  const contrast = (page, textSel, bgSel, baseSel) =>
+    page.evaluate(([textSel, bgSel, baseSel]) => {
+      const rgba = (s) => { const m = s.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 }; };
+      const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+      const over = (fg, bg) => ({ r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 });
+      const text = rgba(getComputedStyle(document.querySelector(textSel)).color);
+      const base = rgba(getComputedStyle(document.querySelector(baseSel)).backgroundColor);
+      const bg = over(rgba(getComputedStyle(document.querySelector(bgSel)).backgroundColor), base);
+      const fg = over(text, bg);
+      const [l1, l2] = [lum(fg), lum(bg)].sort((a, b) => b - a);
+      return Math.round(((l1 + 0.05) / (l2 + 0.05)) * 100) / 100;
+    }, [textSel, bgSel, baseSel]);
+
+  // 1) sem nada salvo o tema é o do sistema, já no primeiro quadro (script inline), e NÃO vira escolha salva
+  for (const [scheme, want] of [["dark", "obito"], ["light", "gojo"]]) {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", colorScheme: scheme });
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    const early = new Promise((res) => p.once("domcontentloaded", async () => res(await p.evaluate(() => document.documentElement.dataset.osTheme).catch(() => null))));
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 1200);
+    const t = await themeOf(p);
+    check(`sem preferência salva + prefers-color-scheme: ${scheme} → ${want} antes da hidratação e depois, nada gravado`, (await early) === want && t.attr === want && t.theme === want && t.auto === true && !/"theme"/.test(t.saved ?? ""), JSON.stringify({ early: await early, ...t }));
+    await p.emulateMedia({ colorScheme: scheme === "dark" ? "light" : "dark" });
+    await settle(p, 1400);
+    const t2 = await themeOf(p);
+    check(`  o sistema muda com a página aberta → acompanha, continua automático`, t2.theme !== want && t2.attr === t2.theme && t2.auto === true && !/"theme"/.test(t2.saved ?? ""), JSON.stringify(t2));
+    check("  sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await c.close();
+  }
+
+  // 2) desktop, tema salvo Gojo: aparência, contraste, sol/lua, Ajustes, persistência
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", colorScheme: "dark" });
+    await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs("gojo"));
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    const early = new Promise((res) => p.once("domcontentloaded", async () => res(await p.evaluate(() => document.documentElement.dataset.osTheme).catch(() => null))));
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 2600);
+    check("preferência salva (gojo) vence o sistema (dark) e já vale no primeiro quadro", (await early) === "gojo" && (await themeOf(p)).attr === "gojo");
+    const look = await p.evaluate(() => {
+      const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number);
+      const fg = getComputedStyle(document.querySelector(".os-topbar")).color.match(/\d+/g).map(Number);
+      const card = getComputedStyle(document.querySelector(".os-hud__card")).backgroundColor.match(/[\d.]+/g).map(Number);
+      return { light: bg[0] > 235 && bg[1] > 235 && bg[2] > 235, darkText: fg[0] < 40 && fg[1] < 40 && fg[2] < 40, cardLight: card[0] > 240 && card[1] > 240 && card[2] > 240, still: getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage };
+    });
+    check("Gojo: fundo gelo, texto escuro, painéis das redes claros, imagem do olho claro", look.light && look.darkText && look.cardLight && /eye-gojo\.webp/.test(look.still), JSON.stringify(look));
+    // sem mancha escura: os cantos do quadro do olho (longe do globo) têm a luminância do papel de parede
+    const corners = await p.evaluate(async () => {
+      const r = document.querySelector(".os-eye").getBoundingClientRect();
+      return [[0.08, 0.12], [0.92, 0.12], [0.08, 0.88], [0.92, 0.88], [0.5, 0.06], [0.5, 0.94]].map(([fx, fy]) => [Math.round(r.left + r.width * fx), Math.round(r.top + r.height * fy)]);
+    });
+    const shotBuf = await p.screenshot();
+    const lums = await p.evaluate(async ([b64, pts]) => {
+      const img = new Image();
+      await new Promise((res) => { img.onload = res; img.src = "data:image/png;base64," + b64; });
+      const cv = document.createElement("canvas"); cv.width = img.width; cv.height = img.height;
+      const g = cv.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0);
+      return pts.map(([x, y]) => { const d = g.getImageData(x, y, 1, 1).data; return Math.round((0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2]) / 2.55); });
+    }, [shotBuf.toString("base64"), corners]);
+    check("Gojo: nenhuma mancha escura em volta do olho (cantos do quadro ≥ 88 % de luminância)", lums.every((l) => l >= 88), lums.join(","));
+    const cName = await contrast(p, ".os-hud__name", ".os-hud__card", ".os");
+    const cMicro = await contrast(p, ".os-hud__micro", ".os", ".os");
+    const cSign = await contrast(p, ".os-sign__line", ".os", ".os");
+    const cOrigin = await contrast(p, ".os-sign__origin", ".os", ".os");
+    check("Gojo: contraste ≥ 4.5 — nome da rede no painel, microtexto, assinatura, origem (acento)", cName >= 4.5 && cMicro >= 4.5 && cSign >= 4.5 && cOrigin >= 4.5, `${cName} / ${cMicro} / ${cSign} / ${cOrigin}`);
+
+    const toggle = p.locator(".os-dock__theme");
+    const box = await rectOf(toggle);
+    check("sol/lua na dock: ≥ 48 × 48 px, role=switch, nome acessível, aria-checked=false no claro", box && box.w >= 48 && box.h >= 48 && (await toggle.getAttribute("role")) === "switch" && (await toggle.getAttribute("aria-label")) === "Tema escuro (Obito)" && (await toggle.getAttribute("aria-checked")) === "false", JSON.stringify(box));
+    await toggle.focus();
+    check("sol/lua: foco visível (outline) e lua à vista no tema claro", await p.evaluate(() => { const b = document.querySelector(".os-dock__theme"); const o = getComputedStyle(b).outlineStyle !== "none" || getComputedStyle(b.querySelector(".os-icon")).boxShadow !== "none"; const moon = b.querySelector(".os-theme__moon"), sun = b.querySelector(".os-theme__sun"); return o && getComputedStyle(moon).display !== "none" && getComputedStyle(sun).display === "none"; }));
+    await toggle.click();
+    await p.waitForFunction(() => document.documentElement.dataset.osTheme === "obito", null, { timeout: 4000 }).catch(() => {});
+    await settled(p);
+    await settle(p, 900);
+    const t1 = await themeOf(p);
+    check("clique no sol/lua: Obito aplicado, salvo como escolha, switch marcado, sol à vista", t1.attr === "obito" && t1.theme === "obito" && t1.auto === false && /"theme":"obito"/.test(t1.saved) && (await toggle.getAttribute("aria-checked")) === "true" && (await p.evaluate(() => getComputedStyle(document.querySelector(".os-dock__theme .os-theme__sun")).display !== "none")), JSON.stringify(t1));
+    const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /eye-obito\.webp/.test(getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage); });
+    check("Obito: fundo carvão e imagem do olho escuro", dark);
+    const dName = await contrast(p, ".os-hud__name", ".os-hud__card", ".os");
+    const dMicro = await contrast(p, ".os-hud__micro", ".os", ".os");
+    const dOrigin = await contrast(p, ".os-sign__origin", ".os", ".os");
+    check("Obito: contraste ≥ 4.5 — nome da rede, microtexto, origem (acento vermelho)", dName >= 4.5 && dMicro >= 4.5 && dOrigin >= 4.5, `${dName} / ${dMicro} / ${dOrigin}`);
+    await shot(p, "t01-obito");
+
+    // cliques rápidos (3 no mesmo tick): um só destino, nada pendente ao fim
+    await p.evaluate(() => { const b = document.querySelector(".os-dock__theme"); b.click(); b.click(); b.click(); });
+    await settled(p);
+    await settle(p, 1200);
+    const t3 = await themeOf(p);
+    check("três cliques rápidos → gojo, nada pendente, atributo e store iguais", t3.theme === "gojo" && t3.attr === "gojo" && t3.pending === null, JSON.stringify(t3));
+
+    // Ajustes sincronizado (mesmo store): a opção marcada acompanha e escolher lá muda a dock
+    await p.click('[data-dock-id="settings"]');
+    await settle(p, 500);
+    const chips = () => p.evaluate(() => [...document.querySelectorAll('.os-window[data-app="settings"] [name="theme"]')].map((c) => c.textContent.trim() + ":" + c.getAttribute("aria-checked")).join(","));
+    check("Ajustes › Tema marca Gojo", (await chips()) === "Gojo · claro:true,Obito · escuro:false", await chips());
+    await p.click('.os-window[data-app="settings"] [name="theme"]:nth-child(2)');
+    await p.waitForFunction(() => document.documentElement.dataset.osTheme === "obito", null, { timeout: 4000 }).catch(() => {});
+    await settled(p);
+    await settle(p, 600);
+    check("Ajustes › Obito: aplicado e a dock acompanha (aria-checked=true)", (await chips()) === "Gojo · claro:false,Obito · escuro:true" && (await toggle.getAttribute("aria-checked")) === "true" && (await themeOf(p)).attr === "obito");
+    await shot(p, "t02-ajustes");
+    await p.keyboard.press("Escape");
+
+    // persistência: recarregar mantém o Obito já no primeiro quadro
+    const early2 = new Promise((res) => p.once("domcontentloaded", async () => res(await p.evaluate(() => document.documentElement.dataset.osTheme).catch(() => null))));
+    await p.reload({ waitUntil: "load" });
+    await settle(p, 1200);
+    check("recarregar: Obito salvo já no primeiro quadro, sem flash", (await early2) === "obito" && (await themeOf(p)).attr === "obito");
+    check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await c.close();
+  }
+
+  // 3) movimento reduzido: sem canvas, a troca é imediata e a imagem acompanha
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", reducedMotion: "reduce" });
+    await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs("obito"));
+    const p = await c.newPage();
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 2000);
+    await p.click(".os-dock__theme");
+    await settle(p, 80);
+    const t = await themeOf(p);
+    check("reduced motion: olho estático, clique troca na hora (gojo), imagem clara, nada pendente", (await p.getAttribute(".os-eye", "data-state")) === "still" && t.attr === "gojo" && t.pending === null && (await p.evaluate(() => /eye-gojo\.webp/.test(getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage))), JSON.stringify(t));
+    await c.close();
+  }
+
+  // 4) celular: sol/lua na dock de redes em 320/360/390/430, sem rolagem horizontal, rótulos legíveis
+  for (const [w, h] of [[320, 568], [360, 780], [390, 844], [430, 932]]) {
+    for (const theme of ["gojo", "obito"]) {
+      const c = await browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, locale: "pt-BR" });
+      await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs(theme));
+      const p = await c.newPage();
+      const errs = errorsOf(p);
+      await p.goto(`${BASE}/`, { waitUntil: "load" });
+      await settle(p, 1500);
+      const m = await p.evaluate(() => {
+        const b = document.querySelector(".os-mdock__theme");
+        const r = b.getBoundingClientRect();
+        const labels = [...document.querySelectorAll(".os-mdock__label")].map((l) => ({ t: l.textContent, over: l.scrollWidth > l.clientWidth + 1 }));
+        const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number);
+        return { w: r.width, h: r.height, inside: r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, role: b.getAttribute("role"), label: b.getAttribute("aria-label"), overflowX: document.documentElement.scrollWidth > innerWidth, labels, light: bg[0] > 235, still: getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage, launchLabel: getComputedStyle(document.querySelector(".os-launch__label")).color };
+      });
+      const cLaunch = await contrast(p, ".os-launch__label", ".os", ".os");
+      const cDock = await contrast(p, ".os-mdock__label", ".os-mdock ul", ".os");
+      check(`${w}×${h} ${theme}: sol/lua ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do tema, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`eye-${theme}-mobile\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
+      if (w === 390 && theme === "obito") {
+        await p.tap(".os-mdock__theme");
+        await p.waitForFunction(() => document.documentElement.dataset.osTheme === "gojo", null, { timeout: 4000 }).catch(() => {});
+        await settled(p);
+        await settle(p, 600);
+        check("390: toque no sol/lua troca para gojo e salva", (await themeOf(p)).attr === "gojo" && /"theme":"gojo"/.test((await themeOf(p)).saved));
+        await shot(p, "t03-mobile-gojo");
+      }
+      check(`${w}×${h} ${theme}: sem erros`, errs.length === 0, errs.slice(0, 2).join(" | "));
+      await c.close();
+    }
+  }
+
+  // 5) olho VIVO (só se o canvas montar aqui): a pálpebra fecha, o tema troca com ela fechada, e reabre
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs("gojo"));
+    const p = await c.newPage();
+    await p.goto(`${BASE}/?quality=high`, { waitUntil: "load" });
+    const live = await p.waitForSelector('.os-eye[data-state="live"]', { timeout: 15000 }).then(() => true).catch(() => false);
+    const handle = live && (await p.evaluate(() => !!window.__mwOsEye));
+    if (!live) console.log("  · olho vivo: PULADO — o canvas não montou neste ambiente (sem GPU/SwiftShader); ver .audit/scratch/theme-live.mjs");
+    else if (!handle) console.log("  · olho vivo: PULADO — o build de produção não expõe window.__mwOsEye (rode no dev server ou .audit/scratch/theme-live.mjs --headed)");
+    else {
+      await p.click(".os-dock__theme");
+      const trace = [];
+      const t0 = Date.now();
+      while (Date.now() - t0 < 2600) {
+        trace.push(await p.evaluate(() => ({ phase: window.__mwOsEye.phase, lid: +window.__mwOsEye.lid.toFixed(2), attr: document.documentElement.dataset.osTheme })));
+        await p.waitForTimeout(8);
+      }
+      // A garantia que importa: no PRIMEIRO quadro em que o tema já mudou a pálpebra está fechada, e o olho reabre
+      // depois. (Sem GPU, um quadro do SwiftShader pode durar mais que o fechamento inteiro — a fase "closing" nem
+      // sempre é amostrada; a cadência real fica com .audit/scratch/theme-live.mjs --headed.)
+      const flip = trace.findIndex((s) => s.attr === "obito");
+      const ok = flip >= 0 && trace[flip].lid >= 0.99 && trace.slice(0, flip).every((s) => s.attr === "gojo") && trace.slice(flip).some((s) => s.phase === "opening") && trace.at(-1).phase === "open" && trace.at(-1).lid === 0;
+      check("olho vivo: o tema troca com a pálpebra FECHADA e o olho reabre (pálpebra por uBlink, nunca o olho comprimido)", ok, JSON.stringify({ flip, at: trace[flip], end: trace.at(-1) }));
+    }
+    await c.close();
+  }
 }
 
 // ------------------------------------------------------------------- simple

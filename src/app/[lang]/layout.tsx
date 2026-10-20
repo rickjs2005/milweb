@@ -7,6 +7,7 @@ import { TrackConversions } from "@/components/track-conversions";
 import { Footer } from "@/components/footer";
 import { OsShell } from "@/features/os/os-shell";
 import { buildOsPayload } from "@/features/os/payload";
+import { THEME_COLOR, THEME_SCRIPT } from "@/features/os/theme";
 import { InspectProvider } from "@/features/inspect/inspect-provider";
 import { MilwebSystemProvider } from "@/features/system/system-provider";
 import { ROOT_NODE } from "@/data/milweb-system";
@@ -49,8 +50,19 @@ export async function generateMetadata({ params }: { params: Promise<LangParams>
   };
 }
 
-/** Grafite do MilWeb OS na moldura do navegador; `cover` para a dock respeitar as áreas seguras do telefone. */
-export const viewport: Viewport = { themeColor: "#0F1318", colorScheme: "light", viewportFit: "cover" };
+/**
+ * Moldura do navegador na cor do papel de parede do MilWeb OS (gelo do Gojo / carvão do Obito —
+ * os mesmos valores de styles/os.css › --os-bg; o shell reescreve o `content` quando o tema muda);
+ * `cover` para a dock respeitar as áreas seguras do telefone.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.gojo },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.obito },
+  ],
+  colorScheme: "light",
+  viewportFit: "cover",
+};
 
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<LangParams> }) {
   const locale = await localeFrom(params);
@@ -58,6 +70,8 @@ export default async function LangLayout({ children, params }: { children: React
   return (
     <html lang={HTML_LANG[locale]} className={FONT_CLASS} suppressHydrationWarning>
       <body>
+    {/* Tema do MilWeb OS antes de qualquer pintura (preferência salva ou o tema do sistema) — sem flash do tema errado. */}
+    <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
     <ScrollProvider>
       <InspectProvider strings={{ title: d.inspect.title, dev: d.inspect.dev }}>
       <MilwebSystemProvider root={{ id: ROOT_NODE.id, index: ROOT_NODE.index, key: ROOT_NODE.key, title: ROOT_NODE.title[locale], readout: ROOT_NODE.readout?.[locale] ?? null }}>

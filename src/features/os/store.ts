@@ -1,5 +1,6 @@
 import { createStore } from "zustand/vanilla";
 import { APPS, APP_IDS, parseRoute, type AppId } from "./registry";
+import { PREFS_KEY, parseTheme, systemTheme, type OsTheme } from "./theme";
 
 /**
  * WindowManager do MilWeb OS — estado das janelas, fora do React.
@@ -19,6 +20,15 @@ import { APPS, APP_IDS, parseRoute, type AppId } from "./registry";
  *    própria rota (`source: "route"`) nunca navegam de volta.
  *  - A loja nasce da rota (SSR e cliente iguais); preferências e posições
  *    salvas entram depois da hidratação, validadas e clampadas.
+ *
+ * Tema (uma fonte só): `prefs.theme` é o tema EM VIGOR (o <html> espelha);
+ * `prefs.themeAuto` diz se ele veio do sistema (nada salvo) ou de uma escolha
+ * do visitante (salva). A troca passa por `requestTheme`: se o olho estiver
+ * vivo ele registra um driver, fecha a pálpebra e só então chama
+ * `commitTheme` — a interface muda de tema no escuro e o olho reabre com a
+ * identidade nova. Sem olho vivo (imagem, movimento reduzido, janela
+ * maximizada), a troca é imediata; e um temporizador de segurança garante o
+ * commit mesmo se o driver não responder.
  */
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -46,7 +56,14 @@ export type Win = {
   placed: "none" | "auto" | "user";
 };
 
-export type OsPrefs = { theme: "graphite" | "paper"; motion: "system" | "reduce"; simple: boolean };
+export type OsPrefs = { theme: OsTheme; themeAuto: boolean; motion: "system" | "reduce"; simple: boolean };
+
+/**
+ * Quem conduz a troca de tema (o olho vivo). Recebe o destino; devolve true
+ * se vai fechar a pálpebra e chamar `commitTheme` no momento certo. false =
+ * não pode agora (o store aplica na hora).
+ */
+export type ThemeDriver = (to: OsTheme) => boolean;
 
 export type OsState = {
   wins: Record<AppId, Win>;
@@ -55,6 +72,8 @@ export type OsState = {
   area: { w: number; h: number };
   shell: Shell;
   prefs: OsPrefs;
+  /** Tema pedido e ainda não aplicado (a pálpebra está fechando). null = nada em voo. */
+  themePending: OsTheme | null;
   /** Janela que deve receber foco de teclado no próximo commit (abertura pelo usuário). */
   pendingFocus: AppId | null;
   /** Última ação relevante para a URL. O shell lê e navega se for do usuário. */
@@ -75,17 +94,27 @@ export type OsState = {
   setScroll: (id: AppId, y: number) => void;
   setArea: (w: number, h: number) => void;
   setShell: (shell: Shell) => void;
-  setPrefs: (p: Partial<OsPrefs>) => void;
+  /** Movimento e modo (o tema tem caminho próprio: requestTheme). */
+  setPrefs: (p: Partial<Pick<OsPrefs, "motion" | "simple">>) => void;
+  /**
+   * Pede um tema. `auto: true` = veio do sistema (não vira escolha salva).
+   * Pedidos repetidos antes do commit só trocam o destino — nunca empilham animações.
+   */
+  requestTheme: (to: OsTheme, opts?: { auto?: boolean }) => void;
+  /** Aplica o tema pendente (chamado pelo driver com a pálpebra fechada, ou pelo próprio store). */
+  commitTheme: () => void;
+  setThemeDriver: (driver: ThemeDriver | null) => void;
   resetLayout: () => void;
   clearPendingFocus: () => void;
   hydrate: () => void;
 };
 
-const PREFS_KEY = "milweb-os:prefs";
 const RECTS_KEY = "milweb-os:windows";
 /** Área nominal antes de medir (SSR). O CSS clampa por conta própria até lá. */
 const NOMINAL = { w: 1440, h: 820 };
 const CASCADE = 28;
+/** Se o driver do olho não confirmar a troca neste prazo, o tema é aplicado assim mesmo. */
+const THEME_FALLBACK_MS = 900;
 
 function clampRect(r: Rect, area: { w: number; h: number }, id: AppId): Rect {
   const min = APPS[id].min;
@@ -139,6 +168,8 @@ export function createOsStore(initialInternal: string) {
     wins[info.app] = { ...wins[info.app], open: true, route: initialInternal, placed: "auto" };
     order.push(info.app);
   }
+  let themeDriver: ThemeDriver | null = null;
+  let themeFallback = 0;
 
   return createStore<OsState>()((set, get) => {
     const bump = (source: Source, mode: NavMode) => ({ last: { source, mode, seq: get().last.seq + 1 } });
@@ -148,6 +179,11 @@ export function createOsStore(initialInternal: string) {
       const rects = Object.fromEntries(APP_IDS.filter((id) => s.wins[id].placed === "user").map((id) => [id, s.wins[id].rect]));
       writeJson(RECTS_KEY, rects);
     };
+    /** O tema só é gravado quando foi escolhido; vindo do sistema, a chave fica de fora (e o sistema continua mandando). */
+    const persistPrefs = () => {
+      const p = get().prefs;
+      writeJson(PREFS_KEY, { ...(p.themeAuto ? {} : { theme: p.theme }), motion: p.motion, simple: p.simple });
+    };
 
     return {
       wins,
@@ -155,7 +191,8 @@ export function createOsStore(initialInternal: string) {
       focused: info.app,
       area: NOMINAL,
       shell: "auto",
-      prefs: { theme: "graphite", motion: "system", simple: false },
+      prefs: { theme: "obito", themeAuto: true, motion: "system", simple: false },
+      themePending: null,
       pendingFocus: null,
       last: { source: "route", mode: "replace", seq: 0 },
       hydrated: false,
@@ -289,7 +326,40 @@ export function createOsStore(initialInternal: string) {
 
       setPrefs: (p) => {
         set((s) => ({ prefs: { ...s.prefs, ...p } }));
-        writeJson(PREFS_KEY, get().prefs);
+        persistPrefs();
+      },
+
+      requestTheme: (to, opts = {}) => {
+        const auto = opts.auto === true;
+        const s = get();
+        // Já está nesse tema e nada em voo: só registra de quem foi a escolha.
+        if (s.themePending === null && s.prefs.theme === to) {
+          if (s.prefs.themeAuto !== auto) {
+            set({ prefs: { ...s.prefs, themeAuto: auto } });
+            persistPrefs();
+          }
+          return;
+        }
+        set({ themePending: to, prefs: { ...s.prefs, themeAuto: auto } });
+        if (themeDriver && themeDriver(to)) {
+          window.clearTimeout(themeFallback);
+          themeFallback = window.setTimeout(() => get().commitTheme(), THEME_FALLBACK_MS);
+          return;
+        }
+        get().commitTheme();
+      },
+
+      commitTheme: () => {
+        window.clearTimeout(themeFallback);
+        themeFallback = 0;
+        const s = get();
+        if (s.themePending === null) return;
+        set({ prefs: { ...s.prefs, theme: s.themePending }, themePending: null });
+        persistPrefs();
+      },
+
+      setThemeDriver: (driver) => {
+        themeDriver = driver;
       },
 
       resetLayout: () => {
@@ -310,7 +380,7 @@ export function createOsStore(initialInternal: string) {
 
       hydrate: () => {
         if (get().hydrated) return;
-        const prefs = readJson<Partial<OsPrefs>>(PREFS_KEY);
+        const prefs = readJson<{ theme?: unknown; motion?: unknown; simple?: unknown }>(PREFS_KEY);
         const rects = readJson<Record<string, unknown>>(RECTS_KEY);
         set((s) => {
           const wins = { ...s.wins };
@@ -320,10 +390,12 @@ export function createOsStore(initialInternal: string) {
               if (isRect(r)) wins[id] = { ...wins[id], placed: "user", rect: clampRect(r, s.area, id) };
             }
           }
-          const theme = prefs?.theme === "paper" ? "paper" : "graphite";
+          // Preferência salva manda (aceita os nomes antigos); sem nada salvo, o tema do sistema — a mesma regra do script inline.
+          const saved = parseTheme(prefs?.theme);
+          const theme = saved ?? systemTheme();
           const motion = prefs?.motion === "reduce" ? "reduce" : "system";
           const simple = prefs?.simple === true;
-          return { wins, prefs: { theme, motion, simple }, hydrated: true };
+          return { wins, prefs: { theme, themeAuto: saved === null, motion, simple }, hydrated: true };
         });
       },
     };

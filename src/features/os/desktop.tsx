@@ -8,6 +8,7 @@ import { AppGlyph, Glyph } from "./icons";
 import { OsEye } from "./eye/os-eye";
 import { SocialHud } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
+import { ThemeToggle } from "./theme-toggle";
 import { useClock, useLaunch } from "./launch";
 
 export { useClock, useLaunch } from "./launch";
@@ -144,6 +145,10 @@ export function Dock() {
             <AppGlyph kind="search" size={40} />
             <span className="os-dock__label">{s.apps.search}</span>
           </button>
+        </li>
+        {/* Sol/lua: Gojo (claro) ↔ Obito (escuro), sincronizado com Ajustes pelo mesmo store. */}
+        <li>
+          <ThemeToggle variant="dock" />
         </li>
       </ul>
     </nav>

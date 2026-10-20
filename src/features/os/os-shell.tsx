@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/config";
 import { Nav } from "@/components/nav/nav";
 import { ViewTransitions } from "@/components/view-transitions";
 import { createOsStore, type OsState, type OsStore } from "./store";
+import { DARK_MQ, THEME_COLOR, systemTheme } from "./theme";
 import { APPS, MOBILE_SHELL_MQ, parseRoute, type RouteInfo } from "./registry";
 import type { OsPayload } from "./types";
 import { Dock, Desktop, TopBar } from "./desktop";
@@ -102,6 +103,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
 
   const shell = useStore(store, (s) => s.shell);
   const theme = useStore(store, (s) => s.prefs.theme);
+  const themeAuto = useStore(store, (s) => s.prefs.themeAuto);
+  const hydrated = useStore(store, (s) => s.hydrated);
   const motion = useStore(store, (s) => s.prefs.motion);
 
   const navigate = useCallback(
@@ -200,13 +203,29 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     if (isOs) h.dataset.os = "1";
     else delete h.dataset.os;
     h.dataset.shell = shell;
-    h.dataset.osTheme = theme;
+    // O tema só depois da hidratação: até lá o atributo é o do script inline (THEME_SCRIPT), que
+    // aplica a mesma regra que `hydrate` — o HTML do servidor nunca força o tema errado.
+    if (hydrated) {
+      h.dataset.osTheme = theme;
+      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
+        m.content = THEME_COLOR[theme];
+      });
+    }
     if (motion === "reduce") h.dataset.osMotion = "reduce";
     else delete h.dataset.osMotion;
     return () => {
       delete h.dataset.os;
     };
-  }, [isOs, shell, theme, motion]);
+  }, [isOs, shell, theme, motion, hydrated]);
+
+  // 4b) Sem escolha salva, o tema segue o sistema — inclusive quando ele muda com a página aberta.
+  useEffect(() => {
+    if (!hydrated || !themeAuto) return;
+    const mq = window.matchMedia(DARK_MQ);
+    const onChange = () => store.getState().requestTheme(systemTheme(), { auto: true });
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [hydrated, themeAuto, store]);
 
   // Só em desenvolvimento: o store fica inspecionável no console e nos testes (scripts/os-check.mjs).
   useEffect(() => {

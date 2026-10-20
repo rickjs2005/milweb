@@ -92,7 +92,7 @@ export const pt: Dictionary = {
     },
     search: { title: "Buscar no MilWeb OS", placeholder: "Projeto, serviço ou aplicativo…", empty: "Nada encontrado.", hint: "Enter abre o primeiro resultado · Esc fecha · tecla / abre a busca", apps: "Aplicativos", projects: "Projetos", services: "Serviços", open: "Abrir" },
     settings: {
-      theme: "Tema da área de trabalho", graphite: "Grafite", paper: "Papel", motion: "Movimento", motionSystem: "Seguir o sistema", motionReduce: "Reduzir", mode: "Modo de navegação", modeOs: "Sistema (janelas)", modeSimple: "Simples (lista)",
+      theme: "Tema", gojo: "Gojo · claro", obito: "Obito · escuro", themeSwitch: "Tema escuro (Obito)", themeShort: "Tema", motion: "Movimento", motionSystem: "Seguir o sistema", motionReduce: "Reduzir", mode: "Modo de navegação", modeOs: "Sistema (janelas)", modeSimple: "Simples (lista)",
       language: "Idioma", sound: "Som", reset: "Reorganizar janelas", about: "O MilWeb OS é uma camada de apresentação sobre o site: cada case, serviço e contato continua acessível por link direto.", saved: "Preferências salvas neste navegador.",
     },
     simple: { title: "Navegação simples", toOs: "Abrir o MilWeb OS", skip: "Ir para a navegação simples", nav: "Seções" },

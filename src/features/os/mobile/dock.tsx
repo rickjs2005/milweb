@@ -2,13 +2,15 @@
 
 import { useOs } from "../os-shell";
 import { SocialIcon, type SocialKey } from "../social-hud";
+import { ThemeToggle } from "../theme-toggle";
 import { WhatsAppIcon } from "./icons";
 
 /**
  * Dock do telefone — os caminhos rápidos de conversa, não os apps da grade:
  * WhatsApp (conversão), LinkedIn, GitHub e Instagram (data/social.ts; uma rede
- * sem URL confirmada simplesmente não aparece). Translúcida, fixa, dentro da
- * área segura; some atrás do app aberto, como a dock de um telefone.
+ * sem URL confirmada simplesmente não aparece), e o sol/lua do tema no fim.
+ * Translúcida, fixa, dentro da área segura; some atrás do app aberto, como a
+ * dock de um telefone.
  */
 const SOCIAL_ORDER: SocialKey[] = ["linkedin", "github", "instagram"];
 
@@ -34,6 +36,9 @@ export function MobileDock() {
             </a>
           </li>
         ))}
+        <li>
+          <ThemeToggle variant="mdock" />
+        </li>
       </ul>
     </nav>
   );

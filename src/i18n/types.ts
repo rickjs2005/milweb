@@ -79,7 +79,8 @@ export type Dictionary = {
     };
     search: { title: string; placeholder: string; empty: string; hint: string; apps: string; projects: string; services: string; open: string };
     settings: {
-      theme: string; graphite: string; paper: string; motion: string; motionSystem: string; motionReduce: string; mode: string; modeOs: string; modeSimple: string;
+      /** Tema: as duas identidades (Gojo claro, Obito escuro), o rótulo do interruptor da dock e o nome curto sob o ícone no telefone. */
+      theme: string; gojo: string; obito: string; themeSwitch: string; themeShort: string; motion: string; motionSystem: string; motionReduce: string; mode: string; modeOs: string; modeSimple: string;
       language: string; sound: string; reset: string; about: string; saved: string;
     };
     simple: { title: string; toOs: string; skip: string; nav: string };

@@ -8,9 +8,10 @@
    toca o desktop (os.css), que é regredido por capturas a cada revisão.
 
    Composição: uma tela inicial de telefone — linha de status, o olho como
-   papel de parede (atmosfera azul-profunda, luz fria, detalhes de energia),
-   a grade de aplicativos (ícone + nome curto, 4 colunas) e a dock de redes.
-   Cada app abre em tela cheia crescendo do próprio ícone.
+   papel de parede (Obito: carvão com brasa vermelha discreta; Gojo: gelo com
+   luz azul fria), a grade de aplicativos (ícone + nome curto, 4 colunas) e a
+   dock de redes com o sol/lua do tema no fim. Cada app abre em tela cheia
+   crescendo do próprio ícone.
    ===================================================================== */
 .os-launcher, .os-mdock { display: none; }
 
@@ -19,14 +20,21 @@
     --os-mdock: calc(96px + env(safe-area-inset-bottom, 0px));
     --mw-status: 48px;
     --mw-icon: 64px;
-    --mw-deep: 7 12 26;        /* azul profundo do papel de parede */
-    --mw-glow: 58 128 220;     /* luz fria atrás do olho */
-    --mw-energy: 120 190 255;  /* detalhes de energia (pontos, feixes) */
+    /* OBITO (padrão) */
+    --mw-deep: 12 9 11;          /* carvão quente do papel de parede */
+    --mw-glow: 150 24 36;        /* brasa atrás do olho */
+    --mw-energy: 230 70 80;      /* detalhes de energia (pontos, feixes) */
+    --mw-vignette: rgb(0 0 0 / .5);
+    --mw-dock: rgb(12 8 10 / .62);
+    --mw-dock-line: rgb(255 255 255 / .1);
   }
-  html[data-os-theme="paper"] {
-    --mw-deep: 214 220 232;
-    --mw-glow: 120 160 220;
-    --mw-energy: 40 70 120;
+  html[data-os-theme="gojo"] {
+    --mw-deep: 236 240 247;
+    --mw-glow: 120 170 255;
+    --mw-energy: 30 100 220;
+    --mw-vignette: rgb(40 60 100 / .12);
+    --mw-dock: rgb(255 255 255 / .68);
+    --mw-dock-line: rgb(17 20 26 / .1);
   }
 
   /* ---- casca ------------------------------------------------------------ */
@@ -42,18 +50,21 @@
     overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) var(--os-mdock) max(16px, env(safe-area-inset-left, 0px));
   }
-  /* papel de parede: azul profundo → grafite, luz fria no alto, vinheta embaixo, pontos e dois feixes */
+  /* papel de parede: profundo → fundo do tema, luz no alto (brasa no Obito, luz fria no Gojo), vinheta
+     embaixo, pontos e dois feixes. Uma camada só por tema — no telefone a troca acontece com a pálpebra
+     fechada e o fundo muda de uma vez (os pseudo-elementos do desktop ficam sem fundo aqui). */
   .os-wallpaper {
     position: fixed; inset: 0; z-index: -1;
     background:
-      radial-gradient(72% 40% at 50% 28%, rgb(var(--mw-glow) / .42) 0%, rgb(var(--mw-glow) / 0) 100%),
-      radial-gradient(130% 60% at 50% 104%, rgb(0 0 0 / .5), transparent 62%),
+      radial-gradient(72% 40% at 50% 28%, rgb(var(--mw-glow) / .38) 0%, rgb(var(--mw-glow) / 0) 100%),
+      radial-gradient(130% 60% at 50% 104%, var(--mw-vignette), transparent 62%),
       linear-gradient(118deg, transparent 38%, rgb(var(--mw-energy) / .05) 49%, transparent 50.5%),
       linear-gradient(64deg, transparent 58%, rgb(var(--mw-energy) / .045) 70%, transparent 71%),
       radial-gradient(circle at 1px 1px, rgb(var(--mw-energy) / .13) 1px, transparent 1.6px),
       linear-gradient(180deg, rgb(var(--mw-deep)) 0%, rgb(var(--mw-deep)) 42%, rgb(var(--os-bg)) 100%);
     background-size: auto, auto, auto, auto, 24px 24px, auto;
   }
+  .os-wallpaper::before, .os-wallpaper::after { content: none; }
   .os-launcher { display: contents; }
   .os-launcher__status {
     order: 1; flex: none; position: relative; z-index: 1;
@@ -72,11 +83,13 @@
     transform: translate3d(calc(var(--par-x, 0) * 8px), calc(var(--par-y, 0) * 5px), 0);
     container-type: size;
   }
-  .os-eye picture, .os-eye__canvas {
+  .os-eye__still, .os-eye__canvas {
     position: absolute; inset: auto; left: 50%; top: 50%; width: auto; height: min(100cqh, calc(100cqw / 1.3)); aspect-ratio: 1.3 / 1;
     transform: translate(-50%, -50%);
     -webkit-mask-image: radial-gradient(62% 58% at 50% 50%, #000 52%, transparent 100%); mask-image: radial-gradient(62% 58% at 50% 50%, #000 52%, transparent 100%);
   }
+  .os-eye__still { background-image: url("/art/eye-obito-mobile.webp"); }
+  html[data-os-theme="gojo"] .os-eye__still { background-image: url("/art/eye-gojo-mobile.webp"); }
   /* o olho emerge da atmosfera: a base se funde ao papel de parede, por cima dele a grade */
   .os-eye::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(var(--mw-deep) / 0) 62%, rgb(var(--mw-deep) / .4) 100%); }
 
@@ -96,7 +109,7 @@
     font: 11.5px/1.2 var(--font-mono), monospace; letter-spacing: .04em; text-transform: uppercase;
     color: rgb(var(--os-fg) / .92); text-shadow: 0 1px 2px rgb(0 0 0 / .55);
   }
-  html[data-os-theme="paper"] .os-launch__label { text-shadow: none; }
+  html[data-os-theme="gojo"] .os-launch__label { text-shadow: none; }
   /* a placa: degradê por app, brilho no alto, sombra assentada; glifo branco com um acento */
   .os-micon {
     --mi-a: 70 80 96; --mi-b: 22 28 36;
@@ -124,16 +137,16 @@
   .os-mdock { display: block; position: fixed; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 90; }
   .os-mdock ul {
     display: flex; justify-content: space-around; align-items: stretch; gap: 2px; margin: 0; padding: 8px 6px; list-style: none;
-    border-radius: 26px; background: rgb(10 16 28 / .58); border: 1px solid rgb(255 255 255 / .1);
-    box-shadow: 0 12px 32px rgb(0 0 0 / .45), inset 0 1px 0 rgb(255 255 255 / .06);
+    border-radius: 26px; background: var(--mw-dock); border: 1px solid var(--mw-dock-line);
+    box-shadow: var(--os-dock-shadow), inset 0 1px 0 rgb(255 255 255 / .06);
     backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);
   }
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .os-mdock ul { background: rgb(10 16 28 / .92); } }
-  html[data-os-theme="paper"] .os-mdock ul { background: rgb(255 255 255 / .55); border-color: rgb(0 0 0 / .1); }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .os-mdock ul { background: rgb(var(--os-bg) / .94); } }
   .os-mdock li { flex: 1 1 0; min-width: 0; }
   .os-mdock__item {
-    display: flex; flex-direction: column; align-items: center; gap: 5px; min-height: 64px; padding: 4px 2px; border-radius: 16px;
-    color: rgb(var(--os-fg)); text-decoration: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100%; min-height: 64px; padding: 4px 2px; border: 0; border-radius: 16px;
+    background: transparent; font: inherit; color: rgb(var(--os-fg)); text-decoration: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
   }
   .os-mdock__item:focus-visible { outline: none; }
   .os-mdock__item:focus-visible .os-mdock__icon { box-shadow: 0 0 0 3px rgb(var(--os-signal)); }
@@ -146,8 +159,11 @@
   .os-mdock__icon[data-social="linkedin"] { background: linear-gradient(160deg, #2f8ce6, #0a4f9a); }
   .os-mdock__icon[data-social="github"] { background: linear-gradient(160deg, #2c333c, #0d1117); border-radius: 50%; }
   .os-mdock__icon[data-social="instagram"] { background: linear-gradient(45deg, #f9ce34 0%, #ee2a7b 55%, #6228d7 100%); }
+  /* sol/lua: placa na cor do tema com o glifo no acento (vermelho no Obito, azul no Gojo) */
+  .os-mdock__icon[data-social="theme"] { background: linear-gradient(160deg, #2c2a30, #141216); color: rgb(var(--os-signal)); }
+  html[data-os-theme="gojo"] .os-mdock__icon[data-social="theme"] { background: linear-gradient(160deg, #ffffff, #e4eaf4); box-shadow: inset 0 0 0 1px rgb(17 20 26 / .12), 0 4px 12px rgb(20 30 50 / .16); }
   .os-mdock__item:active .os-mdock__icon { transform: scale(.9); filter: brightness(.9); }
-  .os-mdock__label { font: 10px/1 var(--font-mono), monospace; letter-spacing: .06em; text-transform: uppercase; color: rgb(var(--os-fg) / .85); white-space: nowrap; }
+  .os-mdock__label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font: 10px/1 var(--font-mono), monospace; letter-spacing: .06em; text-transform: uppercase; color: rgb(var(--os-fg) / .85); white-space: nowrap; }
 
   /* ---- apps em tela cheia -------------------------------------------------- */
   .os-windows { position: fixed; inset: 0; z-index: 100; }
@@ -311,11 +327,14 @@
   .bounty__all-name { font-size: 11px; }
 }
 
-/* telefones estreitos: placa de 56 px, rótulo um ponto menor (continuam 4 colunas) */
+/* telefones estreitos: placa de 56 px, rótulo um ponto menor (continuam 4 colunas); a dock de cinco
+   itens aperta o espaçamento dos rótulos para "INSTAGRAM" caber sem reticências */
 @media (max-width: 359px) {
   :root { --mw-icon: 56px; }
   .os-launcher__apps ul { gap: 12px 4px; }
   .os-launch__label { font-size: 10.5px; }
+  .os-mdock ul { padding: 8px 4px; }
+  .os-mdock__label { font-size: 9px; letter-spacing: .02em; }
 }
 
 /* telefone deitado: status em cima, grade à esquerda, olho à direita, dock baixa */

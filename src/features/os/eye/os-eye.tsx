@@ -3,29 +3,38 @@
 import { useEffect, useRef } from "react";
 import { onIdle } from "@/animations/idle";
 import { getQuality, probeGpu } from "@/lib/quality";
-import { MOBILE_SHELL_MQ } from "../registry";
 import { useOs, useOsStore } from "../os-shell";
-import { OS_EYE, OS_EYE_STILL } from "./eye.config";
+import { EYE_THEME_UNIFORM, OS_EYE } from "./eye.config";
 
 /**
- * O olho do wallpaper — os Six Eyes, vivos.
+ * O olho do wallpaper — vivo, com duas identidades.
  *
  * Camada visual, nunca interativa: `pointer-events: none`, aria-hidden. O
- * HTML entrega a IMAGEM (olho aberto, gerada pelo mesmo shader): é o que
- * aparece sem WebGL, com movimento reduzido, com GPU reprovada na sonda, e
- * até o canvas assentar. Com GPU, o canvas monta em idle e entra por
- * crossfade — microanimações contínuas (pupila respira, reflexos derivam,
- * fibras cintilam), o olhar segue o cursor com inércia (desktop) ou deriva
- * devagar (toque), piscadas espontâneas de vez em quando.
+ * HTML entrega a IMAGEM (olho aberto, gerada pelo mesmo shader; o CSS escolhe
+ * a do tema em vigor — Gojo claro ou Obito escuro — pelo `data-os-theme` do
+ * <html>, então nunca aparece um olho escuro no tema claro, nem durante o
+ * carregamento, nem sem WebGL, nem com movimento reduzido, nem com GPU
+ * reprovada na sonda). Com GPU, o canvas monta em idle e entra por crossfade
+ * — microanimações contínuas, o olhar segue o cursor com inércia (desktop)
+ * ou deriva devagar (toque), piscadas espontâneas de vez em quando.
  *
  * Piscar ao clicar/tocar: um `pointerdown` em qualquer lugar da página
  * (ouvido na captura, passivo — nunca bloqueia o clique que o disparou)
  * fecha o olho em ~140 ms, segura ~70 ms e reabre em ~400 ms com um brilho
- * azul na íris. Cliques repetidos no meio da reabertura fecham de novo a
- * partir de onde a pálpebra está — nada salta.
+ * na íris. Cliques repetidos no meio da reabertura fecham de novo a partir
+ * de onde a pálpebra está — nada salta. Os controles de tema ficam de fora
+ * desse piscar: eles têm o próprio.
+ *
+ * Troca de tema: o olho se registra no store como driver (`setThemeDriver`).
+ * Um pedido (`requestTheme`) fecha a pálpebra; com ela fechada o store
+ * aplica o tema (`commitTheme` — a interface muda no escuro e o uniform da
+ * íris acompanha) e, depois de uma pausa um pouco mais longa, o olho reabre
+ * com a identidade nova e o brilho da cor dela. Pedidos durante a transição
+ * só trocam o destino: a pálpebra nunca anima duas vezes ao mesmo tempo.
  *
  * Para quando a aba está oculta (renderer) e quando nada do olho está à
- * vista: janela maximizada no desktop, tela aberta no celular.
+ * vista: janela maximizada no desktop, tela aberta no celular — menos
+ * durante um piscar, que sempre termina.
  */
 type Phase = "open" | "closing" | "hold" | "opening";
 
@@ -71,18 +80,31 @@ export function OsEye() {
       }
 
       // ---- estado da cena (fora do React: muda a cada frame) ----
-      const eye = { phase: "open" as Phase, lid: 0, from: 0, t0: 0, glow: 0, dilate: 0, nextAuto: 0 };
+      const eye = { phase: "open" as Phase, lid: 0, from: 0, t0: 0, glow: 0, dilate: 0, nextAuto: 0, themed: false };
       const gaze = { x: 0, y: 0, tx: 0, ty: 0, mouseAt: -1e9 };
-      const B = OS_EYE.blink;
-      const blink = () => {
+      const uTheme = () => EYE_THEME_UNIFORM[store.getState().prefs.theme];
+      /** Fecha a pálpebra a partir de onde ela estiver; já fechando/fechada, nada muda. */
+      const close = () => {
         if (eye.phase === "closing" || eye.phase === "hold") return;
         eye.phase = "closing";
         eye.from = eye.lid;
         eye.t0 = -1; // marcado no próximo frame
+      };
+      const blink = () => {
+        close();
         r.invalidate();
+      };
+      /** Driver da troca de tema: fecha (ou aproveita o fechamento em curso) e deixa o commit para a pausa fechada. */
+      const driveTheme = () => {
+        eye.themed = true;
+        close();
+        r.invalidate();
+        return true;
       };
       const onDown = (e: PointerEvent) => {
         if (e.pointerType === "mouse" && e.button !== 0) return;
+        // Os controles de tema têm o próprio piscar (via driver): aqui ficariam dois fechamentos no mesmo gesto.
+        if ((e.target as Element | null)?.closest?.("[data-theme-toggle]")) return;
         // Telefone: o olhar vai ao ponto tocado (dedo = cursor por alguns segundos) e volta a derivar.
         if (mobile && e.pointerType !== "mouse" && fig) {
           const b = fig.getBoundingClientRect();
@@ -107,6 +129,8 @@ export function OsEye() {
       let painted = false;
       r.onFrame((t, dt) => {
         r.clear();
+        // Um piscar de tema é mais lento: a interface muda atrás da pálpebra e a íris nova merece a reabertura.
+        const B = eye.themed ? { ...OS_EYE.blink, ...OS_EYE.themeBlink } : OS_EYE.blink;
         // ---- piscar ----
         if (eye.phase === "closing") {
           if (eye.t0 < 0) eye.t0 = t;
@@ -119,6 +143,12 @@ export function OsEye() {
           }
         } else if (eye.phase === "hold") {
           eye.lid = 1;
+          // Pálpebra fechada: é agora que o tema pedido vira o tema em vigor (a pausa recomeça — a interface
+          // transiciona no escuro). Um novo pedido que chegue ainda fechado aplica aqui também.
+          if (store.getState().themePending !== null) {
+            store.getState().commitTheme();
+            eye.t0 = t;
+          }
           if (t - eye.t0 >= B.hold) {
             eye.phase = "opening";
             eye.t0 = t;
@@ -131,6 +161,7 @@ export function OsEye() {
           if (u >= 1) {
             eye.phase = "open";
             eye.lid = 0;
+            eye.themed = false;
           }
         }
         eye.glow *= Math.exp(-dt / (B.glow * 0.3));
@@ -160,11 +191,14 @@ export function OsEye() {
           uDilate: eye.dilate,
           uFade: 1,
           uEdge: frame.edge,
+          uTheme: uTheme(),
         });
         if (!painted) {
           painted = true;
           fig!.dataset.state = "live";
         }
+        // Um piscar sempre termina, mesmo com o olho "coberto" (sem hold): pede o próximo frame.
+        if (eye.phase !== "open") r.invalidate();
       });
 
       // Sonda: um frame do shader real num buffer minúsculo, medido com gl.finish — sem GPU
@@ -173,7 +207,7 @@ export function OsEye() {
       r.setDpr(0.12);
       r.resize();
       const p0 = performance.now();
-      r.draw("eye", { uRes: [canvas.width, canvas.height], uAspect: frame.aspect, uScale: frame.scale, uTime: 0, uBlink: 0, uGaze: [0, 0], uGlow: 0, uDilate: 0, uFade: 1, uEdge: frame.edge });
+      r.draw("eye", { uRes: [canvas.width, canvas.height], uAspect: frame.aspect, uScale: frame.scale, uTime: 0, uBlink: 0, uGaze: [0, 0], uGlow: 0, uDilate: 0, uFade: 1, uEdge: frame.edge, uTheme: uTheme() });
       r.gl.finish();
       const cost = performance.now() - p0;
       r.setDpr(before);
@@ -198,6 +232,7 @@ export function OsEye() {
       };
       const unsub = store.subscribe(sync);
       sync();
+      store.getState().setThemeDriver(driveTheme);
       window.addEventListener("pointerdown", onDown, { passive: true, capture: true });
       if (gq.fine) {
         window.addEventListener("pointermove", onMove, { passive: true });
@@ -213,6 +248,9 @@ export function OsEye() {
           },
           get phase() {
             return eye.phase;
+          },
+          get themed() {
+            return eye.themed;
           },
           get frames() {
             return r.frames;
@@ -230,6 +268,10 @@ export function OsEye() {
       cleanup = () => {
         unsub();
         held?.();
+        const st = store.getState();
+        st.setThemeDriver(null);
+        // Um tema pedido e ainda não aplicado não fica pendurado quando o olho sai de cena.
+        if (st.themePending !== null) st.commitTheme();
         window.removeEventListener("pointerdown", onDown, { capture: true });
         window.removeEventListener("pointermove", onMove);
         document.documentElement.removeEventListener("pointerleave", onLeave);
@@ -285,15 +327,10 @@ export function OsEye() {
     };
   }, [shell, motion]);
 
-  const d = OS_EYE_STILL.desktop;
-  const m = OS_EYE_STILL.mobile;
   return (
     <figure ref={ref} className="os-eye" data-state="still" aria-hidden="true" data-no-inspect>
-      <picture>
-        <source media={MOBILE_SHELL_MQ} srcSet={m.src} width={m.w} height={m.h} />
-        {/* eslint-disable-next-line @next/next/no-img-element -- WebP já otimizado, gerado do próprio shader; a dimensão é fixa pelo CSS */}
-        <img src={d.src} width={d.w} height={d.h} alt="" decoding="async" fetchPriority="high" className="os-eye__still" />
-      </picture>
+      {/* A imagem é um fundo CSS (styles/os.css): o tema do <html> escolhe Gojo ou Obito, desktop ou celular — só essa é baixada. */}
+      <div className="os-eye__still" role="presentation" />
       <canvas ref={canvasRef} className="os-eye__canvas" />
     </figure>
   );

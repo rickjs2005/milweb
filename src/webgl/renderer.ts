@@ -39,6 +39,8 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
   let quad: WebGLBuffer | null = null;
   let raf = 0;
   let dirty = true;
+  /** Dentro do callback de frame: um `invalidate`/`hold` só marca — a cauda do loop agenda o próximo (nunca um segundo loop). */
+  let inFrame = false;
   let holds = 0;
   let lost = false;
   let destroyed = false;
@@ -125,7 +127,14 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
       if (fpsCap > 0) nextAllowed = t + 1000 / fpsCap - 1;
       resize();
       const t0 = performance.now();
-      onFrame?.(t / 1000, dt);
+      // Limpa ANTES do frame: um `invalidate()` pedido durante o frame fica registrado para a cauda do loop.
+      dirty = false;
+      inFrame = true;
+      try {
+        onFrame?.(t / 1000, dt);
+      } finally {
+        inFrame = false;
+      }
       // gl é assíncrono: finish() mede o custo REAL do frame (só no warmup).
       if (onCost) {
         gl!.finish();
@@ -134,7 +143,6 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
         costed++;
         onCost(cost, costed);
       }
-      dirty = false;
       // Degradação: frames > 34 ms de forma consistente sinalizam para baixar a qualidade.
       if (dt > 0.034) slowFrames++;
       else slowFrames = Math.max(0, slowFrames - 1);
@@ -148,6 +156,9 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
     else last = 0;
   };
   const kick = () => {
+    // No meio de um frame `raf` já é 0 (o loop zera ao entrar): agendar aqui criaria um segundo loop
+    // concorrente a cada chamada — a cauda do loop cuida do próximo quadro.
+    if (inFrame) return;
     if (!raf && !destroyed && !lost && !document.hidden) raf = requestAnimationFrame(loop);
   };
 

@@ -12,21 +12,22 @@ export function SettingsApp() {
   const prefs = useOsStore((st) => st.prefs);
   const set = store.getState().setPrefs;
 
-  const Option = ({ group, value, current, label, onPick }: { group: string; value: string; current: string; label: string; onPick: () => void }) => (
-    <button type="button" role="radio" aria-checked={current === value} className="os-chip t-mono" name={group} onClick={onPick}>
+  const Option = ({ group, value, current, label, onPick, themed }: { group: string; value: string; current: string; label: string; onPick: () => void; themed?: boolean }) => (
+    <button type="button" role="radio" aria-checked={current === value} className="os-chip t-mono" name={group} onClick={onPick} data-theme-toggle={themed ? "" : undefined}>
       {label}
     </button>
   );
 
   return (
     <div className="os-settings">
+      {/* Tema: o mesmo store do sol/lua da dock — pedir ao store fecha o olho, troca no escuro e reabre. */}
       <section className="os-settings__row" role="radiogroup" aria-labelledby="os-set-theme">
         <h3 id="os-set-theme" className="t-mono os-app__label">
           {s.theme.toUpperCase()}
         </h3>
         <div className="os-settings__options">
-          <Option group="theme" value="graphite" current={prefs.theme} label={s.graphite} onPick={() => set({ theme: "graphite" })} />
-          <Option group="theme" value="paper" current={prefs.theme} label={s.paper} onPick={() => set({ theme: "paper" })} />
+          <Option group="theme" value="gojo" current={prefs.theme} label={s.gojo} onPick={() => store.getState().requestTheme("gojo")} themed />
+          <Option group="theme" value="obito" current={prefs.theme} label={s.obito} onPick={() => store.getState().requestTheme("obito")} themed />
         </div>
       </section>
 
