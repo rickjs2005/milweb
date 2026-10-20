@@ -49,7 +49,7 @@ export const siteJsonLd = (locale: Locale) =>
     // Mesmo numero dos botoes de WhatsApp do site — o canal de contato real.
     telephone: `+${PROFILE.whatsapp}`,
     logo: `${SITE_URL}${PROFILE.logo}`,
-    image: `${SITE_URL}/opengraph-image`,
+    image: `${SITE_URL}/og/cover-${locale}.jpg`,
     description: SITE_COPY[locale].description,
     inLanguage: HTML_LANG[locale],
     areaServed: "BR",

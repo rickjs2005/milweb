@@ -84,6 +84,8 @@ export type Dictionary = {
       language: string; sound: string; reset: string; about: string; saved: string;
     };
     simple: { title: string; toOs: string; skip: string; nav: string };
+    /** Tela de carregamento do OS: a frase enquanto a home se prepara e o rodapé (o segundo item do rodapé vem de sign.origin). */
+    boot: { preparing: string; studio: string };
     contact: { channels: string; lead: string; whatsapp: string; email: string; linkedin: string; github: string };
     /** Painéis das redes na área de trabalho: rótulo do grupo, microtexto por rede e a nota de nova aba. */
     social: { label: string; linkedin: string; github: string; instagram: string; external: string };

@@ -96,6 +96,7 @@ export const es: Dictionary = {
       language: "Idioma", sound: "Sonido", reset: "Reorganizar ventanas", about: "MilWeb OS es una capa de presentación sobre el sitio: cada caso, servicio y contacto sigue accesible por enlace directo.", saved: "Preferencias guardadas en este navegador.",
     },
     simple: { title: "Navegación simple", toOs: "Abrir MilWeb OS", skip: "Ir a la navegación simple", nav: "Secciones" },
+    boot: { preparing: "Preparando tu entorno", studio: "Estudio de desarrollo" },
     contact: { channels: "Canales", lead: "¿Tienes algo que vale la pena construir? Cuéntamelo en un mensaje.", whatsapp: "WhatsApp", email: "Correo", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Redes del estudio", linkedin: "CONEXIONES Y OPORTUNIDADES", github: "CÓDIGO Y EXPERIMENTOS", instagram: "DETRÁS DE CÁMARAS Y PROCESO CREATIVO", external: "se abre en una pestaña nueva" },
     lab: { films: "Películas", experiments: "Experimentos", watch: "Ver" },

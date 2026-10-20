@@ -13,7 +13,7 @@
  * não a percepção.
  */
 import { chromium, devices } from "playwright";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const opt = (k, d) => {
@@ -22,7 +22,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme").split(",");
+const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme,boot,share").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -48,7 +48,7 @@ const errorsOf = (page) => {
     // Ruído do ambiente local: os scripts do Vercel Analytics/Speed Insights só existem no deploy; o SDK do Google
     // Preferred Sources dispara um aviso de CSP report-only (frame-ancestors) que não é do OS.
     if (m.type() === "error" && !/favicon|404 \(Not Found\)|_vercel\/|vercel-scripts|net::ERR|Refused to execute script|Content Security Policy|news\.google\.com/.test(t)) errs.push(`console.error: ${t.slice(0, 200)}`);
-    if (/hydrat/i.test(t)) errs.push(`hydration: ${t.slice(0, 200)}`);
+    if (/hydrat/i.test(t)) errs.push(`hydration: ${t.slice(t.indexOf("<SearchDialog") > 0 ? t.indexOf("<SearchDialog") : 0, (t.indexOf("<SearchDialog") > 0 ? t.indexOf("<SearchDialog") : 0) + 1500)}`);
   });
   return errs;
 };
@@ -1384,6 +1384,184 @@ if (ONLY.includes("theme")) {
     }
     await c.close();
   }
+}
+
+// ------------------------------------------------------------------- boot
+// Tela de carregamento (features/os/boot.tsx): está no HTML do servidor, sai quando fontes + olho + hidratação
+// estão prontos (ou aos 2,5 s), não captura o ponteiro, não volta em navegação interna nem em recarga da mesma
+// sessão, sai na hora com movimento reduzido, sobrevive a recurso com erro e some sem JavaScript (CSS, 6 s).
+if (ONLY.includes("boot")) {
+  current = "boot";
+  console.log("\n# tela de carregamento");
+  // Antes da hidratação a captura é CRUA, pelo CDP: o page.screenshot() do Playwright adianta as animações
+  // CSS finitas até o fim (a rede de segurança de 6 s da tela terminaria na hora) e deixa um style="" nos
+  // <input> (o React acusaria um atributo a mais) — artefatos da ferramenta, não do site.
+  const shotRaw = async (p, name) => {
+    const cdp = await p.context().newCDPSession(p);
+    const { data } = await cdp.send("Page.captureScreenshot", { format: "png" });
+    writeFileSync(`${OUT}/${name}.png`, Buffer.from(data, "base64"));
+    await cdp.detach();
+  };
+  const bootGone = (p, ms = 4500) => p.waitForFunction(() => !document.querySelector(".os-boot"), null, { timeout: ms }).then(() => true).catch(() => false);
+  // Rede lenta só até a tela ser vista: depois a conexão volta ao normal (no dev server o JavaScript tem
+  // megabytes — a 350 kbps a hidratação levaria minutos; em produção, segundos). O que se mede é o
+  // comportamento, não a velocidade do bundle do dev.
+  const slow = async (p, kbps = 350) => {
+    const cdp = await p.context().newCDPSession(p);
+    await cdp.send("Network.enable");
+    await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 300, downloadThroughput: (kbps * 1024) / 8, uploadThroughput: (kbps * 1024) / 8 });
+    return { restore: () => cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 }) };
+  };
+
+  // 1) conexão lenta (desktop): a tela aparece, com o texto certo, e sai sozinha quando a home está pronta
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", colorScheme: "dark" });
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    const net = await slow(p);
+    await p.goto(`${BASE}/`, { waitUntil: "domcontentloaded", timeout: 120000 });
+    const seen = await p.evaluate(() => {
+      const b = document.querySelector(".os-boot");
+      if (!b) return null;
+      const cs = getComputedStyle(b);
+      return { role: b.getAttribute("role"), live: b.getAttribute("aria-live"), text: b.querySelector(".os-boot__text")?.textContent, foot: b.querySelector(".os-boot__foot")?.textContent, logo: b.querySelector(".os-boot__logo")?.textContent, pointer: cs.pointerEvents, bar: !!b.querySelector(".os-boot__bar span"), visible: cs.display !== "none" && cs.opacity !== "0" };
+    });
+    await shotRaw(p, "b01-boot-desktop");
+    check("lenta: tela no HTML inicial — MILWEB®, indicador, 'Preparando seu ambiente', rodapé; role=status; sem capturar o ponteiro", !!seen && seen.visible && seen.role === "status" && seen.live === "polite" && seen.logo === "MILWEB®" && seen.text === "Preparando seu ambiente" && /Estúdio de desenvolvimento.*Brasil → Mundo/.test(seen.foot ?? "") && seen.pointer === "none" && seen.bar, JSON.stringify(seen));
+    await net.restore();
+    const t0 = Date.now();
+    const gone = await bootGone(p, 60000);
+    const dt = Date.now() - t0;
+    check("lenta: sai sozinha quando a home fica pronta; marca a sessão", gone && (await p.evaluate(() => document.documentElement.dataset.osBooted === "1" && sessionStorage.getItem("milweb-os:booted") === "1")), `${dt} ms depois do domcontentloaded`);
+    check("lenta: h1 e área de trabalho acessíveis por trás (nada escondido de leitores de tela)", await p.evaluate(() => document.querySelectorAll("h1").length === 1 && !document.querySelector(".os-desktop")?.closest("[aria-hidden='true'], [inert]")));
+    // navegação interna não remonta a tela
+    await p.click('[data-dock-id="studio"]');
+    await urlIs(p, /\/estudio$/);
+    await settle(p, 600);
+    check("navegação interna (Estúdio) não reapresenta a tela", (await p.locator(".os-boot").count()) === 0);
+    // recarregar na mesma sessão: nem desenha (atributo do script inline antes da pintura)
+    const early = new Promise((res) => p.once("domcontentloaded", async () => res(await p.evaluate(() => ({ booted: document.documentElement.dataset.osBooted, display: document.querySelector(".os-boot") ? getComputedStyle(document.querySelector(".os-boot")).display : "absent" })).catch(() => null))));
+    await p.reload({ waitUntil: "load", timeout: 120000 });
+    const e = await early;
+    check("recarregar na mesma sessão: data-os-booted já no domcontentloaded e a tela nem é desenhada", !!e && e.booted === "1" && (e.display === "none" || e.display === "absent"), JSON.stringify(e));
+    check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await c.close();
+  }
+
+  // 2) rápida: sai logo após a hidratação (sem duração mínima); 3) movimento reduzido: sem transição
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    const p = await c.newPage();
+    const t0 = Date.now();
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    const gone = await bootGone(p);
+    check("rápida: tela sai em até 4,5 s do load (sem duração mínima imposta)", gone, `${Date.now() - t0} ms`);
+    await c.close();
+    const r = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", reducedMotion: "reduce" });
+    const rp = await r.newPage();
+    await rp.addInitScript(() => { window.__bootPhases = []; new MutationObserver((ms) => ms.forEach((m) => { if (m.target.classList?.contains("os-boot")) window.__bootPhases.push(m.target.dataset.phase); })).observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ["data-phase"] }); });
+    await rp.goto(`${BASE}/`, { waitUntil: "load" });
+    const rgone = await bootGone(rp);
+    check("movimento reduzido: sai sem passar pela transição (nenhuma fase 'leave')", rgone && (await rp.evaluate(() => !window.__bootPhases.includes("leave"))), JSON.stringify(await rp.evaluate(() => window.__bootPhases)));
+    await r.close();
+  }
+
+  // 4) recurso essencial com erro (imagem do olho bloqueada): a tela sai mesmo assim, sem erro no console
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    await p.route("**/art/eye-*.webp", (r) => r.abort());
+    const t0 = Date.now();
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    const gone = await bootGone(p, 6000);
+    check("imagem do olho com erro: a tela sai (limite de 2,5 s) e nada quebra", gone && errs.length === 0, `${Date.now() - t0} ms · ${errs.slice(0, 2).join(" | ")}`);
+    await c.close();
+  }
+
+  // 5) sem JavaScript: a tela está lá, não bloqueia o ponteiro e se apaga pelo CSS aos 6 s
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", javaScriptEnabled: false });
+    const p = await c.newPage();
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    const at1 = await p.evaluate(() => { const b = document.querySelector(".os-boot"); return b ? getComputedStyle(b).visibility : "absent"; });
+    await p.waitForTimeout(6800);
+    const at7 = await p.evaluate(() => { const b = document.querySelector(".os-boot"); return b ? { vis: getComputedStyle(b).visibility, op: getComputedStyle(b).opacity } : "absent"; });
+    check("sem JavaScript: visível no load e apagada pelo CSS depois de 6 s (nunca bloqueia)", at1 === "visible" && !!at7 && at7 !== "absent" && at7.vis === "hidden", JSON.stringify({ at1, at7 }));
+    await c.close();
+  }
+
+  // 6) celular lento (390×844, EN): tela centrada, sem rolagem horizontal, texto traduzido, sai sozinha
+  {
+    const c = await browser.newContext({ ...devices["iPhone 13"], locale: "en-US", colorScheme: "dark" });
+    const p = await c.newPage();
+    const net = await slow(p);
+    await p.goto(`${BASE}/en`, { waitUntil: "domcontentloaded", timeout: 120000 });
+    const m = await p.evaluate(() => {
+      const b = document.querySelector(".os-boot");
+      if (!b) return null;
+      const r = b.querySelector(".os-boot__mark").getBoundingClientRect();
+      return { text: b.querySelector(".os-boot__text")?.textContent, foot: b.querySelector(".os-boot__foot")?.textContent, centered: Math.abs(r.left + r.width / 2 - innerWidth / 2) < 4, overflowX: document.documentElement.scrollWidth > innerWidth };
+    });
+    await shotRaw(p, "b02-boot-mobile-en");
+    check("celular EN: 'Preparing your environment', rodapé traduzido, marca centrada, sem rolagem horizontal", !!m && m.text === "Preparing your environment" && /Development studio.*Brazil → World/.test(m.foot ?? "") && m.centered && !m.overflowX, JSON.stringify(m));
+    await net.restore();
+    check("celular: sai sozinha", await bootGone(p, 60000));
+    await c.close();
+  }
+}
+
+// ------------------------------------------------------------------- share
+// Capa de compartilhamento (lib/share-cover.ts + scripts/og-cover.mjs): og:image absoluta com dimensões,
+// tipo e alt, Twitter Card grande, canonical + hreflang, uma imagem só por página, cases com a própria OG,
+// arquivo público e leve.
+if (ONLY.includes("share")) {
+  current = "share";
+  console.log("\n# capa de compartilhamento e metadados");
+  const c = await browser.newContext({ viewport: { width: 1280, height: 800 }, locale: "pt-BR" });
+  const p = await c.newPage();
+  const metaOf = (page) =>
+    page.evaluate(() => {
+      const all = (sel) => [...document.querySelectorAll(sel)].map((m) => m.getAttribute("content") ?? m.getAttribute("href"));
+      return {
+        title: document.title,
+        desc: all('meta[name="description"]')[0],
+        ogImage: all('meta[property="og:image"]'),
+        ogW: all('meta[property="og:image:width"]')[0],
+        ogH: all('meta[property="og:image:height"]')[0],
+        ogT: all('meta[property="og:image:type"]')[0],
+        ogAlt: all('meta[property="og:image:alt"]')[0],
+        ogUrl: all('meta[property="og:url"]')[0],
+        ogLocale: all('meta[property="og:locale"]')[0],
+        ogType: all('meta[property="og:type"]')[0],
+        twCard: all('meta[name="twitter:card"]')[0],
+        twImage: all('meta[name="twitter:image"]'),
+        canonical: all('link[rel="canonical"]')[0],
+        hreflang: [...document.querySelectorAll('link[rel="alternate"][hreflang]')].map((l) => l.getAttribute("hreflang")).sort().join(","),
+      };
+    });
+  for (const [path, locale, ogLocale] of [["/", "pt", "pt_BR"], ["/en", "en", "en_US"], ["/es", "es", "es_419"]]) {
+    await p.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
+    const m = await metaOf(p);
+    const cover = `https://milweb.com.br/og/cover-${locale}.jpg`;
+    check(`${path}: og:image única, absoluta (${cover}), 1200×630, image/jpeg, com alt`, m.ogImage.length === 1 && m.ogImage[0] === cover && m.ogW === "1200" && m.ogH === "630" && m.ogT === "image/jpeg" && (m.ogAlt ?? "").length > 40 && /Rick Januario/.test(m.ogAlt), JSON.stringify({ img: m.ogImage, w: m.ogW, h: m.ogH, t: m.ogT, alt: (m.ogAlt ?? "").slice(0, 60) }));
+    check(`${path}: twitter:card summary_large_image com a mesma capa; og:url, og:locale ${ogLocale}, título e descrição`, m.twCard === "summary_large_image" && m.twImage.length === 1 && m.twImage[0] === cover && m.ogUrl === `https://milweb.com.br${path === "/" ? "" : path}` && m.ogLocale === ogLocale && m.ogType === "website" && /MilWeb/.test(m.title) && (m.desc ?? "").length > 60, JSON.stringify({ card: m.twCard, tw: m.twImage, url: m.ogUrl, loc: m.ogLocale }));
+    check(`${path}: canonical + hreflang pt-BR/en/es/x-default`, m.canonical === `https://milweb.com.br${path === "/" ? "" : path}` && m.hreflang === "en,es,pt-BR,x-default", `${m.canonical} · ${m.hreflang}`);
+  }
+  // o case continua com a própria OG (arquivo de rota), uma imagem só
+  await p.goto(`${BASE}/projetos/terral`, { waitUntil: "domcontentloaded" });
+  const mc = await metaOf(p);
+  check("case (Terral): og:image própria (…/opengraph-image), única, sem a capa do site; card grande", mc.ogImage.length === 1 && /\/work\/terral\/opengraph-image/.test(mc.ogImage[0]) && !/cover-/.test(mc.ogImage[0]) && mc.twCard === "summary_large_image" && mc.twImage.length === 1 && /\/work\/terral\/twitter-image/.test(mc.twImage[0]), JSON.stringify({ og: mc.ogImage, tw: mc.twImage }));
+  // arquivo público, leve, nas dimensões certas, sem autenticação
+  for (const locale of ["pt", "en", "es"]) {
+    const res = await p.request.get(`${BASE}/og/cover-${locale}.jpg`);
+    const buf = await res.body();
+    const dim = await p.evaluate(async (b64) => { const i = new Image(); i.src = "data:image/jpeg;base64," + b64; await i.decode(); return [i.naturalWidth, i.naturalHeight]; }, buf.toString("base64"));
+    check(`cover-${locale}.jpg: 200 público, image/jpeg, 1200×630, < 300 KB`, res.status() === 200 && /image\/jpeg/.test(res.headers()["content-type"] ?? "") && dim[0] === 1200 && dim[1] === 630 && buf.length < 300 * 1024, `${res.status()} · ${(buf.length / 1024).toFixed(0)} KB · ${dim.join("×")}`);
+  }
+  const old = await p.request.get(`${BASE}/opengraph-image`);
+  check("a rota dinâmica antiga (/opengraph-image) não existe mais — nada de duas capas", old.status() === 404, String(old.status()));
+  await c.close();
 }
 
 // ------------------------------------------------------------------- simple

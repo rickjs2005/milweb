@@ -36,10 +36,15 @@ export function otherTheme(t: OsTheme): OsTheme {
 /** Cor do papel de parede por tema (= styles/os.css › --os-bg); vai na meta theme-color. */
 export const THEME_COLOR: Record<OsTheme, string> = { gojo: "#F3F5F8", obito: "#0A0A0C" };
 
+/** Marca de sessão da tela de carregamento: depois do primeiro boot, recarregar não a mostra de novo. */
+export const BOOTED_KEY = "milweb-os:booted";
+
 /**
  * Script inline (primeiro filho do <body>, antes de qualquer pintura): a mesma
- * regra de parseTheme/systemTheme, sem módulos. Mantido à mão — scripts/os-check.mjs
- * confere que o atributo já existe no primeiro quadro.
+ * regra de parseTheme/systemTheme, sem módulos; e, se a sessão já passou pela
+ * tela de carregamento, marca `data-os-booted` para o CSS nem a desenhar.
+ * Mantido à mão — scripts/os-check.mjs confere que os atributos já existem
+ * no primeiro quadro.
  */
 export const THEME_SCRIPT =
   "(function(){try{var t=null;try{var p=JSON.parse(localStorage.getItem('" +
@@ -48,4 +53,8 @@ export const THEME_SCRIPT =
   "t=(t==='gojo'||t==='paper')?'gojo':(t==='obito'||t==='graphite')?'obito':(matchMedia('" +
   DARK_MQ +
   "').matches?'obito':'gojo');" +
-  "document.documentElement.setAttribute('data-os-theme',t);}catch(e){}})();";
+  "document.documentElement.setAttribute('data-os-theme',t);" +
+  "try{if(sessionStorage.getItem('" +
+  BOOTED_KEY +
+  "'))document.documentElement.setAttribute('data-os-booted','1');}catch(e){}" +
+  "}catch(e){}})();";

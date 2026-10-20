@@ -96,6 +96,7 @@ export const en: Dictionary = {
       language: "Language", sound: "Sound", reset: "Rearrange windows", about: "MilWeb OS is a presentation layer over the site: every case, service and contact remains reachable by direct link.", saved: "Preferences are saved in this browser.",
     },
     simple: { title: "Simple navigation", toOs: "Open MilWeb OS", skip: "Skip to simple navigation", nav: "Sections" },
+    boot: { preparing: "Preparing your environment", studio: "Development studio" },
     contact: { channels: "Channels", lead: "Got something worth building? Tell me in a message.", whatsapp: "WhatsApp", email: "Email", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Studio networks", linkedin: "CONNECTIONS AND OPPORTUNITIES", github: "CODE AND EXPERIMENTS", instagram: "BEHIND THE SCENES AND CREATIVE PROCESS", external: "opens in a new tab" },
     lab: { films: "Films", experiments: "Experiments", watch: "Watch" },

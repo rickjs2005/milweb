@@ -16,6 +16,7 @@ import { WindowsLayer } from "./window";
 import { SearchDialog } from "./apps/search";
 import { SimpleShell } from "./simple-shell";
 import { MobileDock } from "./mobile/dock";
+import { OsBoot } from "./boot";
 import { readMark, stampEntry } from "./mobile/history";
 
 /**
@@ -277,6 +278,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
         <button type="button" className="os-skip" onClick={() => store.getState().setPrefs({ simple: true })}>
           {payload.s.simple.skip}
         </button>
+        {/* Tela de carregamento: só na primeira abertura da sessão, até fontes + olho + hidratação (ou 2,5 s). */}
+        <OsBoot />
         <TopBar />
         <Desktop />
         <WindowsLayer>{routeContent}</WindowsLayer>

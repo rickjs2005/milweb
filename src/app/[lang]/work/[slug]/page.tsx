@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<LangParams 
   if (!p) return {};
   const locale = await localeFrom(params);
   const description = searchDescription(p.result[locale]);
-  return pageMetadata({ locale, internalPath: `/work/${p.slug}`, title: `${p.title} — ${p.tagline[locale]}`, description, type: "article" });
+  return pageMetadata({ locale, internalPath: `/work/${p.slug}`, title: `${p.title} — ${p.tagline[locale]}`, description, type: "article", cover: false });
 }
 
 /**
