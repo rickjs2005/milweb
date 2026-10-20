@@ -12,9 +12,9 @@
  * Projetos e aparecem quando o visitante abre a pasta.
  */
 
-export type AppId = "projects" | "studio" | "lab" | "services" | "contact" | "settings";
+export type AppId = "projects" | "studio" | "lab" | "services" | "about" | "contact" | "settings";
 
-export const APP_IDS = ["projects", "studio", "lab", "services", "contact", "settings"] as const satisfies readonly AppId[];
+export const APP_IDS = ["projects", "studio", "lab", "services", "about", "contact", "settings"] as const satisfies readonly AppId[];
 
 export type AppDef = {
   id: AppId;
@@ -24,27 +24,29 @@ export type AppDef = {
   size: { w: number; h: number };
   /** Mínimo ao redimensionar. */
   min: { w: number; h: number };
-  /** Aparece na dock do desktop / na dock do celular / na coluna da área de trabalho / na grade do celular. */
+  /** Aparece na dock do desktop / na coluna da área de trabalho / na grade do telefone. */
   dock: boolean;
-  mobileDock: boolean;
   desktopIcon: boolean;
   mobileGrid: boolean;
 };
 
 export const APPS = {
-  projects: { id: "projects", route: "/work", size: { w: 1080, h: 700 }, min: { w: 420, h: 320 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
-  studio: { id: "studio", route: "/studio", size: { w: 820, h: 640 }, min: { w: 380, h: 300 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
-  lab: { id: "lab", route: "/lab", size: { w: 900, h: 660 }, min: { w: 400, h: 320 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
-  services: { id: "services", route: "/services", size: { w: 860, h: 640 }, min: { w: 380, h: 300 }, dock: true, mobileDock: false, desktopIcon: true, mobileGrid: true },
-  contact: { id: "contact", route: "/contact", size: { w: 780, h: 600 }, min: { w: 360, h: 300 }, dock: true, mobileDock: true, desktopIcon: true, mobileGrid: true },
-  settings: { id: "settings", route: null, size: { w: 560, h: 520 }, min: { w: 340, h: 300 }, dock: true, mobileDock: false, desktopIcon: false, mobileGrid: true },
+  projects: { id: "projects", route: "/work", size: { w: 1080, h: 700 }, min: { w: 420, h: 320 }, dock: true, desktopIcon: true, mobileGrid: true },
+  studio: { id: "studio", route: "/studio", size: { w: 820, h: 640 }, min: { w: 380, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
+  lab: { id: "lab", route: "/lab", size: { w: 900, h: 660 }, min: { w: 400, h: 320 }, dock: true, desktopIcon: true, mobileGrid: true },
+  services: { id: "services", route: "/services", size: { w: 860, h: 640 }, min: { w: 380, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
+  /** Sobre: só no telefone (quem faz, base, foco, canais). Sem URL própria, como Ajustes; o desktop conta isso dentro de Estúdio. */
+  about: { id: "about", route: null, size: { w: 640, h: 560 }, min: { w: 340, h: 300 }, dock: false, desktopIcon: false, mobileGrid: true },
+  contact: { id: "contact", route: "/contact", size: { w: 780, h: 600 }, min: { w: 360, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
+  settings: { id: "settings", route: null, size: { w: 560, h: 520 }, min: { w: 340, h: 300 }, dock: true, desktopIcon: false, mobileGrid: true },
 } as const satisfies Record<AppId, AppDef>;
 
-/** Ordem na dock do desktop e na dock do celular. */
+/** Ordem na dock do desktop (a dock do telefone é de redes — features/os/mobile/dock.tsx). */
 export const DOCK_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
-export const MOBILE_DOCK: AppId[] = ["projects", "studio", "lab", "contact"];
-/** Ordem da coluna de aplicativos (desktop) e da grade (celular). */
+/** Ordem da coluna de aplicativos do desktop (filtrada por `desktopIcon`). */
 export const ICON_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
+/** Ordem da grade da tela inicial do telefone (4 colunas; a busca entra como oitavo item no launcher). */
+export const MOBILE_GRID: AppId[] = ["projects", "studio", "lab", "services", "about", "contact", "settings"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou

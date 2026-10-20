@@ -18,11 +18,20 @@ export type Program = {
 
 export type Renderer = ReturnType<typeof createRenderer>;
 
+/** O contexto WebGL foi perdido antes/durante a compilação: o chamador mantém o fallback em silêncio. */
+export class ContextLostError extends Error {
+  constructor() {
+    super("webgl: context lost");
+    this.name = "ContextLostError";
+  }
+}
+
 const VERT = "attribute vec2 p;varying vec2 vUv;void main(){vUv=p*.5+.5;gl_Position=vec4(p,0.,1.);}";
 
 export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; alpha?: boolean }) {
   let gl = canvas.getContext("webgl", { antialias: false, alpha: opts.alpha ?? true, premultipliedAlpha: true, powerPreference: "high-performance", preserveDrawingBuffer: false }) as WebGLRenderingContext | null;
-  if (!gl) return null;
+  // Contexto já perdido na criação (iOS com muitos contextos, GPU reiniciada): nada a desenhar — o chamador fica com o fallback.
+  if (!gl || gl.isContextLost()) return null;
 
   const programs = new Map<string, Program>();
   const sources = new Map<string, string>();
@@ -46,12 +55,16 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
   let onCost: ((ms: number, frames: number) => void) | null = null;
 
   const compile = (type: number, src: string) => {
-    const s = gl!.createShader(type)!;
+    // Com o contexto perdido todo getter devolve null (era o "shader: null" do console no telefone): não é erro de shader.
+    if (gl!.isContextLost()) throw new ContextLostError();
+    const s = gl!.createShader(type);
+    if (!s) throw new ContextLostError();
     gl!.shaderSource(s, src);
     gl!.compileShader(s);
     if (!gl!.getShaderParameter(s, gl!.COMPILE_STATUS)) {
       const log = gl!.getShaderInfoLog(s);
       gl!.deleteShader(s);
+      if (gl!.isContextLost() || log == null) throw new ContextLostError();
       throw new Error("shader: " + log);
     }
     return s;
@@ -181,7 +194,8 @@ export function createRenderer(canvas: HTMLCanvasElement, opts: { dpr: number; a
     },
     addProgram(id: string, frag: string) {
       sources.set(id, frag);
-      if (!lost) build(id, frag);
+      if (lost || gl!.isContextLost()) throw new ContextLostError();
+      build(id, frag);
     },
     /** Desenha um quad com o programa e os uniforms dados. */
     draw(id: string, uniforms: Record<string, UniformValue>, texture?: { name: string; tex: WebGLTexture; unit: number }[]) {

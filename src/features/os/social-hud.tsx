@@ -27,7 +27,8 @@ import { useOs, useOsStore } from "./os-shell";
  * O olho não muda: o `pointerdown` que o faz piscar é global e passivo, e
  * um clique nos painéis também pisca.
  */
-type Key = "linkedin" | "github" | "instagram";
+export type SocialKey = "linkedin" | "github" | "instagram";
+type Key = SocialKey;
 const ORDER: Key[] = ["linkedin", "github", "instagram"];
 const NAME: Record<Key, string> = { linkedin: "LinkedIn", github: "GitHub", instagram: "Instagram" };
 
@@ -158,7 +159,7 @@ export function SocialHud() {
 }
 
 /** As marcas nas cores oficiais: "in" na placa azul, o gato do GitHub (octicon) no círculo, a câmera do Instagram no degradê. */
-function SocialIcon({ k }: { k: Key }) {
+export function SocialIcon({ k }: { k: Key }) {
   if (k === "github") {
     return (
       <svg viewBox="0 0 16 16" width="19" height="19" fill="currentColor">

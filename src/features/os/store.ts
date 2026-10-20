@@ -62,7 +62,8 @@ export type OsState = {
   hydrated: boolean;
 
   open: (id: AppId, opts?: { route?: string | null; origin?: Rect | null; openedBy?: string | null; source?: Source; mode?: NavMode; focus?: boolean }) => void;
-  close: (id: AppId) => void;
+  /** `source: "route"` fecha sem pedir navegação (o telefone já moveu o histórico por conta própria). */
+  close: (id: AppId, opts?: { source?: Source }) => void;
   focus: (id: AppId, opts?: { source?: Source; mode?: NavMode }) => void;
   /** Nenhum app em primeiro plano (a URL é a raiz): as janelas ficam onde estão, nenhuma em foco. */
   blur: (opts?: { source?: Source; mode?: NavMode }) => void;
@@ -188,14 +189,15 @@ export function createOsStore(initialInternal: string) {
         });
       },
 
-      close: (id) => {
+      close: (id, opts = {}) => {
+        const { source = "user" } = opts;
         set((s) => {
           const order = s.order.filter((x) => x !== id);
           // Desktop: a próxima janela visível da pilha assume o foco (e a URL). Celular: fechar
           // um app volta à tela inicial, como no telefone — nunca cai dentro de outro app.
           const focused = s.focused === id ? (s.shell === "mobile" ? null : (order.filter((x) => !s.wins[x].min).at(-1) ?? null)) : s.focused;
           // Fechar encerra o conteúdo: a próxima abertura mostra a raiz do app (a pasta, não o último case).
-          return { wins: { ...s.wins, [id]: { ...s.wins[id], open: false, min: false, max: false, origin: null, route: APPS[id].route, scroll: 0 } }, order, focused, ...bump("user", "replace") };
+          return { wins: { ...s.wins, [id]: { ...s.wins[id], open: false, min: false, max: false, origin: null, route: APPS[id].route, scroll: 0 } }, order, focused, ...bump(source, "replace") };
         });
       },
 

@@ -103,6 +103,8 @@ export type OsPayload = {
       send: string;
     };
   };
+  /** Sobre (telefone): quem faz, com fatos já localizados; os canais vêm de `contact` e `social`. */
+  about: { eyebrow: string; body: string; tagline: string; base: string; focus: string; stack: string[] };
   lab: {
     intro: string;
     madeWith: string;

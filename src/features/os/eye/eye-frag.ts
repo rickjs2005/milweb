@@ -27,7 +27,11 @@
  *   uFade            opacidade global
  */
 export const OS_EYE_FRAG = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 varying vec2 vUv;
 
 uniform vec2  uRes;

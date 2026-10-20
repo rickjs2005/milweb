@@ -7,8 +7,9 @@
  * recarregar), estado das janelas (abrir, focar, minimizar, restaurar,
  * maximizar, fechar, arrastar com clamp, teclado), os controles de janela
  * (grupo `controls`: luzes, saída animada, Esc global, celular, Hold to
- * Inspect), troca de modo (desktop ↔ celular preservando o case) e contato
- * a uma ação. Emulação de navegador, não aparelho físico: cobre a lógica,
+ * Inspect), o telefone (grupos `mobile` e `phones`: launcher, dock de redes,
+ * telas cheias, histórico sem entradas repetidas, Sobre/Ajustes sem URL),
+ * troca de modo (desktop ↔ celular preservando o case) e contato a uma ação. Emulação de navegador, não aparelho físico: cobre a lógica,
  * não a percepção.
  */
 import { chromium, devices } from "playwright";
@@ -407,6 +408,10 @@ if (ONLY.includes("desktop")) {
 }
 
 // ------------------------------------------------------------------- mobile
+// Telefone (revisão 9): a tela inicial é um launcher — status, olho como papel de parede, grade de 8 ícones
+// (4 colunas) e a dock de redes (WhatsApp, LinkedIn, GitHub, Instagram). Nada de lema/descrição/botões à vista.
+// Cada app abre em tela cheia a partir do ícone; fechar volta à home pelo histórico (sem entradas repetidas) e
+// devolve o foco ao ícone; Sobre/Ajustes (sem URL) respondem ao Voltar do navegador por entrada própria.
 if (ONLY.includes("mobile")) {
   current = "mobile";
   for (const [label, device, extra] of [
@@ -420,70 +425,138 @@ if (ONLY.includes("mobile")) {
     const errs = errorsOf(page);
     await page.goto(`${BASE}/`, { waitUntil: "load" });
     await settle(page, 1200);
+    const canBack = () => page.evaluate(() => (typeof navigation !== "undefined" ? navigation.canGoBack : null));
     check("shell = mobile", (await page.getAttribute("html", "data-shell")) === "mobile");
     check("sem rolagem horizontal", await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
     check("tela inicial sem app aberto", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && (await page.locator(".os-window").count()) === 0);
-    check("sem case, destaque ou atalho na entrada", (await page.locator(".os-highlights, .os-home__widget, [data-shortcut], #os-icon-home").count()) === 0);
-    check("olho como imagem até o canvas montar", (await page.evaluate(() => { const i = document.querySelector(".os-eye img"); return !!i && i.complete && i.naturalWidth > 0 && typeof window.__mwOsEye === "undefined"; })));
-    check("grade com rótulos legíveis", await page.evaluate(() => [...document.querySelectorAll('.os-icons li[data-mobile="1"] .os-icon-btn__label')].every((l) => { const r = l.getBoundingClientRect(); return r.height > 8 && getComputedStyle(l).visibility === "visible"; })));
-    check("dock com Projetos, Estúdio, Lab e Contato", (await page.locator('.os-dock li[data-mobile="1"]:visible [data-dock-id]').evaluateAll((els) => els.map((e) => e.dataset.dockId).join(","))) === "projects,studio,lab,contact");
-    const dockBox = await rectOf(page.locator(".os-dock"));
-    check("dock dentro da viewport", dockBox && dockBox.y + dockBox.h <= (await page.evaluate(() => window.innerHeight)) + 1, JSON.stringify(dockBox));
-    const fit = await page.evaluate(() => {
+    const home = await page.evaluate(() => {
       const r = (s) => document.querySelector(s)?.getBoundingClientRect();
-      const ic = r(".os-icons"), dk = r(".os-dock ul"), g = r(".os-eye"), sg = r(".os-sign");
-      const cta = r(".os-sign__cta");
-      return { iconsBottom: Math.round(ic.bottom), dockTop: Math.round(dk.top), globeBottom: Math.round(g.bottom), signTop: Math.round(sg.top), signBottom: Math.round(sg.bottom), iconsTop: Math.round(ic.top), ctaBottom: Math.round(cta.bottom), scroll: document.querySelector(".os-desktop").scrollHeight, vh: innerHeight };
+      const vis = (s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== "none" && e.getBoundingClientRect().width > 1; };
+      const tiles = [...document.querySelectorAll(".os-launch")];
+      const xs = tiles.slice(0, 4).map((t) => Math.round(t.getBoundingClientRect().left));
+      const labels = tiles.map((t) => t.querySelector(".os-launch__label"));
+      const grid = r(".os-launcher__apps"), status = r(".os-launcher__status"), eye = r(".os-eye"), dock = r(".os-mdock ul");
+      const sign = r(".os-sign");
+      return {
+        tiles: tiles.length,
+        ids: tiles.map((t) => t.id).join(","),
+        fourCols: xs.length === 4 && new Set(xs).size === 4 && xs.every((x, i) => i === 0 || x > xs[i - 1]) && Math.round(tiles[4].getBoundingClientRect().left) === xs[0],
+        labelPx: Math.min(...labels.map((l) => parseFloat(getComputedStyle(l).fontSize))),
+        labelCut: labels.some((l) => l.scrollWidth > l.clientWidth + 1),
+        iconPx: Math.min(...tiles.map((t) => t.querySelector(".os-micon").getBoundingClientRect().width)),
+        small: tiles.filter((t) => { const b = t.getBoundingClientRect(); return b.width < 48 || b.height < 48; }).length,
+        heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
+        noDesktopBits: !vis(".os-hud") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
+        eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
+        eyeImg: (() => { const i = document.querySelector(".os-eye img"); return !!i && i.complete && i.naturalWidth > 0; })(),
+        eyeNoPointer: getComputedStyle(document.querySelector(".os-eye")).pointerEvents === "none",
+        gridAboveDock: grid.bottom <= dock.top + 1,
+        dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth,
+        dockHrefs: [...document.querySelectorAll(".os-mdock__item")].map((a) => a.href),
+        dockRel: [...document.querySelectorAll(".os-mdock__item")].every((a) => a.target === "_blank" && a.rel.includes("noopener") && a.rel.includes("noreferrer")),
+        dockSmall: [...document.querySelectorAll(".os-mdock__item")].filter((a) => { const b = a.getBoundingClientRect(); return b.width < 48 || b.height < 48; }).length,
+        dockLabels: [...document.querySelectorAll(".os-mdock__label")].map((l) => l.textContent.trim()).join(","),
+        noScroll: document.querySelector(".os-desktop").scrollHeight <= document.querySelector(".os-desktop").clientHeight + 1,
+      };
     });
-    check("olho, assinatura e grade em sequência, sem sobreposição", fit.globeBottom <= fit.signTop && fit.signBottom <= fit.iconsTop, JSON.stringify(fit));
-    check("primeira tela: olho, lema e WhatsApp acima da dock (o resto rola naturalmente)", fit.ctaBottom <= fit.dockTop + 1, `${fit.ctaBottom} vs ${fit.dockTop}`);
-    check("redes em fileira compacta entre a assinatura e os aplicativos, dentro da tela, sem circuitos", await page.evaluate(() => { const r = (sel) => document.querySelector(sel).getBoundingClientRect(); const h = r(".os-hud"), sg = r(".os-sign"), ic = r(".os-icons"); const ps = [...document.querySelectorAll(".os-hud__panel")].map((p) => p.getBoundingClientRect()); return ps.length === 3 && h.top >= sg.bottom - 1 && h.bottom <= ic.top + 1 && ps.every((p) => p.left >= 0 && p.right <= innerWidth) && document.querySelectorAll(".os-hud__wires path").length === 0; }));
-    const tooSmall = await page.evaluate(() => [...document.querySelectorAll(".os-dock a, .os-dock button, .os-icon-btn, .os-home__tool, .os-hud__panel")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.width < 44 || r.height < 44); }).map((e) => e.getAttribute("aria-label") || e.textContent.trim()));
-    check("alvos de toque ≥ 44px", tooSmall.length === 0, tooSmall.join(", "));
+    check("launcher: 8 ícones (Projetos, Estúdio, Lab, Serviços, Sobre, Contato, Ajustes, Buscar) em 4 colunas", home.tiles === 8 && home.fourCols && home.ids === "os-launch-projects,os-launch-studio,os-launch-lab,os-launch-services,os-launch-about,os-launch-contact,os-launch-settings,os-launch-search", home.ids);
+    check("launcher: ícones ≥ 56 px, rótulos ≥ 11 px sem cortes, item inteiro ≥ 48 px", home.iconPx >= 56 && home.labelPx >= 11 && !home.labelCut && home.small === 0, JSON.stringify({ icon: home.iconPx, label: home.labelPx, cut: home.labelCut, small: home.small }));
+    check("sem lema, descrição, botões, HUD, dock do desktop ou barra à vista (h1 continua no DOM)", home.heroHidden && home.noDesktopBits);
+    check("olho como papel de parede entre o status e a grade, imagem pronta, sem ponteiro", home.eyeBetween && home.eyeImg && home.eyeNoPointer);
+    check("dock de redes: WhatsApp, LinkedIn, GitHub, Instagram em nova aba segura, ≥ 48 px, dentro da tela, abaixo da grade", home.dockHrefs.length === 4 && home.dockHrefs[0].startsWith("https://wa.me/") && /linkedin\.com/.test(home.dockHrefs[1]) && /github\.com/.test(home.dockHrefs[2]) && /instagram\.com/.test(home.dockHrefs[3]) && home.dockRel && home.dockSmall === 0 && home.dockIn && home.gridAboveDock, JSON.stringify({ hrefs: home.dockHrefs, labels: home.dockLabels }));
+    check("tela inicial cabe sem rolar", home.noScroll);
     await shot(page, `m-${label.split(" ")[0]}-home`);
 
-    // tocar no ícone → tela do app + URL
-    await page.tap("#os-icon-projects");
+    // tocar no ícone → tela do app + URL; a dock some atrás; fechar volta à home pelo histórico
+    const back0 = await canBack();
+    await page.tap("#os-launch-projects");
     await page.waitForURL(/\/projetos$/);
     await settle(page, 700);
     check("tocar em Projetos abre a tela (/projetos)", (await win(page, "projects").getAttribute("data-screen")) === "1");
     const screen = await rectOf(win(page, "projects"));
     const vp = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }));
-    check("tela ocupa a área útil", screen.x === 0 && screen.y === 0 && screen.w === vp.w && Math.abs(screen.h - vp.h) <= 2, JSON.stringify({ screen, vp }));
-    check("cabeçalho com Voltar e Início", (await win(page, "projects").locator(".os-window__back:visible").count()) === 1 && (await win(page, "projects").locator(".os-window__home:visible").count()) === 1);
+    check("tela ocupa a viewport inteira", screen.x === 0 && screen.y === 0 && screen.w === vp.w && Math.abs(screen.h - vp.h) <= 2, JSON.stringify({ screen, vp }));
+    const bar = await page.evaluate(() => {
+      const w = document.querySelector('.os-window[data-app="projects"]');
+      const b = w.querySelector(".os-window__back").getBoundingClientRect(), c = w.querySelector(".os-window__close").getBoundingClientRect();
+      const dock = document.querySelector(".os-mdock ul").getBoundingClientRect();
+      const hit = document.elementFromPoint(dock.left + dock.width / 2, dock.top + dock.height / 2);
+      return { back: b.width >= 48 && b.height >= 48, backLabel: w.querySelector(".os-window__back span").textContent.trim(), close: c.width >= 48 && c.height >= 48, title: w.querySelector(".os-window__title").textContent.trim(), dockCovered: !!hit && !!hit.closest(".os-window"), noHome: !w.querySelector(".os-window__home"), noControls: getComputedStyle(w.querySelector(".os-window__controls")).display === "none" };
+    });
+    check("cabeçalho: Voltar (Início) e Fechar ≥ 48 px, título, sem luzes/arraste; a dock fica atrás da tela", bar.back && bar.backLabel.toUpperCase() === "INÍCIO" && bar.close && bar.title.toUpperCase() === "PROJETOS" && bar.dockCovered && bar.noHome && bar.noControls, JSON.stringify(bar));
+    await win(page, "projects").locator(".os-window__close").tap();
+    await page.waitForURL((u) => u.pathname === "/");
+    await settle(page, 600);
+    const back1 = await canBack();
+    check("Fechar volta à home sem entrada repetida no histórico (Voltar do navegador fica como antes)", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && (back0 === null || back1 === back0), `canGoBack ${back0} → ${back1}`);
+    check("Fechar devolve o foco ao ícone de Projetos", await page.evaluate(() => document.activeElement?.id === "os-launch-projects"));
 
-    // pasta → projeto imediato
+    // reabrir → Voltar do navegador (app continua aberto, escondido) → reabrir de novo
+    await page.tap("#os-launch-projects");
+    await page.waitForURL(/\/projetos$/);
+    await settle(page, 600);
+    check("reabrir funciona", (await win(page, "projects").getAttribute("data-screen")) === "1");
+    await page.goBack();
+    await page.waitForURL((u) => u.pathname === "/");
+    await settle(page, 700);
+    check("Voltar do navegador esconde a tela e mostra a home (app continua aberto no store)", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && (await page.getAttribute('[data-dock-id="projects"]', "data-open")) === "1");
+    await page.tap("#os-launch-projects");
+    await page.waitForURL(/\/projetos$/);
     await settle(page, 2600);
+    check("reabrir depois do Voltar funciona", (await win(page, "projects").getAttribute("data-screen")) === "1");
+
+    // pasta → case; Voltar do cabeçalho dentro do case volta à coleção pelo histórico
     await win(page, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').tap();
     await page.waitForURL(/\/projetos\/kavita-drones$/);
     await settle(page, 1800);
     check("tocar no cartaz principal abre o case na mesma tela", (await win(page, "projects").locator(".os-case").count()) === 1);
+    check("no case, o Voltar do cabeçalho aponta para Projetos", (await win(page, "projects").locator(".os-window__back span").innerText()) === "PROJETOS");
     await shot(page, `m-${label.split(" ")[0]}-case`);
-
-    // Voltar do cabeçalho → coleção; Voltar do navegador → tela inicial
     await win(page, "projects").locator(".os-window__back").tap();
     await page.waitForURL(/\/projetos$/);
     await settle(page, 600);
     check("Voltar do app volta à coleção", (await win(page, "projects").locator(".os-projects").count()) === 1);
+    check("…pelo histórico (o case fica no Avançar), não empilhando a coleção de novo", (await page.evaluate(() => (typeof navigation !== "undefined" ? navigation.canGoForward : true))) === true);
     await page.goBack();
-    await page.waitForURL(/\/projetos\/kavita-drones$/);
-    await settle(page, 1200);
-    check("Voltar do navegador reabre o case", (await win(page, "projects").locator(".os-case").count()) === 1);
-    await win(page, "projects").locator(".os-window__home").tap();
     await page.waitForURL((u) => u.pathname === "/");
     await settle(page, 600);
-    check("Início fecha a tela e volta à tela inicial", (await page.locator('.os-window[data-screen="1"]').count()) === 0);
+    check("Voltar do navegador na raiz do app volta à home", (await page.locator('.os-window[data-screen="1"]').count()) === 0);
 
-    // contato a uma ação da dock
-    await page.tap('[data-dock-id="contact"]');
+    // Sobre e Ajustes (sem URL): entrada própria no histórico; o Voltar do navegador fecha
+    await page.tap("#os-launch-about");
+    await settle(page, 700);
+    check("Sobre abre em tela cheia sem mudar a URL, com o fundador, base, foco e canais", (await win(page, "about").getAttribute("data-screen")) === "1" && path(page) === "/" && (await win(page, "about").locator(".os-about__name").innerText()).includes("RICK") && (await win(page, "about").locator('.os-about__channels a[href^="https://wa.me/"]').count()) === 1);
+    check("Sobre: links sem hover (linhas de 52 px) e em nova aba segura", await page.evaluate(() => [...document.querySelectorAll(".os-about__row")].every((a) => a.getBoundingClientRect().height >= 48) && [...document.querySelectorAll('.os-about__row[target="_blank"]')].every((a) => a.rel.includes("noopener"))));
+    await page.goBack();
+    await settle(page, 700);
+    check("Voltar do navegador fecha Sobre", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && path(page) === "/");
+    await page.tap("#os-launch-settings");
+    await settle(page, 700);
+    const chips = await page.evaluate(() => [...document.querySelectorAll('.os-window[data-app="settings"] .os-chip')].filter((c) => c.getBoundingClientRect().width > 0).map((c) => c.getBoundingClientRect().height));
+    check("Ajustes abre em tela cheia com opções ≥ 48 px e sem 'reorganizar janelas'", (await win(page, "settings").getAttribute("data-screen")) === "1" && chips.length > 0 && chips.every((h) => h >= 48) && (await page.evaluate(() => getComputedStyle(document.querySelector('.os-window[data-app="settings"] .os-settings__row:has(> .os-chip:only-child)')).display === "none")));
+    await win(page, "settings").locator(".os-window__close").tap();
+    await settle(page, 700);
+    check("Fechar Ajustes volta à home e não deixa entrada no histórico", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && (back0 === null || (await canBack()) === back0));
+
+    // busca pelo launcher; contato pelo launcher com WhatsApp real
+    await page.tap("#os-launch-search");
+    await settle(page, 500);
+    check("Buscar abre a busca", await page.evaluate(() => !!document.querySelector("dialog.os-search[open]")));
+    await page.keyboard.press("Escape");
+    await settle(page, 300);
+    await page.tap("#os-launch-contact");
     await urlIs(page, /\/contato$/);
     await settle(page, 600);
-    check("Contato pela dock com WhatsApp real", (await win(page, "contact").locator('a[href^="https://wa.me/"]:visible').count()) >= 1);
+    check("Contato pelo launcher com WhatsApp real", (await win(page, "contact").locator('a[href^="https://wa.me/"]:visible').count()) >= 1);
 
     // link direto + recarregar
     await page.goto(`${BASE}/es/proyectos/atelier-vertex`, { waitUntil: "load" });
     await settle(page, 1200);
     check("ES: link direto abre o case na tela", (await win(page, "projects").locator('.os-case[data-world="atelier-vertex"]').count()) === 1 && (await page.getAttribute("html", "lang")) === "es");
+    await win(page, "projects").locator(".os-window__close").tap();
+    await page.waitForURL((u) => u.pathname === "/es");
+    await settle(page, 500);
+    check("ES: fechar um link direto cai na home (replace, sem marca)", (await page.locator('.os-window[data-screen="1"]').count()) === 0);
     check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
     await ctx.close();
   }
@@ -690,41 +763,43 @@ if (ONLY.includes("controls")) {
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await ctx.close();
 
-  // 8. celular: Início mantém o app aberto; Fechar (×) encerra e volta à tela inicial
+  // 8. telefone: Voltar (Início) mantém o app aberto; Fechar (×) encerra e volta à tela inicial
   console.log("\n# controles no celular 390×844");
   const mctx = await browser.newContext({ ...devices["iPhone 13"], locale: "pt-BR" });
   const mpage = await mctx.newPage();
   const merrs = errorsOf(mpage);
   await mpage.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(mpage, 1200);
-  await mpage.tap("#os-icon-projects");
+  await mpage.tap("#os-launch-projects");
   await mpage.waitForURL(/\/projetos$/);
   await settle(mpage, 700);
   const mclose = win(mpage, "projects").locator(".os-window__close");
-  const mhome = win(mpage, "projects").locator(".os-window__home");
-  const sizes = [await mclose.boundingBox(), await mhome.boundingBox()];
-  check("8. cabeçalho com Início e Fechar visíveis, ≥ 44px", sizes.every((b) => b && b.width >= 44 && b.height >= 44), JSON.stringify(sizes));
+  const mback = win(mpage, "projects").locator(".os-window__back");
+  const sizes = [await mclose.boundingBox(), await mback.boundingBox()];
+  check("8. cabeçalho com Voltar (Início) e Fechar visíveis, ≥ 48px", sizes.every((b) => b && b.width >= 48 && b.height >= 48) && (await mback.locator("span").innerText()) === "INÍCIO", JSON.stringify(sizes));
   check("8. luzes do desktop não aparecem no celular", (await win(mpage, "projects").locator(".os-window__controls").isVisible()) === false);
-  await mhome.tap();
+  await mback.tap();
   await mpage.waitForURL((u) => u.pathname === "/");
-  await settle(mpage, 500);
-  check("8. Início volta à tela inicial e mantém o app aberto (dock marca)", (await mpage.locator('.os-window[data-screen="1"]').count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "1");
-  await mpage.tap('[data-dock-id="projects"]');
+  await settle(mpage, 600);
+  check("8. Voltar na raiz volta à tela inicial e mantém o app aberto", (await mpage.locator('.os-window[data-screen="1"]').count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "1");
+  await mpage.tap("#os-launch-projects");
   await mpage.waitForURL(/\/projetos$/);
-  await settle(mpage, 500);
-  await settle(mpage, 2400);
+  await settle(mpage, 2900);
   await win(mpage, "projects").locator('.os-project__link[href="/projetos/kavita-drones"]').tap();
   await mpage.waitForURL(/\/projetos\/kavita-drones$/);
   await settle(mpage, 1600);
   await mclose.tap();
   await mpage.waitForURL((u) => u.pathname === "/");
   await settle(mpage, 600);
-  check("8. Fechar (×) a partir do case encerra o app: tela inicial, sem janela, dock sem indicador", (await mpage.locator(".os-window").count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "0");
-  await mpage.tap("#os-icon-projects");
+  check("8. Fechar (×) a partir do case encerra o app: tela inicial, sem janela", (await mpage.locator(".os-window").count()) === 0 && (await mpage.getAttribute('[data-dock-id="projects"]', "data-open")) === "0");
+  await mpage.tap("#os-launch-projects");
   await mpage.waitForURL(/\/projetos$/);
   await settle(mpage, 600);
   check("8. reaberto na pasta (não no case)", (await win(mpage, "projects").locator(".os-projects").count()) === 1);
-  await mpage.tap('[data-dock-id="studio"]');
+  await mback.tap();
+  await mpage.waitForURL((u) => u.pathname === "/");
+  await settle(mpage, 600);
+  await mpage.tap("#os-launch-studio");
   await mpage.waitForURL(/\/estudio$/);
   await settle(mpage, 600);
   await win(mpage, "studio").locator(".os-window__close").tap();
@@ -888,7 +963,7 @@ if (ONLY.includes("projects")) {
   const mact = mm.locator('.bounty__slot[data-active="1"]');
   const mrect = await mact.evaluate((e) => { const r = e.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), w: Math.round(r.width), vw: innerWidth }; });
   check("um cartaz inteiro na tela, vizinho espiando", mrect.l >= 0 && mrect.r <= mrect.vw && mrect.w > mrect.vw * 0.55 && (await mm.locator('.bounty__slot[data-d="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); return r.left < innerWidth && r.right > innerWidth; })), JSON.stringify(mrect));
-  check("sem rolagem horizontal; pé acima da dock", await mpage.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= document.querySelector(".os-dock ul").getBoundingClientRect().top + 1));
+  check("sem rolagem horizontal; pé dentro da tela (a dock fica atrás do app no telefone)", await mpage.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= innerHeight + 1));
   const st = await rectOf(mm.locator(".bounty__stage"));
   await mpage.mouse.move(st.x + st.w * 0.7, st.y + st.h / 2);
   await mpage.mouse.down();
@@ -911,18 +986,18 @@ if (ONLY.includes("projects")) {
 }
 
 // ------------------------------------------------------------------- phones
-// Celulares (revisão 8): a matriz pedida — 360×640, 375×667, 390×844, 414×896 (iPhone 11), 430×932 e deitados
-// 844×390 / 932×430. Em cada um: tela inicial (sem rolagem horizontal, nada aberto, WhatsApp na primeira tela,
-// rótulos ≥ 12 px sem cortes, dock com nomes, alvos ≥ 48 px), Projetos (controles 48 px, cartaz legível e inteiro,
-// swipe horizontal avança e gesto vertical não), case em coluna (texto 16 px, voltar 48 px), "Ver todos", Contato
-// (opções 48 px com estado ativo). Mais: busca num viewport curto (teclado aberto). Emulação, não aparelho físico.
+// Celulares (revisão 9): a matriz pedida — 320×568, 375×667, 390×844, 393×852, 430×932 e deitados 844×390 /
+// 932×430. Em cada um: launcher (sem rolagem horizontal, nada aberto, 8 ícones ≥ 56/48 px, rótulos legíveis, dock
+// de redes dentro da tela), Projetos (controles 48 px, cartaz legível e inteiro, swipe horizontal avança e gesto
+// vertical não), case em coluna (texto 16 px, voltar 48 px), "Ver todos", Contato (opções 48 px com estado ativo).
+// Mais: busca num viewport curto (teclado aberto). Emulação, não aparelho físico.
 if (ONLY.includes("phones")) {
   current = "phones";
   const PHONES = [
-    ["360×640", { viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+    ["320×568", { viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
     ["375×667", { viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
     ["390×844", { ...devices["iPhone 13"] }],
-    ["414×896 (iPhone 11)", { viewport: { width: 414, height: 896 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+    ["393×852", { viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 }],
     ["430×932", { ...devices["iPhone 14 Pro Max"] }],
     ["844×390 deitado", { ...devices["iPhone 13 landscape"] }],
     ["932×430 deitado", { ...devices["iPhone 14 Pro Max landscape"] }],
@@ -938,51 +1013,54 @@ if (ONLY.includes("phones")) {
     await settle(page, 1500);
     const home = await page.evaluate(() => {
       const r = (s) => document.querySelector(s)?.getBoundingClientRect();
-      const dock = r(".os-dock ul"), cta = r(".os-sign__cta"), desc = r(".os-sign__desc");
-      const labels = [...document.querySelectorAll('.os-icons li[data-mobile="1"] .os-icon-btn__label')];
-      const dockLabels = [...document.querySelectorAll(".os-dock li[data-mobile=\"1\"] .os-dock__label")];
+      const tiles = [...document.querySelectorAll(".os-launch")];
+      const labels = tiles.map((t) => t.querySelector(".os-launch__label"));
+      const grid = r(".os-launcher__apps"), status = r(".os-launcher__status"), eye = r(".os-eye"), dock = r(".os-mdock ul");
+      const desk = document.querySelector(".os-desktop");
       return {
         shell: document.documentElement.dataset.shell,
         noX: document.documentElement.scrollWidth <= innerWidth,
         nothingOpen: document.querySelectorAll('.os-window[data-screen="1"], .os-window').length === 0,
-        ctaFirst: !!cta && cta.width > 0 && cta.bottom <= dock.top + 1 && cta.top >= 0,
-        desc: !!desc && desc.height > 0,
+        tiles: tiles.length,
+        iconPx: Math.min(...tiles.map((t) => t.querySelector(".os-micon").getBoundingClientRect().width)),
         labelPx: Math.min(...labels.map((l) => parseFloat(getComputedStyle(l).fontSize))),
         labelCut: labels.some((l) => l.scrollWidth > l.clientWidth + 1),
-        dockNames: dockLabels.length === 4 && dockLabels.every((l) => { const b = l.getBoundingClientRect(); return b.height > 8 && getComputedStyle(l).visibility === "visible"; }),
+        overlap: tiles.some((t, i) => tiles.slice(i + 1).some((u) => { const a = t.getBoundingClientRect(), b = u.getBoundingClientRect(); return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; })),
+        gridIn: grid.left >= 0 && grid.right <= innerWidth && grid.bottom <= dock.top + 1 && grid.top >= status.bottom - 1,
+        eyeOk: !!eye && eye.width > 0 && eye.height > 0 && (innerWidth > innerHeight ? eye.left >= grid.right - 1 : eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2),
+        dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth && document.querySelectorAll(".os-mdock__item").length === 4,
+        fits: desk.scrollHeight <= desk.clientHeight + 1,
       };
     });
-    check("tela inicial: celular, sem rolagem horizontal, nada aberto", home.shell === "mobile" && home.noX && home.nothingOpen, JSON.stringify(home));
-    check("WhatsApp e descrição na primeira tela, acima da dock", home.ctaFirst && home.desc);
-    check("rótulos ≥ 12 px sem cortes; dock com os nomes", home.labelPx >= 12 && !home.labelCut && home.dockNames, JSON.stringify({ px: home.labelPx, cut: home.labelCut, dock: home.dockNames }));
-    const smallHome = await sizes(page, ".os-dock a, .os-dock button, .os-home__tool, .os-hud__panel, .os-sign__cta, .os-icon-btn");
-    check("alvos ≥ 48 px na tela inicial (dock, busca, redes, WhatsApp, aplicativos)", smallHome.length === 0, smallHome.join(", "));
+    check("launcher: celular, sem rolagem horizontal, nada aberto, 8 ícones sem sobreposição, cabe sem rolar", home.shell === "mobile" && home.noX && home.nothingOpen && home.tiles === 8 && !home.overlap && home.fits, JSON.stringify(home));
+    check(`ícones ≥ ${landscape ? 48 : 56} px, rótulos ≥ 10.5 px sem cortes, grade entre status e dock, olho ${landscape ? "à direita" : "entre status e grade"}, dock de redes dentro da tela`, home.iconPx >= (landscape ? 48 : 56) && home.labelPx >= 10.5 && !home.labelCut && home.gridIn && home.eyeOk && home.dockIn, JSON.stringify({ icon: home.iconPx, label: home.labelPx, cut: home.labelCut, grid: home.gridIn, eye: home.eyeOk, dock: home.dockIn }));
+    const smallHome = await sizes(page, ".os-launch, .os-mdock__item");
+    check("alvos ≥ 48 px na tela inicial (aplicativos e dock)", smallHome.length === 0, smallHome.join(", "));
     await shot(page, `ph-${label.split(" ")[0]}-home`);
 
     // Projetos
-    await page.tap("#os-icon-projects");
+    await page.tap("#os-launch-projects");
     await page.waitForURL(/\/projetos$/);
     await settle(page, 2600);
     if (landscape) {
       await page.locator(".bounty__filters-btn").tap();
       await settle(page, 300);
     }
-    const smallProj = await sizes(page, ".os-window__back, .os-window__home, .os-window__close, .bounty__arrow, .bounty__all-btn, .bounty__pill, .bounty__filters-btn");
+    const smallProj = await sizes(page, ".os-window__back, .os-window__close, .bounty__arrow, .bounty__all-btn, .bounty__pill, .bounty__filters-btn");
     if (landscape) {
       await page.locator(".bounty__filters-btn").tap();
       await settle(page, 300);
     }
-    check("Projetos: Voltar, Início, Fechar, setas, filtros e Ver todos ≥ 48 px", smallProj.length === 0, smallProj.join(", "));
+    check("Projetos: Voltar, Fechar, setas, filtros e Ver todos ≥ 48 px", smallProj.length === 0, smallProj.join(", "));
     const poster = await page.evaluate(() => {
       const a = document.querySelector('.bounty__slot[data-active="1"]');
       const r = a.getBoundingClientRect();
-      const n = a.querySelector('.bounty__slot[data-d="1"], .bounty__slot');
       const nb = document.querySelector('.bounty__slot[data-d="1"]')?.getBoundingClientRect();
       const px = (s) => parseFloat(getComputedStyle(a.querySelector(s)).fontSize);
-      return { whole: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, name: px(".bounty__name"), line: px(".bounty__line"), id: px(".bounty__id"), peek: !!nb && nb.left < innerWidth && (nb.right > innerWidth || innerWidth > innerHeight), noX: document.documentElement.scrollWidth <= innerWidth, touch: getComputedStyle(document.querySelector(".bounty__stage")).touchAction, ticks: getComputedStyle(document.querySelector(".bounty__ticks")).display === "none", progress: getComputedStyle(document.querySelector(".bounty__progress")).display !== "none", footAboveDock: document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= document.querySelector(".os-dock ul").getBoundingClientRect().top + 1, n: !!n };
+      return { whole: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, name: px(".bounty__name"), line: px(".bounty__line"), id: px(".bounty__id"), peek: !!nb && nb.left < innerWidth && (nb.right > innerWidth || innerWidth > innerHeight), noX: document.documentElement.scrollWidth <= innerWidth, touch: getComputedStyle(document.querySelector(".bounty__stage")).touchAction, ticks: getComputedStyle(document.querySelector(".bounty__ticks")).display === "none", progress: getComputedStyle(document.querySelector(".bounty__progress")).display !== "none", footIn: document.querySelector(".bounty__foot").getBoundingClientRect().bottom <= innerHeight + 1 };
     });
     check("Projetos: cartaz inteiro e legível (nome ≥ 21/15 px, frase ≥ 13/11 px), vizinho espiando, sem rolagem horizontal", poster.whole && poster.name >= (landscape ? 15 : 21) && poster.line >= (landscape ? 11 : 13) && poster.peek && poster.noX, JSON.stringify(poster));
-    check("Projetos: rolagem vertical livre (pan-y), fita trocada por barra de progresso, pé acima da dock", /pan-y/.test(poster.touch) && poster.ticks && (landscape || poster.progress) && poster.footAboveDock, JSON.stringify({ touch: poster.touch, ticks: poster.ticks, progress: poster.progress }));
+    check("Projetos: rolagem vertical livre (pan-y), fita trocada por barra de progresso, pé dentro da tela", /pan-y/.test(poster.touch) && poster.ticks && (landscape || poster.progress) && poster.footIn, JSON.stringify({ touch: poster.touch, ticks: poster.ticks, progress: poster.progress, foot: poster.footIn }));
     const st = await rectOf(page.locator(".bounty__stage"));
     await page.mouse.move(st.x + st.w * 0.7, st.y + st.h / 2);
     await page.mouse.down();
@@ -1026,11 +1104,13 @@ if (ONLY.includes("phones")) {
     // Contato
     await page.locator(".os-window__close").tap();
     await page.waitForURL((u) => u.pathname === "/");
-    await settle(page, 500);
-    await page.tap('[data-dock-id="contact"]');
+    await settle(page, 600);
+    await page.tap("#os-launch-contact");
     await urlIs(page, /\/contato$/);
     await settle(page, 900);
     const opt = page.locator(".os-contact__composer button[aria-pressed]").first();
+    await opt.scrollIntoViewIfNeeded();
+    await settle(page, 300);
     await opt.tap();
     await settle(page, 200);
     const smallContact = await sizes(page, ".os-contact__composer button[aria-pressed], .os-cta, .os-contact__composer a[data-inspect]");
@@ -1045,7 +1125,7 @@ if (ONLY.includes("phones")) {
   const kpage = await kctx.newPage();
   await kpage.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(kpage, 1200);
-  await kpage.locator(".os-home__tool").first().tap();
+  await kpage.locator("#os-launch-search").tap();
   await settle(kpage, 500);
   await kpage.keyboard.type("terral");
   await settle(kpage, 600);

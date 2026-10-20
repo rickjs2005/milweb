@@ -64,7 +64,8 @@ export function OsEye() {
       try {
         r.addProgram("eye", OS_EYE_FRAG);
       } catch (e) {
-        console.error(e);
+        // Contexto perdido (GPU reiniciada, iOS com contextos demais): a imagem fica, sem erro no console.
+        if (!(e instanceof Error && e.name === "ContextLostError")) console.error(e);
         r.destroy();
         return;
       }
@@ -82,6 +83,15 @@ export function OsEye() {
       };
       const onDown = (e: PointerEvent) => {
         if (e.pointerType === "mouse" && e.button !== 0) return;
+        // Telefone: o olhar vai ao ponto tocado (dedo = cursor por alguns segundos) e volta a derivar.
+        if (mobile && e.pointerType !== "mouse" && fig) {
+          const b = fig.getBoundingClientRect();
+          if (b.width > 0 && b.height > 0) {
+            gaze.tx = Math.max(-1, Math.min(1, (e.clientX - (b.left + b.width / 2)) / (b.width / 2)));
+            gaze.ty = -Math.max(-1, Math.min(1, (e.clientY - (b.top + b.height / 2)) / (b.height / 2)));
+            gaze.mouseAt = performance.now() / 1000;
+          }
+        }
         blink();
       };
       const onMove = (e: PointerEvent) => {
@@ -235,6 +245,45 @@ export function OsEye() {
       cleanup?.();
     };
   }, [shell, motion, store]);
+
+  // Telefone: microparalaxe pelo giroscópio (só onde não exige permissão — Android; iOS pediria um prompt),
+  // em variáveis CSS lidas por styles/os-mobile.css. Nada com movimento reduzido; zero custo sem sensor.
+  useEffect(() => {
+    const fig = ref.current;
+    if (!fig || shell !== "mobile" || motion === "reduce") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const DOE = (window as unknown as { DeviceOrientationEvent?: { requestPermission?: unknown } }).DeviceOrientationEvent;
+    if (!DOE || typeof DOE.requestPermission === "function") return;
+    let raf = 0;
+    let tx = 0;
+    let ty = 0;
+    let x = 0;
+    let y = 0;
+    let base: { g: number; b: number } | null = null;
+    const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+    const tick = () => {
+      raf = 0;
+      x += (tx - x) * 0.12;
+      y += (ty - y) * 0.12;
+      fig.style.setProperty("--par-x", x.toFixed(3));
+      fig.style.setProperty("--par-y", y.toFixed(3));
+      if (Math.abs(tx - x) > 0.002 || Math.abs(ty - y) > 0.002) raf = requestAnimationFrame(tick);
+    };
+    const onOrient = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null || document.hidden) return;
+      if (!base) base = { g: e.gamma, b: e.beta }; // a pose em que o telefone está é o neutro
+      tx = clamp((e.gamma - base.g) / 25);
+      ty = clamp((e.beta - base.b) / 25);
+      if (!raf) raf = requestAnimationFrame(tick);
+    };
+    window.addEventListener("deviceorientation", onOrient, { passive: true });
+    return () => {
+      window.removeEventListener("deviceorientation", onOrient);
+      if (raf) cancelAnimationFrame(raf);
+      fig.style.removeProperty("--par-x");
+      fig.style.removeProperty("--par-y");
+    };
+  }, [shell, motion]);
 
   const d = OS_EYE_STILL.desktop;
   const m = OS_EYE_STILL.mobile;

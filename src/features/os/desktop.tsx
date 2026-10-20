@@ -1,55 +1,34 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
 import { alternatesOf } from "@/i18n/routing";
 import { LanguageSwitch } from "@/components/nav/language-switch";
-import { DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
+import { DOCK_ORDER, ICON_ORDER, APPS } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
 import { OsEye } from "./eye/os-eye";
 import { SocialHud } from "./social-hud";
+import { MobileLauncher } from "./mobile/launcher";
+import { useClock, useLaunch } from "./launch";
+
+export { useClock, useLaunch } from "./launch";
 
 /**
  * Área de trabalho e tela inicial.
  *
  * Desktop: barra superior, wallpaper com o olho (centro), coluna de
  * aplicativos à esquerda, assinatura pequena numa área livre e a dock.
- * Celular: cabeçalho com marca e ferramentas, olho, assinatura, grade de
- * aplicativos e dock fixa. Nada abre sozinho; os cases moram em Projetos.
- * Tudo lê o registro; nada tem lista própria.
+ * Telefone: o mesmo DOM, com o launcher (mobile/launcher.tsx) no lugar da
+ * coluna, da assinatura e do HUD — status, olho como papel de parede e a
+ * grade de ícones; a dock de redes é irmã (mobile/dock.tsx). Nada abre
+ * sozinho; os cases moram em Projetos. Tudo lê o registro; nada tem lista
+ * própria.
  */
-
-/** Abre um app a partir de um controle (ícone, dock, busca). Mantém Ctrl/Cmd-clique nativo (nova aba). */
-export function useLaunch() {
-  const { store } = useOs();
-  return (e: MouseEvent<HTMLElement>, id: AppId, route?: string) => {
-    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    const el = e.currentTarget;
-    const r = el.getBoundingClientRect();
-    const st = store.getState();
-    const w = st.wins[id];
-    if (w.open && route === undefined) {
-      st.restore(id, { mode: "push" });
-      return;
-    }
-    st.open(id, { route: route ?? w.route, origin: { x: r.left, y: r.top, w: r.width, h: r.height }, openedBy: el.id || null, source: "user", mode: "push" });
-  };
-}
 
 export function TopBar() {
   const { payload, internal, openSearch, navigate } = useOs();
   const s = payload.s;
   const focused = useOsStore((st) => st.focused);
-  const [time, setTime] = useState<string | null>(null);
-
-  // Relógio só depois de montar (nunca no HTML do servidor: o horário é do visitante).
-  useEffect(() => {
-    const fmt = () => setTime(new Date().toLocaleTimeString(payload.locale === "pt" ? "pt-BR" : payload.locale, { hour: "2-digit", minute: "2-digit" }));
-    fmt();
-    const t = window.setInterval(fmt, 20_000);
-    return () => window.clearInterval(t);
-  }, [payload.locale]);
+  const time = useClock(payload.locale);
 
   return (
     <header className="os-topbar t-mono" role="banner" aria-label={s.regions.topbar} data-no-inspect>
@@ -82,7 +61,7 @@ export function TopBar() {
 }
 
 export function Desktop() {
-  const { payload, route, openSearch, store } = useOs();
+  const { payload, route } = useOs();
   const s = payload.s;
   const launch = useLaunch();
   // O lema é o h1 da raiz (a página é a área de trabalho); com um app na URL, o h1 é do conteúdo.
@@ -92,25 +71,12 @@ export function Desktop() {
     <div className="os-desktop" aria-label={s.regions.desktop}>
       <div className="os-wallpaper" aria-hidden="true" />
 
-      {/* Cabeçalho da tela inicial (só no celular): marca à esquerda, busca e navegação simples à direita. */}
-      <div className="os-home__head" data-no-inspect>
-        <p className="t-mono os-home__brand">{payload.brand.mark}</p>
-        <div className="os-home__tools">
-          <button type="button" className="os-home__tool" onClick={openSearch} aria-label={s.apps.search} aria-keyshortcuts="/">
-            <Glyph name="search" size={16} />
-          </button>
-          <button type="button" className="os-home__tool" onClick={() => store.getState().setPrefs({ simple: true })} aria-label={s.simple.title}>
-            <Glyph name="list" size={16} />
-          </button>
-        </div>
-      </div>
-
       <OsEye />
 
-      {/* Redes do estúdio: painéis HUD ligados ao olho por circuitos (celular: fileira sob o olho). */}
+      {/* Redes do estúdio: painéis HUD ligados ao olho por circuitos (desktop). */}
       <SocialHud />
 
-      {/* Assinatura: pequena, numa área livre (canto inferior esquerdo no desktop; sob o olho no celular). */}
+      {/* Assinatura: pequena, numa área livre (canto inferior esquerdo); no telefone fica só para leitores de tela. */}
       <div className="os-sign">
         <Motto className="os-sign__motto">{s.sign.motto}</Motto>
         <p className="os-sign__line t-mono">
@@ -119,18 +85,13 @@ export function Desktop() {
           <span> · </span>
           <span className="os-sign__origin">{s.sign.origin}</span>
         </p>
-        {/* Só no celular (CSS): o que a MilWeb faz e o contato principal na primeira tela. */}
-        <p className="os-sign__desc">{s.mobile.message}</p>
-        <a className="os-sign__cta os-cta" href={payload.contact.waHref} target="_blank" rel="noopener noreferrer">
-          {payload.contact.cta} ↗
-        </a>
       </div>
 
-      {/* Aplicativos: coluna à esquerda no desktop, grade no celular. */}
+      {/* Aplicativos: coluna à esquerda (desktop). */}
       <nav className="os-icons" aria-label={s.regions.icons}>
         <ul>
-          {ICON_ORDER.filter((id) => APPS[id].desktopIcon || APPS[id].mobileGrid).map((id) => (
-            <li key={id} data-desktop={APPS[id].desktopIcon ? "1" : "0"} data-mobile={APPS[id].mobileGrid ? "1" : "0"}>
+          {ICON_ORDER.filter((id) => APPS[id].desktopIcon).map((id) => (
+            <li key={id} data-desktop="1">
               <a id={`os-icon-${id}`} href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"} className="os-icon-btn" onClick={(e) => launch(e, id)} data-no-inspect>
                 <AppGlyph kind={id} size={52} />
                 <span className="os-icon-btn__label">{s.apps[id]}</span>
@@ -139,6 +100,9 @@ export function Desktop() {
           ))}
         </ul>
       </nav>
+
+      {/* Tela inicial do telefone: status, grade de ícones (o olho acima é o papel de parede). */}
+      <MobileLauncher />
     </div>
   );
 }
@@ -156,7 +120,7 @@ export function Dock() {
           const w = wins[id];
           const state = w.open ? (w.min ? s.window.minimize : focused === id ? s.window.focused : s.window.running) : null;
           return (
-            <li key={id} data-mobile={APPS[id].mobileDock ? "1" : "0"}>
+            <li key={id}>
               <a
                 id={`os-dock-${id}`}
                 data-dock-id={id}
@@ -175,7 +139,7 @@ export function Dock() {
           );
         })}
         <li className="os-dock__sep" aria-hidden="true" />
-        <li data-mobile="0">
+        <li>
           <button type="button" className="os-dock__item" onClick={openSearch} aria-label={s.apps.search} aria-keyshortcuts="/">
             <AppGlyph kind="search" size={40} />
             <span className="os-dock__label">{s.apps.search}</span>

@@ -147,6 +147,14 @@ export function buildOsPayload(locale: Locale): OsPayload {
         send: t(CONTACT_PAGE.send),
       },
     },
+    about: {
+      eyebrow: t(STUDIO.founder.eyebrow),
+      body: t(STUDIO.founder.body),
+      tagline: t(BRAND.tagline),
+      base: t(CONTACT_PAGE.location),
+      focus: t(PROFILE.role),
+      stack: [...BRAND.stack],
+    },
     lab: {
       intro: t(LAB_PAGE.sub),
       madeWith: t(LAB_PAGE.madeWith),

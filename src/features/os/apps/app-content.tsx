@@ -6,6 +6,7 @@ import { ProjectsApp } from "./projects";
 import { StudioApp } from "./studio";
 import { LabApp } from "./lab";
 import { ServicesApp } from "./services";
+import { AboutApp } from "./about";
 import { ContactApp } from "./contact";
 import { SettingsApp } from "./settings";
 
@@ -23,6 +24,8 @@ export function AppContent({ id, active, dossier = null, slug = null }: { id: Ap
       return <LabApp active={active} />;
     case "services":
       return <ServicesApp />;
+    case "about":
+      return <AboutApp />;
     case "contact":
       return <ContactApp />;
     case "settings":

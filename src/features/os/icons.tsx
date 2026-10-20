@@ -6,7 +6,8 @@ import type { AppId } from "./registry";
  * em lima por aplicativo. Cada glifo guarda uma ideia própria do app:
  * pasta com etiqueta (Projetos), régua T e esquadro (Estúdio), frasco com
  * reação (Lab), grade de entregas com uma marcada (Serviços), balão com
- * cursor (Contato), controles deslizantes (Ajustes).
+ * cursor (Contato), controles deslizantes (Ajustes), crachá (Sobre — só o
+ * telefone o mostra, com a família própria de mobile/icons.tsx).
  */
 export type IconKind = AppId | "search" | "folder";
 
@@ -40,6 +41,14 @@ const GLYPH: Record<IconKind, React.ReactNode> = {
       <rect x="9" y="28" width="13" height="13" rx="2" />
       <rect x="28" y="28" width="13" height="13" rx="2" />
       <path d="M31 34l3 3 5-6" className="os-icon__accent" />
+    </>
+  ),
+  about: (
+    <>
+      <rect x="10" y="9" width="28" height="30" rx="3" />
+      <circle cx="24" cy="20" r="4.5" />
+      <path d="M16 33c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+      <path d="M20 9v-3h8v3" className="os-icon__accent" />
     </>
   ),
   contact: (

@@ -2,6 +2,7 @@
 @import "../styles/home-experience.css";
 @import "../styles/system.css";
 @import "../styles/os.css";
+@import "../styles/os-mobile.css";
 
 @tailwind base;
 @tailwind components;

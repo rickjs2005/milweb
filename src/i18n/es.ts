@@ -76,10 +76,11 @@ export const es: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FUENTES PREFERIDAS", title: ["MANTÉN A MILWEB", "ENTRE TUS FUENTES."], cta: "AÑADIR MILWEB", loading: "ABRIENDO GOOGLE…", retry: "INTENTAR DE NUEVO", aria: "Añadir MilWeb a fuentes preferidas en Google" },
   os: {
-    apps: { projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
+    apps: { projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", about: "Sobre", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Escritorio", icons: "Accesos directos del escritorio", dock: "Dock", topbar: "Barra del sistema", windows: "Ventanas abiertas", home: "Pantalla de inicio", appGrid: "Aplicaciones" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Cerrar", keys: "Con la barra de título enfocada: las flechas mueven la ventana, Shift + flechas redimensionan, Esc cierra", resize: "Redimensionar", running: "abierta", focused: "al frente" },
     mobile: { back: "Volver", home: "Inicio", open: "Abrir", apps: "Aplicaciones", message: "Sitios, sistemas y experiencias digitales con diseño, código y motion." },
+    about: { base: "Base", focus: "Enfoque" },
     sign: { craft: "Desarrollo creativo", origin: "Brasil → Mundo", motto: "Códigos mueven el mundo." },
     projects: {
       back: "Todos los proyectos", open: "Abrir caso", visit: "Abrir sitio", code: "Código", stack: "Stack", context: "Contexto", done: "Qué se hizo", solutions: "Soluciones", gallery: "Pantallas", result: "Resultado",
