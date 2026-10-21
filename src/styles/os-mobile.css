@@ -123,6 +123,7 @@
   .os-micon__accent { fill: rgb(var(--os-signal)); }
   .os-micon__paper { fill: #e8e0cf; }
   .os-launch:active .os-micon { transform: scale(.9); filter: brightness(.86); }
+  .os-micon[data-app="profile"] { --mi-a: 232 92 104; --mi-b: 118 22 44; }
   .os-micon[data-app="projects"] { --mi-a: 236 176 76; --mi-b: 132 68 18; }
   .os-micon[data-app="studio"] { --mi-a: 66 74 88; --mi-b: 15 19 24; }
   .os-micon[data-app="lab"] { --mi-a: 40 214 198; --mi-b: 8 92 112; }
@@ -258,6 +259,25 @@
   .os-about__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; color: rgb(var(--ink)); text-decoration: none; font-size: 13px; letter-spacing: .08em; }
   .os-about__row:active { background: rgb(var(--ink) / .05); }
   .os-about__row:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: -2px; }
+  /* Perfil: uma coluna, foto menor, ações em grade de alvos de 48 px, rolagem só vertical */
+  .os-profile__hero { grid-template-columns: 96px minmax(0, 1fr); gap: 14px 16px; }
+  .os-profile__photo { width: 96px; height: 96px; }
+  .os-profile__name { font-size: clamp(1.7rem, 8.5vw, 2.4rem); }
+  .os-profile__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .os-profile__actions .os-cta, .os-profile__actions .os-chip { min-height: 48px; justify-content: center; text-align: center; font-size: 12px; }
+  .os-profile__actions .os-cta { grid-column: 1 / -1; }
+  .os-profile__cvnote { grid-column: 1 / -1; }
+  .os-profile__about { font-size: 16.5px; }
+  .os-profile__role, .os-profile__edu li, .os-profile__project, .os-profile__skills { grid-template-columns: 1fr; }
+  .os-profile__when { grid-auto-flow: row; }
+  .os-profile__what ul { font-size: 15.5px; line-height: 1.5; }
+  .os-profile__school { grid-column: 1; }
+  .os-profile__chips li { padding: 7px 11px; font-size: 13.5px; }
+  .os-profile__shot { max-width: none; }
+  .os-profile__facts dd, .os-profile__details dd { font-size: 15.5px; }
+  .os-profile__details summary { min-height: 44px; display: inline-flex; align-items: center; }
+  .os-profile__plinks { gap: 4px 14px; }
+  .os-profile__plinks .link-rule { min-height: 44px; }
   /* Ajustes: sem "reorganizar janelas" (não há janelas no telefone) */
   .os-settings__row { grid-template-columns: 1fr; gap: 10px; }
   .os-settings__row:has(> .os-chip:only-child) { display: none; }

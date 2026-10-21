@@ -43,6 +43,7 @@ ${SERVICES.map((s) => line(s.label.pt, `${SITE_URL}/${s.slug}`, s.metaDescriptio
 ## Páginas principais
 
 ${line("Home", `${SITE_URL}/`, SITE_COPY.pt.description)}
+${line("Perfil", `${SITE_URL}/perfil`, "Perfil profissional de Rick Januario, Senior Full Stack Engineer: experiência, competências, formação, currículo em PDF (inglês) e projetos técnicos selecionados.")}
 ${line(
   "Diagnóstico",
   `${SITE_URL}/diagnostico`,

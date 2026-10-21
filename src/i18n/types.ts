@@ -4,7 +4,7 @@
  */
 export type Dictionary = {
   meta: { langName: string; selectLanguage: string; siteTitle: string; siteDescription: string };
-  nav: { work: string; lab: string; studio: string; services: string; contact: string; menu: string; close: string; primary: string };
+  nav: { work: string; lab: string; studio: string; services: string; contact: string; profile: string; menu: string; close: string; primary: string };
   /** Leituras reais do dispositivo mostradas pela HUD do MilWeb System no nó raiz. */
   system: { fine: string; coarse: string; reduce: string; sound: string };
   boot: { tagline: string; origin: string; lines: [string, string, string, string]; skip: string; compile: string };
@@ -60,7 +60,7 @@ export type Dictionary = {
   preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
   /** MilWeb OS — camada de apresentação em janelas (desktop) e tela inicial (celular). */
   os: {
-    apps: { projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; search: string };
+    apps: { profile: string; projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; search: string };
     regions: { desktop: string; icons: string; dock: string; topbar: string; windows: string; home: string; appGrid: string };
     window: { minimize: string; maximize: string; restore: string; close: string; keys: string; resize: string; running: string; focused: string };
     mobile: { back: string; home: string; open: string; apps: string; message: string };
@@ -84,6 +84,14 @@ export type Dictionary = {
       language: string; sound: string; reset: string; about: string; saved: string;
     };
     simple: { title: string; toOs: string; skip: string; nav: string };
+    /** App Perfil: rótulos de seções, ações e estados (o conteúdo mora em data/profile.ts). */
+    profile: {
+      eyebrow: string; about: string; experience: string; skills: string; projects: string; education: string;
+      viewCv: string; downloadCv: string; contact: string; present: string; remote: string; independent: string; noDates: string;
+      problem: string; contribution: string; stack: string; decision: string; details: string; evidenceCode: string; evidenceReadme: string;
+      code: string; demo: string; caseLink: string; noDemo: string; status: { delivered: string; development: string; demo: string; live: string };
+      studioLink: string; projectsLink: string; opensNewTab: string;
+    };
     /** Tela de carregamento do OS: a frase enquanto a home se prepara e o rodapé (o segundo item do rodapé vem de sign.origin). */
     boot: { preparing: string; studio: string };
     contact: { channels: string; lead: string; whatsapp: string; email: string; linkedin: string; github: string };

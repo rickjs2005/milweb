@@ -13,6 +13,13 @@ import type { AppId } from "../registry";
 export type LaunchKind = AppId | "search";
 
 const GLYPH: Record<LaunchKind, React.ReactNode> = {
+  profile: (
+    <>
+      <circle cx="24" cy="17" r="8" fill="currentColor" opacity=".96" />
+      <path d="M8 41c0-8.6 7.2-14 16-14s16 5.4 16 14z" fill="currentColor" opacity=".96" />
+      <circle cx="33.5" cy="11.5" r="3" className="os-micon__accent" />
+    </>
+  ),
   projects: (
     <>
       <path d="M6 15a3 3 0 0 1 3-3h10.5l4 4H39a3 3 0 0 1 3 3v17a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z" fill="currentColor" opacity=".96" />

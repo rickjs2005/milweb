@@ -453,6 +453,61 @@ html[data-os-theme="gojo"] .os-theme__sun { display: none; }
 }
 .os-cta:hover, .os-cta:focus-visible { background: rgb(var(--signal)); color: rgb(var(--signal-ink)); outline: none; }
 
+/* ---- Perfil: apresentação, resumo, linha do tempo, competências, projetos, formação ---------- */
+/* Mesma folha das outras janelas (papel/tinta, réguas finas). Hierarquia por tamanho e peso, não por
+   cor; chips de competência sem barra nem estrela; captura real de cada projeto num quadro 16:10. */
+.os-profile__hero { display: grid; grid-template-columns: 128px minmax(0, 1fr); grid-template-areas: "photo who" "actions actions"; gap: 18px 24px; align-items: start; }
+.os-profile__photo { grid-area: photo; width: 128px; height: 128px; border-radius: 22%; object-fit: cover; }
+.os-profile__who { grid-area: who; min-width: 0; }
+.os-profile__name { margin-top: 6px; font-size: clamp(1.8rem, 5cqi, 3rem); line-height: .95; letter-spacing: -.035em; }
+.os-profile__title { margin-top: 8px; font-size: var(--step-1); font-weight: 700; letter-spacing: -.02em; }
+.os-profile__headline { margin-top: 8px; max-width: 58ch; font-size: var(--step-0); line-height: 1.45; color: rgb(var(--ink-2)); }
+.os-profile__meta { margin-top: 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--ink-3)); }
+.os-profile__actions { grid-area: actions; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 14px; border-top: 1px solid rgb(var(--neutral)); }
+.os-profile__actions .os-chip { text-decoration: none; }
+.os-profile__cvnote { flex-basis: 100%; margin: 2px 0 0; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--ink-3)); }
+.os-profile__about { max-width: 68ch; font-size: calc(var(--step-0) * 1.08); line-height: 1.55; letter-spacing: 0; }
+.os-profile__timeline { margin: 12px 0 0; padding: 0; list-style: none; }
+.os-profile__role { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 6px 20px; padding: 16px 0; border-bottom: 1px solid rgb(var(--neutral)); }
+.os-profile__when { display: grid; align-content: start; gap: 4px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgb(var(--ink-3)); }
+.os-profile__when .tnum { color: rgb(var(--ink)); }
+.os-profile__tag { width: max-content; padding: 2px 7px; border: 1px solid rgb(var(--ink) / .3); border-radius: 999px; font-size: 9.5px; }
+.os-profile__company { margin: 0; font-size: var(--step-1); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.os-profile__roletitle { font-weight: 400; color: rgb(var(--ink-2)); }
+.os-profile__what ul { display: grid; gap: 5px; margin: 8px 0 0; padding-left: 1.1em; list-style: disc; font-size: var(--step-0); line-height: 1.45; color: rgb(var(--ink-2)); }
+.os-profile__what li::marker { color: rgb(var(--ink-3)); }
+.os-profile__skills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; margin-top: 12px; }
+.os-profile__group { padding-top: 10px; border-top: 1px solid rgb(var(--ink)); }
+.os-profile__gtitle { margin: 0; font-size: 10.5px; font-weight: 400; letter-spacing: .12em; color: rgb(var(--ink-3)); }
+.os-profile__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.os-profile__chips li { padding: 4px 9px; border: 1px solid rgb(var(--neutral)); border-radius: 999px; font-size: 12.5px; line-height: 1.3; color: rgb(var(--ink-2)); }
+.os-profile__chips li[data-featured="1"] { border-color: rgb(var(--ink)); color: rgb(var(--ink)); font-weight: 600; }
+.os-profile__note { font-weight: 400; color: rgb(var(--ink-3)); }
+.os-profile__projects { display: grid; gap: 22px; margin: 14px 0 0; padding: 0; list-style: none; }
+.os-profile__project { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; padding-top: 16px; border-top: 1px solid rgb(var(--ink)); }
+.os-profile__shot { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 8px; background: rgb(var(--neutral)); box-shadow: inset 0 0 0 1px rgb(var(--ink) / .08); }
+.os-profile__shot-img { object-fit: cover; object-position: top; }
+.os-profile__pkind { font-size: 10.5px; letter-spacing: .12em; color: rgb(var(--ink-3)); }
+.os-profile__pname { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; font-size: var(--step-1); font-weight: 700; letter-spacing: -.02em; }
+.os-profile__status { padding: 2px 8px; border: 1px solid rgb(var(--ink) / .3); border-radius: 999px; font: 400 10px/1.6 var(--font-mono), monospace; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--ink-2)); }
+.os-profile__status[data-status="live"], .os-profile__status[data-status="delivered"] { background: rgb(var(--signal)); border-color: transparent; color: rgb(var(--signal-ink)); }
+.os-profile__facts { display: grid; gap: 8px; margin: 10px 0 0; }
+.os-profile__facts dt, .os-profile__details dt { font: 400 10.5px/1.5 var(--font-mono), monospace; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--ink-3)); }
+.os-profile__facts dd, .os-profile__details dd { margin: 2px 0 0; font-size: var(--step-0); line-height: 1.45; color: rgb(var(--ink-2)); overflow-wrap: anywhere; }
+.os-profile__details { margin-top: 10px; }
+.os-profile__details summary { display: inline-block; min-height: 28px; padding: 4px 0; cursor: pointer; list-style: none; font-size: 10.5px; letter-spacing: .1em; color: rgb(var(--ink)); }
+.os-profile__details summary::before { content: "+ "; color: rgb(var(--ink-3)); }
+.os-profile__details[open] summary::before { content: "− "; }
+.os-profile__details summary::-webkit-details-marker { display: none; }
+.os-profile__details summary:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: 2px; }
+.os-profile__details dl { display: grid; gap: 8px; margin: 6px 0 0; padding: 10px 12px; border: 1px dashed rgb(var(--neutral)); }
+.os-profile__plinks { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; }
+.os-profile__nodemo { color: rgb(var(--ink-3)); }
+.os-profile__edu { margin: 12px 0 0; padding: 0; list-style: none; }
+.os-profile__edu li { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 4px 20px; padding: 14px 0; border-bottom: 1px solid rgb(var(--neutral)); }
+.os-profile__degree { font-weight: 700; }
+.os-profile__school { grid-column: 2; color: rgb(var(--ink-2)); }
+
 /* Projetos */
 /* ---- Projetos: THE BOUNTY COLLECTION ------------------------------------------------------ */
 /* A pasta é um mural de cartazes de recompensa em perspectiva: o principal no centro, os vizinhos
@@ -763,6 +818,9 @@ details[open] .os-case__plus { transform: rotate(45deg); }
 
 /* ---- conteúdo estreito (janela pequena, celular, modo simples) ------------ */
 @container (max-width: 680px) {
+  .os-profile__role, .os-profile__edu li, .os-profile__project, .os-profile__skills { grid-template-columns: 1fr; }
+  .os-profile__school { grid-column: 1; }
+  .os-profile__shot { max-width: 420px; }
   .os-studio__beliefs li { grid-template-columns: 2.5rem 1fr; }
   .os-studio__beliefs .os-studio__body { grid-column: 2; }
   .os-studio__process, .os-services__deliverables { grid-template-columns: 1fr; }

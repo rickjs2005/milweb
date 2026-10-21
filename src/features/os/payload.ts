@@ -7,6 +7,7 @@ import { BRAND } from "@/data/brand";
 import { MOOD, NO_EXTERNAL, PROJECT_INDEX } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
+import { PROFILE_DATA } from "@/data/profile";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
 import { DELIVERABLES, LAB, LAB_PAGE, PROFILE, QUOTE, UI, type Localized } from "@/lib/content";
@@ -88,6 +89,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
       studio: d.nav.studio,
       services: d.nav.services,
       contact: d.nav.contact,
+      profile: d.nav.profile,
       menu: d.nav.menu,
       close: d.nav.close,
       primary: d.nav.primary,
@@ -97,6 +99,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
     },
     hrefs: {
       home: withLocale(locale, "/"),
+      profile: withLocale(locale, "/profile"),
       projects: withLocale(locale, "/work"),
       studio: withLocale(locale, "/studio"),
       lab: withLocale(locale, "/lab"),
@@ -146,6 +149,36 @@ export function buildOsPayload(locale: Locale): OsPayload {
         previewLabel: t(QUOTE.previewLabel),
         send: t(CONTACT_PAGE.send),
       },
+    },
+    profile: {
+      name: PROFILE_DATA.name,
+      title: PROFILE_DATA.title,
+      headline: t(PROFILE_DATA.headline),
+      studio: t(PROFILE_DATA.studio),
+      location: t(PROFILE_DATA.location),
+      photo: { src: PROFILE_DATA.photo.src, alt: t(PROFILE_DATA.photo.alt) },
+      links: { github: PROFILE_DATA.links.github, linkedin: PROFILE_DATA.links.linkedin },
+      cv: { href: PROFILE_DATA.cv.href, download: PROFILE_DATA.cv.download, lang: t(PROFILE_DATA.cv.lang) },
+      about: t(PROFILE_DATA.about),
+      experience: PROFILE_DATA.experience.map((r) => ({ company: r.company, title: t(r.title), start: r.start, end: r.end, location: t(r.location), remote: !!r.remote, independent: !!r.independent, bullets: r.bullets.map((b) => t(b)) })),
+      skills: PROFILE_DATA.skills.map((g) => ({ key: g.key, title: t(g.title), items: g.items.map((i) => ({ name: typeof i.name === "string" ? i.name : t(i.name), featured: !!i.featured, note: i.note ? t(i.note) : null })) })),
+      projects: PROFILE_DATA.projects.map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        kind: t(p.kind),
+        status: p.status,
+        image: p.image,
+        imageAlt: t(p.imageAlt),
+        problem: t(p.problem),
+        contribution: t(p.contribution),
+        stack: [...p.stack],
+        decision: t(p.decision),
+        evidence: { code: t(p.evidence.code), readme: t(p.evidence.readme) },
+        code: p.code.map((c) => ({ label: c.label, url: c.url })),
+        caseRoute: p.caseRoute,
+        demo: p.demo,
+      })),
+      education: PROFILE_DATA.education.map((e) => ({ degree: t(e.degree), school: t(e.school), start: e.start, end: e.end })),
     },
     about: {
       eyebrow: t(STUDIO.founder.eyebrow),

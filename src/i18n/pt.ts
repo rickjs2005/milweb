@@ -7,7 +7,7 @@ export const pt: Dictionary = {
     siteTitle: "MilWeb | Estúdio de desenvolvimento criativo",
     siteDescription: "MilWeb é um estúdio de desenvolvimento criativo no Brasil: sites, sistemas e experiências digitais com design, código, motion e WebGL — do primeiro wireframe ao deploy.",
   },
-  nav: { work: "Projetos", lab: "Lab", studio: "Estúdio", services: "Serviços", contact: "Contato", menu: "Menu", close: "Fechar", primary: "Navegação principal" },
+  nav: { work: "Projetos", lab: "Lab", studio: "Estúdio", services: "Serviços", contact: "Contato", profile: "Perfil", menu: "Menu", close: "Fechar", primary: "Navegação principal" },
   system: { fine: "PONTEIRO FINO", coarse: "TOQUE", reduce: "MOVIMENTO REDUZIDO", sound: "SOM" },
   boot: { tagline: "ESTÚDIO DE DESENVOLVIMENTO CRIATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiência", "carregando estrutura", "carregando motion", "carregando interação"], skip: "pular", compile: "compilando realidade" },
   hero: {
@@ -76,7 +76,7 @@ export const pt: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FONTES PREFERIDAS", title: ["MANTENHA A MILWEB", "NAS SUAS FONTES."], cta: "ADICIONAR MILWEB", loading: "ABRINDO O GOOGLE…", retry: "TENTAR DE NOVO", aria: "Adicionar MilWeb às fontes preferidas no Google" },
   os: {
-    apps: { projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", about: "Sobre", contact: "Contato", settings: "Ajustes", search: "Buscar" },
+    apps: { profile: "Perfil", projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", about: "Sobre", contact: "Contato", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Área de trabalho", icons: "Atalhos da área de trabalho", dock: "Dock", topbar: "Barra do sistema", windows: "Janelas abertas", home: "Tela inicial", appGrid: "Aplicativos" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Fechar", keys: "Com a barra de título em foco: setas movem a janela, Shift + setas redimensionam, Esc fecha", resize: "Redimensionar", running: "aberto", focused: "em primeiro plano" },
     mobile: { back: "Voltar", home: "Início", open: "Abrir", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
@@ -96,6 +96,13 @@ export const pt: Dictionary = {
       language: "Idioma", sound: "Som", reset: "Reorganizar janelas", about: "O MilWeb OS é uma camada de apresentação sobre o site: cada case, serviço e contato continua acessível por link direto.", saved: "Preferências salvas neste navegador.",
     },
     simple: { title: "Navegação simples", toOs: "Abrir o MilWeb OS", skip: "Ir para a navegação simples", nav: "Seções" },
+    profile: {
+      eyebrow: "Perfil profissional", about: "Sobre", experience: "Experiência", skills: "Competências", projects: "Projetos técnicos selecionados", education: "Formação",
+      viewCv: "Ver currículo", downloadCv: "Baixar currículo", contact: "Entrar em contato", present: "atual", remote: "remoto", independent: "Atuação independente", noDates: "em paralelo à carreira",
+      problem: "Problema", contribution: "Minha contribuição", stack: "Tecnologias", decision: "Decisão técnica", details: "Detalhes técnicos", evidenceCode: "Confirmado no código", evidenceReadme: "Segundo o README",
+      code: "Código", demo: "Demonstração", caseLink: "Case na MilWeb", noDemo: "Sem demonstração pública", status: { delivered: "Entregue · em uso", development: "Em desenvolvimento", demo: "Protótipo · demonstração", live: "No ar" },
+      studioLink: "Conhecer o estúdio", projectsLink: "Todos os projetos", opensNewTab: "abre em nova aba",
+    },
     boot: { preparing: "Preparando seu ambiente", studio: "Estúdio de desenvolvimento" },
     contact: { channels: "Canais", lead: "Tem algo que vale construir? Me conta em uma mensagem.", whatsapp: "WhatsApp", email: "E-mail", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Redes do estúdio", linkedin: "CONEXÕES E OPORTUNIDADES", github: "CÓDIGO E EXPERIMENTOS", instagram: "BASTIDORES E PROCESSO CRIATIVO", external: "abre em nova aba" },

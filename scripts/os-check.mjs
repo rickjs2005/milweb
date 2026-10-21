@@ -8,7 +8,7 @@
  * maximizar, fechar, arrastar com clamp, teclado), os controles de janela
  * (grupo `controls`: luzes, saída animada, Esc global, celular, Hold to
  * Inspect), o telefone (grupos `mobile` e `phones`: launcher, dock de redes,
- * telas cheias, histórico sem entradas repetidas, Sobre/Ajustes sem URL),
+ * telas cheias, histórico sem entradas repetidas, Perfil com URL, Ajustes sem URL),
  * troca de modo (desktop ↔ celular preservando o case) e contato a uma ação. Emulação de navegador, não aparelho físico: cobre a lógica,
  * não a percepção.
  */
@@ -22,7 +22,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme,boot,share").split(",");
+const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme,boot,share,profile").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -78,7 +78,7 @@ if (ONLY.includes("desktop")) {
   check("documento não rola", await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1));
   check("raiz sem janela aberta", (await page.locator(".os-window").count()) === 0 && (await page.evaluate(() => window.__milwebOs?.getState().focused ?? null)) === null);
   check("sem Destaques nem atalhos de case na área de trabalho", (await page.locator("#os-icon-home, [data-shortcut], .os-highlights, #os-icon-kavita-drones").count()) === 0);
-  check("coluna de aplicativos: Projetos, Estúdio, Lab, Serviços, Contato", (await page.locator('.os-icons li[data-desktop="1"]:visible .os-icon-btn__label').allInnerTexts()).join("|") === "PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO");
+  check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Contato", (await page.locator('.os-icons li[data-desktop="1"]:visible .os-icon-btn__label').allInnerTexts()).join("|") === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO");
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
   check("olho presente como imagem (fallback estático, fundo CSS do tema)", await page.evaluate(() => /eye-(gojo|obito)\.webp/.test(getComputedStyle(document.querySelector(".os-eye__still")).backgroundImage)));
   check("olho não intercepta o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-eye")).pointerEvents === "none"));
@@ -411,7 +411,7 @@ if (ONLY.includes("desktop")) {
 // Telefone (revisão 9): a tela inicial é um launcher — status, olho como papel de parede, grade de 8 ícones
 // (4 colunas) e a dock de redes (WhatsApp, LinkedIn, GitHub, Instagram). Nada de lema/descrição/botões à vista.
 // Cada app abre em tela cheia a partir do ícone; fechar volta à home pelo histórico (sem entradas repetidas) e
-// devolve o foco ao ícone; Sobre/Ajustes (sem URL) respondem ao Voltar do navegador por entrada própria.
+// devolve o foco ao ícone; Ajustes (sem URL) responde ao Voltar do navegador por entrada própria.
 if (ONLY.includes("mobile")) {
   current = "mobile";
   for (const [label, device, extra] of [
@@ -461,7 +461,7 @@ if (ONLY.includes("mobile")) {
         noScroll: document.querySelector(".os-desktop").scrollHeight <= document.querySelector(".os-desktop").clientHeight + 1,
       };
     });
-    check("launcher: 8 ícones (Projetos, Estúdio, Lab, Serviços, Sobre, Contato, Ajustes, Buscar) em 4 colunas", home.tiles === 8 && home.fourCols && home.ids === "os-launch-projects,os-launch-studio,os-launch-lab,os-launch-services,os-launch-about,os-launch-contact,os-launch-settings,os-launch-search", home.ids);
+    check("launcher: 8 ícones (Perfil, Projetos, Estúdio, Lab, Serviços, Contato, Ajustes, Buscar) em 4 colunas", home.tiles === 8 && home.fourCols && home.ids === "os-launch-profile,os-launch-projects,os-launch-studio,os-launch-lab,os-launch-services,os-launch-contact,os-launch-settings,os-launch-search", home.ids);
     check("launcher: ícones ≥ 56 px, rótulos ≥ 11 px sem cortes, item inteiro ≥ 48 px", home.iconPx >= 56 && home.labelPx >= 11 && !home.labelCut && home.small === 0, JSON.stringify({ icon: home.iconPx, label: home.labelPx, cut: home.labelCut, small: home.small }));
     check("sem lema, descrição, botões, HUD, dock do desktop ou barra à vista (h1 continua no DOM)", home.heroHidden && home.noDesktopBits);
     check("olho como papel de parede entre o status e a grade, imagem pronta, sem ponteiro", home.eyeBetween && home.eyeImg && home.eyeNoPointer);
@@ -524,14 +524,17 @@ if (ONLY.includes("mobile")) {
     await settle(page, 600);
     check("Voltar do navegador na raiz do app volta à home", (await page.locator('.os-window[data-screen="1"]').count()) === 0);
 
-    // Sobre e Ajustes (sem URL): entrada própria no histórico; o Voltar do navegador fecha
-    await page.tap("#os-launch-about");
-    await settle(page, 700);
-    check("Sobre abre em tela cheia sem mudar a URL, com o fundador, base, foco e canais", (await win(page, "about").getAttribute("data-screen")) === "1" && path(page) === "/" && (await win(page, "about").locator(".os-about__name").innerText()).includes("RICK") && (await win(page, "about").locator('.os-about__channels a[href^="https://wa.me/"]').count()) === 1);
-    check("Sobre: links sem hover (linhas de 52 px) e em nova aba segura", await page.evaluate(() => [...document.querySelectorAll(".os-about__row")].every((a) => a.getBoundingClientRect().height >= 48) && [...document.querySelectorAll('.os-about__row[target="_blank"]')].every((a) => a.rel.includes("noopener"))));
+    // Perfil (revisão 12, no lugar de Sobre na grade): tela cheia com URL própria, conteúdo profissional, alvos de 48 px
+    await page.tap("#os-launch-profile");
+    const profileUrl = await urlIs(page, /\/perfil$/);
+    await settle(page, 900); // a tela entra com transição; medir depois dela (transform muda o getBoundingClientRect)
+    const pm = await page.evaluate(() => { const el = document.querySelector('.os-window[data-app="profile"]'); return { screen: el?.getAttribute("data-screen"), name: el?.querySelector(".os-profile__name")?.textContent, photo: !!el?.querySelector("img.os-profile__photo"), actions: [...(el?.querySelectorAll(".os-profile__actions a") ?? [])].map((a) => Math.round(a.getBoundingClientRect().height)) }; });
+    check("Perfil abre em tela cheia com a URL /perfil, nome, cargo, foto e ações de 48 px", profileUrl && pm.screen === "1" && pm.name === "Rick Januario" && pm.photo && pm.actions.length === 5 && pm.actions.every((h) => h >= 48), JSON.stringify(pm));
     await page.goBack();
+    await page.waitForURL((u) => u.pathname === "/");
     await settle(page, 700);
-    check("Voltar do navegador fecha Sobre", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && path(page) === "/");
+    check("Voltar do navegador fecha o Perfil e volta à home", (await page.locator('.os-window[data-screen="1"]').count()) === 0 && path(page) === "/");
+    // Ajustes (sem URL): entrada própria no histórico; o Voltar do navegador fecha
     await page.tap("#os-launch-settings");
     await settle(page, 700);
     const chips = await page.evaluate(() => [...document.querySelectorAll('.os-window[data-app="settings"] .os-chip')].filter((c) => c.getBoundingClientRect().width > 0).map((c) => c.getBoundingClientRect().height));
@@ -1562,6 +1565,141 @@ if (ONLY.includes("share")) {
   const old = await p.request.get(`${BASE}/opengraph-image`);
   check("a rota dinâmica antiga (/opengraph-image) não existe mais — nada de duas capas", old.status() === 404, String(old.status()));
   await c.close();
+}
+
+// ------------------------------------------------------------------- profile
+// App Perfil (revisão 12): abre pela dock/coluna, URL /perfil, conteúdo do currículo sem fatos inventados
+// (nada de Nubank; datas e empresas como no PDF; MilWeb como atuação independente sem data), currículo para ver
+// (nova aba, PDF 200) e baixar (download=), GitHub/LinkedIn, contato abre o app Contato, case abre dentro de
+// Projetos, teclado e foco visível, <details> por teclado, acesso direto nos três idiomas (+ /profile legado),
+// metadata própria, temas claro/escuro, celular em tela cheia com alvos de 48 px e sem rolagem horizontal.
+if (ONLY.includes("profile")) {
+  current = "profile";
+  console.log("\n# app Perfil");
+  const booted = (c) => c.addInitScript(() => sessionStorage.setItem("milweb-os:booted", "1"));
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await booted(c);
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 1200);
+    check("ícone Perfil (pessoa) na coluna e na dock, primeiro", (await p.locator("#os-icon-profile").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 1 && (await p.locator(".os-icons li[data-desktop='1']:visible .os-icon-btn__label").first().innerText()) === "PERFIL" && (await p.locator(".os-dock__item").first().getAttribute("data-dock-id")) === "profile");
+    await p.click('[data-dock-id="profile"]');
+    check("dock abre a janela Perfil e a URL vira /perfil", (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").count()) === 1);
+    await settle(p, 900);
+    const w = win(p, "profile");
+    const info = await w.evaluate((el) => {
+      const t = (s) => el.querySelector(s)?.textContent?.trim() ?? "";
+      return {
+        name: t(".os-profile__name"),
+        title: t(".os-profile__title"),
+        photo: !!el.querySelector(".os-profile__photo"),
+        roles: [...el.querySelectorAll(".os-profile__company")].map((e) => e.firstChild?.textContent?.trim()),
+        dates: [...el.querySelectorAll(".os-profile__when .tnum")].map((e) => e.textContent.trim()),
+        nubank: /nubank/i.test(el.textContent ?? ""),
+        independent: el.querySelectorAll('.os-profile__role[data-independent="1"]').length,
+        groups: el.querySelectorAll(".os-profile__group").length,
+        projects: [...el.querySelectorAll(".os-profile__pname")].map((e) => e.firstChild?.textContent?.trim()),
+        codeLinks: [...el.querySelectorAll('.os-profile__plinks a[href*="github.com/rickjs2005"]')].length,
+        shots: [...el.querySelectorAll(".os-profile__shot-img")].map((i) => i.getAttribute("src") || ""),
+        edu: t(".os-profile__edu"),
+        cvNote: t(".os-profile__cvnote"),
+      };
+    });
+    check("apresentação: nome, cargo e foto real", info.name === "Rick Januario" && info.title === "Senior Full Stack Engineer" && info.photo);
+    check("experiência como no currículo: SmartSheet, Fiserv, GoWorks e a MilWeb independente sem data", info.roles.join("|") === "SmartSheet|Fiserv|GoWorks|MilWeb" && info.dates.join("|") === "03/2025 – atual|05/2022 – 02/2025|05/2020 – 04/2022|em paralelo à carreira" && info.independent === 1, JSON.stringify({ roles: info.roles, dates: info.dates }));
+    check("nenhuma menção à Nubank (divergência do currículo fica na entrega, não no site)", !info.nubank);
+    check("sete grupos de competências; quatro projetos com captura real e link para o código", info.groups === 7 && info.projects.length === 4 && info.codeLinks >= 5 && info.shots.length === 4 && info.shots.every((s) => /\/shots\//.test(decodeURIComponent(s))), JSON.stringify({ groups: info.groups, projects: info.projects, codes: info.codeLinks }));
+    check("formação como no currículo: USP, 08/2017 – 12/2021", /08\/2017 – 12\/2021/.test(info.edu) && /Universidade de São Paulo/.test(info.edu));
+    const view = w.locator('[data-profile-action="view-cv"]');
+    const dl = w.locator('[data-profile-action="download-cv"]');
+    const href = await view.getAttribute("href");
+    const res = await p.request.get(`${BASE}${href}`);
+    check("currículo: 'Ver' aponta para o PDF (200, application/pdf, nome claro, nova aba) e 'Baixar' tem download=; nota 'PDF em inglês'", href === "/cv/rick-januario-senior-software-engineer-en.pdf" && (await view.getAttribute("target")) === "_blank" && res.status() === 200 && /application\/pdf/.test(res.headers()["content-type"] ?? "") && (await dl.getAttribute("download")) === "Rick-Januario-Senior-Software-Engineer-EN.pdf" && /inglês/i.test(info.cvNote), `${res.status()} ${res.headers()["content-type"]} · ${info.cvNote}`);
+    // O Chromium headless não tem visualizador de PDF: o alvo _blank vira uma aba (com viewer) ou um download —
+    // os dois provam que o clique entrega o arquivo certo sem sair do Perfil.
+    const [popup, download] = await Promise.all([c.waitForEvent("page", { timeout: 6000 }).catch(() => null), p.waitForEvent("download", { timeout: 6000 }).catch(() => null), view.click()]);
+    if (popup) await popup.waitForLoadState("load").catch(() => {});
+    const got = (popup && /\.pdf/.test(popup.url())) || (download && /\.pdf$/.test(download.suggestedFilename()));
+    check("clicar em 'Ver currículo' entrega o PDF em nova aba (ou download, no headless) e o Perfil continua aberto", !!got && (await win(p, "profile").count()) === 1, popup ? popup.url() : download ? download.suggestedFilename() : "nada");
+    if (popup) await popup.close();
+    check("GitHub e LinkedIn com os endereços certos, em nova aba segura", (await w.locator('[data-profile-action="github"]').getAttribute("href")) === "https://github.com/rickjs2005" && /linkedin\.com\/in\/rick-januario-41211b238/.test((await w.locator('[data-profile-action="linkedin"]').getAttribute("href")) ?? "") && (await w.locator('[data-profile-action="github"]').getAttribute("rel")) === "noopener noreferrer");
+    await w.locator(".os-window__title").focus();
+    let reached = false;
+    for (let i = 0; i < 12 && !reached; i++) {
+      await p.keyboard.press("Tab");
+      reached = await p.evaluate(() => document.activeElement?.dataset.profileAction === "view-cv");
+    }
+    check("teclado: Tab chega a 'Ver currículo' com foco visível (outline ou fundo lima)", reached && (await p.evaluate(() => { const cs = getComputedStyle(document.activeElement); return cs.outlineStyle !== "none" || cs.backgroundColor === "rgb(183, 255, 55)"; })));
+    const sum = w.locator(".os-profile__details summary").first();
+    await sum.focus();
+    await p.keyboard.press("Enter");
+    await settle(p, 250);
+    check("'Detalhes técnicos' abre por teclado e separa código × README", await w.locator(".os-profile__details").first().evaluate((d) => d.open && /Confirmado no código/.test(d.textContent) && /Segundo o README/.test(d.textContent)));
+    await w.locator('[data-profile-action="contact"]').click();
+    check("'Entrar em contato' abre o app Contato", (await urlIs(p, /\/contato$/)) && (await win(p, "contact").count()) === 1);
+    await p.click('[data-dock-id="profile"]');
+    await settle(p, 500);
+    await win(p, "profile").locator('.os-profile__plinks a[href*="/projetos/inkvision"]').click();
+    check("'Case na MilWeb' abre o case dentro de Projetos", (await urlIs(p, /\/projetos\/inkvision$/)) && (await win(p, "projects").count()) === 1 && (await p.waitForSelector('.os-window[data-app="projects"] .os-case', { timeout: 15000 }).then(() => true).catch(() => false)));
+    await shot(p, "pr01-desktop");
+    check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await c.close();
+  }
+  // acesso direto nos três idiomas, legado e metadata
+  for (const [url, heading, present, title] of [["/perfil", "EXPERIÊNCIA", "atual", "Rick Januario — Senior Full Stack Engineer"], ["/en/profile", "EXPERIENCE", "present", "Rick Januario — Senior Full Stack Engineer"], ["/es/perfil", "EXPERIENCIA", "actual", "Rick Januario — Senior Full Stack Engineer"]]) {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await booted(c);
+    const p = await c.newPage();
+    await p.goto(`${BASE}${url}`, { waitUntil: "load" });
+    await settle(p, 1200);
+    const m = await p.evaluate(() => ({ title: document.title, canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href"), desc: document.querySelector('meta[name="description"]')?.getAttribute("content") ?? "", og: document.querySelector('meta[property="og:image"]')?.getAttribute("content") }));
+    check(`${url}: abre direto no Perfil, título e descrição próprios, canonical, capa de compartilhamento`, (await win(p, "profile").count()) === 1 && m.title.startsWith(title) && m.canonical === `https://milweb.com.br${url}` && /Rick Januario/.test(m.desc) && /cover-/.test(m.og ?? "") && (await p.locator('.os-window[data-app="profile"] #os-profile-experience').innerText()) === heading && (await p.locator(".os-profile__when .tnum").first().innerText()).toLowerCase().endsWith(present), JSON.stringify({ title: m.title, canonical: m.canonical }));
+    await c.close();
+  }
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    const p = await c.newPage();
+    await p.goto(`${BASE}/profile`, { waitUntil: "load" });
+    check("/profile (segmento legado em PT) redireciona para /perfil", path(p) === "/perfil");
+    await c.close();
+  }
+  // temas: a janela segue o papel; a dock e o ícone seguem o tema
+  for (const theme of ["gojo", "obito"]) {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await c.addInitScript((t) => { localStorage.setItem("milweb-os:prefs", JSON.stringify({ theme: t, motion: "system", simple: false })); sessionStorage.setItem("milweb-os:booted", "1"); }, theme);
+    const p = await c.newPage();
+    await p.goto(`${BASE}/perfil`, { waitUntil: "load" });
+    await settle(p, 1200);
+    const ok = await p.evaluate((t) => document.documentElement.dataset.osTheme === t && !!document.querySelector('.os-window[data-app="profile"]') && getComputedStyle(document.querySelector(".os-profile__name")).color === "rgb(17, 17, 17)", theme);
+    check(`${theme}: Perfil aberto, texto em tinta sobre papel`, ok);
+    await shot(p, `pr02-${theme}`);
+    await c.close();
+  }
+  // celular: tela própria, rolagem vertical, alvos de 48 px, sem rolagem horizontal, reduced motion
+  for (const [w, h, reduce] of [[390, 844, false], [320, 568, true]]) {
+    const c = await browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, locale: "pt-BR", reducedMotion: reduce ? "reduce" : "no-preference" });
+    await booted(c);
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 1200);
+    check(`${w}: Perfil é o primeiro ícone da grade`, (await p.locator(".os-launcher__apps a, .os-launcher__apps button").first().getAttribute("id")) === "os-launch-profile");
+    await p.tap("#os-launch-profile");
+    check(`${w}: toque abre o Perfil em tela cheia com a URL /perfil`, (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").getAttribute("data-screen")) === "1");
+    await settle(p, 900);
+    const m = await p.evaluate(() => {
+      const el = document.querySelector('.os-window[data-app="profile"]');
+      const body = el.querySelector(".os-window__body");
+      const small = [...el.querySelectorAll('.os-profile__actions a, .os-profile__plinks a, .os-window__back, .os-window__close')].filter((a) => { const b = a.getBoundingClientRect(); return b.width < 44 || b.height < 44; }).length;
+      return { overflowX: document.documentElement.scrollWidth > innerWidth || body.scrollWidth > body.clientWidth + 1, small, tall: body.scrollHeight > body.clientHeight, oneCol: getComputedStyle(el.querySelector(".os-profile__project")).gridTemplateColumns.split(" ").length === 1 };
+    });
+    check(`${w}: rolagem só vertical, alvos ≥ 44/48 px, projetos em uma coluna`, !m.overflowX && m.small === 0 && m.tall && m.oneCol, JSON.stringify(m));
+    await shot(p, `pr03-m${w}`);
+    check(`${w}: sem erros`, errs.length === 0, errs.slice(0, 2).join(" | "));
+    await c.close();
+  }
 }
 
 // ------------------------------------------------------------------- simple

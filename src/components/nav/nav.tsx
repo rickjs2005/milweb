@@ -15,6 +15,7 @@ export type NavStrings = {
   lab: string;
   studio: string;
   contact: string;
+  profile: string;
   menu: string;
   close: string;
   primary: string;
@@ -39,6 +40,7 @@ export function Nav({ locale, strings }: { locale: Locale; strings: NavStrings }
   const { current, media } = useSystem();
 
   const links = [
+    { href: localizePath(locale, "/profile"), label: strings.profile, key: "/profile" },
     { href: localizePath(locale, "/work"), label: strings.work, key: "/work" },
     { href: localizePath(locale, "/lab"), label: strings.lab, key: "/lab" },
     { href: localizePath(locale, "/studio"), label: strings.studio, key: "/studio" },

@@ -12,6 +12,14 @@ import type { AppId } from "./registry";
 export type IconKind = AppId | "search" | "folder" | "theme";
 
 const GLYPH: Record<IconKind, React.ReactNode> = {
+  /* pessoa: cabeça, ombros e um ponto de acento (crachá) */
+  profile: (
+    <>
+      <circle cx="24" cy="17.5" r="7" />
+      <path d="M11 40c0-7.5 5.8-12.5 13-12.5S37 32.5 37 40" />
+      <path d="M34 10h5" className="os-icon__accent" />
+    </>
+  ),
   projects: (
     <>
       <path d="M8 16a2 2 0 0 1 2-2h9l4 4h17a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" />

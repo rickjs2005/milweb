@@ -12,9 +12,9 @@
  * Projetos e aparecem quando o visitante abre a pasta.
  */
 
-export type AppId = "projects" | "studio" | "lab" | "services" | "about" | "contact" | "settings";
+export type AppId = "profile" | "projects" | "studio" | "lab" | "services" | "about" | "contact" | "settings";
 
-export const APP_IDS = ["projects", "studio", "lab", "services", "about", "contact", "settings"] as const satisfies readonly AppId[];
+export const APP_IDS = ["profile", "projects", "studio", "lab", "services", "about", "contact", "settings"] as const satisfies readonly AppId[];
 
 export type AppDef = {
   id: AppId;
@@ -31,22 +31,24 @@ export type AppDef = {
 };
 
 export const APPS = {
+  /** Perfil profissional (recrutadores e empresas): URL própria, na coluna, na dock e na grade do telefone — primeiro. */
+  profile: { id: "profile", route: "/profile", size: { w: 980, h: 740 }, min: { w: 420, h: 360 }, dock: true, desktopIcon: true, mobileGrid: true },
   projects: { id: "projects", route: "/work", size: { w: 1080, h: 700 }, min: { w: 420, h: 320 }, dock: true, desktopIcon: true, mobileGrid: true },
   studio: { id: "studio", route: "/studio", size: { w: 820, h: 640 }, min: { w: 380, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
   lab: { id: "lab", route: "/lab", size: { w: 900, h: 660 }, min: { w: 400, h: 320 }, dock: true, desktopIcon: true, mobileGrid: true },
   services: { id: "services", route: "/services", size: { w: 860, h: 640 }, min: { w: 380, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
-  /** Sobre: só no telefone (quem faz, base, foco, canais). Sem URL própria, como Ajustes; o desktop conta isso dentro de Estúdio. */
-  about: { id: "about", route: null, size: { w: 640, h: 560 }, min: { w: 340, h: 300 }, dock: false, desktopIcon: false, mobileGrid: true },
+  /** Sobre (quem faz, base, foco, canais): saiu da grade do telefone na revisão 12 — o Perfil cobre isso com mais substância. Continua no registro (rota nula) para não quebrar histórico/marcas. */
+  about: { id: "about", route: null, size: { w: 640, h: 560 }, min: { w: 340, h: 300 }, dock: false, desktopIcon: false, mobileGrid: false },
   contact: { id: "contact", route: "/contact", size: { w: 780, h: 600 }, min: { w: 360, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
   settings: { id: "settings", route: null, size: { w: 560, h: 520 }, min: { w: 340, h: 300 }, dock: true, desktopIcon: false, mobileGrid: true },
 } as const satisfies Record<AppId, AppDef>;
 
 /** Ordem na dock do desktop (a dock do telefone é de redes — features/os/mobile/dock.tsx). */
-export const DOCK_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
+export const DOCK_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 /** Ordem da coluna de aplicativos do desktop (filtrada por `desktopIcon`). */
-export const ICON_ORDER: AppId[] = ["projects", "studio", "lab", "services", "contact", "settings"];
+export const ICON_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 /** Ordem da grade da tela inicial do telefone (4 colunas; a busca entra como oitavo item no launcher). */
-export const MOBILE_GRID: AppId[] = ["projects", "studio", "lab", "services", "about", "contact", "settings"];
+export const MOBILE_GRID: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou
@@ -89,7 +91,7 @@ export function parseRoute(internal: string): RouteInfo {
     return { app: null, kind: "fullpage", detail: null };
   }
   if (!second) {
-    if (first === "studio" || first === "services" || first === "contact") return { app: first, kind: "root", detail: null };
+    if (first === "studio" || first === "services" || first === "contact" || first === "profile") return { app: first, kind: "root", detail: null };
     if (SERVICE_PAGES.has(first)) return { app: "services", kind: "page", detail: first };
   }
   return { app: null, kind: "fullpage", detail: null };

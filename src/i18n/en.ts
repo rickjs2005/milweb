@@ -7,7 +7,7 @@ export const en: Dictionary = {
     siteTitle: "MilWeb | Creative development studio",
     siteDescription: "MilWeb is a creative development studio in Brazil: websites, systems and digital experiences built with design, code, motion and WebGL — from first wireframe to deploy.",
   },
-  nav: { work: "Work", lab: "Lab", studio: "Studio", services: "Services", contact: "Contact", menu: "Menu", close: "Close", primary: "Primary navigation" },
+  nav: { work: "Work", lab: "Lab", studio: "Studio", services: "Services", contact: "Contact", profile: "Profile", menu: "Menu", close: "Close", primary: "Primary navigation" },
   system: { fine: "FINE POINTER", coarse: "TOUCH", reduce: "REDUCED MOTION", sound: "SOUND" },
   boot: { tagline: "CREATIVE DEVELOPMENT STUDIO", origin: "BRAZIL — 2026", lines: ["initializing experience", "loading structure", "loading motion", "loading interaction"], skip: "skip", compile: "compiling reality" },
   hero: {
@@ -76,7 +76,7 @@ export const en: Dictionary = {
   footer: { email: "Email", year: "Brazil" },
   preferred: { eyebrow: "GOOGLE / PREFERRED SOURCES", title: ["KEEP MILWEB", "IN YOUR SOURCES."], cta: "ADD MILWEB", loading: "OPENING GOOGLE…", retry: "TRY AGAIN", aria: "Add MilWeb to Preferred Sources on Google" },
   os: {
-    apps: { projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Contact", settings: "Settings", search: "Search" },
+    apps: { profile: "Profile", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Contact", settings: "Settings", search: "Search" },
     regions: { desktop: "Desktop", icons: "Desktop shortcuts", dock: "Dock", topbar: "System bar", windows: "Open windows", home: "Home screen", appGrid: "Apps" },
     window: { minimize: "Minimize", maximize: "Maximize", restore: "Restore", close: "Close", keys: "With the title bar focused: arrow keys move the window, Shift + arrows resize, Esc closes", resize: "Resize", running: "open", focused: "in front" },
     mobile: { back: "Back", home: "Home", open: "Open", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
@@ -96,6 +96,13 @@ export const en: Dictionary = {
       language: "Language", sound: "Sound", reset: "Rearrange windows", about: "MilWeb OS is a presentation layer over the site: every case, service and contact remains reachable by direct link.", saved: "Preferences are saved in this browser.",
     },
     simple: { title: "Simple navigation", toOs: "Open MilWeb OS", skip: "Skip to simple navigation", nav: "Sections" },
+    profile: {
+      eyebrow: "Professional profile", about: "About", experience: "Experience", skills: "Skills", projects: "Selected technical projects", education: "Education",
+      viewCv: "View résumé", downloadCv: "Download résumé", contact: "Get in touch", present: "present", remote: "remote", independent: "Independent work", noDates: "alongside my career",
+      problem: "Problem", contribution: "My contribution", stack: "Technologies", decision: "Technical decision", details: "Technical details", evidenceCode: "Confirmed in the code", evidenceReadme: "According to the README",
+      code: "Code", demo: "Demo", caseLink: "Case on MilWeb", noDemo: "No public demo", status: { delivered: "Delivered · in use", development: "In development", demo: "Prototype · demo", live: "Live" },
+      studioLink: "Meet the studio", projectsLink: "All projects", opensNewTab: "opens in a new tab",
+    },
     boot: { preparing: "Preparing your environment", studio: "Development studio" },
     contact: { channels: "Channels", lead: "Got something worth building? Tell me in a message.", whatsapp: "WhatsApp", email: "Email", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Studio networks", linkedin: "CONNECTIONS AND OPPORTUNITIES", github: "CODE AND EXPERIMENTS", instagram: "BEHIND THE SCENES AND CREATIVE PROCESS", external: "opens in a new tab" },

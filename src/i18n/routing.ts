@@ -13,6 +13,7 @@ export const ROUTES = {
   studio: { pt: "estudio", en: "studio", es: "estudio" },
   services: { pt: "servicos", en: "services", es: "servicios" },
   contact: { pt: "contato", en: "contact", es: "contacto" },
+  profile: { pt: "perfil", en: "profile", es: "perfil" },
   diagnostico: { pt: "diagnostico", en: "business-audit", es: "diagnostico" },
   "criacao-de-sites": { pt: "criacao-de-sites", en: "website-development", es: "desarrollo-web" },
   "catalogo-whatsapp": { pt: "catalogo-whatsapp", en: "whatsapp-catalog", es: "catalogo-whatsapp" },

@@ -7,7 +7,7 @@ export const es: Dictionary = {
     siteTitle: "MilWeb | Estudio de desarrollo creativo",
     siteDescription: "MilWeb es un estudio de desarrollo creativo en Brasil: sitios, sistemas y experiencias digitales con diseño, código, motion y WebGL — del primer wireframe al deploy.",
   },
-  nav: { work: "Proyectos", lab: "Lab", studio: "Estudio", services: "Servicios", contact: "Contacto", menu: "Menú", close: "Cerrar", primary: "Navegación principal" },
+  nav: { work: "Proyectos", lab: "Lab", studio: "Estudio", services: "Servicios", contact: "Contacto", profile: "Perfil", menu: "Menú", close: "Cerrar", primary: "Navegación principal" },
   system: { fine: "PUNTERO FINO", coarse: "TÁCTIL", reduce: "MOVIMIENTO REDUCIDO", sound: "SONIDO" },
   boot: { tagline: "ESTUDIO DE DESARROLLO CREATIVO", origin: "BRASIL — 2026", lines: ["inicializando experiencia", "cargando estructura", "cargando motion", "cargando interacción"], skip: "saltar", compile: "compilando realidad" },
   hero: {
@@ -76,7 +76,7 @@ export const es: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FUENTES PREFERIDAS", title: ["MANTÉN A MILWEB", "ENTRE TUS FUENTES."], cta: "AÑADIR MILWEB", loading: "ABRIENDO GOOGLE…", retry: "INTENTAR DE NUEVO", aria: "Añadir MilWeb a fuentes preferidas en Google" },
   os: {
-    apps: { projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", about: "Sobre", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
+    apps: { profile: "Perfil", projects: "Proyectos", studio: "Estudio", lab: "Lab", services: "Servicios", about: "Sobre", contact: "Contacto", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Escritorio", icons: "Accesos directos del escritorio", dock: "Dock", topbar: "Barra del sistema", windows: "Ventanas abiertas", home: "Pantalla de inicio", appGrid: "Aplicaciones" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Cerrar", keys: "Con la barra de título enfocada: las flechas mueven la ventana, Shift + flechas redimensionan, Esc cierra", resize: "Redimensionar", running: "abierta", focused: "al frente" },
     mobile: { back: "Volver", home: "Inicio", open: "Abrir", apps: "Aplicaciones", message: "Sitios, sistemas y experiencias digitales con diseño, código y motion." },
@@ -96,6 +96,13 @@ export const es: Dictionary = {
       language: "Idioma", sound: "Sonido", reset: "Reorganizar ventanas", about: "MilWeb OS es una capa de presentación sobre el sitio: cada caso, servicio y contacto sigue accesible por enlace directo.", saved: "Preferencias guardadas en este navegador.",
     },
     simple: { title: "Navegación simple", toOs: "Abrir MilWeb OS", skip: "Ir a la navegación simple", nav: "Secciones" },
+    profile: {
+      eyebrow: "Perfil profesional", about: "Sobre mí", experience: "Experiencia", skills: "Competencias", projects: "Proyectos técnicos seleccionados", education: "Formación",
+      viewCv: "Ver currículum", downloadCv: "Descargar currículum", contact: "Ponerse en contacto", present: "actual", remote: "remoto", independent: "Actividad independiente", noDates: "en paralelo a la carrera",
+      problem: "Problema", contribution: "Mi contribución", stack: "Tecnologías", decision: "Decisión técnica", details: "Detalles técnicos", evidenceCode: "Confirmado en el código", evidenceReadme: "Según el README",
+      code: "Código", demo: "Demostración", caseLink: "Case en MilWeb", noDemo: "Sin demostración pública", status: { delivered: "Entregado · en uso", development: "En desarrollo", demo: "Prototipo · demostración", live: "En línea" },
+      studioLink: "Conocer el estudio", projectsLink: "Todos los proyectos", opensNewTab: "se abre en una pestaña nueva",
+    },
     boot: { preparing: "Preparando tu entorno", studio: "Estudio de desarrollo" },
     contact: { channels: "Canales", lead: "¿Tienes algo que vale la pena construir? Cuéntamelo en un mensaje.", whatsapp: "WhatsApp", email: "Correo", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Redes del estudio", linkedin: "CONEXIONES Y OPORTUNIDADES", github: "CÓDIGO Y EXPERIMENTOS", instagram: "DETRÁS DE CÁMARAS Y PROCESO CREATIVO", external: "se abre en una pestaña nueva" },

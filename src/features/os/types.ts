@@ -51,13 +51,47 @@ export type OsProject = {
 
 export type OsService = { slug: string; label: string; sub: string; href: string };
 
+/** Perfil profissional já localizado (data/profile.ts → payload.ts). */
+export type OsProfile = {
+  name: string;
+  title: string;
+  headline: string;
+  studio: string;
+  location: string;
+  photo: { src: string; alt: string };
+  links: { github: string; linkedin: string };
+  cv: { href: string; download: string; lang: string };
+  about: string;
+  experience: { company: string; title: string; start: string | null; end: string | null; location: string; remote: boolean; independent: boolean; bullets: string[] }[];
+  skills: { key: string; title: string; items: { name: string; featured: boolean; note: string | null }[] }[];
+  projects: {
+    slug: string;
+    name: string;
+    kind: string;
+    status: "delivered" | "development" | "demo" | "live";
+    image: string;
+    imageAlt: string;
+    problem: string;
+    contribution: string;
+    stack: string[];
+    decision: string;
+    evidence: { code: string; readme: string };
+    code: { label: string; url: string }[];
+    caseRoute: string | null;
+    demo: string | null;
+  }[];
+  education: { degree: string; school: string; start: string; end: string }[];
+};
+
 export type OsPayload = {
   locale: Locale;
   s: OsStrings;
   brand: { mark: string; name: string; tagline: string; headline: [string, string]; support: string[]; founder: string; role: string; index: string; origin: string };
-  nav: { work: string; lab: string; studio: string; services: string; contact: string; menu: string; close: string; primary: string; selectLanguage: string; langNames: Record<Locale, string>; sound: { label: string; on: string; off: string } };
+  nav: { work: string; lab: string; studio: string; services: string; contact: string; profile: string; menu: string; close: string; primary: string; selectLanguage: string; langNames: Record<Locale, string>; sound: { label: string; on: string; off: string } };
   /** URLs públicas localizadas das raízes de cada app. */
-  hrefs: { home: string; projects: string; studio: string; lab: string; services: string; contact: string };
+  hrefs: { home: string; profile: string; projects: string; studio: string; lab: string; services: string; contact: string };
+  /** Perfil profissional (app Perfil / rota /profile). */
+  profile: OsProfile;
   projects: OsProject[];
   /** Redes do estúdio (data/social.ts). null = sem URL confirmada: o painel não aparece. */
   social: { linkedin: string | null; github: string | null; instagram: string | null };
