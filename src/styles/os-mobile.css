@@ -259,7 +259,8 @@
   .os-about__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; color: rgb(var(--ink)); text-decoration: none; font-size: 13px; letter-spacing: .08em; }
   .os-about__row:active { background: rgb(var(--ink) / .05); }
   .os-about__row:focus-visible { outline: 2px solid rgb(var(--signal)); outline-offset: -2px; }
-  /* Perfil: uma coluna, foto menor, ações em grade de alvos de 48 px, rolagem só vertical */
+  /* Perfil: uma coluna, foto menor, ações em grade de alvos de 48 px, rolagem só vertical; a navegação
+     interna não fixa (nada fixo cobrindo conteúdo), abas e botões de 48 px, prévia e texto empilhados */
   .os-profile__hero { grid-template-columns: 96px minmax(0, 1fr); gap: 14px 16px; }
   .os-profile__photo { width: 96px; height: 96px; }
   .os-profile__name { font-size: clamp(1.7rem, 8.5vw, 2.4rem); }
@@ -267,13 +268,24 @@
   .os-profile__actions .os-cta, .os-profile__actions .os-chip { min-height: 48px; justify-content: center; text-align: center; font-size: 12px; }
   .os-profile__actions .os-cta { grid-column: 1 / -1; }
   .os-profile__cvnote { grid-column: 1 / -1; }
+  .os-profile__nav { position: static; margin: 14px 0 0; padding: 6px 0; gap: 0 14px; }
+  .os-profile__nav a { min-height: 44px; }
   .os-profile__about { font-size: 16.5px; }
-  .os-profile__role, .os-profile__edu li, .os-profile__project, .os-profile__skills { grid-template-columns: 1fr; }
+  .os-profile__about[data-collapsed="1"] { -webkit-line-clamp: 4; }
+  .os-profile__morebtn { min-height: 44px; }
+  .os-tabs { gap: 0; }
+  .os-tabs__tab { min-height: 48px; padding: 0 10px; font-size: 11.5px; }
+  .os-showcase__panel { grid-template-columns: 1fr; }
+  .os-showcase__vctl .os-chip { min-height: 44px; }
+  .os-profile__mini { grid-template-columns: 1fr; }
+  .os-profile__mini .os-showcase__shot { max-width: 220px; }
+  .os-profile__role, .os-profile__edu li, .os-profile__skills { grid-template-columns: 1fr; }
+  .os-profile__timeline { padding-left: 18px; }
+  .os-profile__role::before { left: -18px; }
   .os-profile__when { grid-auto-flow: row; }
   .os-profile__what ul { font-size: 15.5px; line-height: 1.5; }
   .os-profile__school { grid-column: 1; }
   .os-profile__chips li { padding: 7px 11px; font-size: 13.5px; }
-  .os-profile__shot { max-width: none; }
   .os-profile__facts dd, .os-profile__details dd { font-size: 15.5px; }
   .os-profile__details summary { min-height: 44px; display: inline-flex; align-items: center; }
   .os-profile__plinks { gap: 4px 14px; }

@@ -1568,11 +1568,16 @@ if (ONLY.includes("share")) {
 }
 
 // ------------------------------------------------------------------- profile
-// App Perfil (revisão 12): abre pela dock/coluna, URL /perfil, conteúdo do currículo sem fatos inventados
+// App Perfil (revisões 12 e 13): abre pela dock/coluna, URL /perfil, conteúdo do currículo sem fatos inventados
 // (nada de Nubank; datas e empresas como no PDF; MilWeb como atuação independente sem data), currículo para ver
 // (nova aba, PDF 200) e baixar (download=), GitHub/LinkedIn, contato abre o app Contato, case abre dentro de
 // Projetos, teclado e foco visível, <details> por teclado, acesso direto nos três idiomas (+ /profile legado),
 // metadata própria, temas claro/escuro, celular em tela cheia com alvos de 48 px e sem rolagem horizontal.
+// Revisão 13: entrada animada uma vez por abertura (sem esconder nada do leitor, sem repetir em re-render),
+// "Engenharia em prática" em abas (teclado, indicador, painéis empilhados sem salto, só fatos do código),
+// navegação interna colada no corpo da janela, resumo recolhido com "ler mais", linha do tempo com fio e
+// cargo em leitura, acordeões suaves, abrir/fechar repetido sem erro, celular sem controle fixo e sem vídeo
+// (não há vídeos reais dos projetos), movimento reduzido sem nenhuma animação.
 if (ONLY.includes("profile")) {
   current = "profile";
   console.log("\n# app Perfil");
@@ -1635,8 +1640,55 @@ if (ONLY.includes("profile")) {
     const sum = w.locator(".os-profile__details summary").first();
     await sum.focus();
     await p.keyboard.press("Enter");
-    await settle(p, 250);
-    check("'Detalhes técnicos' abre por teclado e separa código × README", await w.locator(".os-profile__details").first().evaluate((d) => d.open && /Confirmado no código/.test(d.textContent) && /Segundo o README/.test(d.textContent)));
+    await settle(p, 500);
+    const det = await w.locator(".os-profile__details").first().evaluate((d) => ({ open: d.open, h: d.querySelector(".os-profile__dbody").getBoundingClientRect().height, ov: d.querySelector(".os-profile__dbody").style.overflow, text: /Confirmado no código/.test(d.textContent) && /Segundo o README/.test(d.textContent), focus: document.activeElement === d.querySelector("summary") }));
+    check("'Detalhes técnicos' abre por teclado com altura animada (corpo visível, sem overflow residual), foco no summary, e separa código × README", det.open && det.h > 40 && det.ov === "" && det.text && det.focus, JSON.stringify(det));
+
+    // ---- revisão 13: entrada concluída, abas, resumo, navegação interna, linha do tempo ----
+    const after = await w.evaluate((el) => ({ entering: !!el.querySelector(".os-profile")?.hasAttribute("data-entering"), hidden: [...el.querySelectorAll("[data-enter]")].filter((n) => getComputedStyle(n).opacity !== "1" || n.style.opacity !== "").length, steps: el.querySelectorAll("[data-enter]").length }));
+    check("entrada concluída: todos os alvos visíveis, sem marca nem estilo inline residual", !after.entering && after.hidden === 0 && after.steps >= 12, JSON.stringify(after));
+    const tabs = w.locator('[role="tab"]');
+    const tabInfo = await w.evaluate((el) => { const list = el.querySelector(".os-tabs"); const t = [...el.querySelectorAll('[role="tab"]')]; return { n: t.length, labels: t.map((b) => b.textContent.trim()), sel: t.map((b) => b.getAttribute("aria-selected")), ink: list.style.getPropertyValue("--ink-w"), panels: [...el.querySelectorAll('[role="tabpanel"]')].map((x) => `${x.dataset.project}:${x.dataset.active}:${x.hasAttribute("inert")}`) }; });
+    check("Engenharia em prática: três abas (Backend & APIs, IA & automações, Interfaces & motion), a primeira ativa, painéis Kavita/MilLead/MilWeb OS com os inativos inertes", tabInfo.n === 3 && tabInfo.labels.join("|") === "Backend & APIs|IA & automações|Interfaces & motion" && tabInfo.sel.join("") === "truefalsefalse" && parseFloat(tabInfo.ink) > 20 && tabInfo.panels.join("|") === "ecommerce-do-agro:1:false|millead:0:true|milweb-os:0:true", JSON.stringify(tabInfo));
+    const h0 = await w.locator(".os-showcase__panels").evaluate((e) => e.getBoundingClientRect().height);
+    const ink0 = await w.locator(".os-tabs").evaluate((e) => e.style.getPropertyValue("--ink-x"));
+    await tabs.nth(1).click();
+    await settle(p, 500);
+    const sw = await w.evaluate((el) => { const list = el.querySelector(".os-tabs"); const act = el.querySelector('[role="tabpanel"][data-active="1"]'); return { project: act?.dataset.project, inkX: list.style.getPropertyValue("--ink-x"), h: el.querySelector(".os-showcase__panels").getBoundingClientRect().height, sel: [...el.querySelectorAll('[role="tab"]')].map((b) => b.getAttribute("aria-selected")).join(""), ai: /pg-boss/.test(act?.textContent ?? "") && /score do lead/.test(act?.textContent ?? "") && /Anthropic/.test(act?.textContent ?? ""), op: getComputedStyle(act).opacity, vis: getComputedStyle(act).visibility, shot: !!act?.querySelector(".os-profile__shot-img") }; });
+    check("'IA & automações' mostra o MilLead (score, relatório e rascunho por IA, filas pg-boss, adaptadores) com a captura real, sem mudar a altura da área (sem salto) e com o indicador deslizando", sw.project === "millead" && sw.sel === "falsetruefalse" && Math.abs(sw.h - h0) < 1 && sw.inkX !== ink0 && sw.ai && sw.op === "1" && sw.vis === "visible" && sw.shot, JSON.stringify({ h0, sw }));
+    await tabs.nth(1).focus();
+    await p.keyboard.press("ArrowRight");
+    await settle(p, 120);
+    const k1 = await p.evaluate(() => ({ focus: document.activeElement?.dataset.track, sel: document.querySelector('[role="tab"][aria-selected="true"]')?.dataset.track, outline: getComputedStyle(document.activeElement).outlineStyle, panel: document.querySelector('[role="tabpanel"][data-active="1"]')?.dataset.project }));
+    await p.keyboard.press("Home");
+    await settle(p, 120);
+    const k2 = await p.evaluate(() => ({ focus: document.activeElement?.dataset.track, sel: document.querySelector('[role="tab"][aria-selected="true"]')?.dataset.track }));
+    check("abas por teclado: → vai para 'Interfaces & motion' (painel MilWeb OS) com foco visível; Home volta para a primeira", k1.focus === "motion" && k1.sel === "motion" && k1.panel === "milweb-os" && k1.outline !== "none" && k2.focus === "backend" && k2.sel === "backend", JSON.stringify({ k1, k2 }));
+    const about = w.locator(".os-profile__about");
+    const moreBtn = w.locator(".os-profile__morebtn");
+    const a0 = await about.evaluate((e) => ({ collapsed: e.dataset.collapsed, clipped: e.scrollHeight > e.clientHeight + 2, h: Math.round(e.getBoundingClientRect().height) }));
+    await moreBtn.click();
+    await settle(p, 500);
+    const a1 = await about.evaluate((e) => ({ collapsed: e.dataset.collapsed, clipped: e.scrollHeight > e.clientHeight + 2, h: Math.round(e.getBoundingClientRect().height), ov: e.style.overflow }));
+    check("Sobre: três linhas com 'Ler o resumo completo'; expandir mostra o texto inteiro (altura animada, sem overflow residual) e o botão vira 'Mostrar menos'", a0.collapsed === "1" && a0.clipped && a1.collapsed === "0" && !a1.clipped && a1.h > a0.h + 40 && a1.ov === "" && (await moreBtn.getAttribute("aria-expanded")) === "true" && /MOSTRAR MENOS/.test(await moreBtn.innerText()), JSON.stringify({ a0, a1 }));
+    await moreBtn.click();
+    await settle(p, 500);
+    check("…e recolhe de volta às três linhas", (await about.getAttribute("data-collapsed")) === "1" && (await moreBtn.getAttribute("aria-expanded")) === "false");
+    const nav = w.locator(".os-profile__nav");
+    const navInfo = await nav.evaluate((n) => ({ pos: getComputedStyle(n).position, items: [...n.querySelectorAll("a")].map((a) => a.textContent.trim()).join("|"), active: n.querySelector('a[data-active="1"]')?.dataset.section }));
+    check("navegação interna: cinco seções, colada no topo do corpo da janela (sticky), 'Apresentação' ativa no início", navInfo.pos === "sticky" && navInfo.items === "APRESENTAÇÃO|PROJETOS|EXPERIÊNCIA|COMPETÊNCIAS|FORMAÇÃO" && navInfo.active === "intro", JSON.stringify(navInfo));
+    await nav.locator('a[data-section="experience"]').click();
+    await settle(p, 900);
+    const navAfter = await w.evaluate((el) => { const body = el.querySelector(".os-window__body"); const n = el.querySelector(".os-profile__nav"); const navTop = n.getBoundingClientRect().top; const bodyTop = body.getBoundingClientRect().top; const sec = el.querySelector("#os-profile-sec-experience").getBoundingClientRect().top; return { scrolled: body.scrollTop > 100, active: n.querySelector('a[data-active="1"]')?.dataset.section, stuck: Math.abs(navTop - bodyTop) < 1, secBelowNav: sec >= navTop + n.offsetHeight - 1, roles: [...el.querySelectorAll(".os-profile__role")].map((r) => r.dataset.active).join(""), focus: document.activeElement?.id, url: location.pathname + location.hash }; });
+    check("clicar em 'Experiência' rola o corpo da janela até a seção (sob a navegação colada, sem hash na URL, foco na seção) e marca a seção e o primeiro cargo em leitura", navAfter.scrolled && navAfter.active === "experience" && navAfter.stuck && navAfter.secBelowNav && navAfter.roles === "1000" && navAfter.focus === "os-profile-sec-experience" && navAfter.url === "/perfil", JSON.stringify(navAfter));
+    const tl = await w.evaluate((el) => { const t = el.querySelector(".os-profile__timeline"); const r = el.querySelector(".os-profile__role"); return { line: getComputedStyle(t, "::before").width, marker: getComputedStyle(r, "::before").borderRadius, activeBg: getComputedStyle(r, "::before").backgroundColor, idleBg: getComputedStyle(el.querySelectorAll(".os-profile__role")[1], "::before").backgroundColor, titleBlock: getComputedStyle(el.querySelector(".os-profile__roletitle")).display, legible: getComputedStyle(el.querySelectorAll(".os-profile__company")[1]).opacity === "1" }; });
+    check("linha do tempo: fio vertical de 1 px, marcador redondo cheio só no cargo em leitura (os outros vazios e legíveis), cargo em linha própria sob a empresa", tl.line === "1px" && tl.marker === "50%" && tl.activeBg === "rgb(17, 17, 17)" && tl.idleBg !== tl.activeBg && tl.titleBlock === "block" && tl.legible, JSON.stringify(tl));
+    await w.evaluate((el) => { el.querySelector(".os-window__body").scrollTop += 520; });
+    await settle(p, 400);
+    const roles2 = await w.evaluate((el) => [...el.querySelectorAll(".os-profile__role")].map((r) => r.dataset.active).join(""));
+    check("rolar adiante passa o destaque para o cargo seguinte", roles2 !== "1000" && roles2.split("1").length === 2, roles2);
+    await nav.locator('a[data-section="intro"]').click();
+    await settle(p, 900);
     await w.locator('[data-profile-action="contact"]').click();
     check("'Entrar em contato' abre o app Contato", (await urlIs(p, /\/contato$/)) && (await win(p, "contact").count()) === 1);
     await p.click('[data-dock-id="profile"]');
@@ -1645,6 +1697,39 @@ if (ONLY.includes("profile")) {
     check("'Case na MilWeb' abre o case dentro de Projetos", (await urlIs(p, /\/projetos\/inkvision$/)) && (await win(p, "projects").count()) === 1 && (await p.waitForSelector('.os-window[data-app="projects"] .os-case', { timeout: 15000 }).then(() => true).catch(() => false)));
     await shot(p, "pr01-desktop");
     check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await c.close();
+  }
+  // entrada animada: uma vez por abertura; os controles ficam no DOM e clicáveis; nada se repete em re-render;
+  // abrir e fechar três vezes repete a entrada e não deixa erro nem janela duplicada
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await booted(c);
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    await p.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(p, 1200);
+    await p.click('[data-dock-id="profile"]');
+    await p.waitForSelector('.os-window[data-app="profile"] .os-profile__name');
+    const early = await p.evaluate(() => { const n = document.querySelector(".os-profile__name"); const a = document.querySelector('[data-profile-action="view-cv"]'); return { op: parseFloat(getComputedStyle(n).opacity), vis: getComputedStyle(a).visibility, pe: getComputedStyle(a).pointerEvents, text: n.textContent, href: a.getAttribute("href") }; });
+    await settle(p, 1600);
+    const late = await p.evaluate(() => ({ all: [...document.querySelectorAll(".os-profile [data-enter]")].every((n) => getComputedStyle(n).opacity === "1" && n.style.opacity === "" && n.style.transform === ""), entering: document.querySelector(".os-profile").hasAttribute("data-entering") }));
+    check("entrada: nasce em opacidade baixa com o botão já no DOM, visível ao foco e clicável; 1,6 s depois tudo visível e sem estilo inline", early.op < 1 && early.vis === "visible" && early.pe !== "none" && early.text === "Rick Januario" && /\.pdf$/.test(early.href) && late.all && !late.entering, JSON.stringify({ early, late }));
+    await p.click('.os-window[data-app="profile"] [data-track="motion"]');
+    await p.click('.os-dock__theme');
+    await settle(p, 1400);
+    const rerender = await p.evaluate(() => ({ entering: document.querySelector(".os-profile").hasAttribute("data-entering"), op: getComputedStyle(document.querySelector(".os-profile__name")).opacity, inline: document.querySelector(".os-profile__name").style.opacity, panel: document.querySelector('[role="tabpanel"][data-active="1"]')?.dataset.project }));
+    check("re-render (troca de aba e de tema) não repete a entrada", !rerender.entering && rerender.op === "1" && rerender.inline === "" && rerender.panel === "milweb-os", JSON.stringify(rerender));
+    const reopened = [];
+    for (let i = 0; i < 3; i++) {
+      await p.click('.os-window[data-app="profile"] .os-window__btn[data-action="close"]');
+      await p.waitForSelector('.os-window[data-app="profile"]', { state: "detached", timeout: 5000 });
+      await p.click('[data-dock-id="profile"]');
+      await p.waitForSelector('.os-window[data-app="profile"] .os-profile__name');
+      reopened.push((await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector(".os-profile__name")).opacity))) < 1);
+      await settle(p, 1500);
+    }
+    const final = await p.evaluate(() => ({ wins: document.querySelectorAll('.os-window[data-app="profile"]').length, all: [...document.querySelectorAll(".os-profile [data-enter]")].every((n) => getComputedStyle(n).opacity === "1"), url: location.pathname }));
+    check("abrir e fechar o Perfil três vezes: a entrada repete a cada abertura e termina visível, uma janela só, URL /perfil, sem erros", reopened.every(Boolean) && final.wins === 1 && final.all && final.url === "/perfil" && errs.length === 0, JSON.stringify({ reopened, final, errs: errs.slice(0, 2) }));
     await c.close();
   }
   // acesso direto nos três idiomas, legado e metadata
@@ -1688,14 +1773,22 @@ if (ONLY.includes("profile")) {
     check(`${w}: Perfil é o primeiro ícone da grade`, (await p.locator(".os-launcher__apps a, .os-launcher__apps button").first().getAttribute("id")) === "os-launch-profile");
     await p.tap("#os-launch-profile");
     check(`${w}: toque abre o Perfil em tela cheia com a URL /perfil`, (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").getAttribute("data-screen")) === "1");
-    await settle(p, 900);
+    const imm = await p.evaluate(() => ({ entering: !!document.querySelector(".os-profile")?.hasAttribute("data-entering"), op: getComputedStyle(document.querySelector(".os-profile__name")).opacity, panelT: getComputedStyle(document.querySelector('[role="tabpanel"][data-active="1"]')).transitionDuration }));
+    check(`${w}: ${reduce ? "movimento reduzido: nada escondido na abertura e painéis sem transição" : "entrada animada na abertura"}`, reduce ? !imm.entering && imm.op === "1" && imm.panelT === "0s" : imm.entering || parseFloat(imm.op) < 1, JSON.stringify(imm));
+    await settle(p, 1400);
     const m = await p.evaluate(() => {
       const el = document.querySelector('.os-window[data-app="profile"]');
       const body = el.querySelector(".os-window__body");
       const small = [...el.querySelectorAll('.os-profile__actions a, .os-profile__plinks a, .os-window__back, .os-window__close')].filter((a) => { const b = a.getBoundingClientRect(); return b.width < 44 || b.height < 44; }).length;
-      return { overflowX: document.documentElement.scrollWidth > innerWidth || body.scrollWidth > body.clientWidth + 1, small, tall: body.scrollHeight > body.clientHeight, oneCol: getComputedStyle(el.querySelector(".os-profile__project")).gridTemplateColumns.split(" ").length === 1 };
+      return { overflowX: document.documentElement.scrollWidth > innerWidth || body.scrollWidth > body.clientWidth + 1, small, tall: body.scrollHeight > body.clientHeight, oneCol: getComputedStyle(el.querySelector('.os-showcase__panel[data-active="1"]')).gridTemplateColumns.split(" ").length === 1, tabs: [...el.querySelectorAll(".os-tabs__tab")].every((t) => t.getBoundingClientRect().height >= 44), navStatic: getComputedStyle(el.querySelector(".os-profile__nav")).position === "static", vctl: el.querySelectorAll(".os-showcase__vctl").length, morebtn: el.querySelector(".os-profile__morebtn").getBoundingClientRect().height >= 44 };
     });
-    check(`${w}: rolagem só vertical, alvos ≥ 44/48 px, projetos em uma coluna`, !m.overflowX && m.small === 0 && m.tall && m.oneCol, JSON.stringify(m));
+    check(`${w}: rolagem só vertical, alvos ≥ 44/48 px (abas e 'ler mais' inclusive), painel em uma coluna, navegação sem fixar, sem botão de vídeo (não há vídeos reais)`, !m.overflowX && m.small === 0 && m.tall && m.oneCol && m.tabs && m.navStatic && m.vctl === 0 && m.morebtn, JSON.stringify(m));
+    await p.tap('.os-window[data-app="profile"] [data-track="ai"]');
+    await settle(p, 500);
+    check(`${w}: tocar na aba 'IA & automações' troca o painel para o MilLead`, (await p.locator('.os-window[data-app="profile"] [role="tabpanel"][data-active="1"]').getAttribute("data-project")) === "millead");
+    await p.evaluate(() => document.querySelector('.os-window[data-app="profile"] .os-window__body').scrollTo(0, 0));
+    await settle(p, 400);
+    check(`${w}: no topo da tela a navegação marca 'Apresentação' (as medidas são refeitas depois da transição da tela)`, (await p.locator('.os-window[data-app="profile"] .os-profile__nav a[data-active="1"]').getAttribute("data-section")) === "intro");
     await shot(p, `pr03-m${w}`);
     check(`${w}: sem erros`, errs.length === 0, errs.slice(0, 2).join(" | "));
     await c.close();

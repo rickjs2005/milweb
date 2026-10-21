@@ -91,6 +91,8 @@ export type Dictionary = {
       problem: string; contribution: string; stack: string; decision: string; details: string; evidenceCode: string; evidenceReadme: string;
       code: string; demo: string; caseLink: string; noDemo: string; status: { delivered: string; development: string; demo: string; live: string };
       studioLink: string; projectsLink: string; opensNewTab: string;
+      showcase: string; tracks: string; more: string; readMore: string; readLess: string; sections: string; intro: string; projectsShort: string;
+      playDemo: string; pauseDemo: string; closeDemo: string; realCapture: string;
     };
     /** Tela de carregamento do OS: a frase enquanto a home se prepara e o rodapé (o segundo item do rodapé vem de sign.origin). */
     boot: { preparing: string; studio: string };

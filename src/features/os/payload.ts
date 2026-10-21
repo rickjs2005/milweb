@@ -177,7 +177,9 @@ export function buildOsPayload(locale: Locale): OsPayload {
         code: p.code.map((c) => ({ label: c.label, url: c.url })),
         caseRoute: p.caseRoute,
         demo: p.demo,
+        video: p.video ? { src: p.video.src, poster: p.video.poster ?? null } : null,
       })),
+      showcase: PROFILE_DATA.showcase.map((x) => ({ key: x.key, label: t(x.label), project: x.project, contribution: t(x.contribution), decision: t(x.decision), stack: [...x.stack] })),
       education: PROFILE_DATA.education.map((e) => ({ degree: t(e.degree), school: t(e.school), start: e.start, end: e.end })),
     },
     about: {

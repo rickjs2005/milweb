@@ -57,6 +57,24 @@ export type ProfileProject = {
   /** Rota INTERNA do case na MilWeb (abre dentro de Projetos). */
   caseRoute: string | null;
   demo: string | null;
+  /** Demonstração curta e silenciosa (arquivo real em public/). null enquanto não houver vídeo gravado do projeto. */
+  video: { src: string; poster?: string } | null;
+};
+
+/**
+ * "Engenharia em prática": três recortes do trabalho, cada um apontando para um projeto já documentado
+ * em `projects` (o painel mostra a captura, o problema e os links do projeto; o recorte traz a
+ * contribuição, a decisão e as tecnologias vistas por aquele ângulo). Só funcionalidades confirmadas no
+ * código dos repositórios — nada de mock ou plano futuro apresentado como pronto.
+ */
+export type ShowcaseTrack = {
+  key: "backend" | "ai" | "motion";
+  label: Localized;
+  /** slug em PROFILE_DATA.projects */
+  project: string;
+  contribution: Localized;
+  decision: Localized;
+  stack: string[];
 };
 
 const L = (pt: string, en: string, es: string): Localized => ({ pt, en, es });
@@ -275,9 +293,9 @@ export const PROFILE_DATA = {
       ),
       evidence: {
         code: L(
-          "Clean Architecture na API (pastas domain, application, infrastructure e interfaces), migrations do Prisma, pg-boss, Zod, Helmet, JWT, SDK da Anthropic e pdf-lib no package.json, três workflows de CI.",
-          "Clean Architecture in the API (domain, application, infrastructure and interfaces folders), Prisma migrations, pg-boss, Zod, Helmet, JWT, the Anthropic SDK and pdf-lib in package.json, three CI workflows.",
-          "Clean Architecture en la API (carpetas domain, application, infrastructure e interfaces), migrations de Prisma, pg-boss, Zod, Helmet, JWT, SDK de Anthropic y pdf-lib en el package.json, tres workflows de CI.",
+          "Clean Architecture na API (domain, application, infrastructure e interfaces), migrations do Prisma, filas pg-boss de auditoria, briefing, contrato e pós-venda, serviço de IA com score do lead, relatório executivo e rascunho de mensagem (adaptadores Anthropic e OpenAI-compatível, desligado sem chave), Zod, Helmet, JWT, pdf-lib e três workflows de CI.",
+          "Clean Architecture in the API (domain, application, infrastructure and interfaces), Prisma migrations, pg-boss queues for audits, briefings, contracts and post-sale, an AI service with lead scoring, executive report and message drafts (Anthropic and OpenAI-compatible adapters, off without a key), Zod, Helmet, JWT, pdf-lib and three CI workflows.",
+          "Clean Architecture en la API (domain, application, infrastructure e interfaces), migrations de Prisma, colas pg-boss de auditoría, briefing, contrato y posventa, servicio de IA con score del lead, informe ejecutivo y borrador de mensaje (adaptadores Anthropic y compatible con OpenAI, apagado sin clave), Zod, Helmet, JWT, pdf-lib y tres workflows de CI.",
         ),
         readme: L(
           "Auditoria de sites em seis categorias, score de leads e rascunhos por IA, contratos com assinatura eletrônica, automação pós-fechamento e multi-tenant com RLS.",
@@ -289,6 +307,7 @@ export const PROFILE_DATA = {
       // O case /work/millead existe, mas o projeto é oculto das listas (ferramenta interna) e o mural de Projetos não o exibe.
       caseRoute: null,
       demo: null,
+      video: null,
     },
     {
       slug: "inkvision",
@@ -328,6 +347,7 @@ export const PROFILE_DATA = {
       code: [{ label: "GitHub", url: `${GH}/inkvision` }],
       caseRoute: "/work/inkvision",
       demo: null,
+      video: null,
     },
     {
       slug: "ecommerce-do-agro",
@@ -370,6 +390,7 @@ export const PROFILE_DATA = {
       ],
       caseRoute: "/work/ecommerce-do-agro",
       demo: null,
+      video: null,
     },
     {
       slug: "milweb-os",
@@ -405,8 +426,61 @@ export const PROFILE_DATA = {
       code: [{ label: "GitHub", url: `${GH}/milweb` }],
       caseRoute: null,
       demo: "https://milweb.com.br",
+      video: null,
     },
   ] as ProfileProject[],
+
+  /** Engenharia em prática — recortes lidos no código em 21/10/2026 (millead: ai-service, lead-ai, infrastructure/ai, infrastructure/queue). */
+  showcase: [
+    {
+      key: "backend",
+      label: L("Backend & APIs", "Backend & APIs", "Backend y APIs"),
+      project: "ecommerce-do-agro",
+      contribution: L(
+        "API REST em camadas (rota, controller, service, repository) com autenticação por contexto, uploads, pagamento via Mercado Pago, documentação Swagger e 199 arquivos de teste em Jest e Supertest; o frontend em Next.js fica em outro repositório e só fala com a API por HTTP.",
+        "Layered REST API (route, controller, service, repository) with per-context authentication, uploads, Mercado Pago payments, Swagger docs and 199 test files in Jest and Supertest; the Next.js frontend lives in its own repository and only talks to the API over HTTP.",
+        "API REST en capas (ruta, controller, service, repository) con autenticación por contexto, uploads, pago vía Mercado Pago, documentación Swagger y 199 archivos de prueba en Jest y Supertest; el frontend en Next.js vive en otro repositorio y solo habla con la API por HTTP.",
+      ),
+      decision: L(
+        "Quatro contextos de autenticação independentes (admin, cliente, corretora e produtor), cada um com cookie HttpOnly, middleware e login próprios, convivendo no mesmo navegador; acesso a dados com mysql2 em pool e o Sequelize restrito à CLI de migrations.",
+        "Four independent authentication contexts (admin, customer, broker and producer), each with its own HttpOnly cookie, middleware and login, coexisting in the same browser; data access through a raw mysql2 pool, with Sequelize restricted to the migrations CLI.",
+        "Cuatro contextos de autenticación independientes (admin, cliente, corredora y productor), cada uno con cookie HttpOnly, middleware y login propios, conviviendo en el mismo navegador; acceso a datos con mysql2 en pool y Sequelize limitado a la CLI de migrations.",
+      ),
+      stack: ["Node.js", "Express", "MySQL", "Zod", "JWT", "Redis", "Jest · Supertest", "Swagger", "Docker"],
+    },
+    {
+      key: "ai",
+      label: L("IA & automações", "AI & automations", "IA y automatizaciones"),
+      project: "millead",
+      contribution: L(
+        "A camada de IA do CRM: score do lead com justificativa gravada na linha do tempo, relatório executivo e rascunho de mensagem por canal, montados a partir do contexto real do lead (empresa, última auditoria do site, atividades recentes). E as automações em filas no Postgres: auditoria de sites, briefing, PDF de contrato e pós-venda.",
+        "The CRM's AI layer: lead scoring with the rationale logged to the timeline, an executive report and per-channel message drafts, all built from the lead's real context (company, latest site audit, recent activity). Plus the automations as Postgres-backed queues: site audits, briefings, contract PDFs and post-sale.",
+        "La capa de IA del CRM: score del lead con justificación registrada en la línea de tiempo, informe ejecutivo y borrador de mensaje por canal, armados a partir del contexto real del lead (empresa, última auditoría del sitio, actividades recientes). Y las automatizaciones en colas sobre Postgres: auditoría de sitios, briefing, PDF de contrato y posventa.",
+      ),
+      decision: L(
+        "A IA é uma porta do domínio (LeadAi) com dois adaptadores, Anthropic e qualquer API compatível com OpenAI, e nasce desligada quando não há chave: o CRM funciona inteiro sem ela, e trocar de modelo é configuração, não código.",
+        "AI is a domain port (LeadAi) with two adapters, Anthropic and any OpenAI-compatible API, and it starts switched off when no key is set: the CRM works fully without it, and changing models is configuration, not code.",
+        "La IA es un puerto del dominio (LeadAi) con dos adaptadores, Anthropic y cualquier API compatible con OpenAI, y nace apagada cuando no hay clave: el CRM funciona entero sin ella, y cambiar de modelo es configuración, no código.",
+      ),
+      stack: ["Node.js", "Express", "TypeScript", "PostgreSQL", "Prisma", "pg-boss", "Anthropic SDK", "Zod"],
+    },
+    {
+      key: "motion",
+      label: L("Interfaces & motion", "Interfaces & motion", "Interfaces y motion"),
+      project: "milweb-os",
+      contribution: L(
+        "Gerenciador de janelas em Zustand com a URL mandando no foco, o telefone como launcher com histórico próprio, olho 2.5D em GLSL com dois temas, tela de carregamento com prontidão real e a suíte Playwright que valida tudo isso, com mais de 400 verificações.",
+        "A Zustand window manager where the URL drives focus, the phone as a launcher with its own history, a 2.5D eye in GLSL with two themes, a loading screen tied to real readiness and the Playwright suite that validates all of it, with 400+ checks.",
+        "Gestor de ventanas en Zustand con la URL mandando en el foco, el teléfono como launcher con historial propio, ojo 2.5D en GLSL con dos temas, pantalla de carga con disponibilidad real y la suite Playwright que valida todo eso, con más de 400 verificaciones.",
+      ),
+      decision: L(
+        "O olho é um fragment shader analítico (esfera, íris refratada, pálpebras por curvas) em vez de uma malha 3D: nenhuma dependência pesada, a imagem estática é gerada pelo mesmo shader como fallback e a troca de tema acontece com a pálpebra fechada.",
+        "The eye is an analytic fragment shader (sphere, refracted iris, curve-based eyelids) instead of a 3D mesh: no heavy dependency, the static fallback image is rendered by the same shader, and the theme switch happens while the eyelid is shut.",
+        "El ojo es un fragment shader analítico (esfera, iris refractado, párpados por curvas) en lugar de una malla 3D: sin dependencias pesadas, la imagen estática se genera con el mismo shader como fallback y el cambio de tema ocurre con el párpado cerrado.",
+      ),
+      stack: ["Next.js 15", "React 19", "TypeScript", "Zustand", "WebGL · GLSL", "GSAP", "Playwright"],
+    },
+  ] as ShowcaseTrack[],
 
   education: [
     {

@@ -102,6 +102,7 @@ export const es: Dictionary = {
       problem: "Problema", contribution: "Mi contribución", stack: "Tecnologías", decision: "Decisión técnica", details: "Detalles técnicos", evidenceCode: "Confirmado en el código", evidenceReadme: "Según el README",
       code: "Código", demo: "Demostración", caseLink: "Case en MilWeb", noDemo: "Sin demostración pública", status: { delivered: "Entregado · en uso", development: "En desarrollo", demo: "Prototipo · demostración", live: "En línea" },
       studioLink: "Conocer el estudio", projectsLink: "Todos los proyectos", opensNewTab: "se abre en una pestaña nueva",
+      showcase: "Ingeniería en práctica", tracks: "Recortes del trabajo", more: "Más proyectos", readMore: "Leer el resumen completo", readLess: "Mostrar menos", sections: "Secciones del perfil", intro: "Presentación", projectsShort: "Proyectos", playDemo: "Ver demostración", pauseDemo: "Pausar", closeDemo: "Cerrar demostración", realCapture: "Captura real de la interfaz",
     },
     boot: { preparing: "Preparando tu entorno", studio: "Estudio de desarrollo" },
     contact: { channels: "Canales", lead: "¿Tienes algo que vale la pena construir? Cuéntamelo en un mensaje.", whatsapp: "WhatsApp", email: "Correo", linkedin: "LinkedIn", github: "GitHub" },

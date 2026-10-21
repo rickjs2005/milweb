@@ -79,7 +79,10 @@ export type OsProfile = {
     code: { label: string; url: string }[];
     caseRoute: string | null;
     demo: string | null;
+    video: { src: string; poster: string | null } | null;
   }[];
+  /** Engenharia em prática: três recortes apontando para um projeto de `projects`. */
+  showcase: { key: "backend" | "ai" | "motion"; label: string; project: string; contribution: string; decision: string; stack: string[] }[];
   education: { degree: string; school: string; start: string; end: string }[];
 };
 

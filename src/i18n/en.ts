@@ -102,6 +102,7 @@ export const en: Dictionary = {
       problem: "Problem", contribution: "My contribution", stack: "Technologies", decision: "Technical decision", details: "Technical details", evidenceCode: "Confirmed in the code", evidenceReadme: "According to the README",
       code: "Code", demo: "Demo", caseLink: "Case on MilWeb", noDemo: "No public demo", status: { delivered: "Delivered · in use", development: "In development", demo: "Prototype · demo", live: "Live" },
       studioLink: "Meet the studio", projectsLink: "All projects", opensNewTab: "opens in a new tab",
+      showcase: "Engineering in practice", tracks: "Areas of work", more: "More projects", readMore: "Read the full summary", readLess: "Show less", sections: "Profile sections", intro: "Introduction", projectsShort: "Projects", playDemo: "Watch demo", pauseDemo: "Pause", closeDemo: "Close demo", realCapture: "Real capture of the interface",
     },
     boot: { preparing: "Preparing your environment", studio: "Development studio" },
     contact: { channels: "Channels", lead: "Got something worth building? Tell me in a message.", whatsapp: "WhatsApp", email: "Email", linkedin: "LinkedIn", github: "GitHub" },
