@@ -23,9 +23,10 @@ import { useOs, useOsStore } from "./os-shell";
  * linha do painel sob o ponteiro/foco. `prefers-reduced-motion`/Ajustes ›
  * Reduzir: tudo parado e visível.
  *
- * Celular: sem circuitos; uma fileira compacta de três módulos sob o olho.
- * O olho não muda: o `pointerdown` que o faz piscar é global e passivo, e
- * um clique nos painéis também pisca.
+ * Celular: o HUD não aparece (as redes moram na dock de redes).
+ * O olho que dava nome aos nós saiu do cenário (revisão 14): o palco
+ * (`.os-stage`) guarda a mesma caixa, então painéis e circuitos ficaram
+ * exatamente onde estavam.
  */
 export type SocialKey = "linkedin" | "github" | "instagram";
 type Key = SocialKey;
@@ -54,7 +55,9 @@ export function SocialHud() {
       setWires({});
       return;
     }
-    const eye = desk.querySelector<HTMLElement>(".os-eye");
+    // O palco é a caixa que o olho ocupava (o olho saiu; a geometria do HUD ficou): os nós continuam nos mesmos
+    // pontos, que agora caem sobre o anel interno da lua (Tsukuyomi) e a borda do miolo do portal (Vazio).
+    const eye = desk.querySelector<HTMLElement>(".os-stage");
     if (!eye) return;
     const measure = () => {
       const dr = desk.getBoundingClientRect();
@@ -72,8 +75,7 @@ export function SocialHud() {
         const x1 = (left ? r.right : r.left) - dr.left;
         const y1 = r.top + r.height / 2 - dr.top;
         const xs = x1 + 34 * dir;
-        // Nós no olho (medidos sobre a imagem do shader: o globo ocupa ~40% da largura do quadro):
-        // canto externo esquerdo (LinkedIn), sobrancelha direita (GitHub), cílios inferiores direitos (Instagram).
+        // Nós em frações do palco (herdadas do olho: canto externo, sobrancelha e cílios inferiores).
         const x2 = k === "linkedin" ? cx - er.width * 0.205 : cx + er.width * (k === "github" ? 0.16 : 0.165);
         const y2 = cy + er.height * (k === "linkedin" ? -0.04 : k === "github" ? -0.19 : 0.12);
         const d = `M${x1.toFixed(1)} ${y1.toFixed(1)} H${xs.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}`;

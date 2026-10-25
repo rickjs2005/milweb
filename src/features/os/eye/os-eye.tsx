@@ -9,6 +9,13 @@ import { EYE_THEME_UNIFORM, OS_EYE } from "./eye.config";
 /**
  * O olho do wallpaper — vivo, com duas identidades.
  *
+ * FORA DE CENA desde a revisão 14: o fundo do OS agora é features/os/scene
+ * (Tsukuyomi / Vazio Ilimitado) e o único olho visível é o do controle de
+ * tema (theme-toggle.tsx). Este módulo não é montado nem empacotado; fica no
+ * repositório porque o app Perfil o cita como evidência de código e porque
+ * scripts/eye-still.mjs ainda gera as imagens dele (a capa de
+ * compartilhamento usa public/art/eye-obito.webp). O CSS do olho saiu com ele.
+ *
  * Camada visual, nunca interativa: `pointer-events: none`, aria-hidden. O
  * HTML entrega a IMAGEM (olho aberto, gerada pelo mesmo shader; o CSS escolhe
  * a do tema em vigor — Gojo claro ou Obito escuro — pelo `data-os-theme` do

@@ -5,7 +5,7 @@ import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DOCK_ORDER, ICON_ORDER, APPS } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
-import { OsEye } from "./eye/os-eye";
+import { OsScene } from "./scene/os-scene";
 import { SocialHud } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -16,10 +16,13 @@ export { useClock, useLaunch } from "./launch";
 /**
  * Área de trabalho e tela inicial.
  *
- * Desktop: barra superior, wallpaper com o olho (centro), coluna de
- * aplicativos à esquerda, assinatura pequena numa área livre e a dock.
+ * Desktop: barra superior, o fundo (scene/os-scene.tsx: Tsukuyomi no
+ * Obito, Vazio Ilimitado no Gojo), coluna de aplicativos à esquerda,
+ * assinatura pequena numa área livre e a dock. O palco (`.os-stage`) é a
+ * caixa invisível no centro em volta da qual a lua/o portal se compõem e o
+ * HUD das redes se posiciona.
  * Telefone: o mesmo DOM, com o launcher (mobile/launcher.tsx) no lugar da
- * coluna, da assinatura e do HUD — status, olho como papel de parede e a
+ * coluna, da assinatura e do HUD — status, o palco (o fundo aparece ali) e a
  * grade de ícones; a dock de redes é irmã (mobile/dock.tsx). Nada abre
  * sozinho; os cases moram em Projetos. Tudo lê o registro; nada tem lista
  * própria.
@@ -70,11 +73,12 @@ export function Desktop() {
 
   return (
     <div className="os-desktop" aria-label={s.regions.desktop}>
-      <div className="os-wallpaper" aria-hidden="true" />
+      <OsScene />
 
-      <OsEye />
+      {/* Palco: caixa vazia e sem ponteiro no centro — a composição do fundo e o HUD medem por ela. */}
+      <div className="os-stage" aria-hidden="true" data-no-inspect />
 
-      {/* Redes do estúdio: painéis HUD ligados ao olho por circuitos (desktop). */}
+      {/* Redes do estúdio: painéis HUD ligados ao palco por circuitos (desktop). */}
       <SocialHud />
 
       {/* Assinatura: pequena, numa área livre (canto inferior esquerdo); no telefone fica só para leitores de tela. */}
@@ -102,7 +106,7 @@ export function Desktop() {
         </ul>
       </nav>
 
-      {/* Tela inicial do telefone: status, grade de ícones (o olho acima é o papel de parede). */}
+      {/* Tela inicial do telefone: status, grade de ícones (o palco entre os dois mostra o fundo). */}
       <MobileLauncher />
     </div>
   );

@@ -9,7 +9,7 @@ import type { AppId } from "./registry";
  * cursor (Contato), controles deslizantes (Ajustes), crachá (Sobre — só o
  * telefone o mostra, com a família própria de mobile/icons.tsx).
  */
-export type IconKind = AppId | "search" | "folder" | "theme";
+export type IconKind = AppId | "search" | "folder";
 
 const GLYPH: Record<IconKind, React.ReactNode> = {
   /* pessoa: cabeça, ombros e um ponto de acento (crachá) */
@@ -84,19 +84,6 @@ const GLYPH: Record<IconKind, React.ReactNode> = {
     <>
       <path d="M8 16a2 2 0 0 1 2-2h9l4 4h17a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" />
       <path d="M8 24h32" />
-    </>
-  ),
-  /* sol e lua no mesmo glifo: o CSS mostra o destino do clique (lua no tema claro, sol no escuro) */
-  theme: (
-    <>
-      <g className="os-theme__sun">
-        <circle cx="24" cy="24" r="7.5" />
-        <path d="M24 7v4M24 37v4M7 24h4M37 24h4M12 12l2.8 2.8M33.2 33.2l2.8 2.8M12 36l2.8-2.8M33.2 14.8l2.8-2.8" className="os-icon__accent" />
-      </g>
-      <g className="os-theme__moon">
-        <path d="M27.5 8.5a15.5 15.5 0 1 0 12 23.4A12.5 12.5 0 0 1 27.5 8.5z" />
-        <path d="M33 12.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9z" className="os-icon__accent os-icon__fill" />
-      </g>
     </>
   ),
 };

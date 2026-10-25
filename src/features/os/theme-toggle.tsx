@@ -1,23 +1,27 @@
 "use client";
 
+import { useEffect, useId, useRef, type RefObject } from "react";
 import { useOs, useOsStore } from "./os-shell";
-import { otherTheme } from "./theme";
-import { AppGlyph } from "./icons";
+import { otherTheme, type OsTheme } from "./theme";
 
 /**
- * Sol/lua — o interruptor de tema da dock (desktop) e da dock de redes
- * (telefone). Um `role="switch"` com o nome fixo "Tema escuro (Obito)":
- * ligado = Obito, desligado = Gojo. O ícone mostra para ONDE o clique leva
- * (lua no tema claro, sol no escuro) e quem escolhe qual dos dois aparece é
- * o CSS, pelo `data-os-theme` do <html> — por isso o HTML do servidor é o
- * mesmo para qualquer tema (sem erro de hidratação) e o ícone já nasce certo
- * antes de o React acordar. `aria-checked` só diz a verdade depois da
- * hidratação, que acontece antes da primeira pintura.
+ * O controle de tema — o ÚNICO olho visível do sistema. Fica na dock
+ * (desktop) e na dock de redes (telefone). `role="switch"` com o nome fixo
+ * "Tema escuro (Obito)": ligado = Obito, desligado = Gojo.
  *
- * O clique pede o tema ao store (`requestTheme`): com o olho vivo, ele fecha
- * a pálpebra, a interface muda no escuro e o olho reabre com a identidade
- * nova; cliques rápidos só trocam o destino. `data-theme-toggle` tira o
- * controle do piscar genérico de `pointerdown` (seria um fechamento a mais).
+ * O olho mostra o universo em vigor: íris vermelha no Obito (escuro), azul no
+ * Gojo (claro). Antes da hidratação quem escolhe a íris é o CSS, pelo
+ * `data-os-theme` do <html> (o HTML do servidor é o mesmo para os dois temas
+ * — sem erro de hidratação, e o olho já nasce com a cor certa); depois, o
+ * `data-iris` do botão.
+ *
+ * O clique pede o tema ao store (`requestTheme`). A cada destino novo o olho
+ * pisca: a pálpebra fecha, a íris troca com ela fechada e a reabertura
+ * revela a íris nova — enquanto o fundo (features/os/scene) atravessa de um
+ * universo para o outro. Cliques rápidos só trocam o destino: um piscar em
+ * curso pega o destino mais recente, e a pálpebra fecha a partir de onde
+ * estiver. Movimento reduzido: sem piscar, a íris troca na hora.
+ * `data-theme-toggle` continua marcando os controles de tema.
  */
 export function ThemeToggle({ variant }: { variant: "dock" | "mdock" }) {
   const { payload, store } = useOs();
@@ -25,6 +29,8 @@ export function ThemeToggle({ variant }: { variant: "dock" | "mdock" }) {
   const theme = useOsStore((st) => st.prefs.theme);
   const hydrated = useOsStore((st) => st.hydrated);
   const dark = hydrated && theme === "obito";
+  const btnRef = useRef<HTMLButtonElement>(null);
+  useEyeBlink(btnRef);
   const onClick = () => {
     const st = store.getState();
     st.requestTheme(otherTheme(st.themePending ?? st.prefs.theme));
@@ -32,32 +38,187 @@ export function ThemeToggle({ variant }: { variant: "dock" | "mdock" }) {
 
   if (variant === "mdock") {
     return (
-      <button type="button" role="switch" aria-checked={dark} aria-label={s.themeSwitch} className="os-mdock__item os-mdock__theme" data-theme-toggle onClick={onClick}>
+      <button ref={btnRef} type="button" role="switch" aria-checked={dark} aria-label={s.themeSwitch} className="os-mdock__item os-mdock__theme os-theme-btn" data-theme-toggle onClick={onClick}>
         <span className="os-mdock__icon" data-social="theme" aria-hidden="true">
-          <ThemeGlyph />
+          <ThemeEye />
         </span>
         <span className="os-mdock__label">{s.themeShort}</span>
       </button>
     );
   }
   return (
-    <button type="button" role="switch" aria-checked={dark} aria-label={s.themeSwitch} className="os-dock__item os-dock__theme" data-theme-toggle onClick={onClick}>
-      <AppGlyph kind="theme" size={40} />
+    <button ref={btnRef} type="button" role="switch" aria-checked={dark} aria-label={s.themeSwitch} className="os-dock__item os-dock__theme os-theme-btn" data-theme-toggle onClick={onClick}>
+      <span className="os-icon" data-kind="theme" style={{ width: 40, height: 40 }} aria-hidden="true">
+        <ThemeEye />
+      </span>
       <span className="os-dock__label">{dark ? s.obito : s.gojo}</span>
     </button>
   );
 }
 
-/** Sol e lua no mesmo SVG; o CSS (`.os-theme__sun` / `.os-theme__moon`) mostra um por tema. */
-export function ThemeGlyph() {
+/* ---------------------------------------------------------------------------
+ * Piscar do olho: JS só durante o piscar (rAF), escrevendo `--lid` (0 aberto,
+ * 1 fechado) no SVG; a íris troca (`data-iris`) com a pálpebra fechada.
+ * ------------------------------------------------------------------------- */
+const BLINK = { close: 0.13, hold: 0.12, open: 0.36 };
+const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+const easeOut = (u: number) => 1 - Math.pow(1 - u, 3);
+
+function useEyeBlink(ref: RefObject<HTMLButtonElement | null>) {
+  const { store } = useOs();
+  const hydrated = useOsStore((st) => st.hydrated);
+  useEffect(() => {
+    const btn = ref.current;
+    const eye = btn?.querySelector<SVGSVGElement>(".os-eyecon");
+    if (!btn || !eye || !hydrated) return;
+    const dest = (): OsTheme => {
+      const st = store.getState();
+      return st.themePending ?? st.prefs.theme;
+    };
+    const reduce = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches || store.getState().prefs.motion === "reduce";
+    let shown = dest();
+    let phase: "open" | "closing" | "hold" | "opening" = "open";
+    let lid = 0;
+    let from = 0;
+    let t0 = -1;
+    let swapped = false;
+    let raf = 0;
+    btn.dataset.iris = shown;
+
+    const tick = (now: number) => {
+      raf = 0;
+      const tt = now / 1000;
+      if (t0 < 0) t0 = tt;
+      if (phase === "closing") {
+        const u = Math.min(1, (tt - t0) / (BLINK.close * (1 - from) + 0.03));
+        lid = from + (1 - from) * easeInOut(u);
+        if (u >= 1) {
+          phase = "hold";
+          t0 = tt;
+        }
+      } else if (phase === "hold") {
+        lid = 1;
+        // Pálpebra fechada: a íris passa a ser a do destino mais recente.
+        const d = dest();
+        if (d !== shown) {
+          shown = d;
+          btn.dataset.iris = d;
+          swapped = true;
+        }
+        if (tt - t0 >= BLINK.hold) {
+          phase = "opening";
+          t0 = tt;
+          if (swapped) btn.dataset.reveal = "1";
+        }
+      } else if (phase === "opening") {
+        const u = Math.min(1, (tt - t0) / BLINK.open);
+        lid = 1 - easeOut(u);
+        if (u >= 1) {
+          phase = "open";
+          lid = 0;
+          swapped = false;
+        }
+      }
+      eye.style.setProperty("--lid", lid.toFixed(3));
+      if (phase !== "open") raf = requestAnimationFrame(tick);
+      else if (dest() !== shown) start(); // o destino mudou durante a reabertura
+    };
+    function start() {
+      if (phase === "closing" || phase === "hold") return; // já fechando: a troca pega o destino mais recente
+      if (reduce() || btn!.getClientRects().length === 0) {
+        shown = dest();
+        btn!.dataset.iris = shown;
+        return;
+      }
+      delete btn!.dataset.reveal;
+      phase = "closing";
+      from = lid;
+      t0 = -1;
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+    const unsub = store.subscribe(() => {
+      if (dest() !== shown && phase !== "closing" && phase !== "hold") start();
+    });
+    const onEnd = (e: AnimationEvent) => {
+      if (e.animationName === "os-iris-reveal") delete btn.dataset.reveal;
+    };
+    btn.addEventListener("animationend", onEnd);
+    return () => {
+      unsub();
+      btn.removeEventListener("animationend", onEnd);
+      if (raf) cancelAnimationFrame(raf);
+      eye.style.removeProperty("--lid");
+      delete btn.dataset.iris;
+      delete btn.dataset.reveal;
+    };
+  }, [hydrated, ref, store]);
+}
+
+/* ---------------------------------------------------------------------------
+ * O olho (SVG 48 × 48): amêndoa, esclera, duas íris (Sharingan vermelho com
+ * três tomoe; Six Eyes azul com anel claro), pupila, brilho, contorno no
+ * acento do tema. O CSS escolhe a íris e aplica `--lid` ao grupo da pálpebra.
+ * ------------------------------------------------------------------------- */
+const ALMOND = "M5 24C11.6 13.4 36.4 13.4 43 24C36.4 34.6 11.6 34.6 5 24Z";
+const TOMOE = [90, 210, 330].map((deg) => {
+  const a = (deg * Math.PI) / 180;
+  const R = 5.7;
+  const hx = 24 + R * Math.cos(a);
+  const hy = 24 - R * Math.sin(a);
+  const b = a + 0.62; // a cauda segue o anel
+  const tx = 24 + R * Math.cos(b);
+  const ty = 24 - R * Math.sin(b);
+  return { hx: +hx.toFixed(2), hy: +hy.toFixed(2), tail: `M${hx.toFixed(2)} ${hy.toFixed(2)}A${R} ${R} 0 0 0 ${tx.toFixed(2)} ${ty.toFixed(2)}` };
+});
+
+export function ThemeEye() {
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <g className="os-theme__sun">
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
-      </g>
-      <g className="os-theme__moon">
-        <path d="M14.2 3.2a8.6 8.6 0 1 0 6.6 12.9A7.2 7.2 0 0 1 14.2 3.2z" />
+    <svg className="os-eyecon" viewBox="0 0 48 48" width="40" height="40" fill="none" aria-hidden="true">
+      <defs>
+        <clipPath id={`${id}-a`}>
+          <path d={ALMOND} />
+        </clipPath>
+        <radialGradient id={`${id}-r`} cx="50%" cy="46%" r="54%">
+          <stop offset="0" stopColor="#ff7a5c" />
+          <stop offset=".42" stopColor="#e3172b" />
+          <stop offset=".86" stopColor="#7a0612" />
+          <stop offset="1" stopColor="#3a0208" />
+        </radialGradient>
+        <radialGradient id={`${id}-b`} cx="50%" cy="44%" r="54%">
+          <stop offset="0" stopColor="#f4fcff" />
+          <stop offset=".3" stopColor="#a6dcff" />
+          <stop offset=".66" stopColor="#2f86f2" />
+          <stop offset="1" stopColor="#0a2c74" />
+        </radialGradient>
+      </defs>
+      <g className="os-eyecon__lid">
+        <path className="os-eyecon__white" d={ALMOND} />
+        <g clipPath={`url(#${id}-a)`}>
+          <g className="os-eyecon__iris os-eyecon__iris--obito">
+            <circle cx="24" cy="24" r="9.6" fill={`url(#${id}-r)`} />
+            <circle cx="24" cy="24" r="9.2" stroke="#2a0307" strokeWidth="1" />
+            <circle cx="24" cy="24" r="5.7" stroke="#2a0307" strokeWidth=".7" opacity=".75" />
+            <circle cx="24" cy="24" r="2.4" fill="#140204" />
+            <g fill="#1c0306" stroke="#1c0306" strokeWidth="1" strokeLinecap="round">
+              {TOMOE.map((t, i) => (
+                <g key={i}>
+                  <circle cx={t.hx} cy={t.hy} r="1.35" stroke="none" />
+                  <path d={t.tail} fill="none" />
+                </g>
+              ))}
+            </g>
+          </g>
+          <g className="os-eyecon__iris os-eyecon__iris--gojo">
+            <circle cx="24" cy="24" r="9.6" fill={`url(#${id}-b)`} />
+            <circle cx="24" cy="24" r="9.2" stroke="#0a2a6e" strokeWidth="1" />
+            <circle cx="24" cy="24" r="6.4" stroke="#d8f2ff" strokeWidth=".8" opacity=".6" />
+            <circle cx="24" cy="24" r="2.6" fill="#06163a" />
+          </g>
+          <circle className="os-eyecon__spark" cx="21.2" cy="20.6" r="1.6" fill="#fff" />
+          <path className="os-eyecon__shade" d="M5 24C11.6 13.4 36.4 13.4 43 24C36.4 17.6 11.6 17.6 5 24Z" />
+        </g>
+        <path className="os-eyecon__line" d={ALMOND} />
       </g>
     </svg>
   );

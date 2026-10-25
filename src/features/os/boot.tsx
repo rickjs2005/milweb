@@ -14,7 +14,7 @@ import { BOOTED_KEY } from "./theme";
  * Vai no HTML do servidor, por cima da área de trabalho, para cobrir o
  * intervalo real entre a primeira pintura e a home pronta. "Pronta" aqui é
  * medida, não cronometrada: as fontes do site (`document.fonts.ready`), a
- * imagem do olho do tema em vigor (a única mídia essencial da home) e a
+ * imagem estática do universo do tema em vigor (a única mídia essencial da home) e a
  * hidratação do shell. Nada de assets secundários nem de serviços externos;
  * nenhuma duração mínima — se a home estiver pronta, a tela sai na hora.
  * Rede de segurança: 2,5 s depois de o script rodar ela sai de qualquer
@@ -49,7 +49,7 @@ export function OsBoot() {
 
     const fonts: Promise<unknown> = document.fonts?.ready ?? Promise.resolve();
     const still = (async () => {
-      const el = document.querySelector(".os-eye__still");
+      const el = document.querySelector(".os-scene__still");
       const m = el && getComputedStyle(el).backgroundImage.match(/url\("?([^")]+)"?\)/);
       if (!m) return;
       const img = new Image();

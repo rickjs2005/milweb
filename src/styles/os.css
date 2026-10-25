@@ -14,8 +14,9 @@
        como acento; textos escuros e superfícies claras em dock, HUD e placas.
    O <html data-os-theme> escolhe; sem atributo vale o Obito. Papel nas
    janelas nos dois temas (os tokens do site continuam valendo no conteúdo).
-   Composição: olho no centro, aplicativos à esquerda, assinatura pequena no
-   canto, dock compacta. Nada compete pela mesma área.
+   Composição: a lua (Obito) ou o portal (Gojo) do fundo no centro, aplicativos
+   à esquerda, assinatura pequena no canto, dock compacta. Nada compete pela
+   mesma área; o fundo inteiro mora atrás da interface (features/os/scene).
    ===================================================================== */
 :root {
   --os-top: 36px;
@@ -42,7 +43,7 @@
   --os-shadow: 0 8px 10px rgb(0 0 0 / 0.35), 0 48px 80px rgb(0 0 0 / 0.55);
   --os-shadow-soft: 0 6px 8px rgb(0 0 0 / 0.22), 0 24px 40px rgb(0 0 0 / 0.32);
   --os-ease: var(--ease-out-expo);
-  /* a troca de tema acontece com a pálpebra fechada (~260 ms): a interface cruza nesse tempo */
+  /* a interface cruza de tema quando o universo novo do fundo chega às áreas de leitura (features/os/scene) */
   --os-theme-ease: .28s var(--ease-smooth);
   --os-mdock: calc(74px + env(safe-area-inset-bottom, 0px));
 }
@@ -146,44 +147,50 @@ html[data-os-motion="reduce"] .os-boot__bar span { animation: none; width: 100%;
 
 /* ---- área de trabalho ---------------------------------------------- */
 .os-desktop { --eye-w: min(60vw, 112vh); position: relative; z-index: 1; min-height: 0; overflow: hidden; isolation: isolate; }
-/* Fundo: dois papéis de parede sobrepostos (::before = Obito, ::after = Gojo) que cruzam por opacidade
-   na troca de tema — degradês não interpolam, opacidade sim. z-index negativo dentro do contexto da
-   área de trabalho: no celular ele vira `fixed` e, sem isso, pintaria por cima do conteúdo estático. */
+/* Fundo: Tsukuyomi (Obito) e Vazio Ilimitado (Gojo) — features/os/scene. Atrás de tudo: z-index negativo
+   dentro do contexto da área de trabalho (no celular ele vira `fixed` e, sem isso, pintaria por cima do
+   conteúdo estático). Três camadas, nenhuma com ponteiro nem efeito no layout:
+     · a imagem estática do universo do tema em vigor — o MESMO shader no instante zero, posicionada pelo
+       centro e raio do palco (`--st-x/--st-y/--st-r`, medidos em os-scene.tsx; os valores daqui são o
+       palpite do CSS até lá). Só a do tema e do enquadramento em vigor é baixada;
+     · o canvas vivo por cima, que entra por crossfade;
+     · um véu suave atrás das áreas de leitura (coluna de apps e lema), que cruza por opacidade na troca. */
 .os-wallpaper { position: absolute; inset: 0; z-index: -1; background: rgb(var(--os-bg)); transition: background-color var(--os-theme-ease); }
-.os-wallpaper::before, .os-wallpaper::after { content: ""; position: absolute; inset: 0; transition: opacity var(--os-theme-ease); }
-/* Obito: carvão, claridade quente atrás do olho, vermelho muito diluído em volta dele e numa grade de pontos, vinheta no pé */
-.os-wallpaper::before {
-  background:
-    radial-gradient(46% 40% at 50% 46%, rgb(30 20 22) 0%, rgb(30 20 22 / 0) 100%),
-    radial-gradient(64% 30% at 50% 46%, rgb(196 28 40 / 0.11) 0%, rgb(196 28 40 / 0) 100%),
-    radial-gradient(120% 90% at 50% 100%, rgb(0 0 0 / 0.35) 0%, rgb(0 0 0 / 0) 60%),
-    radial-gradient(circle at 1px 1px, rgb(196 28 40 / 0.11) 1px, transparent 1.5px) 0 0 / 28px 28px;
+.os-scene {
+  --st-x: 50vw; --st-y: calc((100dvh - var(--os-top)) * .46); --st-r: calc((100dvh - var(--os-top)) * .6);
+  overflow: hidden; pointer-events: none; user-select: none; contain: strict;
 }
-/* Gojo: gelo com luz fria atrás do olho, um pouco de profundidade no pé e a mesma grade em azul */
-.os-wallpaper::after {
+.os-scene__still, .os-scene__canvas, .os-scene__calm { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* imagem 1880 × 820 desenhada em volta de (940, 360) com raio 460 — scene.config.ts › SCENE_STILL.desktop */
+.os-scene__still {
+  background: #1a0806 url("/art/scene-tsukuyomi.webp") no-repeat;
+  background-size: calc(var(--st-r) * 4.08696) auto;
+  background-position: calc(var(--st-x) - var(--st-r) * 2.04348) calc(var(--st-y) - var(--st-r) * .78261);
+}
+html[data-os-theme="gojo"] .os-scene__still { background-color: #dce4ea; background-image: url("/art/scene-void.webp"); }
+.os-scene__canvas { opacity: 0; transition: opacity .9s var(--os-ease); }
+.os-scene[data-state="live"] .os-scene__canvas { opacity: 1; }
+.os-scene__calm::before, .os-scene__calm::after { content: ""; position: absolute; inset: 0; transition: opacity .5s var(--ease-smooth); }
+.os-scene__calm::before {
   background:
-    radial-gradient(46% 40% at 50% 46%, rgb(255 255 255) 0%, rgb(255 255 255 / 0) 100%),
-    radial-gradient(60% 34% at 50% 48%, rgb(90 150 255 / 0.16) 0%, rgb(90 150 255 / 0) 100%),
-    radial-gradient(120% 90% at 50% 100%, rgb(60 90 140 / 0.12) 0%, rgb(60 90 140 / 0) 60%),
-    radial-gradient(circle at 1px 1px, rgb(24 104 224 / 0.09) 1px, transparent 1.5px) 0 0 / 28px 28px;
+    radial-gradient(640px 300px at 0% 100%, rgb(4 2 5 / .62), rgb(4 2 5 / 0) 72%),
+    linear-gradient(90deg, rgb(4 2 5 / .52) 0, rgb(4 2 5 / .24) 110px, rgb(4 2 5 / 0) 210px);
+}
+.os-scene__calm::after {
+  background:
+    radial-gradient(640px 300px at 0% 100%, rgb(243 245 248 / .74), rgb(243 245 248 / 0) 72%),
+    linear-gradient(90deg, rgb(243 245 248 / .66) 0, rgb(243 245 248 / .30) 110px, rgb(243 245 248 / 0) 210px);
   opacity: 0;
 }
-html[data-os-theme="gojo"] .os-wallpaper::before { opacity: 0; }
-html[data-os-theme="gojo"] .os-wallpaper::after { opacity: 1; }
+html[data-os-theme="gojo"] .os-scene__calm::before { opacity: 0; }
+html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
 
-/* O olho: camada visual pura (sem ponteiro); imagem embaixo, canvas por cima quando vivo.
-   Proporção 2:1 no desktop (mesma do shader/imagem), centrado na área de trabalho.
-   A imagem é um fundo CSS escolhido pelo tema do <html> — só a do tema em vigor é baixada, e o tema
-   claro nunca mostra o olho escuro (nem no carregamento, nem sem WebGL, nem com movimento reduzido). */
-.os-eye {
+/* Palco: a caixa 2:1 que o olho ocupava, vazia e sem ponteiro — o centro da lua/do portal e a régua do HUD
+   das redes (que mede por ela). Não desenha nada. */
+.os-stage {
   position: absolute; left: 50%; top: 46%; width: min(60vw, 112vh); aspect-ratio: 2 / 1; margin: 0;
   transform: translate(-50%, -50%); pointer-events: none; user-select: none;
 }
-.os-eye__still, .os-eye__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.os-eye__still { background: url("/art/eye-obito.webp") center / 100% 100% no-repeat; }
-html[data-os-theme="gojo"] .os-eye__still { background-image: url("/art/eye-gojo.webp"); }
-.os-eye__canvas { opacity: 0; transition: opacity .7s var(--os-ease); }
-.os-eye[data-state="live"] .os-eye__canvas { opacity: 1; }
 
 /* Assinatura: canto inferior esquerdo, pequena. O lema é o h1 da raiz. */
 .os-sign { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); max-width: min(60vw, 64ch); }
@@ -223,10 +230,26 @@ html[data-os-theme="gojo"] .os-eye__still { background-image: url("/art/eye-gojo
 .os-icon__accent { stroke: rgb(var(--os-signal)); }
 .os-icon__fill { fill: rgb(var(--os-signal)); stroke: none; }
 .os-icon__knob { fill: rgb(var(--os-tile)); }
-/* sol/lua: o glifo mostra para onde o clique leva — lua no tema claro, sol no escuro */
-.os-theme__moon { display: none; }
-html[data-os-theme="gojo"] .os-theme__moon { display: initial; }
-html[data-os-theme="gojo"] .os-theme__sun { display: none; }
+/* O olho do controle de tema (theme-toggle.tsx): íris vermelha no Obito, azul no Gojo. Antes da hidratação o
+   tema do <html> escolhe; depois, o `data-iris` do botão (que troca com a pálpebra fechada). `--lid`: 0 aberto,
+   1 fechado. Contorno no acento do tema; esclera clara sobre a placa escura, branca sobre a placa clara. */
+.os-eyecon { display: block; overflow: visible; }
+.os-eyecon__lid { transform-box: view-box; transform-origin: 24px 24px; transform: scaleY(calc(1 - var(--lid, 0) * .9)); }
+.os-eyecon__white { fill: #efe9e3; }
+html[data-os-theme="gojo"] .os-eyecon__white { fill: #ffffff; }
+.os-eyecon__line { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+.os-eyecon__shade { fill: rgb(0 0 0 / .22); }
+.os-eyecon__spark { opacity: .9; }
+.os-eyecon__iris { transform-box: view-box; transform-origin: 24px 24px; }
+.os-eyecon__iris--gojo { display: none; }
+html[data-os-theme="gojo"] .os-theme-btn:not([data-iris]) .os-eyecon__iris--gojo, .os-theme-btn[data-iris="gojo"] .os-eyecon__iris--gojo { display: inline; }
+html[data-os-theme="gojo"] .os-theme-btn:not([data-iris]) .os-eyecon__iris--obito, .os-theme-btn[data-iris="gojo"] .os-eyecon__iris--obito { display: none; }
+.os-theme-btn[data-iris="obito"] .os-eyecon__iris--obito { display: inline; }
+.os-theme-btn[data-iris="obito"] .os-eyecon__iris--gojo { display: none; }
+/* a reabertura revela a íris nova: ela cresce do centro, com um brilho que assenta */
+.os-theme-btn[data-reveal] .os-eyecon__iris { animation: os-iris-reveal .62s var(--ease-out-quint) both; }
+@keyframes os-iris-reveal { from { transform: scale(.5); filter: brightness(1.7) saturate(1.3); } to { transform: none; filter: none; } }
+.os-dock__theme .os-icon .os-eyecon { width: 84%; height: 84%; }
 .os-icon--tile img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
 
 /* ---- redes do estúdio: módulos HUD ao redor do olho ----------------------------------- */
@@ -937,7 +960,7 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-icons ul { grid-template-rows: repeat(auto-fill, 86px); grid-auto-columns: 82px; }
   .os-icon-btn { width: 82px; }
   .os-icon-btn .os-icon { width: 46px !important; height: 46px !important; }
-  .os-eye { width: min(64vw, 100vh); }
+  .os-stage { width: min(64vw, 100vh); }
   .os-desktop { --eye-w: min(64vw, 100vh); }
   .os-hud__panel[data-social="linkedin"] { right: calc(50% + var(--eye-w) * .33); }
   .os-hud__panel[data-social="github"], .os-hud__panel[data-social="instagram"] { left: calc(50% + var(--eye-w) * .33); }
@@ -950,14 +973,14 @@ details[open] .os-case__plus { transform: rotate(45deg); }
 /* ---- movimento reduzido (sistema ou Ajustes) ------------------------------- */
 /* inclui a troca de tema: sem olho vivo ela é imediata, e a interface muda de uma vez (sem cruzar) */
 @media (prefers-reduced-motion: reduce) {
-  .os-window, .os-dock__item, .os-dock__item .os-icon, .os-icon, .os-project__img, .os-eye__canvas,
-  .os, .os-topbar, .os-wallpaper, .os-wallpaper::before, .os-wallpaper::after, .os-dock ul, .os-hud__card, .bounty { transition: none !important; animation: none !important; }
+  .os-window, .os-dock__item, .os-dock__item .os-icon, .os-icon, .os-project__img, .os-scene__canvas, .os-eyecon__iris,
+  .os, .os-topbar, .os-wallpaper, .os-scene__calm::before, .os-scene__calm::after, .os-dock ul, .os-hud__card, .bounty { transition: none !important; animation: none !important; }
 }
 html[data-reduce] .os-window, html[data-os-motion="reduce"] .os-window,
 html[data-reduce] .os-dock__item, html[data-os-motion="reduce"] .os-dock__item,
 html[data-reduce] .os-dock__item .os-icon, html[data-os-motion="reduce"] .os-dock__item .os-icon,
-html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-eye__canvas,
-html[data-os-motion="reduce"] .os, html[data-os-motion="reduce"] .os-topbar, html[data-os-motion="reduce"] .os-wallpaper, html[data-os-motion="reduce"] .os-wallpaper::before, html[data-os-motion="reduce"] .os-wallpaper::after,
+html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-scene__canvas, html[data-os-motion="reduce"] .os-eyecon__iris,
+html[data-os-motion="reduce"] .os, html[data-os-motion="reduce"] .os-topbar, html[data-os-motion="reduce"] .os-wallpaper, html[data-os-motion="reduce"] .os-scene__calm::before, html[data-os-motion="reduce"] .os-scene__calm::after,
 html[data-os-motion="reduce"] .os-dock ul, html[data-os-motion="reduce"] .os-hud__card, html[data-os-motion="reduce"] .bounty { transition: none !important; animation: none !important; }
 /* redes sem movimento: circuitos e painéis prontos, sem pulsos nem respiração */
 @media (prefers-reduced-motion: reduce) {

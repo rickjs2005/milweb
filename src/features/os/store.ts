@@ -23,12 +23,12 @@ import { PREFS_KEY, parseTheme, systemTheme, type OsTheme } from "./theme";
  *
  * Tema (uma fonte só): `prefs.theme` é o tema EM VIGOR (o <html> espelha);
  * `prefs.themeAuto` diz se ele veio do sistema (nada salvo) ou de uma escolha
- * do visitante (salva). A troca passa por `requestTheme`: se o olho estiver
- * vivo ele registra um driver, fecha a pálpebra e só então chama
- * `commitTheme` — a interface muda de tema no escuro e o olho reabre com a
- * identidade nova. Sem olho vivo (imagem, movimento reduzido, janela
- * maximizada), a troca é imediata; e um temporizador de segurança garante o
- * commit mesmo se o driver não responder.
+ * do visitante (salva). A troca passa por `requestTheme`: se o fundo estiver
+ * vivo (features/os/scene) ele registra um driver, atravessa de um universo
+ * para o outro e chama `commitTheme` quando o universo novo chega às áreas
+ * de leitura — só então a interface muda de tema. Sem fundo vivo (imagem,
+ * movimento reduzido, janela maximizada, aba oculta), a troca é imediata; e
+ * um temporizador de segurança garante o commit mesmo se o driver não responder.
  */
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -113,8 +113,11 @@ const RECTS_KEY = "milweb-os:windows";
 /** Área nominal antes de medir (SSR). O CSS clampa por conta própria até lá. */
 const NOMINAL = { w: 1440, h: 820 };
 const CASCADE = 28;
-/** Se o driver do olho não confirmar a troca neste prazo, o tema é aplicado assim mesmo. */
-const THEME_FALLBACK_MS = 900;
+/**
+ * Se o driver do fundo não confirmar a troca neste prazo, o tema é aplicado assim mesmo. O commit normal
+ * chega em ~1,2 s (o universo novo nas áreas de leitura; features/os/scene/scene.config.ts › commitAt).
+ */
+const THEME_FALLBACK_MS = 2400;
 
 function clampRect(r: Rect, area: { w: number; h: number }, id: AppId): Rect {
   const min = APPS[id].min;

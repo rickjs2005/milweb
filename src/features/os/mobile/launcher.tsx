@@ -8,14 +8,14 @@ import { LaunchIcon } from "./icons";
 /**
  * Tela inicial do telefone — um launcher, não uma landing comprimida.
  *
- * Só três coisas: a linha de status (marca e hora), o olho como papel de
- * parede (desenhado por OsEye, irmão no DOM; o CSS o coloca entre a linha de
- * status e a grade) e a grade de aplicativos com ícone + nome curto. Nada de
+ * Só três coisas: a linha de status (marca e hora), o palco (`.os-stage`,
+ * irmão no DOM; o CSS o coloca entre a linha de status e a grade — é ali que
+ * a lua/o portal do fundo aparecem) e a grade de aplicativos com ícone + nome curto. Nada de
  * lema visível, descrição ou botões — o h1 da raiz continua no DOM, só que
  * invisível. As redes e o WhatsApp moram na dock (mobile/dock.tsx).
  *
  * `display: contents` no celular: os filhos entram direto na coluna da área
- * de trabalho, para o olho ficar entre o status e a grade sem mexer na ordem
+ * de trabalho, para o palco ficar entre o status e a grade sem mexer na ordem
  * do DOM que o desktop usa. Fora do celular o launcher inteiro é
  * `display: none` (styles/os-mobile.css); o desktop nunca o vê.
  */

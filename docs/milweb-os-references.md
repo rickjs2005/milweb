@@ -446,3 +446,43 @@ Pedido do Rick: dar personalidade e movimento ao Perfil sem perder a adequação
 ### Mídias ausentes
 
 - Nenhum vídeo real de MilLead, InkVision, Kavita Platform ou MilWeb OS. Para ligar: gravar um clipe curto e mudo (webm/mp4, 16:10, poucos segundos), salvar em `public/motion/`, e preencher `video: { src, poster? }` no projeto em `src/data/profile.ts` — o resto já funciona. Nenhum vídeo foi gerado nem crédito gasto.
+
+## Revisão 14 (25/10/2026) — fundo: Tsukuyomi (Obito) e Vazio Ilimitado (Gojo), travessia entre universos
+
+Pedido do Rick: trocar SÓ o ambiente de fundo e a experiência do controle de tema — a lua do Tsukuyomi Infinito no escuro, o Vazio Ilimitado no claro, uma travessia cinematográfica de 1,8–2,4 s que nasce no controle, o olho pequeno do controle como único olho visível (vermelho no escuro, azul no claro), camadas com paralaxe, tudo ATRÁS da interface — sem mexer em apps, lema, dock, navegação ou responsividade. Sem áudio.
+
+### Antes de mexer
+
+- Capturas da interface em `.audit/scene/before/` (`.audit/scene/shots.mjs`): 1440, 1920, 1024, 390, 375 e 844×390 deitado × Obito/Gojo × raiz, Projetos e Perfil; cada uma com fundo, sem fundo (só a interface) e com as caixas de layout em JSON.
+
+### Arquitetura
+
+- `features/os/scene/`: `scene.config.ts` (tempos, composição, orçamento de GPU, rochas e estilhaços), `glsl-common.ts` (ruído por textura, onda do controle, `waveBehind`), `tsukuyomi-frag.ts`, `void-frag.ts`, `noise.ts` (textura 256² com semente fixa) e `os-scene.tsx`. Renderer WebGL 1 compartilhado (`webgl/renderer.ts`, intocado), canvas opaco, um programa por universo; na travessia os dois são desenhados — o que sai por baixo, o que chega por cima com a máscara de revelação do próprio shader.
+- Camadas com profundidade `z`: a paralaxe e a travessia (câmera avançando, escala `z / (z − s)`) dependem dela — as camadas próximas passam primeiro pela câmera. Tsukuyomi: céu, estrelas e halo; lua com mares, crateras, sombras de nuvens altas e o padrão (pupila, três anéis pontilhados e nove tomoe, cada anel num ritmo); nuvens finas acesas por trás; névoa e feixes vermelhos; rochas distantes e próximas com aro aceso; banco de nuvens; brasas em três planos; névoa próxima. Vazio: pérola iridescente; túnel com ponto de fuga deslocado, camadas de luz que recuam, costelas e braços em espiral; lente e franja cromática na borda; bolha de distorção que passeia; quatro anéis elípticos girando em sentidos opostos; névoa em vórtice; estilhaços de vidro; partículas puxadas para o fundo (espaço log-polar) e poeira. O miolo azul fica contido (r < 0,3) e não tem "pupila" nítida — o portal lê como vórtice, não como íris.
+- Composição no espaço do palco: `.os-stage` é a caixa 2:1 que o olho ocupava, vazia e sem ponteiro; o centro da lua/portal é o centro dela e o raio é 0,6 × a altura da área de trabalho (desktop) ou min(0,62 × largura, 0,78 × altura do palco) (telefone). O HUD das redes mede o palco — painéis e circuitos ficaram onde estavam (os nós agora caem sobre o anel interno da lua e a borda do miolo do portal).
+- Imagens estáticas `public/art/scene-{tsukuyomi,void}[-mobile].webp` (32–56 KB) geradas pelo MESMO shader no instante zero: `node scripts/scene-still.mjs` (`--review` grava os dois universos e as duas travessias em `.audit/scene-review/`). O CSS as posiciona por `--st-x/--st-y/--st-r` (medidos no palco; o CSS tem um palpite até a hidratação), então coincidem com o canvas em qualquer proporção. Só a do tema e do enquadramento em vigor é baixada; a tela de carregamento espera por ela.
+- Tema: o fundo é o driver do store (`setThemeDriver`). A interface adota o tema novo (`commitTheme`) quando a frente do universo novo passa pelas áreas de leitura — p = 0,57 no escuro → claro, 0,47 no claro → escuro —, antes disso o texto segue legível sobre o universo antigo. Pedidos durante a travessia só invertem o sentido (nunca duas travessias). Fallback do store: 900 → 2400 ms. Sem driver (imagem estática, movimento reduzido, janela maximizada, tela aberta no telefone, aba oculta): troca imediata, como antes.
+- Escuro → claro: a onda nasce no olho do controle e percorre o fundo; atrás dela o halo vermelho vira partículas que voam para fora; a câmera avança num túnel azul-escuro com rastros; um ponto azul surge no fundo; os anéis se abrem a partir do centro e o Vazio acende do crepúsculo à pérola (sem clarão); giro e brilho extras decaem até o ambiente. Claro → escuro: a mesma onda (tingida de vermelho), os anéis se contraem girando mais rápido, a luz cai aos poucos, uma onda vermelha parte do centro e revela a lua através de uma névoa espessa; o padrão acende anel por anel em varredura horária; os anéis desaceleram até o giro lento.
+- Controle (`theme-toggle.tsx`): olho em SVG (amêndoa, esclera, íris Sharingan vermelha com três tomoe / Six Eyes azul com anel claro), mesmo botão, mesma caixa, mesmos rótulos e atributos. Piscar em JS só durante o piscar (`--lid` no SVG), a íris troca com a pálpebra fechada (`data-iris`) e a reabertura a revela (CSS); cliques rápidos reaproveitam o piscar em curso. Antes da hidratação o CSS escolhe a íris pelo tema do `<html>`. O sol/lua saiu de `icons.tsx`.
+- Áreas de leitura: véu CSS (`.os-scene__calm`) atrás da coluna de apps e do lema (telefone: status e grade), escuro no Obito, perolado no Gojo, cruzando por opacidade.
+- O olho grande saiu de cena. `features/os/eye/` continua no repositório, sem ser montado nem empacotado: o app Perfil o cita como evidência de código e `scripts/eye-still.mjs` gera `public/art/eye-obito.webp`, usado pela capa de compartilhamento. O CSS do olho saiu.
+
+### Desempenho
+
+- Custo de GPU medido sincronizando por `readPixels` de 1 pixel — no Chrome `gl.finish()` NÃO espera a GPU (media ~0 ms e a sonda escolhia a resolução máxima). Sonda no boot com desconto do custo fixo da sincronização; calibração periódica no próprio loop (um quadro do ambiente a cada 6 s nas três primeiras, depois a cada 30 s), em passos de ±0,12 de dpr até ~9 ms por quadro a 30 fps — a primeira medida pega a GPU em clock baixo. Monitor de quadros só no ambiente (a travessia, curta e dobrada, não rebaixa a resolução de sempre). Travessia a 60 fps com progresso em relógio real (um quadro lento não estica os 2,2 s).
+- Intel UHD (ANGLE D3D11), 1440×864, dpr 1 e GPU aquecida: Tsukuyomi ~11,5 ms, Vazio ~10 ms, travessia ~21 ms (`.audit/scene/prof.mjs` mede camada por camada; as brasas custavam 2,3 ms antes das saídas antecipadas). Em regime, a 30 fps, essa GPU assenta em dpr 0,5 (foco suave atrás da interface nítida); telefone emulado, dpr 1.
+- Quadros contínuos só com o fundo à vista: a aba oculta para o renderer (e uma travessia em curso termina na hora), janela maximizada ou tela aberta no telefone soltam o loop. `quality` baixa, movimento reduzido ou GPU reprovada na sonda: imagem.
+
+### Verificações (revisão 14)
+
+- `tsc`, `next lint` e `next build` verdes. Suíte no build de produção, em quatro rodadas: desktop/controls/theme/boot 162/162, phones 86/86, projects/mobile/resize 141/141, simple/share/profile 67/67 — 456/456. Numa rodada longa (projects → phones), o passo do Contato em 932×430 estourou o tempo uma vez; sozinho, o grupo passou 86/86. `i18n-audit`: só as 3 antigas do Logistics Demo. `orphan-assets`: 0.
+- Regressão da interface (`.audit/scene/compare.py before after`): 24/24 capturas sem fundo idênticas pixel a pixel fora da caixa do controle de tema (o ícone mudou de propósito) e todas as caixas de layout iguais.
+- GPU real (Playwright visível, `.audit/scene/live.mjs` e `--mobile`): travessias de 2,0–2,2 s, commit no meio, três cliques = uma travessia, ida e volta com dois cliques, paralaxe, aba oculta (0 quadros, retoma ao voltar), janela maximizada (0 quadros), interface com as mesmas caixas antes e depois, console limpo. Vídeos em `.audit/scene/video/`.
+- O grupo `theme` da suíte ganhou a travessia viva (forçada com `?quality=high`, em resolução mínima no SwiftShader): uma travessia só, commit no meio, Tsukuyomi em cena no fim, íris trocando com a pálpebra fechada.
+
+### Limitações e pendências
+
+- O app Perfil (`data/profile.ts`, card do MilWeb OS) ainda fala em "olho vivo", "olho 2.5D em GLSL", na decisão do shader do olho e na troca com a pálpebra fechada, e a captura `public/shots/milweb-os.webp` mostra o olho. Não foi mexido: o pedido era preservar o conteúdo dos apps.
+- A capa de compartilhamento (`public/og/cover-*.jpg`) ainda traz o olho como detalhe.
+- GPU integrada fraca: o fundo vivo fica em resolução reduzida. Sem WebGL (ou GPU reprovada) a imagem estática troca de uma vez, sem travessia.
+- Não validado: aparelho físico (iOS/Android), Safari e Firefox, telas de DPR 2 ou mais, leitor de tela.
