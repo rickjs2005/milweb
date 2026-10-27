@@ -486,3 +486,48 @@ Pedido do Rick: trocar SÓ o ambiente de fundo e a experiência do controle de t
 - A capa de compartilhamento (`public/og/cover-*.jpg`) ainda traz o olho como detalhe.
 - GPU integrada fraca: o fundo vivo fica em resolução reduzida. Sem WebGL (ou GPU reprovada) a imagem estática troca de uma vez, sem travessia.
 - Não validado: aparelho físico (iOS/Android), Safari e Firefox, telas de DPR 2 ou mais, leitor de tela.
+
+## Revisão 15 (26/10/2026) — ambientes vivos: Tsukuyomi e Vazio em Three.js, reação aos apps
+
+Pedido do Rick: os dois ambientes estavam "visualmente parados". Primeiro investigar loop, tempo e congelamento e corrigir a causa; depois movimento perceptível com o cursor parado (lua com volume, anéis, nuvens em camadas atravessando a lua, rochas com rotação e oscilação, brasas em profundidade, luz e névoa no Tsukuyomi; túnel com profundidade além das bordas, energia curva, anéis assimétricos, correntes de luz, partículas, névoa branca, fragmentos e distorção no Vazio); interação (paralaxe amortecida, ícones flutuando dentro da área de clique fixa, reação localizada ao destacar um app, onda pequena ao abrir, dock estável); Three.js/R3F + GSAP, um laço por tempo decorrido, sem setState por quadro; Lenis só com rolagem real; celular com movimento automático e qualidade adaptativa; movimento reduzido; aba oculta; cliques preservados. Frase, layout, apps, textos e funcionalidades preservados; o olho só no controle de tema.
+
+### Diagnóstico (antes de mexer)
+
+- O laço e o relógio funcionavam. Três causas: (1) velocidades do ambiente baixas demais — em produção, 2–5% dos pixels mudavam em 10 s parado; (2) resolução de 0,5–0,76 na GPU integrada (Intel UHD, ANGLE/D3D11), borrando o pouco que mexia; (3) em 2560×1340 a guarda de orçamento destruía o renderer e ficava só a imagem estática. No Edge do Rick (DPR 1,25), o canvas rodava a ~0,5 da resolução.
+- Lenis já ficava fora do OS (`scroll-provider` retorna com `html[data-os="1"]`).
+
+### Arquitetura
+
+- `features/os/scene/` reescrito em Three.js (sem R3F: a cena é um conjunto de malhas e shaders sem árvore React por objeto, e o R3F traria reconciliador e laço próprios). `engine.ts`: WebGLRenderer, cada universo no próprio alvo, composição na tela, travessia/destaque/onda como tweens do GSAP. `world.ts`: câmera em perspectiva enquadrada no palco (`setViewOffset`, focal F × R), então a composição é a mesma em qualquer tela. `bake.ts`: texturas assadas na GPU no boot, periódicas (lua com mares e crateras, nuvens em três densidades, névoa, energia). `glsl.ts`: ruído por textura e fbm periódico. `tsukuyomi.ts`, `void.ts`, `composite.ts` (ondas, reação aos apps, máscaras das travessias, vinheta, grão, ombro das altas luzes) e `scene.config.ts` (tempos, orçamento, conteúdo dos universos).
+- UM laço: o ticker do GSAP. Travessia, destaque e onda são tweens e o quadro da cena anda no mesmo rAF, por tempo decorrido; nada de setState por quadro. O piscar do olho do controle virou uma timeline do GSAP (era um rAF próprio). Os únicos outros callbacks de quadro na página são internos do ScrollTrigger, registrado no site inteiro (um deles é um laço vazio da própria biblioteca).
+- Tsukuyomi: céu com estrelas, nebulosa e halo/feixes girando no próprio céu; lua em esfera com relevo por derivadas, luz principal, emissão quente e aro; o padrão (três anéis pontilhados com tomoe, cada um num ritmo e sentido, e uma faixa de luz varrendo); sete faixas de nuvens em profundidades e velocidades próprias, com a borda acesa por trás na frente da lua e o lado voltado para ela iluminado; névoa em dois planos; 14 rochas (icosaedros deformados, facetadas, luz e aro vermelho) girando no próprio eixo e oscilando; brasas orbitando e subindo em várias profundidades.
+- Vazio: túnel em volta da câmera, curvando devagar, com energia correndo para o fundo, espirais e folhas de luz; cor por profundidade (pérola fora do palco, azul a partir de ~0,8 R, azul profundo no centro); núcleo; sete anéis inclinados girando em sentidos opostos e deslizando para a câmera; oito correntes de luz em hélice com pulsos; partículas espiralando; névoa branca só na periferia (recua do centro, que fica azul profundo); estilhaços de vidro; bolha de distorção e franja cromática.
+- Paralaxe pela câmera (o que está perto anda mais), amortecida (τ 0,55 s); sem mouse por 3,5 s, deriva automática, que também é o movimento do celular.
+- Interação: destacar um app (ponteiro ou foco) acende um brilho localizado e solta pulsos de energia que saem dele para dentro do cenário, um a cada 1,35 s, passando do véu da coluna; clicar num app (coluna, grade do telefone ou dock) solta uma onda pequena (~1 raio) na cor do universo, junto com a abertura. Os ícones da coluna e da grade do telefone flutuam de leve só na placa (`translate`/`rotate` em CSS, no compositor); botão, área de clique, rótulo e dock ficam parados.
+- Imagens estáticas regeneradas pelo MESMO motor: `scripts/scene-still.mjs` agora monta `engine.ts` e o Three.js numa página isolada com SwiftShader (saída igual em qualquer máquina); 70–105 KB cada.
+
+### Desempenho
+
+- Resolução e teto de quadros por plano: 60 qps só quando cabem em ≥ 90% da resolução máxima (e continuam enquanto couberem em 80%); senão 30 qps nítidos. Travessia e reações no mesmo teto — antes subiam para 60 e saturavam a GPU integrada. Orçamento de 14 ms por quadro medidos no ritmo do ambiente (a GPU integrada desacelera entre quadros; o mesmo quadro sob carga custa de 1/2 a 1/3 disso). A primeira calibração roda com o canvas invisível (custo marginal de vários quadros e latência fixa da leitura) e vai direto ao alvo; as seguintes só cronometram o próprio quadro e descontam a latência — antes, rajadas de medida travavam a tela por ~120 ms a cada 6 s.
+- O universo que não está em cena é desenhado uma vez fora da tela, em tempo ocioso: a geometria já está na GPU na primeira travessia.
+- Pulsos dos circuitos das redes (HUD): eram SMIL `animateMotion` no SVG de tela inteira, e cada quadro repintava ladrilhos com filtro de brilho (754 ms de rasterização na GPU a cada 2 s parado, no Intel UHD). Viraram pontos HTML animados por transform e opacidade (Web Animations, no compositor): 0 ms. Mesmo trajeto, ritmo e aparência.
+- Olho do controle: o piscar escala o `<svg>` inteiro numa camada própria (antes, um grupo interno do SVG repintado a cada quadro) e o revelar da íris perdeu o filtro de cor — na primeira troca o Skia compilava programas novos no meio da travessia (quadros de 200–400 ms).
+- Build de produção, Intel UHD, Playwright visível: ambiente sem quadros longos; troca de tema com 1–2 quadros de 50–66 ms (antes, 80–400 ms). Resolução escolhida (Tsukuyomi / Vazio): 1440×900 0,83 / 1,0; 1920×1080 0,79 / 0,86; 1536×730 a DPR 1,25 1,25 / 1,14; 2560×1340 0,56 / 0,72 (antes 0,5–0,76 e nenhum canvas em 2560). Mudança em 10 s parado: Tsukuyomi 13–17% dos pixels, Vazio 7–9% (antes 2–5%).
+- Aba oculta: o laço para (uma travessia em curso termina na hora) e retoma ao voltar. Janela maximizada ou tela aberta no telefone: para. `data-run` no fundo diz se o laço está rodando (para os testes; nenhum CSS depende dele).
+
+### Correção fora do fundo
+
+- Telefone: fechar um app e abrir outro em menos de 0,7 s fechava o recém-aberto. A rede de segurança de `leaveToHome` (`mobile/history.ts`) olhava a URL 700 ms depois do salto no histórico; agora decide pelo popstate do próprio salto. Era a falha intermitente da suíte do telefone no passo do Contato (registrada na revisão 14), achada aqui porque passou a falhar toda vez nas rodadas longas.
+
+### Verificações (revisão 15)
+
+- `tsc`, `next lint` e `next build` verdes. Suíte no build de produção: mobile/phones 179/179, desktop/controls/projects 149/149, theme/boot/share/resize/simple/profile 134/134 — 462/462 (456 + 6 novas: ícones flutuando só na placa, ícones parados com movimento reduzido, pulsos do HUD sem SMIL, laço parado com a aba oculta e com janela maximizada, sem erros). mobile+phones juntos, que falhavam em toda rodada antes da correção do histórico, passaram três vezes seguidas.
+- Regressão da interface com movimento reduzido (`.audit/scene/compare.py after after15`): 24/24 capturas idênticas pixel a pixel e caixas de layout iguais; o controle de tema difere em até 32 pixels de suavização (agora numa camada própria).
+- GPU real, build de produção: `.audit/scene/interact.mjs` (destaque localizado, janela maximizada, aba oculta, sem erros: 10/10), `hitch.mjs` (quadros longos), `loops.mjs` (quem pede quadros), `diag-live.mjs` (resolução e mudança em 10 s), `wave4.mjs` (onda do clique com atrasos controlados). Vídeos: `.audit/scene/video/revisao15-desktop.mp4` e `revisao15-celular.mp4`.
+
+### Limitações e pendências
+
+- Continuam da revisão 14: o app Perfil e a capa de compartilhamento ainda citam ou mostram o olho.
+- Monitores de 2560 px na GPU integrada rodam a ~0,56–0,72 da resolução.
+- A calibração em regime ainda pode custar um quadro de ~50 ms a cada 6 s nos primeiros ~20 s.
+- Não validado: aparelho físico (iOS/Android), Safari e Firefox, DPR 2 ou mais, leitor de tela.

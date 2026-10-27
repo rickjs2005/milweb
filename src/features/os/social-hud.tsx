@@ -18,10 +18,14 @@ import { useOs, useOsStore } from "./os-shell";
  * Instagram) — medido no cliente e redesenhado quando a janela muda.
  *
  * Movimento: os circuitos se desenham (stroke-dashoffset), os painéis entram
- * em fade + deslocamento, pulsos azuis percorrem as linhas de tempos em
- * tempos (SMIL animateMotion, zero JS por quadro) e um pulso extra corre a
- * linha do painel sob o ponteiro/foco. `prefers-reduced-motion`/Ajustes ›
- * Reduzir: tudo parado e visível.
+ * em fade + deslocamento, pulsos percorrem as linhas de tempos em tempos e
+ * um pulso extra corre a linha do painel sob o ponteiro/foco. Os pulsos são
+ * pontos HTML pequenos fora do SVG, animados por transform e opacidade (Web
+ * Animations): rodam no compositor, sem repintar nada. Eram círculos com
+ * SMIL animateMotion dentro do SVG de tela inteira — cada quadro repintava
+ * ladrilhos do SVG com o filtro de brilho (no Intel UHD, ~750 ms de
+ * rasterização na GPU a cada 2 s, disputando com o fundo).
+ * `prefers-reduced-motion`/Ajustes › Reduzir: tudo parado e visível.
  *
  * Celular: o HUD não aparece (as redes moram na dock de redes).
  * O olho que dava nome aos nós saiu do cenário (revisão 14): o palco
@@ -35,14 +39,30 @@ const NAME: Record<Key, string> = { linkedin: "LinkedIn", github: "GitHub", inst
 
 type Wire = { d: string; x1: number; y1: number; xs: number; x2: number; y2: number };
 
+/** Pulsos: período e início (s) — os mesmos da versão em SMIL; o extra do ponteiro dura 0,75 s. */
+const PULSE = { dur: 2.8, begin: 2.1, step: 0.7, hot: 0.75 };
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.osMotion === "reduce";
+/** O trajeto do circuito (toco reto + diagonal) em quadros-chave de translate, em ritmo constante. */
+function pathFrames(w: Wire, r: number): Keyframe[] {
+  const l1 = Math.abs(w.xs - w.x1);
+  const l2 = Math.hypot(w.x2 - w.xs, w.y2 - w.y1);
+  const at = (x: number, y: number) => `translate(${(x - r).toFixed(1)}px, ${(y - r).toFixed(1)}px)`;
+  return [
+    { transform: at(w.x1, w.y1), offset: 0 },
+    { transform: at(w.xs, w.y1), offset: l1 / Math.max(1e-3, l1 + l2) },
+    { transform: at(w.x2, w.y2), offset: 1 },
+  ];
+}
+
 export function SocialHud() {
   const { payload } = useOs();
   const s = payload.s.social;
   const shell = useOsStore((st) => st.shell);
   const links = ORDER.filter((k) => payload.social[k]);
   const rootRef = useRef<HTMLDivElement>(null);
-  const motionRefs = useRef<Partial<Record<Key, SVGAnimateMotionElement>>>({});
   const hotTimers = useRef<Partial<Record<Key, number>>>({});
+  // Ajustes › Reduzir movimento liga e desliga os pulsos
+  const motion = useOsStore((st) => st.prefs.motion);
   const [wires, setWires] = useState<Partial<Record<Key, Wire>>>({});
   const [box, setBox] = useState({ w: 0, h: 0 });
 
@@ -91,18 +111,40 @@ export function SocialHud() {
     return () => ro.disconnect();
   }, [shell, keys]);
 
-  // Pulso extra na linha do painel sob o ponteiro/foco (SMIL: começa na hora, sem JS por quadro).
-  const pulse = useCallback((k: Key) => {
-    const m = motionRefs.current[k];
-    const g = rootRef.current?.querySelector<SVGGElement>(`.os-hud__wire[data-social="${k}"]`);
-    if (!m || !g || window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.osMotion === "reduce") return;
-    try {
-      m.beginElement();
-    } catch {}
-    g.dataset.hot = "1";
-    window.clearTimeout(hotTimers.current[k]);
-    hotTimers.current[k] = window.setTimeout(() => delete g.dataset.hot, 850);
-  }, []);
+  // Pulsos em ciclo: recriados quando os circuitos mudam (medida/resize); nenhum JS por quadro.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof root.animate !== "function" || reduced()) return;
+    const anims: Animation[] = [];
+    (Object.keys(wires) as Key[]).forEach((k) => {
+      const w = wires[k];
+      const el = root.querySelector<HTMLElement>(`.os-hud__pulse[data-social="${k}"]:not(.os-hud__pulse--hot)`);
+      if (!w || !el) return;
+      const i = keys.split(",").indexOf(k);
+      const timing: KeyframeAnimationOptions = { duration: PULSE.dur * 1000, delay: (PULSE.begin + i * PULSE.step) * 1000, iterations: Infinity };
+      anims.push(el.animate(pathFrames(w, 2.2), { ...timing, easing: "linear" }));
+      anims.push(el.animate([{ opacity: 0, offset: 0 }, { opacity: 1, offset: 0.08 }, { opacity: 1, offset: 0.85 }, { opacity: 0, offset: 1 }], timing));
+    });
+    return () => anims.forEach((a) => a.cancel());
+  }, [wires, keys, motion]);
+
+  // Pulso extra na linha do painel sob o ponteiro/foco: começa na hora.
+  const pulse = useCallback(
+    (k: Key) => {
+      const root = rootRef.current;
+      const g = root?.querySelector<SVGGElement>(`.os-hud__wire[data-social="${k}"]`);
+      const el = root?.querySelector<HTMLElement>(`.os-hud__pulse--hot[data-social="${k}"]`);
+      const w = wires[k];
+      if (!g || !el || !w || typeof el.animate !== "function" || reduced()) return;
+      el.getAnimations().forEach((a) => a.cancel());
+      el.animate(pathFrames(w, 2.6), { duration: PULSE.hot * 1000, easing: "linear" });
+      el.animate([{ opacity: 1 }, { opacity: 1 }], { duration: PULSE.hot * 1000 });
+      g.dataset.hot = "1";
+      window.clearTimeout(hotTimers.current[k]);
+      hotTimers.current[k] = window.setTimeout(() => delete g.dataset.hot, 850);
+    },
+    [wires],
+  );
 
   if (!links.length) return null;
 
@@ -119,24 +161,19 @@ export function SocialHud() {
               <circle className="os-hud__node os-hud__node--near" cx={w.xs} cy={w.y1} r="2.2" />
               <circle className="os-hud__ring" cx={w.x2} cy={w.y2} r="5.5" />
               <circle className="os-hud__node" cx={w.x2} cy={w.y2} r="2.4" />
-              <circle className="os-hud__pulse" r="2.2" opacity="0">
-                <animateMotion dur="2.8s" begin={`${2.1 + i * 0.7}s`} repeatCount="indefinite" path={w.d} />
-                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.85;1" dur="2.8s" begin={`${2.1 + i * 0.7}s`} repeatCount="indefinite" />
-              </circle>
-              <circle className="os-hud__pulse os-hud__pulse--hot" r="2.6">
-                <animateMotion
-                  ref={(el) => {
-                    motionRefs.current[k] = (el as SVGAnimateMotionElement | null) ?? undefined;
-                  }}
-                  dur="0.75s"
-                  begin="indefinite"
-                  path={w.d}
-                />
-              </circle>
             </g>
           );
         })}
       </svg>
+      {/* pulsos: pontos HTML na mesma geometria do SVG (área de trabalho), animados no compositor */}
+      {links.map((k) =>
+        wires[k] ? (
+          <span key={k} aria-hidden="true">
+            <span className="os-hud__pulse" data-social={k} />
+            <span className="os-hud__pulse os-hud__pulse--hot" data-social={k} />
+          </span>
+        ) : null,
+      )}
 
       {links.map((k, i) => (
         <a key={k} className="os-hud__panel" data-social={k} href={payload.social[k]!} target="_blank" rel="noopener noreferrer" style={{ "--i": i } as CSSProperties} onPointerEnter={() => pulse(k)} onFocus={() => pulse(k)}>

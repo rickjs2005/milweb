@@ -394,6 +394,7 @@ if (ONLY.includes("desktop")) {
   await settle(rpage, 2500);
   check("reduced motion: fundo estático (imagem), sem WebGL", (await rpage.getAttribute(".os-scene", "data-state")) === "still" && (await rpage.evaluate(() => typeof window.__mwOsScene === "undefined")));
   check("reduced motion: HUD social pronto, sem animação nem pulsos", await rpage.evaluate(() => [...document.querySelectorAll(".os-hud__panel")].every((p) => getComputedStyle(p).opacity === "1" && getComputedStyle(p).animationName === "none") && [...document.querySelectorAll(".os-hud__pulse")].every((p) => getComputedStyle(p).display === "none")));
+  check("reduced motion: ícones da coluna parados (sem flutuar)", await rpage.evaluate(() => [...document.querySelectorAll(".os-icons .os-icon")].every((e) => getComputedStyle(e).animationName === "none")));
   await rctx.close();
 
   // ajuste "Reduzir movimento" salvo: mesmo resultado
@@ -1395,6 +1396,59 @@ if (ONLY.includes("theme")) {
       check("fundo vivo: terminada a travessia, o Tsukuyomi fica em cena e nada fica pendente", end.trans === null && end.world === "tsukuyomi" && end.attr === "obito" && (await themeOf(p)).pending === null, JSON.stringify(end));
       check("olho do controle: a íris vermelha entra com a pálpebra fechada (antes de a interface trocar de tema)", irisFlip >= 0 && trace[irisFlip].lid >= 0.9 && (flip < 0 || irisFlip <= flip), JSON.stringify(trace[irisFlip]));
       check("fundo vivo: sem erros no console", errs.length === 0, errs.slice(0, 2).join(" | "));
+    }
+    await c.close();
+  }
+
+  // 6) fundo vivo em regime (revisão 15): os ícones da coluna flutuam só na placa (botão e rótulo parados); os
+  //    pulsos dos circuitos são pontos HTML animados no compositor; o laço do fundo (`data-run`) para com a aba
+  //    oculta — evento simulado, porque o Playwright mantém as páginas visíveis — e com uma janela maximizada, e
+  //    retoma nos dois casos.
+  {
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs("obito"));
+    const p = await c.newPage();
+    const errs = errorsOf(p);
+    await p.goto(`${BASE}/?quality=high`, { waitUntil: "load" });
+    const live = await p.waitForSelector('.os-scene[data-state="live"]', { timeout: 20000 }).then(() => true).catch(() => false);
+    const icons = () => p.evaluate(() => [...document.querySelectorAll(".os-icons .os-icon")].slice(0, 3).map((e) => ({ tr: getComputedStyle(e).translate, top: Math.round(e.closest(".os-icon-btn").getBoundingClientRect().top), label: Math.round(e.closest(".os-icon-btn").querySelector(".os-icon-btn__label").getBoundingClientRect().top), anim: getComputedStyle(e).animationName })));
+    const i1 = await icons();
+    await settle(p, 900);
+    const i2 = await icons();
+    check("ícones da coluna flutuam só na placa (botão e rótulo parados)", i1.every((x) => x.anim === "os-float") && i1.some((x, k) => x.tr !== i2[k].tr) && i1.every((x, k) => x.top === i2[k].top && x.label === i2[k].label), JSON.stringify({ i1, i2 }));
+    check("pulsos dos circuitos: pontos HTML fora do SVG, sem SMIL", await p.evaluate(() => document.querySelectorAll(".os-hud__wires animateMotion, .os-hud__wires animate").length === 0 && document.querySelectorAll("span.os-hud__pulse").length >= 3));
+    if (!live) console.log("  · fundo vivo em regime: PULADO — o canvas não montou neste ambiente (sem WebGL)");
+    else {
+      const run = () => p.evaluate(() => document.querySelector(".os-scene").dataset.run);
+      await settle(p, 600);
+      const r0 = await run();
+      const rHidden = await p.evaluate(async () => {
+        Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+        Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "hidden" });
+        document.dispatchEvent(new Event("visibilitychange"));
+        await new Promise((r) => setTimeout(r, 200));
+        return document.querySelector(".os-scene").dataset.run;
+      });
+      const rBack = await p.evaluate(async () => {
+        delete document.hidden;
+        delete document.visibilityState;
+        document.dispatchEvent(new Event("visibilitychange"));
+        await new Promise((r) => setTimeout(r, 200));
+        return document.querySelector(".os-scene").dataset.run;
+      });
+      check("fundo: laço rodando em cena, parado com a aba oculta, de volta ao reaparecer", r0 === "1" && rHidden === "0" && rBack === "1", `${r0} → ${rHidden} → ${rBack}`);
+      await p.click("#os-icon-lab");
+      await win(p, "lab").waitFor({ state: "visible", timeout: 5000 });
+      await settle(p, 500);
+      const max = win(p, "lab").locator('.os-window__btn[data-action="max"]');
+      await max.click();
+      await settle(p, 700);
+      const rMax = await run();
+      await max.click();
+      await settle(p, 700);
+      const rRest = await run();
+      check("fundo: laço parado com janela maximizada, de volta ao restaurar", rMax === "0" && rRest === "1", `${rMax} → ${rRest}`);
+      check("fundo vivo em regime: sem erros no console", errs.length === 0, errs.slice(0, 2).join(" | "));
     }
     await c.close();
   }

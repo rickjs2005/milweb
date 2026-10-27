@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type RefObject } from "react";
+import { gsap } from "@/animations/gsap";
 import { useOs, useOsStore } from "./os-shell";
 import { otherTheme, type OsTheme } from "./theme";
 
@@ -57,12 +58,11 @@ export function ThemeToggle({ variant }: { variant: "dock" | "mdock" }) {
 }
 
 /* ---------------------------------------------------------------------------
- * Piscar do olho: JS só durante o piscar (rAF), escrevendo `--lid` (0 aberto,
- * 1 fechado) no SVG; a íris troca (`data-iris`) com a pálpebra fechada.
+ * Piscar do olho: uma timeline do GSAP — o mesmo relógio (gsap.ticker) do
+ * fundo, nenhum laço próprio — escrevendo `--lid` (0 aberto, 1 fechado) no
+ * SVG; a íris troca (`data-iris`) com a pálpebra fechada.
  * ------------------------------------------------------------------------- */
 const BLINK = { close: 0.13, hold: 0.12, open: 0.36 };
-const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
-const easeOut = (u: number) => 1 - Math.pow(1 - u, 3);
 
 function useEyeBlink(ref: RefObject<HTMLButtonElement | null>) {
   const { store } = useOs();
@@ -77,67 +77,57 @@ function useEyeBlink(ref: RefObject<HTMLButtonElement | null>) {
     };
     const reduce = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches || store.getState().prefs.motion === "reduce";
     let shown = dest();
-    let phase: "open" | "closing" | "hold" | "opening" = "open";
-    let lid = 0;
-    let from = 0;
-    let t0 = -1;
-    let swapped = false;
-    let raf = 0;
+    /** fechando (inclui a pausa fechada) · reabrindo · aberto */
+    let phase: "open" | "closing" | "opening" = "open";
+    const lid = { v: 0 };
+    let tl: gsap.core.Timeline | null = null;
+    const write = () => eye.style.setProperty("--lid", lid.v.toFixed(3));
+    const swap = () => {
+      const d = dest();
+      if (d === shown) return;
+      shown = d;
+      btn.dataset.iris = d;
+      btn.dataset.reveal = "1";
+    };
     btn.dataset.iris = shown;
 
-    const tick = (now: number) => {
-      raf = 0;
-      const tt = now / 1000;
-      if (t0 < 0) t0 = tt;
-      if (phase === "closing") {
-        const u = Math.min(1, (tt - t0) / (BLINK.close * (1 - from) + 0.03));
-        lid = from + (1 - from) * easeInOut(u);
-        if (u >= 1) {
-          phase = "hold";
-          t0 = tt;
-        }
-      } else if (phase === "hold") {
-        lid = 1;
-        // Pálpebra fechada: a íris passa a ser a do destino mais recente.
-        const d = dest();
-        if (d !== shown) {
-          shown = d;
-          btn.dataset.iris = d;
-          swapped = true;
-        }
-        if (tt - t0 >= BLINK.hold) {
-          phase = "opening";
-          t0 = tt;
-          if (swapped) btn.dataset.reveal = "1";
-        }
-      } else if (phase === "opening") {
-        const u = Math.min(1, (tt - t0) / BLINK.open);
-        lid = 1 - easeOut(u);
-        if (u >= 1) {
-          phase = "open";
-          lid = 0;
-          swapped = false;
-        }
-      }
-      eye.style.setProperty("--lid", lid.toFixed(3));
-      if (phase !== "open") raf = requestAnimationFrame(tick);
-      else if (dest() !== shown) start(); // o destino mudou durante a reabertura
-    };
     function start() {
-      if (phase === "closing" || phase === "hold") return; // já fechando: a troca pega o destino mais recente
+      if (phase === "closing") return; // já fechando: a troca pega o destino mais recente
+      tl?.kill();
+      tl = null;
       if (reduce() || btn!.getClientRects().length === 0) {
         shown = dest();
         btn!.dataset.iris = shown;
+        lid.v = 0;
+        eye!.style.removeProperty("--lid");
+        phase = "open";
         return;
       }
       delete btn!.dataset.reveal;
       phase = "closing";
-      from = lid;
-      t0 = -1;
-      if (!raf) raf = requestAnimationFrame(tick);
+      tl = gsap
+        .timeline({
+          onComplete: () => {
+            phase = "open";
+            tl = null;
+            if (dest() !== shown) start(); // o destino mudou durante a reabertura
+          },
+        })
+        // a pálpebra fecha a partir de onde estiver
+        .to(lid, { v: 1, duration: BLINK.close * (1 - lid.v) + 0.03, ease: "power1.inOut", onUpdate: write })
+        // fechada: a íris passa a ser a do destino mais recente — no meio da pausa (a pálpebra fica em 1 por
+        // alguns quadros com a íris nova) e de novo no fim, se o destino mudou nesse intervalo
+        .to({}, { duration: BLINK.hold / 2 })
+        .call(swap)
+        .to({}, { duration: BLINK.hold / 2 })
+        .call(() => {
+          swap();
+          phase = "opening";
+        })
+        .to(lid, { v: 0, duration: BLINK.open, ease: "power2.out", onUpdate: write });
     }
     const unsub = store.subscribe(() => {
-      if (dest() !== shown && phase !== "closing" && phase !== "hold") start();
+      if (dest() !== shown && phase !== "closing") start();
     });
     const onEnd = (e: AnimationEvent) => {
       if (e.animationName === "os-iris-reveal") delete btn.dataset.reveal;
@@ -146,7 +136,7 @@ function useEyeBlink(ref: RefObject<HTMLButtonElement | null>) {
     return () => {
       unsub();
       btn.removeEventListener("animationend", onEnd);
-      if (raf) cancelAnimationFrame(raf);
+      tl?.kill();
       eye.style.removeProperty("--lid");
       delete btn.dataset.iris;
       delete btn.dataset.reveal;

@@ -75,10 +75,20 @@ export function leaveToHome(id: AppId, fallback: () => void) {
     return;
   }
   if (m.depth > 0 && m.depth < window.history.length) {
-    window.history.go(-m.depth);
     // Rede de segurança: se o salto não chegou à raiz (histórico editado por fora), um replace resolve.
-    window.setTimeout(() => {
+    // Quem decide é o popstate do próprio salto — não a URL 700 ms depois: nesse meio-tempo o visitante
+    // pode ter aberto outro app, e o replace fecharia o app recém-aberto.
+    let landed = false;
+    const onPop = () => {
+      landed = true;
+      window.removeEventListener("popstate", onPop);
       if (!atHome()) fallback();
+    };
+    window.addEventListener("popstate", onPop);
+    window.history.go(-m.depth);
+    window.setTimeout(() => {
+      window.removeEventListener("popstate", onPop);
+      if (!landed && !atHome()) fallback();
     }, 700);
     return;
   }

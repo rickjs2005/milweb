@@ -5,12 +5,14 @@ import { onIdle } from "@/animations/idle";
 import { getQuality, probeGpu } from "@/lib/quality";
 import { useOs, useOsStore } from "../os-shell";
 import type { OsTheme } from "../theme";
-import { OS_SCENE, THEME_OF, WORLD_OF, type SceneWorld } from "./scene.config";
-import { uploadNoise } from "./noise";
+import { OS_SCENE, THEME_OF, WORLD_OF } from "./scene.config";
+import type { Engine } from "./engine";
 
 /**
  * O fundo do MilWeb OS — Tsukuyomi (Obito, escuro) e Vazio Ilimitado (Gojo,
- * claro) — e a travessia entre eles.
+ * claro) — e a travessia entre eles. A cena é Three.js (scene/engine.ts,
+ * carregado em idle num pedaço próprio); este componente é a cola com a
+ * interface.
  *
  * Camada visual pura, ATRÁS da interface: `pointer-events: none`,
  * aria-hidden, z-index negativo dentro da área de trabalho; nada aqui mexe
@@ -18,31 +20,30 @@ import { uploadNoise } from "./noise";
  * do universo do tema em vigor (fundo CSS escolhido por `data-os-theme`,
  * posicionada pelo centro e raio do palco — `--st-x/--st-y/--st-r`), então o
  * primeiro quadro já é o certo, sem flash de tema, e quem tem movimento
- * reduzido, WebGL ausente ou GPU fraca fica com ela. Com GPU, o canvas monta
- * em idle: um custo medido numa resolução reduzida decide a resolução real
- * (ou desiste e deixa a imagem), e um monitor de quadros reduz a resolução
- * se o aparelho não acompanhar.
+ * reduzido, WebGL 2 ausente ou GPU por software fica com ela.
  *
- * Troca de tema: o cenário se registra no store como driver
- * (`setThemeDriver`). Um pedido inicia a travessia (~2,2 s): a onda nasce no
- * controle de tema, o universo antigo sai, o novo chega, e a interface adota
- * o tema novo (`commitTheme`) quando a frente do universo novo passa pelas
- * áreas de leitura — antes disso o texto continua legível sobre o universo
- * antigo. Pedidos durante a travessia só mudam o sentido (voltar ao universo
- * de origem) — nunca duas travessias ao mesmo tempo. Sem driver (imagem
- * estática, janela maximizada, aba oculta) a troca é imediata.
+ * UM laço: o ticker do GSAP (dentro do motor) faz as tweens e o quadro da
+ * cena; este componente só recebe um gancho por quadro (commit do tema,
+ * calibração, marcas no DOM) — nenhum estado React por quadro.
  *
- * Paralaxe: no desktop o mouse move os planos com amortecimento, cada um
- * com a própria intensidade; sem mouse (ou no telefone) uma deriva lenta e
- * automática. Nada depende de hover nem de sensores. Quadros contínuos só
- * com o fundo à vista (a aba oculta já para no renderer; janela maximizada
- * ou tela aberta no telefone soltam o loop).
+ * Troca de tema: o cenário é o driver do store (`setThemeDriver`): um pedido
+ * vira uma travessia (~2,2 s, uma tween do GSAP que inverte o sentido se o
+ * destino voltar) e a interface adota o tema novo (`commitTheme`) quando o
+ * universo novo chega às áreas de leitura. Sem driver (imagem, janela
+ * maximizada, tela aberta no telefone, aba oculta): troca imediata.
+ *
+ * Interação: paralaxe amortecida (a câmera anda; o que está perto anda mais),
+ * deriva automática sem mouse e no telefone; destacar um app (ponteiro ou
+ * foco) produz uma reação localizada no cenário; clicar num app solta uma
+ * onda pequena que acompanha a abertura da janela. O cenário nunca captura o
+ * ponteiro — todos os cliques continuam da interface.
  */
 type Stage = { x: number; y: number; r: number };
-type Trans = { from: SceneWorld; to: SceneWorld; p: number; dir: 1 | -1; ox: number; oy: number };
 
 const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
-const easeOut = (u: number) => 1 - Math.pow(1 - Math.max(0, Math.min(1, u)), 3);
+/** O que reage ao ser destacado (coluna do desktop, grade do telefone) e o que solta a onda ao abrir. */
+const HOVER_SEL = ".os-icon-btn, .os-launch";
+const CLICK_SEL = ".os-icon-btn, .os-launch, .os-dock__item[data-dock-id]";
 
 /** Centro e raio da composição a partir do palco (`.os-stage`, irmão do fundo), em px CSS relativos ao fundo. */
 function measureStage(root: HTMLElement, mobile: boolean): Stage | null {
@@ -64,8 +65,9 @@ export function OsScene() {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<Stage | null>(null);
+  const engineRef = useRef<Engine | null>(null);
 
-  // Composição: medida no palco e publicada em variáveis CSS (posiciona a imagem estática) — o shader lê a mesma.
+  // Composição: medida no palco e publicada em variáveis CSS (posiciona a imagem estática) — a cena lê a mesma.
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root || shell === "auto" || shell === "simple") return;
@@ -77,6 +79,8 @@ export function OsScene() {
       root.style.setProperty("--st-x", `${st.x.toFixed(1)}px`);
       root.style.setProperty("--st-y", `${st.y.toFixed(1)}px`);
       root.style.setProperty("--st-r", `${st.r.toFixed(1)}px`);
+      const c = canvasRef.current;
+      if (c && engineRef.current) engineRef.current.setStage(st, c.clientWidth, c.clientHeight);
     };
     apply();
     const ro = new ResizeObserver(apply);
@@ -108,336 +112,306 @@ export function OsScene() {
       const gq = probeGpu();
       if (!gq.webgl) return;
       const forced = gq.reason.startsWith("forçado");
-      const [{ createRenderer }, { TSUKUYOMI_FRAG }, { VOID_FRAG }] = await Promise.all([import("@/webgl/renderer"), import("./tsukuyomi-frag"), import("./void-frag")]);
+      const { createEngine } = await import("./engine");
       if (disposed) return;
-      const r = createRenderer(canvas, { dpr: 1, alpha: false });
-      if (!r) return;
-      const FRAG: Record<SceneWorld, string> = { tsukuyomi: TSUKUYOMI_FRAG, void: VOID_FRAG };
-      const ready = new Set<SceneWorld>();
-      /** Compila um universo (uma vez); falha = fica a imagem estática, sem erro no console quando é contexto perdido. */
-      const ensure = (w: SceneWorld) => {
-        if (ready.has(w)) return true;
-        try {
-          r.addProgram(w, FRAG[w]);
-          ready.add(w);
-          return true;
-        } catch (e) {
-          if (!(e instanceof Error && e.name === "ContextLostError")) console.error(e);
-          return false;
-        }
+      const lite = mobile || gq.tier !== "high";
+      const e = createEngine({ canvas, world: WORLD_OF[store.getState().prefs.theme], lite });
+      if (!e) return;
+      const fail = () => {
+        e.dispose();
+        engineRef.current = null;
       };
+      const st0 = stageRef.current;
+      e.setStage(st0 ?? { x: canvas.clientWidth / 2, y: canvas.clientHeight * 0.46, r: canvas.clientHeight * OS_SCENE.desktopR }, canvas.clientWidth, canvas.clientHeight);
 
-      let world: SceneWorld = WORLD_OF[store.getState().prefs.theme];
-      if (!ensure(world)) {
-        r.destroy();
+      // Compila os programas (em paralelo quando a GPU permite: sem travar a página) e mede o custo.
+      const B = OS_SCENE.budget;
+      try {
+        e.setDpr(B.probeDpr);
+        await e.warm();
+      } catch (err) {
+        console.error(err);
+        fail();
         return;
       }
-      let noise = uploadNoise(r.gl);
-      const onRestored = () => {
-        noise = uploadNoise(r.gl);
-      };
-      canvas.addEventListener("webglcontextrestored", onRestored);
-
-      // ---- estado (fora do React: muda a cada quadro) ----
-      let tr: Trans | null = null;
-      let sceneT = 0;
-      let lastT = -1;
-      const par = { x: 0, y: 0, tx: 0, ty: 0, at: -1e9 };
-      const wrap = OS_SCENE.timeWrap;
-
-      const uniforms = (leave: number, enter: number, wave: [number, number, number]) => {
-        const st = stageRef.current;
-        const cw = canvas.clientWidth || 1;
-        const ch = canvas.clientHeight || 1;
-        const k = canvas.width / cw;
-        const sx = st ? st.x : cw / 2;
-        const sy = st ? st.y : ch * 0.46;
-        const sr = st ? st.r : ch * OS_SCENE.desktopR;
-        return {
-          uRes: [canvas.width, canvas.height] as [number, number],
-          uC: [sx * k, (ch - sy) * k] as [number, number],
-          uR: sr * k,
-          uTime: sceneT % wrap,
-          uPar: [par.x, par.y] as [number, number],
-          uLeave: leave,
-          uEnter: enter,
-          uWave: wave,
-        };
-      };
-      const tex = () => (noise ? [{ name: "uNoise", tex: noise, unit: 0 }] : undefined);
-      const draw = () => {
-        r.clear();
-        if (!tr) {
-          r.draw(world, uniforms(0, 1, [0, 0, -1]), tex());
-          return;
-        }
-        const k = canvas.width / (canvas.clientWidth || 1);
-        // progresso da onda: 0 antes de sair do controle, 1 depois de passar por tudo (o shader sabe o que já foi tocado)
-        const wu = (tr.p - OS_SCENE.wave.from) / (OS_SCENE.wave.to - OS_SCENE.wave.from);
-        const wave: [number, number, number] = [tr.ox * k, tr.oy * k, easeOut(wu)];
-        // O universo que sai por baixo; o que chega por cima, com a máscara de revelação do próprio shader.
-        if (tr.p < 0.97) r.draw(tr.from, uniforms(tr.p, 1, wave), tex());
-        if (tr.p > 0.33) r.draw(tr.to, uniforms(0, tr.p, wave), tex());
-      };
-
-      // ---- custo: quadros do universo atual numa resolução reduzida ----
-      // Sincroniza lendo 1 pixel: no Chrome `gl.finish()` não espera a GPU (mediria ~0 ms e escolheria a resolução máxima).
-      const px1 = new Uint8Array(4);
-      const sync = () => r.gl.readPixels(0, 0, 1, 1, r.gl.RGBA, r.gl.UNSIGNED_BYTE, px1);
-      r.setDpr(OS_SCENE.budget.probeDpr);
-      r.resize();
-      draw();
-      sync(); // aquecimento (o driver termina de preparar o programa no primeiro uso)
-      let p0 = performance.now();
-      sync(); // o custo fixo de uma sincronização (ida e volta ao processo da GPU) sai da conta
-      const overhead = performance.now() - p0;
-      p0 = performance.now();
-      for (let i = 0; i < 4; i++) draw();
-      sync();
-      const perFrame = Math.max(0.05, (performance.now() - p0 - overhead) / 4);
-      const msPerPx = perFrame / Math.max(1, canvas.width * canvas.height);
-      const cssPx = Math.max(1, canvas.clientWidth * canvas.clientHeight);
-      const maxDpr = Math.min(window.devicePixelRatio || 1, mobile ? OS_SCENE.budget.mobileMaxDpr : OS_SCENE.budget.maxDpr);
-      let dpr = Math.min(maxDpr, Math.sqrt(OS_SCENE.budget.targetMs / Math.max(1e-9, msPerPx * cssPx)));
-      if (dpr < OS_SCENE.budget.minDpr) {
-        const atMin = msPerPx * cssPx * OS_SCENE.budget.minDpr * OS_SCENE.budget.minDpr;
-        if (atMin > OS_SCENE.budget.maxMs && !forced) {
-          canvas.removeEventListener("webglcontextrestored", onRestored);
-          r.destroy();
-          return;
-        }
-        // ?quality= forçado (QA): sobe mesmo numa GPU por software, em resolução mínima.
-        dpr = forced ? Math.max(0.2, dpr) : OS_SCENE.budget.minDpr;
+      if (disposed) {
+        fail();
+        return;
       }
-      const fast = gq.tier === "high" && msPerPx * cssPx * dpr * dpr < 4;
-      const ambientFps = fast ? OS_SCENE.fps.ambientHigh : OS_SCENE.fps.ambient;
-      r.setDpr(dpr);
-      r.setFpsCap(ambientFps);
-
-      // Monitor de quadros: intervalo real (o teto do renderer pula quadros) — se ficar acima do orçamento,
-      // baixa a resolução em passos, com pausa entre eles; o piso é minDpr.
-      let slowEma = 0;
-      let cooldown = 3;
-      // Calibração periódica: a primeira medida (no boot) pega a GPU em clock baixo. Em regime, a cada poucos
-      // segundos um quadro do ambiente é medido de verdade (sincronizado) e a resolução anda em passos pequenos
-      // até o custo-alvo — para cima ou para baixo. Converge em ~3 medidas; depois mede a cada 30 s.
-      let calibAt = 3;
-      let calibs = 0;
-      const calibrate = () => {
-        draw();
-        sync();
-        const c0 = performance.now();
-        sync();
-        const ovh = performance.now() - c0;
-        const c1 = performance.now();
-        draw();
-        sync();
-        const per = Math.max(0.05, performance.now() - c1 - ovh);
-        const perPx = per / Math.max(1, canvas.width * canvas.height);
+      const maxDpr = Math.min(window.devicePixelRatio || 1, mobile ? B.mobileMaxDpr : B.maxDpr);
+      const floorDpr = forced ? 0.2 : B.minDpr;
+      /** Resolução e teto de quadros para um custo medido (ms por px do buffer) — scene.config › budget. */
+      const plan = (perPx: number, fpsNow: number) => {
         const css = Math.max(1, canvas.clientWidth * canvas.clientHeight);
-        // o orçamento é por segundo de GPU: a 45 quadros/s cada quadro ganha proporcionalmente menos
-        const target = (OS_SCENE.budget.targetMs * OS_SCENE.fps.ambient) / ambientFps;
-        const ideal = Math.max(OS_SCENE.budget.minDpr, Math.min(maxDpr, Math.sqrt(target / Math.max(1e-9, perPx * css))));
-        const step = Math.max(-0.12, Math.min(0.12, ideal - r.dpr));
-        if (Math.abs(step) > 0.05) r.setDpr(r.dpr + step);
-        calibs++;
-        calibAt = sceneT + (calibs < 4 ? 6 : 30);
+        const at = (ms: number) => Math.sqrt(ms / Math.max(1e-9, perPx * css));
+        const d60 = Math.min(maxDpr, at(B.targetMs / 2));
+        const fast = gq.tier === "high" && d60 >= maxDpr * (fpsNow === OS_SCENE.fps.ambientHigh ? B.keep60 : B.go60);
+        const fps: number = fast ? OS_SCENE.fps.ambientHigh : OS_SCENE.fps.ambient;
+        return { fps, dpr: Math.max(floorDpr, Math.min(maxDpr, fast ? d60 : at(B.targetMs))) };
       };
-      const watchdog = (dt: number) => {
-        // Só o ambiente conta: a travessia é curta e pesa o dobro — não deve rebaixar a resolução de sempre.
-        if (tr) return;
-        const budget = 1.45 / ambientFps;
-        slowEma = slowEma * 0.92 + (dt > budget ? 1 : 0) * 0.08;
-        cooldown -= dt;
-        if (cooldown <= 0 && slowEma > 0.5 && r.dpr > OS_SCENE.budget.minDpr + 0.01) {
-          r.setDpr(Math.max(OS_SCENE.budget.minDpr, r.dpr * 0.82));
-          slowEma = 0;
-          cooldown = 2.5;
-        }
-      };
-
-      /** Centro do controle de tema visível (o olho), em px CSS relativos ao canvas, y para cima. */
-      const toggleOrigin = (): [number, number] => {
-        const box = canvas.getBoundingClientRect();
-        const btn = [...document.querySelectorAll<HTMLElement>(".os-dock__theme, .os-mdock__theme")].find((b) => b.getClientRects().length > 0 && b.getBoundingClientRect().width > 0);
-        const b = btn?.getBoundingClientRect();
-        const cx = b ? b.left + b.width / 2 : box.left + box.width / 2;
-        const cy = b ? b.top + b.height / 2 : box.bottom;
-        return [cx - box.left, box.bottom - cy];
-      };
+      const perPx0 = e.measure(4) / Math.max(1, canvas.width * canvas.height);
+      // Só desiste numa GPU sem condição nenhuma (40 ms por quadro já na resolução mínima); tela grande não é motivo.
+      if (!forced && perPx0 * canvas.clientWidth * canvas.clientHeight * B.minDpr * B.minDpr > 40) {
+        fail();
+        return;
+      }
+      let { fps: ambientFps, dpr } = plan(perPx0, OS_SCENE.fps.ambient);
+      e.setDpr(dpr);
+      e.fps(ambientFps);
+      engineRef.current = e;
+      if (stageRef.current) e.setStage(stageRef.current, canvas.clientWidth, canvas.clientHeight);
 
       const covered = () => {
         const s = store.getState();
         return s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
       };
-
       const mark = () => {
-        root.dataset.world = world;
+        root.dataset.world = e.world;
+        const tr = e.trans;
         if (tr) root.dataset.trans = `${tr.from}>${tr.to}`;
         else delete root.dataset.trans;
       };
-
-      /** Termina a travessia na hora (aba oculta, desmontagem): aplica o tema pedido e fixa o universo de destino. */
-      const finishNow = () => {
-        const st = store.getState();
-        if (st.themePending !== null) st.commitTheme();
-        tr = null;
-        world = WORLD_OF[store.getState().prefs.theme];
-        r.setFpsCap(ambientFps);
-        mark();
+      // Quadros só com o fundo à vista (ou durante uma travessia/onda, que sempre terminam). No telefone,
+      // abrir um app cobre a tela: o laço para depois da animação de abertura (a onda aparece por trás dela).
+      let stopTimer = 0;
+      // `data-run` no fundo diz se o laço está rodando (diagnóstico e testes; nenhum CSS depende dele).
+      const syncRun = () => {
+        window.clearTimeout(stopTimer);
+        if (document.hidden) {
+          e.stop();
+          root.dataset.run = "0";
+          return;
+        }
+        const want = !!e.trans || !covered();
+        if (want) {
+          e.start();
+          root.dataset.run = "1";
+        } else
+          stopTimer = window.setTimeout(() => {
+            if (e.trans || !covered()) return;
+            e.stop();
+            root.dataset.run = "0";
+          }, mobile ? 700 : 0);
+      };
+      /** Centro de um elemento em px CSS relativos ao canvas. */
+      const centerOf = (el: Element): [number, number] => {
+        const box = canvas.getBoundingClientRect();
+        const b = el.getBoundingClientRect();
+        return [b.left + b.width / 2 - box.left, b.top + b.height / 2 - box.top];
+      };
+      const toggleOrigin = (): [number, number] => {
+        const btn = [...document.querySelectorAll<HTMLElement>(".os-dock__theme, .os-mdock__theme")].find((b) => b.getClientRects().length > 0 && b.getBoundingClientRect().width > 0);
+        if (btn) return centerOf(btn);
+        return [canvas.clientWidth / 2, canvas.clientHeight];
       };
 
-      // ---- driver da troca de tema ----
-      const driveTheme = (to: OsTheme) => {
-        if (disposed || document.hidden || r.lost || covered()) return false;
-        const w = WORLD_OF[to];
-        if (!tr) {
-          if (w === world || !ensure(w)) return false;
-          const [ox, oy] = toggleOrigin();
-          tr = { from: world, to: w, p: 0, dir: 1, ox, oy };
-          lastT = -1; // o primeiro quadro da travessia não herda uma pausa anterior do loop
-        } else if (w === tr.to) tr.dir = 1;
-        else if (w === tr.from) tr.dir = -1;
-        r.setFpsCap(OS_SCENE.fps.transition);
-        syncHold();
-        mark();
-        r.invalidate();
-        return true;
+      // ---- quadro: commit do tema no meio da travessia, calibração, monitor, marcas ----
+      let sceneT = 0;
+      // A primeira calibração roda com o canvas ainda invisível (ele só entra depois dela) e vai direto ao alvo:
+      // a medida do boot pega a GPU fria e erra para baixo. Ela mede o custo marginal (vários quadros) e a
+      // latência fixa da leitura; as seguintes, com a cena à vista, só cronometram o próprio quadro (uma
+      // leitura, sem quadro extra) e descontam essa latência — nada de rajada de quadros travando a tela.
+      let calibAt = 0.8;
+      let calibs = 0;
+      let latency = 0;
+      let timing = false;
+      let slowEma = 0;
+      let cooldown = 3;
+      let lastTrans = "";
+      let painted = false;
+      let lastMove = -1e9;
+      /** Calibração em regime: passos pequenos até o custo-alvo; o teto de quadros pode mudar (com folga para não alternar). */
+      const applyPlan = (per: number) => {
+        const next = plan(per, ambientFps);
+        if (calibs === 0 || next.fps !== ambientFps) {
+          // primeira medida em regime ou mudança de teto: a resolução vai direto para a do plano
+          ambientFps = next.fps;
+          e.fps(ambientFps);
+          dpr = next.dpr;
+          e.setDpr(dpr);
+        } else {
+          const step = Math.max(-0.12, Math.min(0.12, next.dpr - dpr));
+          if (Math.abs(step) > 0.05) {
+            dpr += step;
+            e.setDpr(dpr);
+          }
+        }
+        calibs++;
+        calibAt = sceneT + (calibs < 4 ? 6 : 30);
       };
-
-      r.onFrame((t) => {
-        const raw = lastT < 0 ? 1 / 60 : Math.max(0, t - lastT);
-        const dt = Math.min(0.1, raw);
-        lastT = t;
+      let cancelPrime = () => {};
+      e.onFrame((eng, dt) => {
         sceneT += dt;
-        watchdog(dt);
-        if (!tr && sceneT >= calibAt) calibrate();
-
-        // paralaxe: mouse recente manda (desktop); senão, deriva lenta
-        const idle = mobile || performance.now() - par.at > OS_SCENE.parallax.idle * 1000;
-        const A = mobile ? OS_SCENE.parallax.mobileDrift : OS_SCENE.parallax.drift;
-        const tx = idle ? A * (Math.sin(sceneT * 0.11) + 0.3 * Math.sin(sceneT * 0.27 + 1.0)) : par.tx;
-        const ty = idle ? A * 0.7 * Math.sin(sceneT * 0.083 + 1.3) : par.ty;
-        const kk = 1 - Math.exp(-dt / OS_SCENE.parallax.tau);
-        par.x += (tx - par.x) * kk;
-        par.y += (ty - par.y) * kk;
-
-        // travessia
+        const tr = eng.trans;
         if (tr) {
-          // relógio real (não o dt limitado): um quadro lento não estica a travessia além dos ~2,2 s
-          tr.p = Math.max(0, Math.min(1, tr.p + (tr.dir * Math.min(raw, 0.5)) / OS_SCENE.duration));
           const st = store.getState();
           const pend = st.themePending;
           const at = OS_SCENE.commitAt[tr.to];
           if (pend !== null && ((tr.dir > 0 && tr.p >= at && pend === THEME_OF[tr.to]) || (tr.dir < 0 && tr.p <= at && pend === THEME_OF[tr.from]))) st.commitTheme();
-          if ((tr.dir > 0 && tr.p >= 1) || (tr.dir < 0 && tr.p <= 0)) {
-            world = tr.dir > 0 ? tr.to : tr.from;
-            tr = null;
-            r.setFpsCap(ambientFps);
-            mark();
-            syncHold();
+        }
+        const key = tr ? `${tr.from}>${tr.to}` : eng.world;
+        if (key !== lastTrans) {
+          lastTrans = key;
+          mark();
+          syncRun();
+        }
+        if (target && performance.now() - lastMove > OS_SCENE.parallax.idle * 1000) {
+          target = null;
+          eng.pointer(null);
+        }
+        if (!tr) {
+          // monitor: só o ambiente conta (a travessia é curta e dobrada)
+          slowEma = slowEma * 0.92 + (dt > 1.45 / ambientFps ? 0.08 : 0);
+          cooldown -= dt;
+          if (cooldown <= 0 && slowEma > 0.5 && dpr > B.minDpr + 0.01) {
+            dpr = Math.max(B.minDpr, dpr * 0.82);
+            eng.setDpr(dpr);
+            slowEma = 0;
+            cooldown = 2.5;
+          }
+          if (sceneT >= calibAt && !timing) {
+            if (calibs === 0) {
+              applyPlan(eng.measure(5) / Math.max(1, canvas.width * canvas.height));
+              // latência fixa da leitura, já na resolução escolhida
+              latency = Math.max(0, eng.timeOnce() - eng.measure(4));
+            } else {
+              timing = true;
+              eng.timeNextFrame((ms) => {
+                timing = false;
+                applyPlan(Math.max(0.05, ms - latency) / Math.max(1, canvas.width * canvas.height));
+              });
+            }
           }
         }
-        draw();
-        if (root.dataset.state !== "live") root.dataset.state = "live";
-        if (tr) r.invalidate();
+        if (!painted && (calibs > 0 || tr)) {
+          painted = true;
+          root.dataset.state = "live";
+          // o outro universo é desenhado uma vez fora da tela quando a página sossegar (geometria na GPU)
+          cancelPrime = onIdle(() => eng.prime(), 3000);
+        }
       });
 
-      // Quadros contínuos só com o fundo à vista (ou durante uma travessia, que sempre termina).
-      // (os fechamentos acima só chamam syncHold depois desta linha: quadros e o driver começam no fim do boot)
-      let held: (() => void) | null = null;
-      const syncHold = () => {
-        const want = tr !== null || !covered();
-        if (want && !held) held = r.hold();
-        if (!want && held) {
-          held();
-          held = null;
-        }
-      };
-      const unsub = store.subscribe((s, prev) => {
-        syncHold();
-        // Tema aplicado sem travessia (sem driver: coberto, aba oculta, Ajustes no telefone): o universo acompanha.
-        if (!tr && s.prefs.theme !== prev.prefs.theme && WORLD_OF[s.prefs.theme] !== world) {
-          world = WORLD_OF[s.prefs.theme];
-          ensure(world);
+      // ---- driver da troca de tema ----
+      const driveTheme = (to: OsTheme) => {
+        if (disposed || document.hidden || covered()) return false;
+        const handled = e.transition(WORLD_OF[to], toggleOrigin());
+        if (handled) {
           mark();
-          r.invalidate();
+          syncRun();
+        }
+        return handled;
+      };
+
+      const unsub = store.subscribe((s, prev) => {
+        syncRun();
+        // tema aplicado sem travessia (sem driver): o universo acompanha
+        if (!e.trans && s.prefs.theme !== prev.prefs.theme && WORLD_OF[s.prefs.theme] !== e.world) {
+          e.setWorld(WORLD_OF[s.prefs.theme]);
+          mark();
         }
       });
-      const onVis = () => {
-        if (document.hidden && tr) finishNow();
+      const finishNow = () => {
+        const st = store.getState();
+        if (st.themePending !== null) st.commitTheme();
+        e.finish(WORLD_OF[store.getState().prefs.theme]);
+        mark();
       };
-      const onMove = (e: PointerEvent) => {
-        if (e.pointerType !== "mouse") return;
-        par.tx = clamp1((e.clientX / window.innerWidth) * 2 - 1);
-        par.ty = -clamp1((e.clientY / window.innerHeight) * 2 - 1);
-        par.at = performance.now();
+      // aba oculta: a travessia termina na hora e o laço para; ao voltar, ele retoma
+      const onVis = () => {
+        if (document.hidden && e.trans) finishNow();
+        syncRun();
+      };
+
+      // ---- paralaxe (desktop, ponteiro fino): mouse recente manda; sem ele, deriva automática ----
+      let target: { x: number; y: number } | null = null;
+      const onMove = (ev: PointerEvent) => {
+        if (ev.pointerType !== "mouse") return;
+        target = { x: clamp1((ev.clientX / window.innerWidth) * 2 - 1), y: -clamp1((ev.clientY / window.innerHeight) * 2 - 1) };
+        lastMove = performance.now();
+        e.pointer(target);
       };
       const onLeave = () => {
-        par.at = -1e9;
+        target = null;
+        e.pointer(null);
       };
+
+      // ---- reação ao app destacado e onda do clique ----
+      let hovered: Element | null = null;
+      const setHover = (el: Element | null) => {
+        if (el === hovered) return;
+        hovered = el;
+        if (el) {
+          const [x, y] = centerOf(el.querySelector(".os-icon, .os-micon") ?? el);
+          e.hover(x, y, true);
+        } else e.hover(0, 0, false);
+        syncRun();
+      };
+      const onOver = (ev: Event) => setHover((ev.target as Element | null)?.closest?.(HOVER_SEL) ?? null);
+      const onOut = (ev: PointerEvent | FocusEvent) => {
+        const to = ev.relatedTarget as Element | null;
+        if (hovered && (!to || !hovered.contains(to))) setHover(to?.closest?.(HOVER_SEL) ?? null);
+      };
+      const onClick = (ev: MouseEvent) => {
+        const el = (ev.target as Element | null)?.closest?.(CLICK_SEL);
+        if (!el) return;
+        const [x, y] = centerOf(el.querySelector(".os-icon, .os-micon") ?? el);
+        e.click(x, y);
+        syncRun();
+      };
+
+      store.getState().setThemeDriver(driveTheme);
       document.addEventListener("visibilitychange", onVis);
       if (gq.fine && !mobile) {
         window.addEventListener("pointermove", onMove, { passive: true });
         document.documentElement.addEventListener("pointerleave", onLeave);
       }
-      store.getState().setThemeDriver(driveTheme);
+      document.addEventListener("pointerover", onOver, { passive: true });
+      document.addEventListener("pointerout", onOut, { passive: true });
+      document.addEventListener("focusin", onOver);
+      document.addEventListener("focusout", onOut);
+      document.addEventListener("click", onClick, { capture: true, passive: true });
       mark();
-      syncHold();
-      r.invalidate();
-      // O outro universo compila depois, em idle — a primeira troca não paga a compilação.
-      const cancelWarm = onIdle(() => {
-        if (!disposed) ensure(world === "tsukuyomi" ? "void" : "tsukuyomi");
-      }, 4000);
+      syncRun();
 
       if (process.env.NODE_ENV !== "production") {
         (window as unknown as { __mwOsScene?: unknown }).__mwOsScene = {
           get world() {
-            return world;
+            return e.world;
           },
           get trans() {
-            return tr ? { ...tr } : null;
+            return e.trans;
           },
           get frames() {
-            return r.frames;
+            return e.frames;
           },
           get dpr() {
-            return r.dpr;
+            return e.dpr;
           },
-          get held() {
-            return !!held;
+          get fps() {
+            return ambientFps;
           },
-          get ready() {
-            return [...ready];
+          get par() {
+            return e.par;
           },
-          /** Custo médio de um quadro (ms, sincronizado por readPixels) na resolução atual: o universo em cena ou a travessia (p = 0,6). */
-          bench(n = 12, trans = false) {
-            const keep = tr;
-            const other: SceneWorld = world === "tsukuyomi" ? "void" : "tsukuyomi";
-            if (trans) {
-              ensure(other);
-              tr = { from: world, to: other, p: 0.6, dir: 1, ox: 0, oy: 0 };
-            }
-            draw();
-            sync();
-            const t0 = performance.now();
-            for (let i = 0; i < n; i++) draw();
-            sync();
-            tr = keep;
-            return (performance.now() - t0) / n;
+          get hover() {
+            return e.hoverState;
           },
-          setDpr(v: number) {
-            r.setDpr(v);
+          get click() {
+            return e.clickState;
           },
-          par,
+          bench: (n = 6, trans = false) => e.measure(n, trans),
+          scene: (w: "tsukuyomi" | "void") => e.worlds[w].scene,
+          setDpr: (v: number) => {
+            dpr = v;
+            e.setDpr(v);
+          },
         };
       }
 
       cleanup = () => {
-        cancelWarm();
+        cancelPrime();
+        window.clearTimeout(stopTimer);
         unsub();
-        held?.();
-        held = null;
         const st = store.getState();
         st.setThemeDriver(null);
         // Um tema pedido e ainda não aplicado não fica pendurado quando o fundo sai de cena.
@@ -445,12 +419,17 @@ export function OsScene() {
         document.removeEventListener("visibilitychange", onVis);
         window.removeEventListener("pointermove", onMove);
         document.documentElement.removeEventListener("pointerleave", onLeave);
-        canvas.removeEventListener("webglcontextrestored", onRestored);
+        document.removeEventListener("pointerover", onOver);
+        document.removeEventListener("pointerout", onOut);
+        document.removeEventListener("focusin", onOver);
+        document.removeEventListener("focusout", onOut);
+        document.removeEventListener("click", onClick, { capture: true });
         root.dataset.state = "still";
         delete root.dataset.trans;
         delete root.dataset.world;
-        if (noise && !r.lost) r.gl.deleteTexture(noise);
-        r.destroy();
+        delete root.dataset.run;
+        e.dispose();
+        engineRef.current = null;
         if (process.env.NODE_ENV !== "production") delete (window as unknown as { __mwOsScene?: unknown }).__mwOsScene;
       };
     }
