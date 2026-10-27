@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "react";
 import type { Locale } from "@/i18n/config";
-import { APPS, type AppId } from "./registry";
+import { APPS, DESKTOP_WIDE_MQ, type AppId } from "./registry";
 import { useOs } from "./os-shell";
 import { pushOverlay } from "./mobile/history";
 
@@ -21,6 +21,21 @@ export function useClock(locale: Locale): string | null {
     return () => window.clearInterval(t);
   }, [locale]);
   return time;
+}
+
+let wideList: MediaQueryList | null = null;
+const wide = () => (wideList ??= window.matchMedia(DESKTOP_WIDE_MQ));
+const onWide = (cb: () => void) => {
+  wide().addEventListener("change", cb);
+  return () => wide().removeEventListener("change", cb);
+};
+/**
+ * Desktop largo (≥ 1080 px)? No servidor e na hidratação, não: o CSS já desenha o desktop largo na primeira
+ * pintura (posições explícitas na grade e na dock); depois de hidratar, a ORDEM do DOM passa a seguir a
+ * visual, para Tab e leitor de tela percorrerem a grade e a dock como se vê. Tablet e telefone: DOM de antes.
+ */
+export function useDesktopWide(): boolean {
+  return useSyncExternalStore(onWide, () => wide().matches, () => false);
 }
 
 /** Abre um app a partir de um controle (ícone, dock, busca). Mantém Ctrl/Cmd-clique nativo (nova aba). */

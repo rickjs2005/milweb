@@ -7,7 +7,10 @@
  * recarregar), estado das janelas (abrir, focar, minimizar, restaurar,
  * maximizar, fechar, arrastar com clamp, teclado), os controles de janela
  * (grupo `controls`: luzes, saída animada, Esc global, celular, Hold to
- * Inspect), o telefone (grupos `mobile` e `phones`: launcher, dock de redes,
+ * Inspect), o tablet (grupo `tablet`: a área de trabalho de 720 a 1079 px com
+ * a coluna, a dock completa e o HUD das redes; os grupos `desktop`, `controls`
+ * e `theme` rodam a 1440 px, no desktop largo: grade 2 × 3, dock só com o
+ * sistema, redes compactas), o telefone (grupos `mobile` e `phones`: launcher, dock de redes,
  * telas cheias, histórico sem entradas repetidas, Perfil com URL, Ajustes sem URL),
  * troca de modo (desktop ↔ celular preservando o case) e contato a uma ação. Emulação de navegador, não aparelho físico: cobre a lógica,
  * não a percepção.
@@ -22,7 +25,7 @@ const opt = (k, d) => {
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
 const OUT = opt("--out", ".audit/os");
-const ONLY = opt("--only", "desktop,controls,projects,mobile,phones,resize,simple,theme,boot,share,profile").split(",");
+const ONLY = opt("--only", "desktop,tablet,controls,projects,mobile,phones,resize,simple,theme,boot,share,profile").split(",");
 mkdirSync(OUT, { recursive: true });
 
 const results = [];
@@ -78,69 +81,102 @@ if (ONLY.includes("desktop")) {
   check("documento não rola", await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1));
   check("raiz sem janela aberta", (await page.locator(".os-window").count()) === 0 && (await page.evaluate(() => window.__milwebOs?.getState().focused ?? null)) === null);
   check("sem Destaques nem atalhos de case na área de trabalho", (await page.locator("#os-icon-home, [data-shortcut], .os-highlights, #os-icon-kavita-drones").count()) === 0);
-  check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Contato", (await page.locator('.os-icons li[data-desktop="1"]:visible .os-icon-btn__label').allInnerTexts()).join("|") === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO");
+  // desktop largo (≥ 1080 px): lema no alto, grade 2 × 3 sob ele (o DOM segue a ordem visual, para o Tab), dock só com o sistema
+  const home = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.os-icons li[data-desktop="1"]')].filter((li) => li.getClientRects().length);
+    const box = items.map((li) => { const b = li.querySelector(".os-icon-btn").getBoundingClientRect(); return { id: li.dataset.app, x: Math.round(b.left), y: Math.round(b.top), plate: li.querySelector(".os-icon").offsetWidth }; }); // offsetWidth: a flutuação gira a placa e infla o retângulo
+    const m = document.querySelector(".os-sign__motto"), mb = m.getBoundingClientRect(), top = document.querySelector(".os-topbar").getBoundingClientRect(), gb = document.querySelector(".os-icons ul").getBoundingClientRect();
+    const rg = document.createRange();
+    rg.selectNodeContents(m);
+    const css = getComputedStyle(document.documentElement);
+    const triple = (v) => css.getPropertyValue(v).trim().split(/\s+/).join(", ");
+    const sig = triple("--os-signal");
+    return {
+      dom: box.map((b) => b.id).join(","),
+      reading: [...box].sort((a, b) => a.y - b.y || a.x - b.x).map((b) => b.id).join(","),
+      cols: new Set(box.map((b) => b.x)).size,
+      rows: new Set(box.map((b) => b.y)).size,
+      plates: box.map((b) => b.plate),
+      labels: items.map((li) => li.querySelector(".os-icon-btn__label").innerText).join("|"),
+      contact: getComputedStyle(document.querySelector('.os-icons li[data-app="contact"] .os-icon')).boxShadow.includes(sig) && !getComputedStyle(document.querySelector('.os-icons li[data-app="lab"] .os-icon')).boxShadow.includes(sig),
+      motto: { left: Math.round(mb.left), gapTop: Math.round(mb.top - top.bottom), lines: new Set([...rg.getClientRects()].map((r) => Math.round(r.top))).size, color: getComputedStyle(m).color, want: document.documentElement.dataset.osTheme === "gojo" ? `rgb(${triple("--os-fg")})` : "rgb(255, 255, 255)", dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === `rgb(${sig})`, toGrid: Math.round(gb.top - mb.bottom), px: parseFloat(getComputedStyle(m).fontSize) },
+      dock: [...document.querySelectorAll(".os-dock li")].filter((li) => li.getClientRects().length).map((li) => li.dataset.dockSys || li.dataset.dockApp).join(","),
+    };
+  });
+  check("grade 2 × 3: Projetos | Serviços, Estúdio | Lab, Perfil | Contato (DOM na ordem visual)", home.cols === 2 && home.rows === 3 && home.reading === "projects,services,studio,lab,profile,contact" && home.dom === home.reading && home.labels === "PROJETOS|SERVIÇOS|ESTÚDIO|LAB|PERFIL|CONTATO", JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels }));
+  check("ícones de 60–68 px com o nome sempre visível embaixo; Contato com borda no acento do tema", home.plates.every((p) => p >= 60 && p <= 68) && home.contact, `${home.plates.join(",")} · contato ${home.contact}`);
+  check("lema no alto à esquerda (branco no Obito, tinta no Gojo), até duas linhas, ponto no acento, respiro até a grade", home.motto.left <= 40 && home.motto.gapTop >= 8 && home.motto.gapTop <= 60 && home.motto.lines <= 2 && home.motto.color === home.motto.want && home.motto.dot && home.motto.toGrid >= 16 && home.motto.px >= 40, JSON.stringify(home.motto));
+  check("dock: só Buscar, Ajustes e o tema, nessa ordem", home.dock === "search,settings,theme", home.dock);
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
   check("fundo presente como imagem (fallback estático do universo do tema, fundo CSS)", await page.evaluate(() => /scene-(tsukuyomi|void)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage)));
   check("fundo e palco não interceptam o ponteiro; nenhum olho grande no cenário", await page.evaluate(() => getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && !document.querySelector(".os-eye, .os-eye__still, .os-eye__canvas")));
   check("sem a escultura orbital (preload e arte)", (await page.locator('link[href*="orbital-sculpture"], .os-wallpaper__art').count()) === 0);
   const overlap = await page.evaluate(() => {
     const r = (s) => document.querySelector(s)?.getBoundingClientRect();
-    const g = r(".os-stage"), sg = r(".os-sign"), ic = r(".os-icons"), dk = r(".os-dock ul");
+    const g = r(".os-stage"), mo = r(".os-sign__motto"), ln = r(".os-sign__line"), ic = r(".os-icons ul"), dk = r(".os-dock ul"), so = r(".os-social");
     const hit = (a, b) => a && b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-    return { globeSign: hit(g, sg), globeIcons: hit(g, ic), globeDock: hit(g, dk), signDock: hit(sg, dk), signIcons: hit(sg, ic) };
+    return { globeMotto: hit(g, mo), globeIcons: hit(g, ic), globeDock: hit(g, dk), mottoIcons: hit(mo, ic), iconsLine: hit(ic, ln), iconsDock: hit(ic, dk), lineDock: hit(ln, dk), socialDock: hit(so, dk), socialLine: hit(so, ln), socialIcons: hit(so, ic) };
   });
-  check("palco, assinatura, aplicativos e dock não se sobrepõem", Object.values(overlap).every((v) => !v), JSON.stringify(overlap));
+  check("palco, lema, aplicativos, rodapé, dock e redes não se sobrepõem", Object.values(overlap).every((v) => !v), JSON.stringify(overlap));
   await shot(page, "d01-home");
 
-  // redes do estúdio ao redor do palco (HUD social)
-  await settle(page, 1600); // circuitos se desenham até ~1,9 s depois do load
-  const hud = await page.evaluate(() => {
-    const h = document.querySelector(".os-hud");
-    const eye = document.querySelector(".os-stage").getBoundingClientRect();
-    const cx = eye.left + eye.width / 2;
-    const p = (k) => h.querySelector(`.os-hud__panel[data-social="${k}"]`);
-    const r = (k) => p(k).getBoundingClientRect();
-    const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-    const others = [".os-icons", ".os-sign", ".os-dock ul", ".os-topbar"].map((sel) => document.querySelector(sel).getBoundingClientRect());
-    const panels = ["linkedin", "github", "instagram"].map(r);
-    const lines = [...h.querySelectorAll(".os-hud__line:not(.os-hud__line--glow)")];
+  // redes: grupo compacto no canto inferior direito (o HUD com circuitos ficou para o tablet — grupo `tablet`)
+  const soc = await page.evaluate(() => {
+    const items = [...document.querySelectorAll(".os-social__item")];
+    const box = document.querySelector(".os-social").getBoundingClientRect();
+    const dock = document.querySelector(".os-dock ul").getBoundingClientRect();
     return {
-      sides: r("linkedin").right < cx && r("github").left > cx && r("instagram").left > cx && r("github").bottom <= r("instagram").top,
-      links: ["linkedin", "github", "instagram"].every((k) => p(k).target === "_blank" && p(k).rel.includes("noopener") && p(k).rel.includes("noreferrer")),
-      hrefs: p("github").href === "https://github.com/rickjs2005" && p("instagram").href === "https://www.instagram.com/milweb01/" && /^https:\/\/www\.linkedin\.com\/in\//.test(p("linkedin").href),
-      clear: panels.every((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight && others.every((o) => !hit(b, o))),
-      wires: getComputedStyle(h.querySelector(".os-hud__wires")).pointerEvents === "none" && lines.length === 3 && lines.every((l) => l.getAttribute("d")?.startsWith("M") && parseFloat(getComputedStyle(l).strokeDashoffset) < 0.01),
-      micro: ["linkedin", "github", "instagram"].every((k) => p(k).querySelector(".os-hud__micro")?.textContent.trim().length > 8),
+      keys: items.map((a) => a.dataset.social).join(","),
+      hrefs: items.map((a) => a.href),
+      safe: items.every((a) => a.target === "_blank" && a.rel.includes("noopener") && a.rel.includes("noreferrer")),
+      names: items.map((a) => a.querySelector(".os-social__name").textContent.trim()).join(","),
+      sr: items.every((a) => /abre em nova aba/.test(a.textContent)),
+      corner: box.right <= innerWidth && innerWidth - box.right <= 32 && innerHeight - box.bottom <= 24 && box.left > dock.right,
+      noHud: !document.querySelector(".os-hud, .os-hud__wires, .os-hud__micro"),
     };
   });
-  check("HUD social: LinkedIn à esquerda do centro, GitHub sobre Instagram à direita", hud.sides, JSON.stringify(hud));
-  check("HUD social: links reais em nova aba (noopener noreferrer) e microtextos", hud.links && hud.hrefs && hud.micro);
-  check("HUD social: painéis dentro da viewport, sem cobrir ícones, assinatura, dock ou barra", hud.clear);
-  check("HUD social: circuitos em SVG decorativo (pointer-events none), desenhados até o palco", hud.wires);
-  const ghPanel = page.locator('.os-hud__panel[data-social="github"]');
-  await ghPanel.hover();
+  check("redes: LinkedIn, GitHub, Instagram e WhatsApp num grupo no canto inferior direito, à direita da dock", soc.keys === "linkedin,github,instagram,whatsapp" && soc.names === "LinkedIn,GitHub,Instagram,WhatsApp" && soc.corner, JSON.stringify(soc));
+  check("redes: links reais em nova aba segura (noopener noreferrer), aviso para leitor de tela, WhatsApp em wa.me com DDI", soc.safe && soc.sr && /^https:\/\/www\.linkedin\.com\/in\//.test(soc.hrefs[0]) && soc.hrefs[1] === "https://github.com/rickjs2005" && soc.hrefs[2] === "https://www.instagram.com/milweb01/" && soc.hrefs[3] === "https://wa.me/5533998779375", soc.hrefs.join(" "));
+  check("sem os cartões HUD, circuitos e descrições no desktop largo", soc.noHud);
+  const waItem = page.locator('.os-social__item[data-social="whatsapp"]');
+  await waItem.hover();
   await settle(page, 350);
-  check("HUD social: hover eleva o cartão e dispara um pulso no circuito", (await ghPanel.evaluate((e) => getComputedStyle(e.querySelector(".os-hud__card")).transform !== "none")) && (await page.evaluate(() => document.querySelector('.os-hud__wire[data-social="github"]')?.dataset.hot === "1")));
-  const [popup] = await Promise.all([ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null), ghPanel.click()]);
-  check("HUD social: clique abre o GitHub em nova aba", !!popup && popup.url().startsWith("https://github.com/rickjs2005"), popup ? popup.url() : "sem nova aba");
+  const wa = await waItem.evaluate((e) => ({ c: getComputedStyle(e.querySelector(".os-social__icon")).color, t: document.documentElement.dataset.osTheme }));
+  check("WhatsApp: verde discreto no hover", wa.c.includes(wa.t === "gojo" ? "21, 128, 61" : "37, 211, 102"), JSON.stringify(wa));
+  const ghItem = page.locator('.os-social__item[data-social="github"]');
+  const [popup] = await Promise.all([ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null), ghItem.click()]);
+  check("redes: clique abre o GitHub em nova aba", !!popup && popup.url().startsWith("https://github.com/rickjs2005"), popup ? popup.url() : "sem nova aba");
   if (popup) await popup.close();
   await page.mouse.move(700, 620); // sobre o palco (sem ponteiro): longe da dock
   await settle(page, 300);
   await page.locator(".os-topbar__brand").focus();
   let reached = false;
-  for (let i = 0; i < 14 && !reached; i++) {
+  for (let i = 0; i < 16 && !reached; i++) {
     await page.keyboard.press("Tab");
-    reached = await page.evaluate(() => document.activeElement?.classList.contains("os-hud__panel"));
+    reached = await page.evaluate(() => document.activeElement?.classList.contains("os-social__item"));
   }
-  check("HUD social: painéis alcançáveis pelo teclado (Tab) com foco visível", reached && (await page.evaluate(() => getComputedStyle(document.activeElement.querySelector(".os-hud__card")).outlineStyle !== "none")));
+  await settle(page, 300); // a placa tem transição de 0,2 s
+  check("redes: alcançáveis pelo teclado (Tab) com foco visível", reached && (await page.evaluate(() => getComputedStyle(document.activeElement.querySelector(".os-social__icon")).boxShadow.includes("0px 0px 0px 2px"))));
   await page.mouse.click(700, 620);
-  check("HUD social: o fundo continua sem interceptar o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none"));
+  check("o fundo continua sem interceptar o ponteiro", await page.evaluate(() => getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none"));
 
-  // abrir pela dock (um clique) → janela + URL
-  await page.click('[data-dock-id="studio"]');
+  // Na grade (desktop largo) o app abre e volta pelo ícone — os apps saíram da dock neste tamanho. Se uma janela está
+  // por cima do ícone (a do Estúdio, depois de arrastada para o canto, cobre a grade), pelo teclado no mesmo ícone.
+  const launchIcon = async (id) => {
+    const el = page.locator(`#os-icon-${id}`);
+    const free = await el.evaluate((a) => { const b = a.getBoundingClientRect(); return a.contains(document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)); });
+    if (free) await el.click();
+    else {
+      await el.focus();
+      await page.keyboard.press("Enter");
+    }
+  };
+
+  // abrir pela grade (um clique) → janela + URL
+  await launchIcon("studio");
   const toStudio = await urlIs(page, /\/estudio$/);
   await settle(page);
-  check("dock abre Estúdio e muda a URL", (await win(page, "studio").count()) === 1 && toStudio, path(page));
+  check("ícone abre Estúdio e muda a URL", (await win(page, "studio").count()) === 1 && toStudio, path(page));
   const zTop = async (app) => Number(await win(page, app).evaluate((e) => getComputedStyle(e).zIndex));
   check("foco de teclado foi para a janela", await page.evaluate(() => document.activeElement?.closest(".os-window")?.dataset.app === "studio"));
 
@@ -177,11 +213,11 @@ if (ONLY.includes("desktop")) {
   await settle(page);
   check("ícone abre Projetos (/projetos)", (await win(page, "projects").count()) === 1 && toProjects, path(page));
   check("Projetos no topo da pilha", (await zTop("projects")) > (await zTop("studio")));
-  // Projetos cobre o Estúdio: a dock traz o Estúdio para frente antes dos testes de janela
-  await page.click('[data-dock-id="studio"]');
+  // Projetos cobre o Estúdio: o ícone traz o Estúdio para frente antes dos testes de janela
+  await launchIcon("studio");
   await urlIs(page, /\/estudio$/);
   await settle(page, 500);
-  check("dock traz o Estúdio para frente e a URL acompanha", (await zTop("studio")) > (await zTop("projects")) && path(page) === "/estudio", path(page));
+  check("ícone traz o Estúdio para frente e a URL acompanha", (await zTop("studio")) > (await zTop("projects")) && path(page) === "/estudio", path(page));
 
   // fechar a janela de TRÁS (Projetos, atrás do Estúdio) num gesto só: fecha, e a URL continua a do app em foco
   await win(page, "projects").locator('[data-action="close"]').click();
@@ -190,21 +226,22 @@ if (ONLY.includes("desktop")) {
   await page.click("#os-icon-projects");
   await urlIs(page, /\/projetos$/);
   await settle(page, 500);
-  await page.click('[data-dock-id="studio"]');
+  await launchIcon("studio");
   await urlIs(page, /\/estudio$/);
   await settle(page, 500);
   check("Projetos reaberto na pasta e Estúdio de volta à frente", (await win(page, "projects").locator(".os-projects").count()) === 1 && (await zTop("studio")) > (await zTop("projects")) && path(page) === "/estudio", path(page));
 
-  // minimizar → some, dock restaura
+  // minimizar → some, o ícone mostra o anel e restaura
   await win(page, "studio").locator('[data-action="min"]').click();
   await urlIs(page, /\/projetos$/);
   await settle(page, 600);
   check("minimizar esconde (visibility hidden + inert)", await win(page, "studio").evaluate((e) => getComputedStyle(e).visibility === "hidden" && e.hasAttribute("inert")));
   check("foco passa para Projetos", path(page) === "/projetos" && (await win(page, "projects").getAttribute("data-focused")) === "1", path(page));
-  await page.click('[data-dock-id="studio"]');
+  check("ícone do Estúdio mostra o anel de minimizada e o nome acessível diz isso", (await page.getAttribute("#os-icon-studio", "data-min")) === "1" && /Minimizar/.test(await page.locator("#os-icon-studio").textContent()));
+  await launchIcon("studio");
   await urlIs(page, /\/estudio$/);
   await settle(page, 600);
-  check("dock restaura a janela minimizada", await win(page, "studio").evaluate((e) => getComputedStyle(e).visibility === "visible" && e.dataset.min === "0" && e.dataset.focused === "1"));
+  check("ícone restaura a janela minimizada", await win(page, "studio").evaluate((e) => getComputedStyle(e).visibility === "visible" && e.dataset.min === "0" && e.dataset.focused === "1"));
   await shot(page, "d02-three-windows");
 
   // arrastar pela barra de título
@@ -277,7 +314,7 @@ if (ONLY.includes("desktop")) {
   check("alça redimensiona", resized.w > restored.w && resized.h > restored.h, `${restored.w}×${restored.h} → ${resized.w}×${resized.h}`);
 
   // Projetos: card → case dentro da mesma janela, URL do case, título da janela
-  await page.click('[data-dock-id="projects"]');
+  await launchIcon("projects");
   await urlIs(page, /\/projetos$/);
   await settle(page, 2800); // os cartazes chegam voando (~2 s); o clique espera o pouso
   await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
@@ -289,7 +326,7 @@ if (ONLY.includes("desktop")) {
   await shot(page, "d03-case-in-window");
 
   // focar outra janela mantém o case aberto atrás (cache por app)
-  await page.click('[data-dock-id="studio"]');
+  await launchIcon("studio");
   await urlIs(page, /\/estudio$/);
   await settle(page, 600);
   check("Estúdio focado, case continua na janela de Projetos", path(page) === "/estudio" && (await win(page, "projects").locator(".os-case").count()) === 1, path(page));
@@ -336,11 +373,11 @@ if (ONLY.includes("desktop")) {
   check("busca abre o case pelo Enter", (await win(page, "projects").locator('.os-case[data-world="inkvision"]').count()) === 1);
   check("busca fechou", (await page.locator("dialog.os-search[open]").count()) === 0);
 
-  // contato a uma ação do dock
-  await page.click('[data-dock-id="contact"]');
+  // contato a uma ação (ícone da grade)
+  await launchIcon("contact");
   await urlIs(page, /\/contato$/);
   await settle(page, 600);
-  check("Contato abre pela dock com WhatsApp real", path(page) === "/contato" && (await win(page, "contact").locator('a[href^="https://wa.me/5533998779375"]').count()) >= 1, path(page));
+  check("Contato abre pelo ícone com WhatsApp real", path(page) === "/contato" && (await win(page, "contact").locator('a[href^="https://wa.me/5533998779375"]').count()) >= 1, path(page));
 
   // recarregar preserva o app da URL
   await page.reload({ waitUntil: "load" });
@@ -365,36 +402,41 @@ if (ONLY.includes("desktop")) {
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await ctx.close();
 
-  // movimento reduzido: o globo fica na imagem, sem canvas vivo
-  for (const [w, h] of [[1920, 1080], [1366, 768]]) {
-    console.log(`\n# desktop ${w}×${h} · HUD social`);
+  // a mesma composição em outros desktops, inclusive baixos: nada se sobrepõe nem sai da tela
+  for (const [w, h] of [[1920, 1080], [1366, 768], [1366, 650], [1280, 600]]) {
+    console.log(`\n# desktop ${w}×${h} · lema, grade, rodapé, dock e redes`);
     const c = await browser.newContext({ viewport: { width: w, height: h }, locale: "pt-BR" });
     const pg = await c.newPage();
     await pg.goto(`${BASE}/`, { waitUntil: "load" });
-    await settle(pg, 2600);
-    const ok = await pg.evaluate(() => {
-      const h = document.querySelector(".os-hud");
-      const eye = document.querySelector(".os-stage").getBoundingClientRect();
-      const cx = eye.left + eye.width / 2;
-      const r = (k) => h.querySelector(`.os-hud__panel[data-social="${k}"]`).getBoundingClientRect();
-      const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-      const others = [".os-icons", ".os-sign", ".os-dock ul", ".os-topbar"].map((sel) => document.querySelector(sel).getBoundingClientRect());
-      const panels = ["linkedin", "github", "instagram"].map(r);
-      const lines = [...h.querySelectorAll(".os-hud__line:not(.os-hud__line--glow)")];
-      return r("linkedin").right < cx && r("github").left > cx && panels.every((b) => b.left >= 0 && b.right <= innerWidth && others.every((o) => !hit(b, o))) && lines.length === 3 && lines.every((l) => parseFloat(getComputedStyle(l).strokeDashoffset) < 0.01);
+    await settle(pg, 1600);
+    const r = await pg.evaluate(() => {
+      const R = (sel) => document.querySelector(sel).getBoundingClientRect();
+      const boxes = { motto: R(".os-sign__motto"), grid: R(".os-icons ul"), line: R(".os-sign__line"), dock: R(".os-dock ul"), social: R(".os-social") };
+      const keys = Object.keys(boxes);
+      const near = [];
+      for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) {
+        const a = boxes[keys[i]], b = boxes[keys[j]];
+        if (Math.max(b.left - a.right, a.left - b.right, b.top - a.bottom, a.top - b.bottom) < 8) near.push(`${keys[i]}×${keys[j]}`);
+      }
+      const top = R(".os-topbar");
+      const out = keys.filter((k) => { const b = boxes[k]; return b.left < 0 || b.top < top.bottom || b.right > innerWidth || b.bottom > innerHeight; });
+      const rg = document.createRange();
+      rg.selectNodeContents(document.querySelector(".os-sign__motto"));
+      return { near, out, lines: new Set([...rg.getClientRects()].map((x) => Math.round(x.top))).size, cut: [...document.querySelectorAll(".os-icon-btn__label")].filter((l) => l.getClientRects().length && l.scrollWidth > l.clientWidth + 1).length };
     });
-    check(`HUD social em ${w}×${h}: lados certos, sem sobreposição, circuitos desenhados`, ok);
+    check(`${w}×${h}: lema (≤ 2 linhas), grade, rodapé, dock e redes sem se sobrepor e dentro da tela, rótulos inteiros`, !r.near.length && !r.out.length && r.lines <= 2 && !r.cut, JSON.stringify(r));
     await c.close();
   }
 
+  // movimento reduzido: o fundo fica na imagem, sem canvas vivo
   console.log("\n# desktop 1440×900 · prefers-reduced-motion");
   const rctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR", reducedMotion: "reduce" });
   const rpage = await rctx.newPage();
   await rpage.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(rpage, 2500);
   check("reduced motion: fundo estático (imagem), sem WebGL", (await rpage.getAttribute(".os-scene", "data-state")) === "still" && (await rpage.evaluate(() => typeof window.__mwOsScene === "undefined")));
-  check("reduced motion: HUD social pronto, sem animação nem pulsos", await rpage.evaluate(() => [...document.querySelectorAll(".os-hud__panel")].every((p) => getComputedStyle(p).opacity === "1" && getComputedStyle(p).animationName === "none") && [...document.querySelectorAll(".os-hud__pulse")].every((p) => getComputedStyle(p).display === "none")));
-  check("reduced motion: ícones da coluna parados (sem flutuar)", await rpage.evaluate(() => [...document.querySelectorAll(".os-icons .os-icon")].every((e) => getComputedStyle(e).animationName === "none")));
+  check("reduced motion: sem HUD no desktop largo; redes sem transição", await rpage.evaluate(() => !document.querySelector(".os-hud") && [...document.querySelectorAll(".os-social__item, .os-social__icon")].every((e) => getComputedStyle(e).transitionDuration.split(",").every((d) => parseFloat(d) === 0))));
+  check("reduced motion: ícones da grade parados (sem flutuar)", await rpage.evaluate(() => [...document.querySelectorAll(".os-icons .os-icon")].every((e) => getComputedStyle(e).animationName === "none")));
   await rctx.close();
 
   // ajuste "Reduzir movimento" salvo: mesmo resultado
@@ -406,6 +448,79 @@ if (ONLY.includes("desktop")) {
   await settle(ppage, 2500);
   check("Ajustes › Reduzir: fundo estático", (await ppage.getAttribute(".os-scene", "data-state")) === "still" && (await ppage.getAttribute("html", "data-os-motion")) === "reduce");
   await pctx.close();
+}
+
+// ------------------------------------------------------------------- tablet
+// De 720 a 1079 px a área de trabalho é a de antes do desktop largo: coluna de aplicativos à esquerda, lema pequeno
+// no canto com a assinatura, dock com os apps e o HUD das redes com circuitos. A janela minimizada encolhe para o
+// item da dock. (Em 768 × 1024 o cartão do LinkedIn já encostava no rótulo de Serviços antes desta revisão: ali não
+// se confere a sobreposição do HUD.)
+if (ONLY.includes("tablet")) {
+  current = "tablet";
+  for (const [w, h] of [[1024, 768], [768, 1024], [1079, 800]]) {
+    console.log(`\n# tablet ${w}×${h}`);
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, locale: "pt-BR" });
+    const page = await ctx.newPage();
+    const errs = errorsOf(page);
+    await page.goto(`${BASE}/`, { waitUntil: "load" });
+    await settle(page, 2600); // circuitos se desenham até ~1,9 s depois do load
+    check("shell = desktop", (await page.getAttribute("html", "data-shell")) === "desktop");
+    const lay = await page.evaluate(() => {
+      const vis = (sel) => { const e = document.querySelector(sel); return !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none"; };
+      const labels = [...document.querySelectorAll('.os-icons li[data-desktop="1"]')].filter((li) => li.getClientRects().length).map((li) => li.querySelector(".os-icon-btn__label").innerText).join("|");
+      const dock = [...document.querySelectorAll(".os-dock li")].filter((li) => li.getClientRects().length).map((li) => li.dataset.dockSys || li.dataset.dockApp || (li.classList.contains("os-dock__sep") ? "|" : "?")).join(",");
+      const motto = document.querySelector(".os-sign__motto");
+      const sign = document.querySelector(".os-sign").getBoundingClientRect();
+      return { labels, dock, social: vis(".os-social"), hud: vis(".os-hud"), mottoPx: parseFloat(getComputedStyle(motto).fontSize), corner: Math.round(sign.left) === 24 && innerHeight - sign.bottom > 84, dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === getComputedStyle(motto).color, dots: document.querySelectorAll('.os-icon-btn__state').length };
+    });
+    check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Contato", lay.labels === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO", lay.labels);
+    check("dock completa: os apps, o separador, Buscar e o tema", lay.dock === "profile,projects,studio,lab,services,contact,settings,|,search,theme", lay.dock);
+    check("lema pequeno no canto inferior esquerdo, ponto na mesma cor; HUD à vista e sem o grupo compacto de redes", lay.corner && lay.mottoPx <= 21 && lay.dot && lay.hud && !lay.social, JSON.stringify(lay));
+    const hud = await page.evaluate(() => {
+      const h = document.querySelector(".os-hud");
+      const eye = document.querySelector(".os-stage").getBoundingClientRect();
+      const cx = eye.left + eye.width / 2;
+      const p = (k) => h.querySelector(`.os-hud__panel[data-social="${k}"]`);
+      const r = (k) => p(k).getBoundingClientRect();
+      const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      const others = [".os-icons", ".os-sign", ".os-dock ul", ".os-topbar"].map((sel) => document.querySelector(sel).getBoundingClientRect());
+      const panels = ["linkedin", "github", "instagram"].map(r);
+      const lines = [...h.querySelectorAll(".os-hud__line:not(.os-hud__line--glow)")];
+      return {
+        sides: r("linkedin").right < cx && r("github").left > cx && r("instagram").left > cx && r("github").bottom <= r("instagram").top,
+        links: ["linkedin", "github", "instagram"].every((k) => p(k).target === "_blank" && p(k).rel.includes("noopener") && p(k).rel.includes("noreferrer")),
+        hrefs: p("github").href === "https://github.com/rickjs2005" && p("instagram").href === "https://www.instagram.com/milweb01/" && /^https:\/\/www\.linkedin\.com\/in\//.test(p("linkedin").href),
+        clear: panels.every((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight && others.every((o) => !hit(b, o))),
+        wires: getComputedStyle(h.querySelector(".os-hud__wires")).pointerEvents === "none" && lines.length === 3 && lines.every((l) => l.getAttribute("d")?.startsWith("M") && parseFloat(getComputedStyle(l).strokeDashoffset) < 0.01),
+        micro: ["linkedin", "github", "instagram"].every((k) => p(k).querySelector(".os-hud__micro")?.textContent.trim().length > 8),
+        pulses: document.querySelectorAll(".os-hud__wires animateMotion, .os-hud__wires animate").length === 0 && document.querySelectorAll("span.os-hud__pulse").length >= 3,
+      };
+    });
+    check("HUD: LinkedIn à esquerda do centro, GitHub sobre Instagram à direita", hud.sides, JSON.stringify(hud));
+    check("HUD: links reais em nova aba (noopener noreferrer) e microtextos", hud.links && hud.hrefs && hud.micro);
+    if (w !== 768) check("HUD: painéis dentro da viewport, sem cobrir ícones, assinatura, dock ou barra", hud.clear);
+    check("HUD: circuitos em SVG decorativo desenhados até o palco; pulsos como pontos HTML, sem SMIL", hud.wires && hud.pulses);
+    const ghPanel = page.locator('.os-hud__panel[data-social="github"]');
+    await ghPanel.hover();
+    await settle(page, 350);
+    check("HUD: hover eleva o cartão e dispara um pulso no circuito", (await ghPanel.evaluate((e) => getComputedStyle(e.querySelector(".os-hud__card")).transform !== "none")) && (await page.evaluate(() => document.querySelector('.os-hud__wire[data-social="github"]')?.dataset.hot === "1")));
+    await page.mouse.move(Math.round(w / 2), Math.round(h * 0.7));
+    // dock: abre, minimiza para o item da dock (anel, foco) e restaura
+    await page.click('[data-dock-id="studio"]');
+    await urlIs(page, /\/estudio$/);
+    await settle(page, 600);
+    check("dock abre Estúdio", (await win(page, "studio").count()) === 1);
+    const target = await page.evaluate(() => { const b = document.querySelector('[data-dock-id="studio"]').getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    await win(page, "studio").locator('[data-action="min"]').click();
+    await settle(page, 700);
+    const m = await page.evaluate(() => { const r = document.querySelector('.os-window[data-app="studio"]').getBoundingClientRect(); return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, min: document.querySelector('[data-dock-id="studio"]').dataset.min, active: document.activeElement?.id }; });
+    check("minimizar encolhe para o item da dock (anel) e o foco vai para ele", m.min === "1" && Math.abs(m.cx - target.x) < 2 && Math.abs(m.cy - target.y) < 2 && m.active === "os-dock-studio", JSON.stringify({ m, target }));
+    await page.click('[data-dock-id="studio"]');
+    await settle(page, 600);
+    check("dock restaura a janela minimizada", await win(page, "studio").evaluate((e) => getComputedStyle(e).visibility === "visible" && e.dataset.min === "0"));
+    check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
+    await ctx.close();
+  }
 }
 
 // ------------------------------------------------------------------- mobile
@@ -447,7 +562,7 @@ if (ONLY.includes("mobile")) {
         iconPx: Math.min(...tiles.map((t) => t.querySelector(".os-micon").getBoundingClientRect().width)),
         small: tiles.filter((t) => { const b = t.getBoundingClientRect(); return b.width < 48 || b.height < 48; }).length,
         heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
-        noDesktopBits: !vis(".os-hud") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
+        noDesktopBits: !vis(".os-hud") && !vis(".os-social") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
         eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
         eyeImg: /scene-(tsukuyomi|void)-mobile\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
         eyeNoPointer: getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none",
@@ -587,6 +702,16 @@ if (ONLY.includes("controls")) {
   const light = (app, action) => win(page, app).locator(`[data-action="${action}"]`);
   const bg = (app, action) => light(app, action).evaluate((e) => getComputedStyle(e, "::before").backgroundColor);
   const toRoot = () => page.waitForURL((u) => u.pathname === "/", { timeout: 20000 }).then(() => true, () => false);
+  // os apps abrem e voltam pelo ícone da grade; com uma janela por cima dele, pelo teclado no mesmo ícone
+  const launchIcon = async (id) => {
+    const el = page.locator(`#os-icon-${id}`);
+    const free = await el.evaluate((a) => { const b = a.getBoundingClientRect(); return a.contains(document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)); });
+    if (free) await el.click();
+    else {
+      await el.focus();
+      await page.keyboard.press("Enter");
+    }
+  };
   const zTop = async (app) => Number(await win(page, app).evaluate((e) => getComputedStyle(e).zIndex));
   await page.goto(`${BASE}/`, { waitUntil: "load" });
   await settle(page, 1200);
@@ -609,14 +734,14 @@ if (ONLY.includes("controls")) {
   check("saída animada: janela ainda no DOM com data-anim=out", (await page.locator('.os-window[data-app="projects"][data-anim="out"]').count()) === 1);
   await toRoot();
   await settle(page, 500);
-  check("1. Projetos fechado: sem janela, URL raiz, dock sem indicador", (await page.locator(".os-window").count()) === 0 && path(page) === "/" && (await page.getAttribute('[data-dock-id="projects"]', "data-open")) === "0" && (await st()).focused === null, path(page));
+  check("1. Projetos fechado: sem janela, URL raiz, ícone sem indicador", (await page.locator(".os-window").count()) === 0 && path(page) === "/" && (await page.getAttribute("#os-icon-projects", "data-open")) === "0" && (await st()).focused === null, path(page));
   check("1. fundo e palco à vista", (await page.locator(".os-scene").isVisible()) && (await page.locator(".os-stage").isVisible()));
 
   // 2. abrir Lab e fechar
-  await page.click('[data-dock-id="lab"]');
+  await page.click("#os-icon-lab");
   await urlIs(page, /\/lab$/);
   await settle(page, 500);
-  check("2. Lab abre pela dock com indicador", (await win(page, "lab").count()) === 1 && (await page.getAttribute('[data-dock-id="lab"]', "data-open")) === "1");
+  check("2. Lab abre pelo ícone, que mostra o indicador", (await win(page, "lab").count()) === 1 && (await page.getAttribute("#os-icon-lab", "data-open")) === "1");
   await light("lab", "close").click();
   await toRoot();
   await settle(page, 500);
@@ -639,21 +764,21 @@ if (ONLY.includes("controls")) {
   await page.click("#os-icon-lab");
   await urlIs(page, /\/lab$/);
   await settle(page, 400);
-  await page.click('[data-dock-id="lab"]');
+  await page.click("#os-icon-lab");
   await settle(page, 400);
-  check("3. reabrir pelo ícone e clicar na dock não duplica a janela", (await win(page, "lab").count()) === 1 && (await page.locator(".os-window").count()) === 2);
+  check("3. reabrir pelo ícone de novo não duplica a janela", (await win(page, "lab").count()) === 1 && (await page.locator(".os-window").count()) === 2);
 
-  // 4. minimizar pelo amarelo e restaurar pela dock
+  // 4. minimizar pelo amarelo e restaurar pelo ícone
   const lr = await rectOf(win(page, "lab"));
   await light("lab", "min").click();
   await urlIs(page, /\/projetos$/);
   await settle(page, 600);
-  check("4. amarelo minimiza: oculta e inerte, dock com anel", (await win(page, "lab").evaluate((e) => getComputedStyle(e).visibility === "hidden" && e.hasAttribute("inert"))) && (await page.getAttribute('[data-dock-id="lab"]', "data-min")) === "1" && (await page.getAttribute('[data-dock-id="lab"]', "data-open")) === "1");
-  await page.click('[data-dock-id="lab"]');
+  check("4. amarelo minimiza: oculta e inerte, ícone com anel", (await win(page, "lab").evaluate((e) => getComputedStyle(e).visibility === "hidden" && e.hasAttribute("inert"))) && (await page.getAttribute("#os-icon-lab", "data-min")) === "1" && (await page.getAttribute("#os-icon-lab", "data-open")) === "1");
+  await launchIcon("lab");
   await urlIs(page, /\/lab$/);
   await settle(page, 600);
   const lr2 = await rectOf(win(page, "lab"));
-  check("4. dock restaura com a mesma geometria e foco", JSON.stringify(lr) === JSON.stringify(lr2) && (await st()).focused === "lab" && (await page.getAttribute('[data-dock-id="lab"]', "data-min")) === "0", `${JSON.stringify(lr)} → ${JSON.stringify(lr2)}`);
+  check("4. ícone restaura com a mesma geometria e foco", JSON.stringify(lr) === JSON.stringify(lr2) && (await st()).focused === "lab" && (await page.getAttribute("#os-icon-lab", "data-min")) === "0", `${JSON.stringify(lr)} → ${JSON.stringify(lr2)}`);
 
   // 5. maximizar pelo verde e restaurar
   const layer = await rectOf(page.locator(".os-windows"));
@@ -687,10 +812,10 @@ if (ONLY.includes("controls")) {
   await urlIs(page, /\/projetos$/);
   await settle(page, 500);
   check("6. clicar na parte visível da janela de trás traz para frente", z1.l > z1.p && (await zTop("projects")) > (await zTop("lab")) && (await st()).focused === "projects", JSON.stringify({ z1, free }));
-  await page.click('[data-dock-id="lab"]');
+  await launchIcon("lab");
   await urlIs(page, /\/lab$/);
   await settle(page, 500);
-  check("6. dock alterna de volta para o Lab", (await zTop("lab")) > (await zTop("projects")) && (await st()).focused === "lab");
+  check("6. ícone alterna de volta para o Lab", (await zTop("lab")) > (await zTop("projects")) && (await st()).focused === "lab");
   check("6. as duas continuam abertas e íntegras", (await page.locator('.os-window[data-min="0"]').count()) === 2 && (await win(page, "projects").locator(".os-projects").count()) === 1);
 
   // Esc com o foco fora da janela fecha a da frente; dentro da busca, só fecha a busca
@@ -710,7 +835,7 @@ if (ONLY.includes("controls")) {
   await win(page, "projects").locator('.os-project__link[href="/projetos/terral"]').click();
   await page.waitForURL(/\/projetos\/terral$/);
   await settle(page, 800);
-  await page.click('[data-dock-id="services"]');
+  await launchIcon("services");
   await urlIs(page, /\/servicos$/);
   await settle(page, 600);
   await page.goBack();
@@ -730,7 +855,7 @@ if (ONLY.includes("controls")) {
   check("9. vermelho fecha a maximizada; a minimizada não rouba o foco", (await win(page, "services").count()) === 0 && (await st()).focused === null && path(page) === "/", path(page));
 
   // 7. fechar todas → só o wallpaper
-  await page.click('[data-dock-id="projects"]');
+  await launchIcon("projects");
   await urlIs(page, /\/projetos\/terral$/);
   await settle(page, 500);
   await page.click('[data-dock-id="settings"]');
@@ -740,7 +865,7 @@ if (ONLY.includes("controls")) {
   await light("projects", "close").click();
   await toRoot();
   await settle(page, 600);
-  check("7. fechar todas: só o wallpaper, nenhum app aberto, dock sem indicadores", (await page.locator(".os-window").count()) === 0 && (await st()).open.length === 0 && (await page.locator('.os-dock__item[data-open="1"]').count()) === 0 && (await page.locator(".os-scene").isVisible()));
+  check("7. fechar todas: só o wallpaper, nenhum app aberto, dock e ícones sem indicadores", (await page.locator(".os-window").count()) === 0 && (await st()).open.length === 0 && (await page.locator('.os-dock__item[data-open="1"], .os-icon-btn[data-open="1"]').count()) === 0 && (await page.locator(".os-scene").isVisible()));
   await shot(page, "c01-closed-all");
 
   // regressão: Hold to Inspect cancelado (sem click) não engole o clique seguinte em Fechar
@@ -1157,7 +1282,7 @@ if (ONLY.includes("resize")) {
   const errs = errorsOf(page);
   await page.goto(`${BASE}/projetos/terral`, { waitUntil: "load" });
   await settle(page, 1200);
-  await page.click('[data-dock-id="studio"]');
+  await page.click("#os-icon-studio");
   await urlIs(page, /\/estudio$/);
   await settle(page, 500);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -1243,15 +1368,16 @@ if (ONLY.includes("theme")) {
     const look = await p.evaluate(() => {
       const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number);
       const fg = getComputedStyle(document.querySelector(".os-topbar")).color.match(/\d+/g).map(Number);
-      const card = getComputedStyle(document.querySelector(".os-hud__card")).backgroundColor.match(/[\d.]+/g).map(Number);
+      const card = getComputedStyle(document.querySelector(".os-social__icon")).backgroundColor.match(/[\d.]+/g).map(Number);
       return { light: bg[0] > 235 && bg[1] > 235 && bg[2] > 235, darkText: fg[0] < 40 && fg[1] < 40 && fg[2] < 40, cardLight: card[0] > 240 && card[1] > 240 && card[2] > 240, still: getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage };
     });
-    check("Gojo: fundo gelo, texto escuro, painéis das redes claros, imagem do Vazio Ilimitado", look.light && look.darkText && look.cardLight && /scene-void\.webp/.test(look.still), JSON.stringify(look));
-    // áreas de leitura calmas: atrás da coluna de apps (margem esquerda) e em volta do lema, o fundo claro do tema
+    check("Gojo: fundo gelo, texto escuro, placas das redes claras, imagem do Vazio Ilimitado", look.light && look.darkText && look.cardLight && /scene-void\.webp/.test(look.still), JSON.stringify(look));
+    // áreas de leitura calmas: na margem da grade de apps, em volta do lema e da linha do rodapé, o fundo claro do tema
     const corners = await p.evaluate(async () => {
-      const ic = document.querySelector(".os-icons").getBoundingClientRect();
-      const sg = document.querySelector(".os-sign").getBoundingClientRect();
-      return [[6, ic.top + 60], [6, ic.top + ic.height * 0.5], [6, ic.bottom - 20], [sg.left, sg.top - 14], [sg.left + 120, sg.bottom + 10], [sg.right + 30, sg.bottom - 6]].map(([x, y]) => [Math.round(x), Math.round(y)]);
+      const ic = document.querySelector(".os-icons ul").getBoundingClientRect();
+      const mo = document.querySelector(".os-sign__motto").getBoundingClientRect();
+      const ln = document.querySelector(".os-sign__line").getBoundingClientRect();
+      return [[3, ic.top + 60], [3, ic.top + ic.height * 0.5], [3, ic.bottom - 20], [mo.left, mo.top - 10], [ln.left + 120, ln.bottom + 10], [ln.right + 30, ln.bottom - 6]].map(([x, y]) => [Math.round(x), Math.round(y)]);
     });
     const shotBuf = await p.screenshot();
     const lums = await p.evaluate(async ([b64, pts]) => {
@@ -1261,12 +1387,12 @@ if (ONLY.includes("theme")) {
       const g = cv.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0);
       return pts.map(([x, y]) => { const d = g.getImageData(x, y, 1, 1).data; return Math.round((0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2]) / 2.55); });
     }, [shotBuf.toString("base64"), corners]);
-    check("Gojo: áreas de leitura calmas — atrás da coluna de apps e do lema o fundo fica claro (≥ 80 % de luminância)", lums.every((l) => l >= 80), lums.join(","));
-    const cName = await contrast(p, ".os-hud__name", ".os-hud__card", ".os");
-    const cMicro = await contrast(p, ".os-hud__micro", ".os", ".os");
+    check("Gojo: áreas de leitura calmas — na margem da grade, em volta do lema e do rodapé o fundo fica claro (≥ 80 % de luminância)", lums.every((l) => l >= 80), lums.join(","));
+    const cName = await contrast(p, ".os-social__name", ".os", ".os");
+    const cIcon = await contrast(p, ".os-social__icon", ".os-social__icon", ".os");
     const cSign = await contrast(p, ".os-sign__line", ".os", ".os");
     const cOrigin = await contrast(p, ".os-sign__origin", ".os", ".os");
-    check("Gojo: contraste ≥ 4.5 — nome da rede no painel, microtexto, assinatura, origem (acento)", cName >= 4.5 && cMicro >= 4.5 && cSign >= 4.5 && cOrigin >= 4.5, `${cName} / ${cMicro} / ${cSign} / ${cOrigin}`);
+    check("Gojo: contraste ≥ 4.5 — nome da rede, ícone na placa, assinatura, origem (acento)", cName >= 4.5 && cIcon >= 4.5 && cSign >= 4.5 && cOrigin >= 4.5, `${cName} / ${cIcon} / ${cSign} / ${cOrigin}`);
 
     const toggle = p.locator(".os-dock__theme");
     const box = await rectOf(toggle);
@@ -1281,10 +1407,10 @@ if (ONLY.includes("theme")) {
     check("clique no olho: Obito aplicado, salvo como escolha, switch marcado, íris vermelha à vista", t1.attr === "obito" && t1.theme === "obito" && t1.auto === false && /"theme":"obito"/.test(t1.saved) && (await toggle.getAttribute("aria-checked")) === "true" && (await p.evaluate(() => getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--obito")).display !== "none" && getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--gojo")).display === "none")), JSON.stringify(t1));
     const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /scene-tsukuyomi\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage); });
     check("Obito: fundo carvão e imagem do Tsukuyomi", dark);
-    const dName = await contrast(p, ".os-hud__name", ".os-hud__card", ".os");
-    const dMicro = await contrast(p, ".os-hud__micro", ".os", ".os");
+    const dName = await contrast(p, ".os-social__name", ".os", ".os");
+    const dIcon = await contrast(p, ".os-social__icon", ".os-social__icon", ".os");
     const dOrigin = await contrast(p, ".os-sign__origin", ".os", ".os");
-    check("Obito: contraste ≥ 4.5 — nome da rede, microtexto, origem (acento vermelho)", dName >= 4.5 && dMicro >= 4.5 && dOrigin >= 4.5, `${dName} / ${dMicro} / ${dOrigin}`);
+    check("Obito: contraste ≥ 4.5 — nome da rede, ícone na placa, origem (acento vermelho)", dName >= 4.5 && dIcon >= 4.5 && dOrigin >= 4.5, `${dName} / ${dIcon} / ${dOrigin}`);
     await shot(p, "t01-obito");
 
     // cliques rápidos (3 no mesmo tick): um só destino, nada pendente ao fim
@@ -1400,8 +1526,8 @@ if (ONLY.includes("theme")) {
     await c.close();
   }
 
-  // 6) fundo vivo em regime (revisão 15): os ícones da coluna flutuam só na placa (botão e rótulo parados); os
-  //    pulsos dos circuitos são pontos HTML animados no compositor; o laço do fundo (`data-run`) para com a aba
+  // 6) fundo vivo em regime (revisão 15): os ícones da grade flutuam só na placa (botão e rótulo parados); no
+  //    desktop largo não há HUD (os pulsos dos circuitos ficam no grupo `tablet`); o laço do fundo (`data-run`) para com a aba
   //    oculta — evento simulado, porque o Playwright mantém as páginas visíveis — e com uma janela maximizada, e
   //    retoma nos dois casos.
   {
@@ -1415,8 +1541,8 @@ if (ONLY.includes("theme")) {
     const i1 = await icons();
     await settle(p, 900);
     const i2 = await icons();
-    check("ícones da coluna flutuam só na placa (botão e rótulo parados)", i1.every((x) => x.anim === "os-float") && i1.some((x, k) => x.tr !== i2[k].tr) && i1.every((x, k) => x.top === i2[k].top && x.label === i2[k].label), JSON.stringify({ i1, i2 }));
-    check("pulsos dos circuitos: pontos HTML fora do SVG, sem SMIL", await p.evaluate(() => document.querySelectorAll(".os-hud__wires animateMotion, .os-hud__wires animate").length === 0 && document.querySelectorAll("span.os-hud__pulse").length >= 3));
+    check("ícones da grade flutuam só na placa (botão e rótulo parados)", i1.every((x) => x.anim === "os-float") && i1.some((x, k) => x.tr !== i2[k].tr) && i1.every((x, k) => x.top === i2[k].top && x.label === i2[k].label), JSON.stringify({ i1, i2 }));
+    check("desktop largo sem o HUD (circuitos e pulsos): as redes ficam no grupo compacto", await p.evaluate(() => !document.querySelector(".os-hud, .os-hud__pulse, .os-hud__wires") && document.querySelectorAll(".os-social__item").length === 4));
     if (!live) console.log("  · fundo vivo em regime: PULADO — o canvas não montou neste ambiente (sem WebGL)");
     else {
       const run = () => p.evaluate(() => document.querySelector(".os-scene").dataset.run);
@@ -1502,8 +1628,8 @@ if (ONLY.includes("boot")) {
     const dt = Date.now() - t0;
     check("lenta: sai sozinha quando a home fica pronta; marca a sessão", gone && (await p.evaluate(() => document.documentElement.dataset.osBooted === "1" && sessionStorage.getItem("milweb-os:booted") === "1")), `${dt} ms depois do domcontentloaded`);
     check("lenta: h1 e área de trabalho acessíveis por trás (nada escondido de leitores de tela)", await p.evaluate(() => document.querySelectorAll("h1").length === 1 && !document.querySelector(".os-desktop")?.closest("[aria-hidden='true'], [inert]")));
-    // navegação interna não remonta a tela
-    await p.click('[data-dock-id="studio"]');
+    // navegação interna não remonta a tela (1440 px: desktop largo, o Estúdio abre pela grade)
+    await p.click("#os-icon-studio");
     await urlIs(p, /\/estudio$/);
     await settle(p, 600);
     check("navegação interna (Estúdio) não reapresenta a tela", (await p.locator(".os-boot").count()) === 0);
@@ -1647,6 +1773,16 @@ if (ONLY.includes("profile")) {
   current = "profile";
   console.log("\n# app Perfil");
   const booted = (c) => c.addInitScript(() => sessionStorage.setItem("milweb-os:booted", "1"));
+  // 1440 px = desktop largo: o Perfil abre pelo ícone da grade (saiu da dock); com uma janela por cima, pelo teclado
+  const openProfile = async (p) => {
+    const el = p.locator("#os-icon-profile");
+    const free = await el.evaluate((a) => { const b = a.getBoundingClientRect(); return a.contains(document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)); });
+    if (free) await el.click();
+    else {
+      await el.focus();
+      await p.keyboard.press("Enter");
+    }
+  };
   {
     const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
     await booted(c);
@@ -1654,9 +1790,9 @@ if (ONLY.includes("profile")) {
     const errs = errorsOf(p);
     await p.goto(`${BASE}/`, { waitUntil: "load" });
     await settle(p, 1200);
-    check("ícone Perfil (pessoa) na coluna e na dock, primeiro", (await p.locator("#os-icon-profile").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 1 && (await p.locator(".os-icons li[data-desktop='1']:visible .os-icon-btn__label").first().innerText()) === "PERFIL" && (await p.locator(".os-dock__item").first().getAttribute("data-dock-id")) === "profile");
-    await p.click('[data-dock-id="profile"]');
-    check("dock abre a janela Perfil e a URL vira /perfil", (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").count()) === 1);
+    check("ícone Perfil (pessoa) na grade, 3ª linha à esquerda, e fora da dock", (await p.locator("#os-icon-profile .os-icon[data-kind='profile']").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 0 && (await p.evaluate(() => { const r = (id) => document.querySelector(`#os-icon-${id}`).getBoundingClientRect(); return Math.round(r("profile").left) === Math.round(r("projects").left) && r("profile").top > r("studio").top && r("studio").top > r("projects").top; })));
+    await openProfile(p);
+    check("ícone abre a janela Perfil e a URL vira /perfil", (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").count()) === 1);
     await settle(p, 900);
     const w = win(p, "profile");
     const info = await w.evaluate((el) => {
@@ -1756,7 +1892,7 @@ if (ONLY.includes("profile")) {
     await settle(p, 900);
     await w.locator('[data-profile-action="contact"]').click();
     check("'Entrar em contato' abre o app Contato", (await urlIs(p, /\/contato$/)) && (await win(p, "contact").count()) === 1);
-    await p.click('[data-dock-id="profile"]');
+    await openProfile(p);
     await settle(p, 500);
     await win(p, "profile").locator('.os-profile__plinks a[href*="/projetos/inkvision"]').click();
     check("'Case na MilWeb' abre o case dentro de Projetos", (await urlIs(p, /\/projetos\/inkvision$/)) && (await win(p, "projects").count()) === 1 && (await p.waitForSelector('.os-window[data-app="projects"] .os-case', { timeout: 15000 }).then(() => true).catch(() => false)));
@@ -1773,7 +1909,7 @@ if (ONLY.includes("profile")) {
     const errs = errorsOf(p);
     await p.goto(`${BASE}/`, { waitUntil: "load" });
     await settle(p, 1200);
-    await p.click('[data-dock-id="profile"]');
+    await openProfile(p);
     await p.waitForSelector('.os-window[data-app="profile"] .os-profile__name');
     const early = await p.evaluate(() => { const n = document.querySelector(".os-profile__name"); const a = document.querySelector('[data-profile-action="view-cv"]'); return { op: parseFloat(getComputedStyle(n).opacity), vis: getComputedStyle(a).visibility, pe: getComputedStyle(a).pointerEvents, text: n.textContent, href: a.getAttribute("href") }; });
     await settle(p, 1600);
@@ -1788,7 +1924,7 @@ if (ONLY.includes("profile")) {
     for (let i = 0; i < 3; i++) {
       await p.click('.os-window[data-app="profile"] .os-window__btn[data-action="close"]');
       await p.waitForSelector('.os-window[data-app="profile"]', { state: "detached", timeout: 5000 });
-      await p.click('[data-dock-id="profile"]');
+      await openProfile(p);
       await p.waitForSelector('.os-window[data-app="profile"] .os-profile__name');
       reopened.push((await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector(".os-profile__name")).opacity))) < 1);
       await settle(p, 1500);

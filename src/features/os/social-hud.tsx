@@ -2,6 +2,8 @@
 
 import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { useOs, useOsStore } from "./os-shell";
+import { useDesktopWide } from "./launch";
+import { WhatsAppIcon } from "./mobile/icons";
 
 /**
  * Redes do estúdio ao redor do olho — módulos flutuantes de HUD ligados ao
@@ -28,6 +30,8 @@ import { useOs, useOsStore } from "./os-shell";
  * `prefers-reduced-motion`/Ajustes › Reduzir: tudo parado e visível.
  *
  * Celular: o HUD não aparece (as redes moram na dock de redes).
+ * Desktop largo (≥ 1080 px): também não — as redes viram o grupo compacto
+ * do canto inferior direito (SocialLinks, abaixo). O HUD fica no tablet.
  * O olho que dava nome aos nós saiu do cenário (revisão 14): o palco
  * (`.os-stage`) guarda a mesma caixa, então painéis e circuitos ficaram
  * exatamente onde estavam.
@@ -63,6 +67,7 @@ export function SocialHud() {
   const hotTimers = useRef<Partial<Record<Key, number>>>({});
   // Ajustes › Reduzir movimento liga e desliga os pulsos
   const motion = useOsStore((st) => st.prefs.motion);
+  const wide = useDesktopWide();
   const [wires, setWires] = useState<Partial<Record<Key, Wire>>>({});
   const [box, setBox] = useState({ w: 0, h: 0 });
 
@@ -71,7 +76,7 @@ export function SocialHud() {
   useLayoutEffect(() => {
     const root = rootRef.current;
     const desk = root?.parentElement;
-    if (!root || !desk || shell === "mobile" || shell === "simple") {
+    if (!root || !desk || wide || shell === "mobile" || shell === "simple") {
       setWires({});
       return;
     }
@@ -109,12 +114,12 @@ export function SocialHud() {
     ro.observe(desk);
     ro.observe(eye);
     return () => ro.disconnect();
-  }, [shell, keys]);
+  }, [shell, keys, wide]);
 
   // Pulsos em ciclo: recriados quando os circuitos mudam (medida/resize); nenhum JS por quadro.
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root || typeof root.animate !== "function" || reduced()) return;
+    if (!root || wide || typeof root.animate !== "function" || reduced()) return;
     const anims: Animation[] = [];
     (Object.keys(wires) as Key[]).forEach((k) => {
       const w = wires[k];
@@ -126,7 +131,7 @@ export function SocialHud() {
       anims.push(el.animate([{ opacity: 0, offset: 0 }, { opacity: 1, offset: 0.08 }, { opacity: 1, offset: 0.85 }, { opacity: 0, offset: 1 }], timing));
     });
     return () => anims.forEach((a) => a.cancel());
-  }, [wires, keys, motion]);
+  }, [wires, keys, motion, wide]);
 
   // Pulso extra na linha do painel sob o ponteiro/foco: começa na hora.
   const pulse = useCallback(
@@ -146,7 +151,7 @@ export function SocialHud() {
     [wires],
   );
 
-  if (!links.length) return null;
+  if (!links.length || wide) return null;
 
   return (
     <div ref={rootRef} className="os-hud" data-in="1" aria-label={s.label}>
@@ -197,8 +202,55 @@ export function SocialHud() {
   );
 }
 
-/** As marcas nas cores oficiais: "in" na placa azul, o gato do GitHub (octicon) no círculo, a câmera do Instagram no degradê. */
-export function SocialIcon({ k }: { k: Key }) {
+/**
+ * Redes no desktop largo (≥ 1080 px): grupo compacto no canto inferior direito — LinkedIn, GitHub, Instagram e
+ * WhatsApp, no lugar dos painéis HUD (sem circuitos nem descrições). Ícone monocromático numa placa de vidro e o
+ * nome embaixo; no hover ou foco, o acento do tema (no WhatsApp, verde discreto). O WhatsApp é o número comercial
+ * de lib/content (PROFILE.whatsapp, o mesmo do app Contato e da dock do telefone): sem um número válido (DDI +
+ * número, só dígitos), o item não aparece. Abaixo de 1080 px o grupo fica escondido pelo CSS — o tablet mantém o
+ * HUD e o telefone, a dock de redes.
+ */
+export function SocialLinks() {
+  const { payload } = useOs();
+  const s = payload.s;
+  const items: { key: Key | "whatsapp"; href: string; name: string }[] = ORDER.filter((k) => payload.social[k]).map((k) => ({ key: k, href: payload.social[k]!, name: NAME[k] }));
+  if (/^[1-9]\d{7,14}$/.test(payload.contact.whatsapp)) items.push({ key: "whatsapp", href: `https://wa.me/${payload.contact.whatsapp}`, name: s.contact.whatsapp });
+  if (!items.length) return null;
+  return (
+    <nav className="os-social" aria-label={s.social.label} data-no-inspect>
+      <ul>
+        {items.map((it) => (
+          <li key={it.key}>
+            <a className="os-social__item" data-social={it.key} href={it.href} target="_blank" rel="noopener noreferrer">
+              <span className="os-social__icon" aria-hidden="true">
+                {it.key === "whatsapp" ? <WhatsAppIcon /> : <SocialIcon k={it.key} mono />}
+              </span>
+              <span className="os-social__name">{it.name}</span>
+              <span className="sr-only"> · {s.social.external}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * As marcas nas cores oficiais: "in" na placa azul, o gato do GitHub (octicon) no círculo, a câmera do Instagram no
+ * degradê. `mono` (redes compactas do desktop largo): o LinkedIn vira a placa com o "in" vazado, para ser
+ * reconhecível sem a cor; GitHub e Instagram já são a própria marca em uma cor.
+ */
+export function SocialIcon({ k, mono = false }: { k: Key; mono?: boolean }) {
+  if (k === "linkedin" && mono) {
+    return (
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">
+        <path
+          fillRule="evenodd"
+          d="M5 2h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM5.2 9.5h3V18h-3zM6.7 5a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5zM10.2 9.5h2.9v1.2c.5-.8 1.5-1.4 2.9-1.4 2.6 0 3.2 1.7 3.2 3.9V18h-3v-4.1c0-1 0-2.2-1.4-2.2s-1.6 1.1-1.6 2.1V18h-3z"
+        />
+      </svg>
+    );
+  }
   if (k === "github") {
     return (
       <svg viewBox="0 0 16 16" width="19" height="19" fill="currentColor">

@@ -531,3 +531,32 @@ Pedido do Rick: os dois ambientes estavam "visualmente parados". Primeiro invest
 - Monitores de 2560 px na GPU integrada rodam a ~0,56–0,72 da resolução.
 - A calibração em regime ainda pode custar um quadro de ~50 ms a cada 6 s nos primeiros ~20 s.
 - Não validado: aparelho físico (iOS/Android), Safari e Firefox, DPR 2 ou mais, leitor de tela.
+
+## Revisão 16 (26/10/2026) — home do desktop largo: lema no alto, grade 2 × 3, dock do sistema, redes compactas
+
+Pedido do Rick (com um mockup de referência que não veio anexado; valeu a descrição escrita): só no desktop, a frase "Códigos movem o mundo." no alto à esquerda, os aplicativos em duas colunas e três linhas logo abaixo (Projetos | Serviços, Estúdio | Lab, Perfil | Contato), a dock só com Busca, Ajustes e a troca de tema, e os cartões das redes trocados por um grupo compacto no canto inferior direito com o WhatsApp. Celular e tablet intactos; barra superior, idiomas, relógio, rodapé, fundos e interações preservados.
+
+### Escopo e breakpoint
+
+- Desktop largo = a partir de 1080 px, o breakpoint de desktop que o projeto já tinha (`lg` do Tailwind; o bloco de tablet de `os.css` vai de 720 a 1079 px). A regra vive em dois lugares, mantidos à mão: `registry.ts › DESKTOP_WIDE_MQ` e `@media (min-width: 1080px)` no fim de `os.css`.
+- Abaixo disso nada muda: o tablet continua com a coluna, o lema pequeno, a dock completa e o HUD; o telefone, com o launcher e a dock de redes. Tablets deitados com 1080 px ou mais (iPad Air e Pro) já eram desktop no projeto e recebem o layout novo.
+
+### O que mudou
+
+- Lema (`desktop.tsx`): no alto à esquerda, peso 800, `clamp(30px, min(4vw, 7.2vh), 88px)`, até duas linhas (`max-width: 11.5em` + `text-wrap: balance`), branco no Obito e na tinta do tema no Gojo (branco sobre o gelo não leria), ponto final num `<span>` no acento do tema. A linha "MILWEB® · …" fica sozinha onde estava, como rodapé.
+- Grade (`DesktopApps`, `registry.ts › DESKTOP_GRID`): placa `clamp(46px, 8.3vh, 68px)` (64 px em 1366×768, 68 px em 1440×900 e 1920×1080), célula quadrada com o mesmo respiro nas duas direções, nome sempre visível embaixo; Contato com borda discreta no acento. Na primeira pintura cada app tem a sua célula no CSS; depois de hidratar (`useDesktopWide`, `useSyncExternalStore` com o servidor em `false`), o DOM segue a ordem visual — Tab e leitor de tela percorrem a grade como se vê, e o tablet fica com o DOM de antes. O ritmo da flutuação dos ícones passou de `nth-child` para `data-app`, com os mesmos valores, para o ícone não trocar de fase quando o DOM reordena.
+- Dock: só Buscar, Ajustes e o tema (CSS antes da hidratação, DOM depois). Sem os apps na dock, o estado das janelas passou para o ícone da grade: ponto sob o rótulo (aberta; no acento quando em primeiro plano), anel quando minimizada e o estado no nome acessível. Minimizar encolhe a janela para o ícone e devolve o foco a ele (`window.tsx`: o alvo é o item visível da dock ou, sem ele, o ícone).
+- Redes (`social-hud.tsx › SocialLinks`): LinkedIn, GitHub, Instagram e WhatsApp no canto inferior direito, na altura da dock; ícone monocromático numa placa de vidro (o LinkedIn com o "in" vazado, para ser reconhecível sem a cor) e o nome pequeno embaixo; hover e foco no acento do tema, WhatsApp em verde discreto (#25D366 no escuro, um verde mais fechado no claro); nova aba com `noopener noreferrer` e aviso para leitor de tela. O HUD (cartões, circuitos, pulsos) não monta no desktop largo.
+- WhatsApp: o número comercial já configurado em `lib/content.ts › PROFILE.whatsapp` (DDI 55, o mesmo do app Contato e da dock do telefone), link `https://wa.me/5533998779375`; sem um número válido o item não aparece.
+
+### Verificação
+
+- `tsc`, `next lint` e `next build` verdes (só o aviso antigo do `<img>` do OG).
+- Celular e tablet (`.audit/home/shots.mjs` + `compare.py`, movimento reduzido, dois temas): 360, 375, 390 e 430 em pé, 844 e 932 deitados, 768, 820, 1024, 1024 em pé e 1079 — caixas de layout iguais em todas as 32 telas e pixels iguais, salvo o ruído que aparece também entre duas capturas do MESMO build (texto de "BUSCAR" na barra e o mural de Projetos em 768).
+- Desktop (`.audit/home/layout.mjs`): 1080×720, 1280×600, 1280×540, 1366×768, 1366×650, 1440×900, 1440×700, 1536×730, 1920×1080 e 2560×1440, em português, inglês e espanhol — lema em duas linhas, nada a menos de 8 px de nada, nada fora da tela, rótulos inteiros. `interact.mjs` (dois temas): hover e foco das redes, Tab na ordem visual, minimizar para o ícone e restaurar por ele, Ajustes, Buscar e tema pela dock, sem erros.
+- Suíte no build de produção: 505/505 (celular 179; desktop, tablet, controles e projetos 192; tema, carregamento, capa, redimensionar, modo simples e Perfil 134). Grupo novo `tablet` (coluna, dock completa, HUD e minimizar para a dock em 1024×768, 768×1024 e 1079×800); `desktop`, `controls`, `theme`, `boot` e `resize` passaram a abrir os apps pela grade e a conferir as redes compactas.
+
+### Pendências
+
+- De 1080 a ~1300 px, as janelas maiores (Projetos e Perfil) ainda abrem por cima de parte da segunda coluna da grade: a geometria padrão das janelas não mudou.
+- Em 768×1024 o cartão do LinkedIn do HUD encosta no rótulo de Serviços. Já era assim; o tablet ficou intacto de propósito.

@@ -218,6 +218,8 @@ html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
   max-width: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   font: 10.5px/1.25 var(--font-mono), monospace; letter-spacing: .06em; text-transform: uppercase;
 }
+/* estado da janela no nome acessível do ícone: só no desktop largo (bloco no fim), onde a dock não traz os apps */
+.os-icon-btn__state { display: none; }
 
 /* placa dos ícones: fosca, borda fina, sem brilho nem relevo — carvão no Obito, branca no Gojo */
 .os-icon {
@@ -228,8 +230,9 @@ html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
 }
 .os-icon svg { width: 70%; height: 70%; }
 /* Ícones dos apps flutuando, de leve: só a placa anda — com `translate`/`rotate` próprios, sem disputar o
-   `transform` do clique —, e o botão (a área de clique) e o rótulo ficam parados. Ritmo e fase por posição;
-   a dock fica estável. Movimento reduzido: parados (regras no fim do arquivo). */
+   `transform` do clique —, e o botão (a área de clique) e o rótulo ficam parados. Ritmo e fase por app (os
+   que cada um tinha pela posição na coluna: a grade do desktop largo reordena o DOM ao hidratar e o ícone não
+   pode trocar de fase); a dock fica estável. Movimento reduzido: parados (regras no fim do arquivo). */
 @keyframes os-float {
   0%, 100% { translate: 0 0; rotate: 0deg; }
   30% { translate: .8px -2.4px; rotate: -.7deg; }
@@ -237,11 +240,11 @@ html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
   80% { translate: -.8px -1.1px; rotate: .8deg; }
 }
 .os-icons .os-icon { animation: os-float 7.4s ease-in-out infinite; }
-.os-icons li:nth-child(6n+2) .os-icon { animation-duration: 8.3s; animation-delay: -2.1s; }
-.os-icons li:nth-child(6n+3) .os-icon { animation-duration: 6.9s; animation-delay: -4.4s; }
-.os-icons li:nth-child(6n+4) .os-icon { animation-duration: 7.9s; animation-delay: -1.2s; }
-.os-icons li:nth-child(6n+5) .os-icon { animation-duration: 8.8s; animation-delay: -5.6s; }
-.os-icons li:nth-child(6n) .os-icon { animation-duration: 7.1s; animation-delay: -3.3s; }
+.os-icons li[data-app="projects"] .os-icon { animation-duration: 8.3s; animation-delay: -2.1s; }
+.os-icons li[data-app="studio"] .os-icon { animation-duration: 6.9s; animation-delay: -4.4s; }
+.os-icons li[data-app="lab"] .os-icon { animation-duration: 7.9s; animation-delay: -1.2s; }
+.os-icons li[data-app="services"] .os-icon { animation-duration: 8.8s; animation-delay: -5.6s; }
+.os-icons li[data-app="contact"] .os-icon { animation-duration: 7.1s; animation-delay: -3.3s; }
 .os-icon__accent { stroke: rgb(var(--os-signal)); }
 .os-icon__fill { fill: rgb(var(--os-signal)); stroke: none; }
 .os-icon__knob { fill: rgb(var(--os-tile)); }
@@ -324,6 +327,8 @@ html[data-os-theme="gojo"] .os-theme-btn:not([data-iris]) .os-eyecon__iris--obit
 .os-hud__panel:hover .os-hud__icon, .os-hud__panel:focus-visible .os-hud__icon { transform: scale(1.08); }
 .os-hud__panel:hover .os-hud__arrow, .os-hud__panel:focus-visible .os-hud__arrow { transform: translate(2px, -2px); color: rgb(var(--hud)); }
 .os-hud__panel:focus-visible .os-hud__card { outline: 2px solid rgb(var(--os-signal)); outline-offset: 2px; }
+/* redes compactas (social-hud.tsx › SocialLinks): só no desktop largo — bloco no fim do arquivo */
+.os-social { display: none; }
 
 /* ---- janelas --------------------------------------------------------- */
 /* Irmã da área de trabalho no DOM (o contêiner é .os): começa abaixo da barra e termina acima da dock. */
@@ -991,18 +996,107 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   .os-hud__micro { max-width: 140px; margin-left: 18px; font-size: 8px; letter-spacing: .12em; }
 }
 
+/* ---- desktop largo (≥ 1080 px): lema no alto, grade 2 × 3, dock só com o sistema, redes compactas ---- */
+/* O `lg` do projeto; o tablet (720–1079 px, bloco acima) não muda. A MESMA regra vive em registry.ts ›
+   DESKTOP_WIDE_MQ: depois de hidratar, o DOM da grade e da dock passa a seguir a ordem visual; antes disso as
+   posições explícitas daqui já desenham tudo no lugar. Lema, ícones e respiros escalam com a altura além da
+   largura: em telas baixas encolhem antes de encostar na linha do rodapé. */
+@media (min-width: 1080px) {
+  .os-desktop {
+    --hx: 24px;                                      /* margem esquerda: a mesma da linha do rodapé */
+    --hy: clamp(18px, 3.6vh, 44px);                  /* da barra ao lema */
+    --hs: clamp(30px, min(4vw, 7.2vh), 88px);        /* corpo do lema, em até duas linhas */
+    --hgap: clamp(18px, 4.6vh, 56px);                /* lema → aplicativos */
+    --app: clamp(46px, 8.3vh, 68px);                 /* placa dos ícones */
+    --cell: calc(var(--app) + 36px);                 /* célula quadrada: placa + rótulo de uma linha + respiros */
+    --cgap: clamp(4px, 1.3vh, 14px);                 /* o mesmo respiro entre linhas e entre colunas */
+  }
+  /* lema: branco no Obito, tinta do tema no Gojo; forte; o ponto final no acento do tema */
+  .os-sign { inset: 0; max-width: none; pointer-events: none; }
+  .os-sign__motto {
+    position: absolute; left: var(--hx); top: var(--hy); max-width: 11.5em; pointer-events: auto;
+    font-size: var(--hs); font-weight: 800; line-height: 1; letter-spacing: -.035em; text-wrap: balance; color: #fff;
+  }
+  html[data-os-theme="gojo"] .os-sign__motto { color: rgb(var(--os-fg)); }
+  .os-sign__dot { color: rgb(var(--os-signal)); }
+  /* a linha da assinatura fica sozinha onde estava, como rodapé */
+  .os-sign__line { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); margin: 0; pointer-events: auto; }
+
+  /* aplicativos: grade 2 × 3 logo abaixo das duas linhas do lema; a placa da 1ª coluna alinha com o lema */
+  .os-icons { left: calc(var(--hx) - (var(--cell) - var(--app)) / 2); top: calc(var(--hy) + var(--hs) * 2 + var(--hgap)); bottom: auto; }
+  .os-icons ul {
+    grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: none; grid-auto-rows: auto;
+    gap: var(--cgap); height: auto;
+  }
+  .os-icons li[data-app="projects"] { grid-area: 1 / 1; }
+  .os-icons li[data-app="services"] { grid-area: 1 / 2; }
+  .os-icons li[data-app="studio"] { grid-area: 2 / 1; }
+  .os-icons li[data-app="lab"] { grid-area: 2 / 2; }
+  .os-icons li[data-app="profile"] { grid-area: 3 / 1; }
+  .os-icons li[data-app="contact"] { grid-area: 3 / 2; }
+  .os-icon-btn { position: relative; width: var(--cell); gap: 8px; padding: 6px 4px 8px; }
+  .os-icon-btn .os-icon { width: var(--app) !important; height: var(--app) !important; }
+  .os-icon-btn__label { font-size: 11px; }
+  /* Contato em destaque: borda discreta no acento do tema (também no hover e no foco) */
+  .os-icons li[data-app="contact"] .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal) / .7), 0 0 16px rgb(var(--os-signal) / .14), var(--os-tile-shadow); }
+  .os-icons li[data-app="contact"] .os-icon-btn:hover .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22), var(--os-tile-shadow); }
+  .os-icons li[data-app="contact"] .os-icon-btn:focus-visible .os-icon { box-shadow: 0 0 0 2px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22); }
+  /* estado da janela no ícone, já que a dock não traz os apps: ponto = aberta, no acento = em primeiro plano,
+     anel = minimizada (os mesmos sinais da dock); o estado também entra no nome acessível */
+  .os-icon-btn::after { content: ""; position: absolute; left: calc(50% - 2px); bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--os-fg) / .55); opacity: 0; }
+  .os-icon-btn[data-open="1"]::after { opacity: 1; }
+  .os-icon-btn[data-focused="1"]::after { background: rgb(var(--os-signal)); }
+  .os-icon-btn[data-min="1"]::after { background: transparent; box-shadow: inset 0 0 0 1px rgb(var(--os-fg) / .75); }
+  .os-icon-btn__state { display: block; position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* dock: só Buscar, Ajustes e o tema, nessa ordem */
+  .os-dock li[data-dock-app]:not([data-dock-app="settings"]), .os-dock__sep { display: none; }
+  .os-dock li[data-dock-sys="search"] { order: 1; }
+  .os-dock li[data-dock-app="settings"] { order: 2; }
+  .os-dock li[data-dock-sys="theme"] { order: 3; }
+
+  /* redes: grupo compacto no canto inferior direito, na altura da dock, no lugar dos painéis HUD */
+  .os-hud { display: none; }
+  .os-social { display: block; position: absolute; right: 18px; bottom: 12px; z-index: 3; font-family: var(--font-mono), monospace; }
+  .os-social ul { display: flex; align-items: flex-end; gap: 2px; margin: 0; padding: 0; list-style: none; }
+  .os-social__item {
+    display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 68px; padding: 6px 6px 7px;
+    border-radius: 12px; color: rgb(var(--os-fg)); text-decoration: none; outline: none;
+    transition: transform .25s var(--os-ease);
+  }
+  .os-social__icon {
+    --c: var(--os-fg);
+    display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px;
+    color: rgb(var(--c) / .9); background: var(--os-glass); border: 1px solid var(--os-line);
+    box-shadow: var(--os-tile-shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    transition: color .2s, border-color .2s, background-color .2s, box-shadow .2s;
+  }
+  .os-social__icon svg { display: block; width: 18px; height: 18px; }
+  .os-social__name { font-size: 10px; line-height: 1; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; color: rgb(var(--os-fg) / .82); transition: color .2s; }
+  .os-social__item:hover, .os-social__item:focus-visible { transform: translateY(-2px); }
+  .os-social__item:hover .os-social__icon, .os-social__item:focus-visible .os-social__icon { --c: var(--os-signal); border-color: rgb(var(--c) / .55); background-color: rgb(var(--c) / .1); }
+  /* WhatsApp: verde discreto (#25D366 no escuro; mais fechado no claro, para ler sobre o gelo) */
+  .os-social__item[data-social="whatsapp"]:hover .os-social__icon, .os-social__item[data-social="whatsapp"]:focus-visible .os-social__icon { --c: 37 211 102; }
+  html[data-os-theme="gojo"] .os-social__item[data-social="whatsapp"]:hover .os-social__icon,
+  html[data-os-theme="gojo"] .os-social__item[data-social="whatsapp"]:focus-visible .os-social__icon { --c: 21 128 61; }
+  .os-social__item:hover .os-social__name, .os-social__item:focus-visible .os-social__name { color: rgb(var(--os-fg)); }
+  .os-social__item:focus-visible .os-social__icon { box-shadow: 0 0 0 2px rgb(var(--os-signal)); }
+}
+
 /* ---- movimento reduzido (sistema ou Ajustes) ------------------------------- */
 /* inclui a troca de tema: sem olho vivo ela é imediata, e a interface muda de uma vez (sem cruzar) */
 @media (prefers-reduced-motion: reduce) {
   .os-window, .os-dock__item, .os-dock__item .os-icon, .os-icon, .os-project__img, .os-scene__canvas, .os-eyecon__iris,
-  .os, .os-topbar, .os-wallpaper, .os-scene__calm::before, .os-scene__calm::after, .os-dock ul, .os-hud__card, .bounty { transition: none !important; animation: none !important; }
+  .os, .os-topbar, .os-wallpaper, .os-scene__calm::before, .os-scene__calm::after, .os-dock ul, .os-hud__card, .bounty,
+  .os-social__item, .os-social__icon { transition: none !important; animation: none !important; }
 }
 html[data-reduce] .os-window, html[data-os-motion="reduce"] .os-window,
 html[data-reduce] .os-dock__item, html[data-os-motion="reduce"] .os-dock__item,
 html[data-reduce] .os-dock__item .os-icon, html[data-os-motion="reduce"] .os-dock__item .os-icon, html[data-reduce] .os-icons .os-icon,
 html[data-os-motion="reduce"] .os-icon, html[data-os-motion="reduce"] .os-project__img, html[data-os-motion="reduce"] .os-scene__canvas, html[data-os-motion="reduce"] .os-eyecon__iris,
 html[data-os-motion="reduce"] .os, html[data-os-motion="reduce"] .os-topbar, html[data-os-motion="reduce"] .os-wallpaper, html[data-os-motion="reduce"] .os-scene__calm::before, html[data-os-motion="reduce"] .os-scene__calm::after,
-html[data-os-motion="reduce"] .os-dock ul, html[data-os-motion="reduce"] .os-hud__card, html[data-os-motion="reduce"] .bounty { transition: none !important; animation: none !important; }
+html[data-os-motion="reduce"] .os-dock ul, html[data-os-motion="reduce"] .os-hud__card, html[data-os-motion="reduce"] .bounty,
+html[data-reduce] .os-social__item, html[data-reduce] .os-social__icon, html[data-os-motion="reduce"] .os-social__item, html[data-os-motion="reduce"] .os-social__icon { transition: none !important; animation: none !important; }
 /* redes sem movimento: circuitos e painéis prontos, sem pulsos nem respiração */
 @media (prefers-reduced-motion: reduce) {
   .os-hud__panel, .os-hud__line, .os-hud__node, .os-hud__ring, .os-hud__dot, .os-hud__card, .os-hud__icon, .os-hud__arrow { animation: none !important; transition: none !important; }

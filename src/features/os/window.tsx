@@ -244,7 +244,10 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
 
   const minimize = useCallback(() => {
     const el = ref.current;
-    const dock = document.querySelector<HTMLElement>(`[data-dock-id="${id}"]`);
+    // Para onde a janela encolhe e quem recebe o foco: o item da dock (tablet) ou, no desktop largo, onde a dock
+    // só tem os controles do sistema, o ícone do app na grade.
+    const shown = (t: HTMLElement | null) => (t && t.getClientRects().length > 0 ? t : null);
+    const dock = shown(document.querySelector<HTMLElement>(`[data-dock-id="${id}"]`)) ?? shown(document.getElementById(`os-icon-${id}`));
     if (el && dock) {
       const a = el.getBoundingClientRect();
       const b = dock.getBoundingClientRect();

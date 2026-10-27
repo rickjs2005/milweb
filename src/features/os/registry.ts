@@ -49,6 +49,11 @@ export const DOCK_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "ser
 export const ICON_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 /** Ordem da grade da tela inicial do telefone (4 colunas; a busca entra como oitavo item no launcher). */
 export const MOBILE_GRID: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
+/**
+ * Grade da área de trabalho no desktop largo (DESKTOP_WIDE_MQ): duas colunas × três linhas, lida por linha —
+ * Projetos | Serviços, Estúdio | Lab, Perfil | Contato. No tablet continua a coluna de ICON_ORDER.
+ */
+export const DESKTOP_GRID: AppId[] = ["projects", "services", "studio", "lab", "profile", "contact"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou
@@ -57,6 +62,12 @@ export const MOBILE_GRID: AppId[] = ["profile", "projects", "studio", "lab", "se
  * styles/os.css (`@media`), mantida à mão — ver o teste em scripts/os-check.mjs.
  */
 export const MOBILE_SHELL_MQ = "(max-width: 719px), ((max-height: 499px) and (max-width: 1079px))";
+/**
+ * Desktop largo = a partir de 1080 px (o `lg` do projeto; o tablet vai de 720 a 1079 px): lema no alto,
+ * grade 2 × 3 de aplicativos, dock só com os controles do sistema e redes compactas no canto. A MESMA regra
+ * vive em styles/os.css (`@media (min-width: 1080px)`), mantida à mão.
+ */
+export const DESKTOP_WIDE_MQ = "(min-width: 1080px)";
 
 /** Altura da barra superior e espaço reservado à dock no desktop (px) — iguais aos tokens do CSS. */
 export const TOPBAR_H = 36;
