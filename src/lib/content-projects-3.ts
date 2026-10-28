@@ -572,4 +572,126 @@ export const PROJECTS_3: Project[] = [
       ],
     },
   },
+  {
+    slug: "panico-de-estado",
+    category: "sistema-saas",
+    title: "Pânico de Estado",
+    tagline: { pt: "Jogo de sátira política em mundo aberto 2D · dois Brasis fictícios", en: "Political satire game in a 2D open world · two fictional Brazils", es: "Juego de sátira política en mundo abierto 2D · dos Brasiles ficticios" },
+    problem: { pt: "Humor político em jogo costuma parar num quiz ou num minigame de uma tela. Pouco usa o que um mundo jogável permite: lugares para andar, gente com rotina e escolhas que deixam marca.", en: "Political humor in games usually stops at a quiz or a one-screen minigame. Few use what a playable world allows: places to walk through, people with routines and choices that leave a mark.", es: "El humor político en juegos suele quedarse en un quiz o un minijuego de una pantalla. Pocos usan lo que permite un mundo jugable: lugares para recorrer, gente con rutina y decisiones que dejan huella." },
+    result: { pt: "Jogo de navegador em dois universos fictícios: no Brasil do Lula e no Brasil do Flávio, os boatos apocalípticos viram realidade e o jogador, um cidadão comum, cumpre seis missões em cada cidade, com escolhas que mudam o mundo e uma cerimônia final. O desfecho junta as duas rotas: um vendedor de kits de sobrevivência lucra com o medo nos dois universos.", en: "A browser game set in two fictional universes: in Lula's Brazil and in Flávio's Brazil the apocalyptic rumors come true, and the player, an ordinary citizen, completes six missions in each city, with choices that change the world and a closing ceremony. The ending ties both routes together: a survival-kit salesman profits from fear in both universes.", es: "Juego de navegador en dos universos ficticios: en el Brasil de Lula y en el Brasil de Flávio los rumores apocalípticos se hacen realidad y el jugador, un ciudadano común, cumple seis misiones en cada ciudad, con decisiones que cambian el mundo y una ceremonia final. El desenlace une las dos rutas: un vendedor de kits de supervivencia lucra con el miedo en los dos universos." },
+    stack: ["Phaser 4", "Next.js 15", "React 19", "TypeScript", "Tailwind CSS"],
+    metric: { pt: "2 Brasis fictícios · 12 missões", en: "2 fictional Brazils · 12 missions", es: "2 Brasiles ficticios · 12 misiones" },
+    status: { pt: "Projeto autoral · no ar", en: "Personal project · live", es: "Proyecto propio · en línea" },
+    note: {
+      pt: "Sátira: Lula e Flávio Bolsonaro aparecem como caricaturas explicitamente fictícias, com falas inventadas para a obra. Nada ali retrata fatos, falas ou intenções reais de ninguém.",
+      en: "Satire: Lula and Flávio Bolsonaro appear as explicitly fictional caricatures, with lines invented for the work. Nothing there portrays anyone's real facts, statements or intentions.",
+      es: "Sátira: Lula y Flávio Bolsonaro aparecen como caricaturas explícitamente ficticias, con diálogos inventados para la obra. Nada ahí retrata hechos, declaraciones ni intenciones reales de nadie.",
+    },
+    live: "https://panico-de-estado.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/panico-de-estado` }],
+    featured: false,
+    image: "/shots/panico-de-estado.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "A cidade do Lula tem 4800 × 3600 px, seis distritos e 46 edificações com interior. Os 40 moradores seguem uma rotina de verdade: dormem em casa, saem de manhã, andam pelas calçadas e faixas até o ponto de trabalho, almoçam num estabelecimento e voltam, num relógio em que um dia dura 10 minutos reais. Até 36 carros circulam pelas ruas e escolhem a saída em cada cruzamento, um por vez. O Brasil do Flávio é outra cidade, com mapa próprio e as próprias seis missões.",
+          en: "Lula's city is 4800 × 3600 px, with six districts and 46 buildings you can enter. Its 40 residents follow a real routine: they sleep at home, leave in the morning, walk the sidewalks and crosswalks to their workplace, lunch at an establishment and head back, on a clock where a day lasts 10 real minutes. Up to 36 cars roam the streets and pick an exit at every intersection, one at a time. Flávio's Brazil is a separate city, with its own map and its own six missions.",
+          es: "La ciudad de Lula mide 4800 × 3600 px, con seis distritos y 46 edificios con interior. Sus 40 vecinos siguen una rutina real: duermen en casa, salen de mañana, caminan por veredas y cebras hasta su lugar de trabajo, almuerzan en un establecimiento y vuelven, en un reloj donde un día dura 10 minutos reales. Hasta 36 autos circulan por las calles y eligen la salida en cada cruce, de a uno. El Brasil de Flávio es otra ciudad, con mapa propio y sus propias seis misiones.",
+        },
+        {
+          pt: "As missões são dados (campanha.ts) e o motor é uma função pura: recebe eventos (falou, usou, entrou no lugar), aplica efeitos e devolve saídas, enquanto a cena só emite eventos e mostra as consequências. Isso deixa cada solução (cumprir, sabotar ou reinterpretar a ordem) mudar algo visível no mundo, ficar registrada no save e aparecer na cerimônia final. Não há moedas, XP nem punição: errar não pune o jogador.",
+          en: "Missions are data (campanha.ts) and the engine is a pure function: it takes events (talked to, used, entered a place), applies effects and returns outputs, while the scene only emits events and shows the consequences. That lets every solution (obey, sabotage or reinterpret the order) change something visible in the world, get recorded in the save and show up in the closing ceremony. There are no coins, XP or punishment: getting it wrong doesn't penalize the player.",
+          es: "Las misiones son datos (campanha.ts) y el motor es una función pura: recibe eventos (habló, usó, entró al lugar), aplica efectos y devuelve salidas, mientras la escena solo emite eventos y muestra las consecuencias. Así cada solución (cumplir, sabotear o reinterpretar la orden) cambia algo visible en el mundo, queda registrada en el save y aparece en la ceremonia final. No hay monedas, XP ni castigo: equivocarse no penaliza al jugador.",
+        },
+        {
+          pt: "Prédios, objetos de rua e móveis são SVG desenhado em código, e um culler só deixa visível o que está perto da câmera, para uma cidade desse tamanho rodar no navegador. A sátira tem regra: a seleção de personagem e o painel do jogo trazem o aviso fixo de que é ficção (\"Brasil hipotético · ficção satírica\") e que nada ali retrata fatos reais.",
+          en: "Buildings, street objects and furniture are SVG drawn in code, and a culler keeps only what is near the camera visible, so a city this size runs in the browser. The satire has a rule: the character select and the game panel carry a fixed notice that it is fiction (\"Hypothetical Brazil · satirical fiction\") and that nothing there depicts real facts.",
+          es: "Los edificios, objetos de calle y muebles son SVG dibujado en código, y un culler deja visible solo lo que está cerca de la cámara, para que una ciudad de este tamaño corra en el navegador. La sátira tiene regla: la selección de personaje y el panel del juego traen el aviso fijo de que es ficción (\"Brasil hipotético · ficción satírica\") y de que nada ahí retrata hechos reales.",
+        },
+      ],
+      highlights: [
+        {
+          label: { pt: "Cidade viva", en: "Living city", es: "Ciudad viva" },
+          detail: { pt: "Moradores com agenda, trânsito com vez nos cruzamentos e relógio em que um dia dura 10 minutos.", en: "Residents with schedules, traffic taking turns at intersections and a clock where a day lasts 10 minutes.", es: "Vecinos con agenda, tránsito con turno en los cruces y un reloj donde un día dura 10 minutos." },
+        },
+        {
+          label: { pt: "Missões como dados", en: "Missions as data", es: "Misiones como datos" },
+          detail: { pt: "Motor puro que recebe eventos e devolve efeitos; a cena só mostra as consequências.", en: "A pure engine that takes events and returns effects; the scene only shows the consequences.", es: "Motor puro que recibe eventos y devuelve efectos; la escena solo muestra las consecuencias." },
+        },
+        {
+          label: { pt: "Escolhas que deixam marca", en: "Choices that leave a mark", es: "Decisiones que dejan huella" },
+          detail: { pt: "Cumprir, sabotar ou reinterpretar: cada solução muda o mundo, vai para o save e volta na cerimônia final.", en: "Obey, sabotage or reinterpret: every solution changes the world, goes into the save and returns in the closing ceremony.", es: "Cumplir, sabotear o reinterpretar: cada solución cambia el mundo, va al save y vuelve en la ceremonia final." },
+        },
+        {
+          label: { pt: "Caricatura declarada", en: "Declared caricature", es: "Caricatura declarada" },
+          detail: { pt: "Aviso de ficção satírica na tela de escolha e no painel do jogo, com falas inventadas para a obra.", en: "Satirical-fiction notice on the select screen and in the game panel, with lines invented for the work.", es: "Aviso de ficción satírica en la pantalla de elección y en el panel del juego, con diálogos inventados para la obra." },
+        },
+      ],
+      gallery: [
+        { src: "/shots/panico-de-estado/selecao.webp", alt: { pt: "Tela de escolha: Lula ou Flávio Bolsonaro como caricaturas fictícias, com o aviso de sátira", en: "Character select: Lula or Flávio Bolsonaro as fictional caricatures, with the satire notice", es: "Pantalla de elección: Lula o Flávio Bolsonaro como caricaturas ficticias, con el aviso de sátira" } },
+      ],
+    },
+  },
+  {
+    slug: "atlas-politico",
+    category: "sistema-saas",
+    title: "Atlas Político",
+    tagline: { pt: "Atlas das trajetórias públicas de Lula e Flávio Bolsonaro · linha do tempo, mapa, fontes e jogo", en: "Atlas of Lula's and Flávio Bolsonaro's public careers · timeline, map, sources and a game", es: "Atlas de las trayectorias públicas de Lula y Flávio Bolsonaro · línea de tiempo, mapa, fuentes y juego" },
+    problem: { pt: "Acompanhar a trajetória de um político exige garimpar datas, lugares e documentos em dezenas de fontes, e quase nunca os dois lados aparecem com o mesmo tratamento.", en: "Following a politician's career means digging through dates, places and documents across dozens of sources, and the two sides almost never get the same treatment.", es: "Seguir la trayectoria de un político exige rastrear fechas, lugares y documentos en decenas de fuentes, y casi nunca los dos lados reciben el mismo tratamiento." },
+    result: { pt: "Atlas editorial com linha do tempo, mapa sincronizado, comparação em três partes (carreira, decisões e propostas) e uma investigação jogável, a Praça do Mural, em que cada resposta é um documento publicado com a fonte ao lado. Sem nota, sem ranking e sem recomendação de voto.", en: "An editorial atlas with a timeline, a synchronized map, a three-part comparison (career, decisions and proposals) and a playable investigation, the Praça do Mural, where every answer is a published document with its source beside it. No score, no ranking and no voting recommendation.", es: "Atlas editorial con línea de tiempo, mapa sincronizado, comparación en tres partes (carrera, decisiones y propuestas) y una investigación jugable, la Praça do Mural, donde cada respuesta es un documento publicado con la fuente al lado. Sin nota, sin ranking y sin recomendación de voto." },
+    stack: ["Next.js 16", "React 19", "TypeScript", "Three.js", "MapLibre GL", "Tailwind CSS", "Vitest", "Playwright"],
+    metric: { pt: "39 acontecimentos · 152 documentos · corte em 8/10/2026", en: "39 events · 152 documents · cut-off Oct 8, 2026", es: "39 acontecimientos · 152 documentos · corte el 8/10/2026" },
+    status: { pt: "Projeto autoral · em desenvolvimento, revisão humana pendente", en: "Personal project · in development, human review pending", es: "Proyecto propio · en desarrollo, revisión humana pendiente" },
+    note: {
+      pt: "Não é site oficial de nenhuma pessoa retratada, de partido ou de órgão público. O conteúdo foi conferido com assistência de IA e a revisão humana do conjunto está pendente: não use como fonte. O endereço é provisório e as páginas têm noindex.",
+      en: "Not an official site of anyone portrayed, of any party or of any public body. The content was checked with AI assistance and human review of the whole set is pending: do not use it as a source. The address is provisional and pages carry noindex.",
+      es: "No es un sitio oficial de ninguna persona retratada, de partido ni de organismo público. El contenido fue verificado con asistencia de IA y la revisión humana del conjunto está pendiente: no lo uses como fuente. La dirección es provisoria y las páginas tienen noindex.",
+    },
+    live: "https://atlas-politico.vercel.app",
+    repos: [{ label: "Código", url: `${GH}/atlas-politico` }],
+    featured: false,
+    image: "/shots/atlas-politico.webp",
+    imageStatic: true,
+    caseStudy: {
+      narrative: [
+        {
+          pt: "O conteúdo não é digitado nas páginas. Um pipeline local valida cada registro, seleciona só o que já foi revisado e gera os dados, os índices e o GeoJSON que as páginas leem. O site sai em exportação estática (Next.js 16), sem servidor nem banco, e cada acontecimento lista os documentos que o sustentam. O recorte tem data de corte: 8 de outubro de 2026.",
+          en: "The content isn't typed into the pages. A local pipeline validates every record, selects only what has been reviewed and generates the data, indexes and GeoJSON the pages read. The site ships as a static export (Next.js 16), with no server or database, and every event lists the documents that support it. The editorial cut-off is October 8, 2026.",
+          es: "El contenido no se escribe en las páginas. Un pipeline local valida cada registro, selecciona solo lo ya revisado y genera los datos, los índices y el GeoJSON que leen las páginas. El sitio sale como exportación estática (Next.js 16), sin servidor ni base de datos, y cada acontecimiento lista los documentos que lo sustentan. El recorte tiene fecha de corte: 8 de octubre de 2026.",
+        },
+        {
+          pt: "O jogo é uma investigação numa praça brasileira em 3D (Three.js): moradores pregam perguntas no mural e o jogador, o novo repórter da rádio comunitária, procura no arquivo o registro que responde a cada uma. Tem tutorial, tarefas de ordenação, passo atual, descobertas e selos. Os moradores são fictícios, e o texto da praça avisa isso.",
+          en: "The game is an investigation in a 3D Brazilian town square (Three.js): residents pin questions on a board and the player, the community radio's new reporter, finds in the archive the record that answers each one. It has a tutorial, ordering tasks, a current step, discoveries and seals. The residents are fictional, and the square's own text says so.",
+          es: "El juego es una investigación en una plaza brasileña en 3D (Three.js): los vecinos pegan preguntas en el mural y el jugador, el nuevo reportero de la radio comunitaria, busca en el archivo el registro que responde a cada una. Tiene tutorial, tareas de ordenamiento, paso actual, descubrimientos y sellos. Los vecinos son ficticios, y el propio texto de la plaza lo avisa.",
+        },
+        {
+          pt: "A decisão editorial mais dura foi o tratamento igual: os dois perfis usam o mesmo cartão, na mesma ordem alfabética, e nenhuma cor pertence a uma pessoa. O site também se declara em desenvolvimento: carrega noindex, avisa que a revisão humana está pendente e diz que, na dúvida, vale o documento citado.",
+          en: "The hardest editorial decision was equal treatment: both profiles use the same card, in the same alphabetical order, and no color belongs to a person. The site also declares itself in development: it carries noindex, warns that human review is pending and says that, when in doubt, the cited document prevails.",
+          es: "La decisión editorial más dura fue el trato igual: los dos perfiles usan la misma tarjeta, en el mismo orden alfabético, y ningún color pertenece a una persona. El sitio también se declara en desarrollo: lleva noindex, avisa que la revisión humana está pendiente y dice que, ante la duda, vale el documento citado.",
+        },
+      ],
+      highlights: [
+        {
+          label: { pt: "Fonte ao lado de cada registro", en: "A source beside every record", es: "Fuente al lado de cada registro" },
+          detail: { pt: "39 acontecimentos amparados por 152 documentos; na investigação, cada resposta é um documento publicado.", en: "39 events backed by 152 documents; in the investigation, every answer is a published document.", es: "39 acontecimientos respaldados por 152 documentos; en la investigación, cada respuesta es un documento publicado." },
+        },
+        {
+          label: { pt: "Pipeline de conteúdo", en: "Content pipeline", es: "Pipeline de contenido" },
+          detail: { pt: "Valida, seleciona o que foi revisado e gera dados, índices e GeoJSON para um site 100% estático.", en: "Validates, selects what has been reviewed and generates data, indexes and GeoJSON for a fully static site.", es: "Valida, selecciona lo revisado y genera datos, índices y GeoJSON para un sitio 100% estático." },
+        },
+        {
+          label: { pt: "Tratamento igual", en: "Equal treatment", es: "Trato igual" },
+          detail: { pt: "Mesmo cartão e mesma ordem alfabética para os dois perfis; nenhuma cor pertence a uma pessoa.", en: "Same card and same alphabetical order for both profiles; no color belongs to a person.", es: "Misma tarjeta y mismo orden alfabético para los dos perfiles; ningún color pertenece a una persona." },
+        },
+        {
+          label: { pt: "Honesto sobre o estado", en: "Honest about its state", es: "Honesto sobre su estado" },
+          detail: { pt: "noindex, aviso de revisão humana pendente e orientação de não usar como fonte.", en: "noindex, a pending-human-review notice and guidance not to use it as a source.", es: "noindex, aviso de revisión humana pendiente y orientación de no usarlo como fuente." },
+        },
+      ],
+      gallery: [
+        { src: "/shots/atlas-politico/home.webp", alt: { pt: "Página inicial do Atlas Político, com a chamada para começar a investigação e a Praça do Mural ao anoitecer", en: "Atlas Político home page, with the call to start the investigation and the Praça do Mural at dusk", es: "Página de inicio del Atlas Político, con la invitación a comenzar la investigación y la Praça do Mural al anochecer" } },
+      ],
+    },
+  },
 ];

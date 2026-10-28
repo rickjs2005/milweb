@@ -5,6 +5,8 @@ import { useState } from "react";
 import { ExperimentStage } from "@/features/lab/experiment-stage";
 import { LabPlayer } from "@/components/lab-player";
 import { useOs } from "../os-shell";
+import { useLaunch } from "../launch";
+import { ProjectTile } from "../icons";
 
 /**
  * Lab — os experimentos ao vivo (carregados só quando pedidos) e os filmes
@@ -17,6 +19,7 @@ export function LabApp({ active }: { active: boolean }) {
   const lab = payload.lab;
   const ex = lab.experiments;
   const [playing, setPlaying] = useState<Record<string, boolean>>({});
+  const launch = useLaunch();
 
   return (
     <div className="os-lab">
@@ -62,6 +65,27 @@ export function LabApp({ active }: { active: boolean }) {
             );
           })}
         </ol>
+      </section>
+
+      <section className="os-app__section" aria-labelledby="os-lab-authorial">
+        <h3 id="os-lab-authorial" className="t-mono os-app__label">
+          {s.lab.authorial.toUpperCase()}
+        </h3>
+        <p className="os-lab__authorial-lead">{s.lab.authorialLead}</p>
+        <ul className="os-lab__authorial">
+          {payload.authorial.map((p) => (
+            <li key={p.slug}>
+              <a href={p.href} className="os-lab__work" onClick={(e) => launch(e, "projects", `/work/${p.slug}`)} aria-label={`${s.lab.open} — ${p.title}`}>
+                <ProjectTile src={p.image} alt="" size={56} />
+                <span className="os-lab__work-text">
+                  <span className="os-lab__work-title">{p.title}</span>
+                  <span className="os-lab__work-sub">{p.tagline}</span>
+                  <span className="t-mono os-lab__work-type">{p.type}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <footer className="os-app__footer t-mono">

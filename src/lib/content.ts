@@ -191,8 +191,8 @@ export type Project = {
   demo?: boolean;
   /**
    * true = sem card nas listagens (home e /projetos), mas a página de case
-   * continua no ar. Uso: MilLead, que já se apresenta na seção de
-   * diagnóstico/preço justo e é ferramenta interna — card duplicado só diluía.
+   * continua no ar. Hoje nenhum projeto usa; o MilLead saiu daqui em 28/10/2026
+   * para provar que a MilWeb entrega CRM (pedido do Rick).
    */
   hideFromLists?: boolean;
   /**

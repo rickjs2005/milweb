@@ -38,6 +38,8 @@ export const PROJECT_SLUGS = [
   "said-zanzibar",
   "mabrouk-zanzibar",
   "serengeti-wildlife-safaris",
+  "panico-de-estado",
+  "atlas-politico",
 ] as const;
 
 export function isProjectSlug(s: string): boolean {

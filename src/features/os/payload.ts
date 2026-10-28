@@ -4,7 +4,7 @@
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { BRAND } from "@/data/brand";
-import { MOOD, NO_EXTERNAL, PROJECT_INDEX } from "@/data/projects";
+import { AUTORAL_INDEX, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
 import { PROFILE_DATA } from "@/data/profile";
@@ -35,7 +35,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
       )[c] ?? UI.sections.projectsFilterAll,
     );
 
-  const projects: OsProject[] = PROJECT_INDEX.map((p) => {
+  const toOs = (p: ProjectEntry): OsProject => {
     const w = SELECTED_WORK.find((x) => x.slug === p.slug);
     return {
       slug: p.slug,
@@ -64,7 +64,10 @@ export function buildOsPayload(locale: Locale): OsPayload {
       status: p.status ? t(p.status) : null,
       metric: p.metric ? t(p.metric) : null,
     };
-  });
+  };
+  const projects = PROJECT_INDEX.map(toOs);
+  // Fora do mural (sem número), mas com case aberto: o dossiê, a janela e a busca os encontram aqui.
+  const authorial = AUTORAL_INDEX.map(toOs);
 
   const opt = (o: { key: string; label: Localized; phrase: Localized }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
   const wa = (text: string) => `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
@@ -107,6 +110,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
       contact: withLocale(locale, "/contact"),
     },
     projects,
+    authorial,
     social: { linkedin: SOCIAL.linkedin, github: SOCIAL.github, instagram: SOCIAL.instagram },
     filters: d.archive.filters,
     displayType: d.displayType,

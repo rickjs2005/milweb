@@ -40,11 +40,11 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
   const hits = useMemo<Hit[]>(() => {
     const n = norm(q.trim());
     const apps: Hit[] = DOCK_ORDER.filter((id) => APPS[id].route).map((id) => ({ kind: "app", id, label: payload.s.apps[id], href: payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" }));
-    const projects: Hit[] = payload.projects.map((p) => ({ kind: "project", slug: p.slug, label: p.name === p.title ? p.title : `${p.name} — ${p.title}`, sub: [p.type, p.client, p.tagline].filter(Boolean).join(" · "), href: p.href, image: p.image }));
+    const projects: Hit[] = [...payload.projects, ...payload.authorial].map((p) => ({ kind: "project", slug: p.slug, label: p.name === p.title ? p.title : `${p.name} — ${p.title}`, sub: [p.type, p.client, p.tagline].filter(Boolean).join(" · "), href: p.href, image: p.image }));
     const services: Hit[] = payload.services.items.map((x) => ({ kind: "service", slug: x.slug, label: x.label, sub: x.sub, href: x.href }));
     if (!n) return [...apps, ...projects.slice(0, 6)];
     const match = (h: Hit) => {
-      const hay = h.kind === "project" ? [h.label, h.sub, payload.projects.find((p) => p.slug === h.slug)?.stack.join(" ") ?? ""].join(" ") : h.kind === "service" ? `${h.label} ${h.sub}` : h.label;
+      const hay = h.kind === "project" ? [h.label, h.sub, [...payload.projects, ...payload.authorial].find((p) => p.slug === h.slug)?.stack.join(" ") ?? ""].join(" ") : h.kind === "service" ? `${h.label} ${h.sub}` : h.label;
       return norm(hay).includes(n);
     };
     return [...projects.filter(match), ...services.filter(match), ...apps.filter(match)];

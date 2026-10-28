@@ -96,6 +96,8 @@ export type OsPayload = {
   /** Perfil profissional (app Perfil / rota /profile). */
   profile: OsProfile;
   projects: OsProject[];
+  /** Autorais: fora da lista e do mural (n = "—"), mas com case aberto — Lab, dossiê, janela e busca. */
+  authorial: OsProject[];
   /** Redes do estúdio (data/social.ts). null = sem URL confirmada: o painel não aparece. */
   social: { linkedin: string | null; github: string | null; instagram: string | null };
   filters: Dictionary["archive"]["filters"];

@@ -79,7 +79,6 @@ export const PROJECTS_1: Project[] = [
     metric: { pt: "Auditoria de sites · IA · landing pages", en: "Website audits · AI · landing pages", es: "Auditoría de sitios · IA · landing pages" },
     repos: [{ label: "Código", url: `${GH}/millead` }],
     status: { pt: "Ferramenta interna da MilWeb", en: "MilWeb internal tool", es: "Herramienta interna de MilWeb" },
-    hideFromLists: true,
     image: "/shots/millead.webp",
     note: {
       pt: "CRM interno usado na prospecção da própria MilWeb.",

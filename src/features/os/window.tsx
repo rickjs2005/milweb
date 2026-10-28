@@ -110,9 +110,10 @@ function Window({ id, z, routeContent }: { id: AppId; z: number; routeContent: R
   const active = mobile ? focused : win.open && !win.min;
   // O que a janela mostra: a rota atual (conteúdo do servidor) quando ela é a dona;
   // o case pelo JSON quando guarda um case mas outra janela tem o foco; senão a raiz do app.
-  const remoteProject = !isRouteApp && !mobile && info?.kind === "project" ? payload.projects.find((p) => p.slug === info.detail) : undefined;
+  const projectOf = (slug: string) => payload.projects.find((p) => p.slug === slug) ?? payload.authorial.find((p) => p.slug === slug);
+  const remoteProject = !isRouteApp && !mobile && info?.kind === "project" && info.detail ? projectOf(info.detail) : undefined;
   const showsDetail = (isRouteApp && !!routeContent && info?.kind !== "root") || !!remoteProject;
-  const detailTitle = showsDetail && info?.detail ? (info.kind === "project" ? payload.projects.find((p) => p.slug === info.detail)?.name : payload.services.items.find((x) => x.slug === info.detail)?.label) : null;
+  const detailTitle = showsDetail && info?.detail ? (info.kind === "project" ? projectOf(info.detail)?.name : payload.services.items.find((x) => x.slug === info.detail)?.label) : null;
   // Telefone: o Voltar diz para onde vai — a tela inicial na raiz do app, o próprio app dentro de um case/página.
   const backLabel = !info || info.kind === "root" ? s.mobile.home : title;
 

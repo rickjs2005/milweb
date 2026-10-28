@@ -107,7 +107,7 @@ export const en: Dictionary = {
     boot: { preparing: "Preparing your environment", studio: "Development studio" },
     contact: { channels: "Channels", lead: "Got something worth building? Tell me in a message.", whatsapp: "WhatsApp", email: "Email", linkedin: "LinkedIn", github: "GitHub" },
     social: { label: "Studio networks", linkedin: "CONNECTIONS AND OPPORTUNITIES", github: "CODE AND EXPERIMENTS", instagram: "BEHIND THE SCENES AND CREATIVE PROCESS", external: "opens in a new tab" },
-    lab: { films: "Films", experiments: "Experiments", watch: "Watch" },
+    lab: { films: "Films", experiments: "Experiments", watch: "Watch", authorial: "Own projects", authorialLead: "Self-initiated projects, built for the love of it and with no client. Same code as the paid work.", open: "Open case" },
     services: { all: "See all services", talk: "Request a quote", audit: "Free audit", deliverables: "Deliverables" },
     studio: { principles: "Principles", process: "Process", founder: "Founder" },
     time: "Local time",

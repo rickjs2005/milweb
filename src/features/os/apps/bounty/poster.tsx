@@ -83,7 +83,7 @@ export function Poster({ p, index, total, s, withImage = true, eager = false }: 
         </span>
         <span className="bounty__name">{p.name}</span>
         <span className="t-mono bounty__id">
-          MW/OS · {s.rank} {p.n} / {String(total).padStart(2, "0")}
+          {p.n === "—" ? "MW/OS" : `MW/OS · ${s.rank} ${p.n} / ${String(total).padStart(2, "0")}`}
         </span>
         <span className="bounty__line">{p.tagline}</span>
       </span>

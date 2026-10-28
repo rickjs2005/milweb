@@ -59,6 +59,7 @@ const ORDER = [
   "inkvision",
   "logistics-demo",
   "milsaca",
+  "millead",
   "ecoa",
   "loja-iphone",
   "loja-de-iphone",
@@ -70,6 +71,13 @@ const ORDER = [
   "rjs-laticinios",
   "imperio-cafe",
 ];
+
+/**
+ * Projetos autorais (fã-arte, jogo, estudo visual): saem do arquivo /projetos e do mural,
+ * mas a página do case continua aberta e eles aparecem no app Lab (pedido do Rick, 28/10/2026).
+ */
+export const AUTORAIS = ["panico-de-estado", "atlas-politico", "akatsuki", "one-piece", "rockverse", "age-of-dragons", "as-copas", "imperio-cafe", "nexus-geek"];
+const AUTORAL = new Set(AUTORAIS);
 
 /** Os seis da Home, na ordem da galeria — também a ordem dos nós MW/002–007 (data/milweb-system.ts). */
 export const FEATURED = ["kavita-drones", "terral", "atelier-vertex", "aurex-timepieces", "inkvision", "logistics-demo"];
@@ -167,7 +175,8 @@ function inferDisplay(p: Project): DisplayType {
 }
 
 const bySlug = new Map(PROJECTS.map((p) => [p.slug, p]));
-const listed = [...ORDER.filter((s) => bySlug.has(s) && !bySlug.get(s)!.hideFromLists), ...PROJECTS.filter((p) => !ORDER.includes(p.slug) && !p.hideFromLists).map((p) => p.slug)];
+const isListed = (p: Project) => !p.hideFromLists && !AUTORAL.has(p.slug);
+const listed = [...ORDER.filter((s) => bySlug.has(s) && isListed(bySlug.get(s)!)), ...PROJECTS.filter((p) => !ORDER.includes(p.slug) && isListed(p)).map((p) => p.slug)];
 
 /** Todos os projetos listados, na ordem do arquivo. TOTAL = length. */
 export const PROJECT_INDEX: ProjectEntry[] = listed.map((slug, i) => {
@@ -199,6 +208,9 @@ export function getProject(slug: string): ProjectEntry | undefined {
   if (!p) return undefined;
   return { ...p, order: 0, n: "—", displayType: inferDisplay(p), tourism: TOURISM.has(slug), prevSlug: listed[listed.length - 1], nextSlug: listed[0] };
 }
+
+/** Os autorais do Lab, na ordem de AUTORAIS (sem número: n = "—"). */
+export const AUTORAL_INDEX: ProjectEntry[] = AUTORAIS.map((s) => getProject(s)).filter((p): p is ProjectEntry => !!p);
 
 /** Todos os slugs com página (listados + ocultos) — para generateStaticParams. */
 export const ALL_SLUGS = PROJECTS.map((p) => p.slug);

@@ -90,7 +90,8 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const lastRef = useRef<string | null>(slug);
   if (slug ?? pending) lastRef.current = slug ?? pending;
   const dossierSlug = slug ?? pending ?? (phase === "closing" ? lastRef.current : null);
-  const dossierProject = dossierSlug ? all.find((p) => p.slug === dossierSlug) : undefined;
+  // O dossiê abre qualquer case com página, inclusive os autorais, que não têm cartaz no mural.
+  const dossierProject = dossierSlug ? (all.find((p) => p.slug === dossierSlug) ?? payload.authorial.find((p) => p.slug === dossierSlug)) : undefined;
 
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -166,12 +167,16 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
     prevSlug.current = slug;
     if (slug) {
       setPending(null);
-      if (!all.some((p) => p.slug === slug)) return;
-      if (!list.some((p) => p.slug === slug)) setFilter("all");
-      setActiveSlug(slug);
+      const inMural = all.some((p) => p.slug === slug);
+      if (!inMural && !payload.authorial.some((p) => p.slug === slug)) return;
+      if (inMural) {
+        if (!list.some((p) => p.slug === slug)) setFilter("all");
+        setActiveSlug(slug);
+      }
       if (phase === "closed" || phase === "closing") setPhase(noMotion() || !originRef.current ? "open" : "opening");
     } else if (was && (phase === "open" || phase === "opening")) {
-      setPhase(noMotion() ? "closed" : "closing");
+      // Sem cartaz no mural (autoral) não há para onde voar de volta: fecha direto.
+      setPhase(noMotion() || !all.some((p) => p.slug === was) ? "closed" : "closing");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reage só à rota
   }, [slug]);

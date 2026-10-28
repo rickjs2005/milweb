@@ -99,7 +99,7 @@ export type Dictionary = {
     contact: { channels: string; lead: string; whatsapp: string; email: string; linkedin: string; github: string };
     /** Painéis das redes na área de trabalho: rótulo do grupo, microtexto por rede e a nota de nova aba. */
     social: { label: string; linkedin: string; github: string; instagram: string; external: string };
-    lab: { films: string; experiments: string; watch: string };
+    lab: { films: string; experiments: string; watch: string; authorial: string; authorialLead: string; open: string };
     services: { all: string; talk: string; audit: string; deliverables: string };
     studio: { principles: string; process: string; founder: string };
     time: string;
