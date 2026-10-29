@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { alternatesOf } from "@/i18n/routing";
 import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DESKTOP_GRID, DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
@@ -10,8 +11,13 @@ import { SocialHud, SocialLinks } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
 import { ThemeToggle } from "./theme-toggle";
 import { useClock, useDesktopWide, useLaunch } from "./launch";
+import { useHalloweenActive } from "./halloween/clock";
+import { HalloweenAudioHost, HalloweenSoundControl } from "./halloween/sound-control";
 
 export { useClock, useLaunch } from "./launch";
+
+/** A cena do Halloween: um pedaço à parte, baixado só durante o evento (nunca junto da cena normal). */
+const HalloweenScene = dynamic(() => import("./halloween/scene").then((m) => m.HalloweenScene), { ssr: false });
 
 /**
  * Área de trabalho e tela inicial.
@@ -76,10 +82,20 @@ export function Desktop() {
   // O ponto final ganha a cor de destaque do tema no desktop largo; no tablet o span só herda a cor.
   const motto = s.sign.motto;
   const dot = motto.endsWith(".");
+  // Edição de Halloween (halloween/): cenário e frase próprios enquanto durar; as duas cenas pesadas nunca coexistem.
+  const halloween = useHalloweenActive();
+  const eventLines = s.halloween.motto;
 
   return (
     <div className="os-desktop" aria-label={s.regions.desktop}>
-      <OsScene />
+      {halloween ? (
+        <>
+          <HalloweenScene />
+          <HalloweenAudioHost />
+        </>
+      ) : (
+        <OsScene />
+      )}
 
       {/* Palco: caixa vazia e sem ponteiro no centro — a composição do fundo e o HUD medem por ela. */}
       <div className="os-stage" aria-hidden="true" data-no-inspect />
@@ -91,8 +107,19 @@ export function Desktop() {
           Desktop largo: o lema sobe para o alto à esquerda e a linha fica sozinha no canto, como rodapé. */}
       <div className="os-sign">
         <Motto className="os-sign__motto">
-          {dot ? motto.slice(0, -1) : motto}
-          {dot && <span className="os-sign__dot">.</span>}
+          <span className="os-sign__normal">
+            {dot ? motto.slice(0, -1) : motto}
+            {dot && <span className="os-sign__dot">.</span>}
+          </span>
+          {/* Frase do Halloween: sempre no DOM, escondida por CSS fora do evento (`html[data-os-event]` a mostra) — sem troca de árvore na hidratação. */}
+          <span className="os-sign__event">
+            {eventLines.map((line, i) => (
+              <span key={line} className="os-sign__eline">
+                {line}
+                {i === eventLines.length - 1 && <span className="os-sign__dot">.</span>}
+              </span>
+            ))}
+          </span>
         </Motto>
         <p className="os-sign__line t-mono">
           <span className="os-sign__mark">{payload.brand.mark} · </span>
@@ -161,6 +188,7 @@ function DesktopApps() {
 export function Dock() {
   const { payload, openSearch } = useOs();
   const s = payload.s;
+  const halloween = useHalloweenActive();
   const wins = useOsStore((st) => st.wins);
   const focused = useOsStore((st) => st.focused);
   const launch = useLaunch();
@@ -201,12 +229,18 @@ export function Dock() {
       <ThemeToggle variant="dock" />
     </li>
   );
+  // Halloween: botão de som + volume ao lado dos demais controles, só durante o evento.
+  const sound = halloween ? (
+    <li key="hw-sound" data-dock-sys="hw-sound">
+      <HalloweenSoundControl variant="dock" />
+    </li>
+  ) : null;
   // Desktop largo: só os controles do sistema (Buscar, Ajustes, tema) — os apps estão na grade. Tablet: os
   // apps, o separador, Buscar e o tema. Antes da hidratação, o CSS já mostra o desktop largo assim.
   return (
     <nav className="os-dock" aria-label={s.regions.dock} data-no-inspect>
       <ul>
-        {wide ? [search, app("settings"), theme] : [...DOCK_ORDER.map(app), <li key="sep" className="os-dock__sep" aria-hidden="true" />, search, theme]}
+        {wide ? [search, app("settings"), theme, sound] : [...DOCK_ORDER.map(app), <li key="sep" className="os-dock__sep" aria-hidden="true" />, search, theme, sound]}
       </ul>
     </nav>
   );

@@ -560,3 +560,54 @@ Pedido do Rick (com um mockup de referência que não veio anexado; valeu a desc
 
 - De 1080 a ~1300 px, as janelas maiores (Projetos e Perfil) ainda abrem por cima de parte da segunda coluna da grade: a geometria padrão das janelas não mudou.
 - Em 768×1024 o cartão do LinkedIn do HUD encosta no rótulo de Serviços. Já era assim; o tablet ficou intacto de propósito.
+
+## Edição de Halloween 2026 (28/10 a 31/10/2026, horário de Brasília)
+
+Edição **temporária**: cenário, frase, aplicativos e som de Halloween por cima do MilWeb OS, que desliga sozinha e devolve tudo ao normal. Código em `src/features/os/halloween/`; estilos em `src/styles/halloween.css` (global, só casa com `html[data-os-event="halloween"]`) e `halloween/scene.css` (junto da cena).
+
+### Quando liga e desliga
+
+- Janela: início **inclusivo** `2026-10-28T00:00:00-03:00`, fim **exclusivo** `2026-11-01T00:00:00-03:00`. Fica em `halloween/config.ts` (`HALLOWEEN_START_ISO` / `HALLOWEEN_END_ISO`), comparando instantes absolutos — o fuso do visitante não conta. Não reativa em anos futuros.
+- A decisão **nunca congela no build**: o script inline do layout (`halloweenScript`) marca o `<html>` antes da pintura; o relógio do cliente (`clock.ts`) reavalia no instante exato da virada (timer até a próxima fronteira, teto de 30 s), ao voltar para a aba (`visibilitychange`, `focus`, `pageshow`) e mantém `data-os-event` no `<html>`. Com a página aberta na virada, tudo se desfaz sem recarregar: cena normal volta, tema e frase originais voltam, o som fecha.
+- O HTML pré-renderizado é sempre o normal (snapshot do servidor `false`); o evento entra na hidratação sem erro. Fora da janela nada de Halloween é baixado (a cena é um chunk à parte e as abóboras só são referenciadas pelo CSS do evento).
+- Durante o evento o `<html>` usa o conjunto de tokens escuro (Obito) **só no atributo** (`data-os-theme`); a preferência salva do visitante não é tocada e volta quando o evento acaba.
+
+### Pré-visualização e desativação emergencial (só o desenvolvedor)
+
+| Variável | Efeito |
+| --- | --- |
+| `NEXT_PUBLIC_HALLOWEEN=off` | desliga o evento em qualquer ambiente (inclusive produção); vence tudo |
+| `NEXT_PUBLIC_HALLOWEEN_PREVIEW=on` | força o evento ligado **só** em `next dev` ou em deploy de preview da Vercel (`NEXT_PUBLIC_VERCEL_ENV=preview`); em produção é ignorada |
+
+Não há parâmetro de URL público. Exemplo local: `NEXT_PUBLIC_HALLOWEEN_PREVIEW=on npx next dev`. As variáveis `NEXT_PUBLIC_*` entram no bundle no build: mudar exige novo build/deploy. (`NEXT_PUBLIC_VERCEL_ENV` só existe na Vercel com "Expose System Environment Variables" ligado.)
+
+### O que muda
+
+- **Frase**: "Sites de / outro mundo." (pt), "Otherworldly / websites." (en), "Sitios de / otro mundo." (es) — textos em `i18n/*.ts › os.halloween`. A frase normal e a do evento estão no DOM; o CSS mostra uma só (a outra é `display: none`).
+- **Aplicativos**: o mesmo `<a>` com o ícone original dentro de um medalhão escuro, sobre uma abóbora SVG (`public/halloween/pumpkin-{a,b,c}.svg`, gerada por `node scripts/halloween-assets.mjs`) no `::before`. Rótulo em HTML, flutuação de 4,6 a 6,8 s com fases diferentes, hover/foco sobe e brilha com um movimento curto, toque abre direto. Decoração sem ponteiro nem foco. Telefone: grade de 3 colunas.
+- **Cenário** (`halloween/scene.tsx`, `art/layers.tsx`, `art/trees.ts`): camadas independentes, todas SVG/CSS desenhadas em código — céu e estrelas, lua e halo, nuvens, bruxa (cruza a lua a cada ~54 s), castelo, cemitério com árvores secas procedurais, vampiro (capa e olhos animados), três fantasmas, zumbi (a mão sai primeiro; ciclo de 72 s), cinco morcegos em voos espaçados, névoa, velas e abóboras, teias e duas aranhas. Paralaxe do mouse só no desktop (GSAP `quickTo`, intensidade por profundidade). O texto, os apps e os controles ficam fora da cena.
+- **Movimento reduzido** (sistema ou Ajustes, inclusive mudando na sessão): composição estável sem animação nem paralaxe. **Aba oculta**: animações pausam (`html[data-os-hidden]`).
+
+### Som (`halloween/audio.ts`, `halloween/sound-control.tsx`)
+
+- **Onde ficam os controles**: desktop — dock, ao lado de Buscar/Ajustes/tema (botão "Ativar som / Desativar som" e, com o som ligado, um `<input type="range">` de volume); telefone — último item da dock de redes ("Som") e, ligado, uma barra de volume no espaço livre sob a frase.
+- Silencioso por padrão. O botão cria o `AudioContext` dentro do clique; o estado "ligado" só aparece com o contexto rodando. Nada toca sem gesto, nem com preferência salva; clique num aplicativo nunca dispara som (só hover/foco com intenção, no máximo 1 a cada 900 ms).
+- Síntese em tempo real (Web Audio, **sem arquivos e sem rede**): vento em três camadas e drone grave (sem emenda, sem loop audível) + eventos esparsos a cada 16–36 s (trovão, lamento fantasmagórico, morcegos, coruja, rangido, sino). Volume inicial 12 %, compressor de segurança. Preferência e volume em `localStorage` (`milweb-halloween:audio`), protegidos contra SSR e armazenamento indisponível.
+- Aba oculta suspende o contexto e os eventos; ao voltar retoma se o navegador deixar, senão o botão volta a "Ativar som". Desativar corta tudo em 20 ms e fecha o contexto; sair da área temática (fim do evento, rota fora do OS, modo simples) faz o mesmo.
+- Fora de produção, `window.__hwAudio` expõe estado e nível do sinal (RMS) para testes; em produção não existe.
+
+### Créditos e licenças
+
+Todo o material é original desta edição: SVGs e CSS desenhados em código, áudio sintetizado por código. **Nenhum asset de terceiros, nenhum áudio externo, nenhuma música comercial.** Não há arquivo de créditos de terceiros porque não há o que creditar.
+
+### Verificação
+
+- `node --test scripts/halloween-check.mjs`: 6 testes (janela inclusiva/exclusiva, instantes absolutos com offsets diferentes, anos futuros, política de ambiente, script inline).
+- Navegador (build de produção; scripts em `.audit/halloween/`, pasta ignorada): virada de início e de fim com a página aberta (relógio falso do Playwright), 1440×900, 1280×720, 1920×1080, 900×1000, 390×844 e 360×640 (sem sobreposição, corte, rolagem horizontal nem erro de console), pt/en/es, movimento reduzido, teclado (Tab, Enter, setas, Home), toque, 1 único `AudioContext`, sem rede de Halloween fora do evento.
+
+### Limitações
+
+- Sem imagem de referência (não chegou anexada) e sem geração de imagem por IA (o plano gratuito do Higgsfield recusou as gerações): os personagens são ilustrações vetoriais próprias, não pintura.
+- Não há risada de bruxa: só se anuncia o que existe como som. A síntese cobre vento, drone, trovão, lamento, morcegos, coruja, rangido e sino.
+- O HTML estático contém as duas frases (a normal e a do evento); fora do evento a do evento fica `display: none`.
+- Preview na Vercel depende de `NEXT_PUBLIC_VERCEL_ENV`.

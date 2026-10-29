@@ -68,6 +68,8 @@ export type Dictionary = {
     about: { base: string; focus: string };
     /** Assinatura do wallpaper: "MILWEB® · craft · origin" e o lema (h1 da raiz). */
     sign: { craft: string; origin: string; motto: string };
+    /** Edição de Halloween (features/os/halloween): frase em linhas, controle de som e rótulo da cena. */
+    halloween: { motto: string[]; soundOn: string; soundOff: string; soundShort: string; volume: string };
     projects: {
       back: string; open: string; visit: string; code: string; stack: string; context: string; done: string; solutions: string; gallery: string; result: string;
       similar: string; next: string; prev: string; client: string; demo: string; study: string; live: string; detail: string; idea: string; experience: string;

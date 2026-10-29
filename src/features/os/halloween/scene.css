@@ -1,0 +1,204 @@
+/* =========================================================================
+   Cena de Halloween (halloween/scene.tsx). Carregada junto do pedaço da cena — nunca fora do evento.
+   Camadas absolutas; tudo anima com transform/opacity; nada captura o ponteiro.
+   Posição por variáveis: --mx/--my = centro da lua (desktop; no telefone sobe para o palco).
+   ===================================================================== */
+.hw-scene {
+  --mx: 66%; --my: 44%; --moon: min(78vh, 50vw);
+  position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; user-select: none;
+  background: #05030a; contain: layout paint;
+}
+.hw-l { position: absolute; inset: -2.5% -3%; will-change: transform; }
+
+/* ---- céu, estrelas, lua, nuvens ------------------------------------------------------------------- */
+.hw-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 72% at var(--mx) 56%, rgb(130 44 20 / .5) 0, rgb(70 22 52 / .26) 40%, transparent 72%),
+    linear-gradient(180deg, #04020a 0%, #0c0620 38%, #1c0e30 70%, #2c1238 88%, #0a0510 100%);
+}
+.hw-stars { position: absolute; left: 0; top: 0; width: 100%; height: 62%; }
+.hw-twinkle { animation: hw-twinkle 4.8s ease-in-out infinite; }
+@keyframes hw-twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+.hw-moon-halo {
+  position: absolute; width: calc(var(--moon) * 2); aspect-ratio: 1; left: calc(var(--mx) - var(--moon)); top: calc(var(--my) - var(--moon));
+  background: radial-gradient(circle, rgb(255 150 50 / .4) 0, rgb(255 120 30 / .16) 30%, transparent 62%);
+  animation: hw-halo 9s ease-in-out infinite;
+}
+@keyframes hw-halo { 0%, 100% { opacity: .85; scale: 1; } 50% { opacity: 1; scale: 1.04; } }
+.hw-moon {
+  position: absolute; width: var(--moon); aspect-ratio: 1; left: calc(var(--mx) - var(--moon) / 2); top: calc(var(--my) - var(--moon) / 2); border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 26%, rgb(255 244 210 / .6) 0, transparent 32%),
+    radial-gradient(circle at 63% 36%, rgb(140 60 10 / .32) 0, transparent 13%),
+    radial-gradient(circle at 36% 63%, rgb(150 70 12 / .3) 0, transparent 11%),
+    radial-gradient(circle at 70% 72%, rgb(120 50 8 / .32) 0, transparent 17%),
+    radial-gradient(circle at 24% 45%, rgb(130 56 10 / .24) 0, transparent 9%),
+    radial-gradient(circle at 52% 18%, rgb(130 56 10 / .2) 0, transparent 8%),
+    radial-gradient(circle at 50% 50%, #ffc872 0, #ffa040 40%, #ea761e 70%, #b8480e 92%, #983808 100%);
+  box-shadow: 0 0 0 1px rgb(255 190 110 / .35), 0 0 60px 6px rgb(255 140 50 / .35);
+}
+.hw-cloud { position: absolute; width: 62%; height: 17%; opacity: .92; will-change: transform; }
+.hw-cloud svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-cloud--1 { top: 22%; animation: hw-drift 130s linear infinite; animation-delay: -30s; }
+.hw-cloud--2 { top: 40%; height: 14%; opacity: .8; animation: hw-drift 170s linear infinite; animation-delay: -110s; }
+.hw-cloud--3 { top: 10%; height: 12%; opacity: .7; animation: hw-drift 210s linear infinite; animation-delay: -60s; }
+@keyframes hw-drift { from { transform: translateX(-70%); } to { transform: translateX(170%); } }
+
+/* ---- bruxa: cruza a lua a cada ~54 s; fora disso fica oculta ------------------------------------------ */
+.hw-witch {
+  position: absolute; left: 0; top: calc(var(--my) - 20vh); width: min(26vh, 22vw); aspect-ratio: 250 / 140; opacity: 0;
+  animation: hw-witch 54s linear infinite; animation-delay: -46s; will-change: transform;
+}
+.hw-witch svg { display: block; width: 100%; height: 100%; }
+@keyframes hw-witch {
+  0% { opacity: 0; transform: translate3d(-28vw, 7vh, 0) rotate(-6deg); }
+  1.5% { opacity: 1; }
+  13% { transform: translate3d(48vw, -6vh, 0) rotate(-2deg); }
+  24% { opacity: 1; transform: translate3d(112vw, 2vh, 0) rotate(-5deg); }
+  24.6%, 100% { opacity: 0; transform: translate3d(112vw, 2vh, 0) rotate(-5deg); }
+}
+
+/* ---- castelo e cemitério ---------------------------------------------------------------------------- */
+.hw-castle { --cw: min(60vh, 48vw); position: absolute; width: var(--cw); left: calc(var(--mx) - var(--cw) / 2); bottom: 5%; aspect-ratio: 520 / 420; }
+.hw-castle svg, .hw-grave svg { display: block; width: 100%; height: 100%; }
+.hw-win { animation: hw-win 4.2s ease-in-out infinite; transform-box: fill-box; }
+@keyframes hw-win { 0%, 100% { opacity: 1; } 22% { opacity: .55; } 47% { opacity: .95; } 70% { opacity: .62; } }
+.hw-grave { position: absolute; left: 0; right: 0; bottom: 0; height: min(46vh, 40vw); }
+
+/* ---- personagens ---------------------------------------------------------------------------------------- */
+.hw-vampire { position: absolute; right: 1%; bottom: 4%; height: min(54vh, 48vw); aspect-ratio: 260 / 470; transform-origin: 50% 100%; animation: hw-vamp 8s ease-in-out infinite; }
+.hw-vampire svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes hw-vamp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.hw-cape { transform-box: fill-box; transform-origin: 50% 0; animation: hw-cape 6.5s ease-in-out infinite; }
+@keyframes hw-cape { 0%, 100% { transform: skewX(0deg) scaleX(1); } 50% { transform: skewX(-2.4deg) scaleX(1.015); } }
+.hw-eyes { transform-box: fill-box; transform-origin: 50% 50%; animation: hw-eyes 7.4s ease-in-out infinite; }
+@keyframes hw-eyes { 0%, 86%, 100% { transform: scaleY(1); opacity: .88; } 45% { opacity: 1; } 90% { transform: scaleY(.1); } 94% { transform: scaleY(1); } }
+
+.hw-ghost { position: absolute; opacity: .72; will-change: transform, opacity; }
+.hw-ghost svg { display: block; width: 100%; height: 100%; }
+.hw-ghost--a { left: 27%; top: 22%; height: min(17vh, 15vw); aspect-ratio: 120 / 170; animation: hw-ghost-a 15s ease-in-out infinite; }
+.hw-ghost--b { left: 51%; top: 12%; height: min(11vh, 10vw); aspect-ratio: 120 / 170; animation: hw-ghost-b 12s ease-in-out infinite; animation-delay: -4s; }
+.hw-ghost--c { left: 74%; top: 56%; height: min(14vh, 12vw); aspect-ratio: 120 / 170; animation: hw-ghost-c 18s ease-in-out infinite; animation-delay: -9s; }
+@keyframes hw-ghost-a { 0%, 100% { transform: translate(0, 0) rotate(-3deg); opacity: .55; } 25% { transform: translate(34px, -22px) rotate(2deg); opacity: .8; } 50% { transform: translate(10px, -42px) rotate(-2deg); opacity: .6; } 75% { transform: translate(-26px, -16px) rotate(3deg); opacity: .82; } }
+@keyframes hw-ghost-b { 0%, 100% { transform: translate(0, 0) rotate(4deg); opacity: .5; } 33% { transform: translate(-30px, 14px) rotate(-3deg); opacity: .78; } 66% { transform: translate(24px, 26px) rotate(2deg); opacity: .6; } }
+@keyframes hw-ghost-c { 0%, 100% { transform: translate(0, 0) rotate(-2deg); opacity: .6; } 30% { transform: translate(-40px, -26px) rotate(3deg); opacity: .82; } 60% { transform: translate(18px, -50px) rotate(-3deg); opacity: .5; } }
+
+/* zumbi: a mão aparece primeiro, o corpo sobe depois e some outra vez; ciclo de 72 s */
+.hw-zombie { position: absolute; left: 44%; bottom: 8.5%; width: min(25vh, 21vw); aspect-ratio: 280 / 320; overflow: hidden; }
+.hw-zl { position: absolute; inset: 0; will-change: transform; }
+.hw-zl svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-zl--hand { animation: hw-zhand 72s ease-in-out infinite; animation-delay: -60s; transform: translateY(110%); }
+.hw-zl--body { animation: hw-zbody 72s ease-in-out infinite; animation-delay: -60s; transform: translateY(105%); }
+@keyframes hw-zhand { 0% { transform: translateY(110%); } 3.5%, 21% { transform: translateY(0); } 24%, 100% { transform: translateY(110%); } }
+@keyframes hw-zbody { 0%, 6% { transform: translateY(105%); } 12.5%, 19% { transform: translateY(0); } 23%, 100% { transform: translateY(105%); } }
+.hw-zeyes { animation: hw-zeyes 2.6s ease-in-out infinite; }
+@keyframes hw-zeyes { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
+
+/* morcegos: voos espaçados (cada um tem o seu ciclo); as asas batem sempre que há voo */
+.hw-bat { position: absolute; left: 0; width: min(5.4vh, 5vw); aspect-ratio: 2 / 1; opacity: 0; will-change: transform; }
+.hw-bat-in { width: 100%; height: 100%; animation: hw-bob .9s ease-in-out infinite alternate; }
+.hw-bat svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes hw-bob { from { transform: translateY(-7px) rotate(-4deg); } to { transform: translateY(8px) rotate(4deg); } }
+.hw-wing { transform-box: view-box; transform-origin: 32px 18px; }
+.hw-wing--l { animation: hw-flap-l .3s ease-in-out infinite alternate; }
+.hw-wing--r { animation: hw-flap-r .3s ease-in-out infinite alternate; }
+@keyframes hw-flap-l { from { transform: rotate(-18deg) scaleY(1); } to { transform: rotate(20deg) scaleY(.45); } }
+@keyframes hw-flap-r { from { transform: rotate(18deg) scaleY(1); } to { transform: rotate(-20deg) scaleY(.45); } }
+.hw-bat--1 { top: 12%; animation: hw-fly-r 31s linear infinite; animation-delay: -27s; }
+.hw-bat--2 { top: 22%; width: min(4.4vh, 4vw); animation: hw-fly-l 43s linear infinite; animation-delay: -36s; }
+.hw-bat--3 { top: 34%; width: min(6vh, 5.4vw); animation: hw-fly-r 37s linear infinite; animation-delay: -12s; }
+.hw-bat--4 { top: 8%; width: min(3.8vh, 3.4vw); animation: hw-fly-l 53s linear infinite; animation-delay: -45s; }
+.hw-bat--5 { top: 28%; animation: hw-fly-r 47s linear infinite; animation-delay: -20s; }
+@keyframes hw-fly-r { 0% { opacity: 0; transform: translate3d(-10vw, 4vh, 0); } 1% { opacity: 1; } 8% { transform: translate3d(40vw, -3vh, 0); } 15% { opacity: 1; transform: translate3d(112vw, 6vh, 0); } 15.5%, 100% { opacity: 0; transform: translate3d(112vw, 6vh, 0); } }
+@keyframes hw-fly-l { 0% { opacity: 0; transform: translate3d(112vw, 3vh, 0) scaleX(-1); } 1% { opacity: 1; } 9% { transform: translate3d(55vw, 9vh, 0) scaleX(-1); } 16% { opacity: 1; transform: translate3d(-12vw, -2vh, 0) scaleX(-1); } 16.5%, 100% { opacity: 0; transform: translate3d(-12vw, -2vh, 0) scaleX(-1); } }
+
+/* ---- primeiro plano: névoa, velas e abóboras ---------------------------------------------------------- */
+.hw-fog { position: absolute; left: -25%; width: 150%; bottom: 0; will-change: transform; }
+.hw-fog--a { height: 30%; background: radial-gradient(55% 100% at 28% 100%, rgb(176 146 214 / .34), transparent 72%), radial-gradient(45% 100% at 78% 100%, rgb(255 150 70 / .18), transparent 70%); animation: hw-fog-a 70s ease-in-out infinite alternate; }
+.hw-fog--b { height: 20%; background: radial-gradient(50% 100% at 55% 100%, rgb(160 130 200 / .3), transparent 72%), radial-gradient(40% 100% at 12% 100%, rgb(150 120 190 / .24), transparent 70%); animation: hw-fog-b 105s ease-in-out infinite alternate; }
+@keyframes hw-fog-a { from { transform: translateX(-6%); } to { transform: translateX(8%); } }
+@keyframes hw-fog-b { from { transform: translateX(7%); } to { transform: translateX(-9%); } }
+.hw-cluster { position: absolute; bottom: 0; height: min(20vh, 18vw); }
+.hw-cluster--l { left: 29%; width: min(30vh, 26vw); }
+.hw-cluster--r { left: 61%; width: min(26vh, 23vw); }
+.hw-pump { position: absolute; bottom: 0; aspect-ratio: 240 / 216; background: var(--art) center / contain no-repeat; filter: drop-shadow(0 0 14px rgb(255 120 24 / .5)); animation: hw-pglow 4.2s ease-in-out infinite; }
+.hw-pump--1 { --art: url("/halloween/pumpkin-b.svg"); left: 0; height: 62%; }
+.hw-pump--2 { --art: url("/halloween/pumpkin-a.svg"); left: 48%; height: 44%; animation-delay: -1.7s; }
+.hw-pump--3 { --art: url("/halloween/pumpkin-c.svg"); left: 6%; height: 52%; animation-delay: -.9s; }
+.hw-pump--4 { --art: url("/halloween/pumpkin-b.svg"); left: 56%; height: 38%; animation-delay: -2.6s; }
+@keyframes hw-pglow { 0%, 100% { filter: drop-shadow(0 0 12px rgb(255 120 24 / .42)) brightness(1); } 40% { filter: drop-shadow(0 0 20px rgb(255 130 30 / .65)) brightness(1.1); } 70% { filter: drop-shadow(0 0 14px rgb(255 120 24 / .48)) brightness(.97); } }
+.hw-cand { position: absolute; bottom: 0; aspect-ratio: 44 / 100; }
+.hw-cand svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-cand--1 { left: 38%; height: 56%; } .hw-cand--2 { left: 56%; height: 78%; } .hw-cand--3 { left: 82%; height: 46%; }
+.hw-cand--4 { left: 40%; height: 64%; } .hw-cand--5 { left: 84%; height: 50%; }
+.hw-flame { transform-box: fill-box; transform-origin: 50% 100%; animation: hw-flame 1.7s ease-in-out infinite; }
+@keyframes hw-flame { 0%, 100% { transform: scale(1, 1) skewX(0); } 25% { transform: scale(.94, 1.07) skewX(2deg); } 55% { transform: scale(1.05, .94) skewX(-2deg); } 80% { transform: scale(.97, 1.04) skewX(1deg); } }
+.hw-candle-glow { animation: hw-cglow 2.3s ease-in-out infinite; }
+@keyframes hw-cglow { 0%, 100% { opacity: .8; } 35% { opacity: 1; } 65% { opacity: .65; } }
+.hw-cand--2 .hw-flame, .hw-cand--4 .hw-flame { animation-delay: -.8s; animation-duration: 2.1s; }
+.hw-cand--3 .hw-flame, .hw-cand--5 .hw-flame { animation-delay: -1.3s; animation-duration: 1.45s; }
+
+/* ---- teias, aranhas e o véu ------------------------------------------------------------------------------ */
+.hw-web { position: absolute; top: 0; pointer-events: none; }
+.hw-web svg { display: block; width: 100%; height: 100%; }
+.hw-web--tr { right: 0; width: min(30vh, 24vw); aspect-ratio: 1; transform: scaleX(-1); }
+.hw-web--tl { left: 0; width: min(17vh, 14vw); aspect-ratio: 1; opacity: .6; }
+.hw-drop { position: absolute; top: calc(-62vh); width: 40px; height: 62vh; will-change: transform; }
+.hw-thread { position: absolute; left: 50%; top: 0; bottom: 30px; width: 1px; background: linear-gradient(180deg, rgb(232 226 255 / .12), rgb(232 226 255 / .55)); }
+.hw-spider { position: absolute; left: 0; bottom: -14px; width: 40px; height: 44px; }
+.hw-spider svg { display: block; width: 100%; height: 100%; }
+.hw-drop--1 { left: max(312px, 22vw); animation: hw-drop-1 26s ease-in-out infinite; animation-delay: -18s; }
+.hw-drop--2 { right: min(20vh, 17vw); animation: hw-drop-2 34s ease-in-out infinite; animation-delay: -9s; }
+@keyframes hw-drop-1 { 0%, 8% { transform: translateY(0); } 24% { transform: translateY(46vh); } 30% { transform: translateY(43vh); } 42% { transform: translateY(46vh); } 62% { transform: translateY(6vh); } 70%, 100% { transform: translateY(0); } }
+@keyframes hw-drop-2 { 0%, 12% { transform: translateY(0); } 26% { transform: translateY(33vh); } 32% { transform: translateY(31vh); } 46% { transform: translateY(34vh); } 64% { transform: translateY(8vh); } 72%, 100% { transform: translateY(0); } }
+.hw-veil {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgb(4 2 8 / .62) 0, rgb(4 2 8 / .34) 15%, rgb(4 2 8 / .1) 30%, transparent 40%),
+    radial-gradient(900px 420px at 0% 100%, rgb(4 2 8 / .55), transparent 70%),
+    radial-gradient(120% 95% at 50% 42%, transparent 58%, rgb(0 0 0 / .6) 100%);
+}
+
+/* ---- telefone: composição enxuta ---------------------------------------------------------------------- */
+.hw-scene[data-lite="1"] { --mx: 50%; --my: 27%; --moon: min(90vw, 44vh); }
+.hw-scene[data-lite="1"] .hw-l { inset: 0; }
+.hw-scene[data-lite="1"] .hw-castle { --cw: min(92vw, 40vh); bottom: 40%; }
+.hw-scene[data-lite="1"] .hw-grave { height: min(24vh, 62vw); bottom: 24%; }
+.hw-scene[data-lite="1"] .hw-vampire { right: -3%; bottom: auto; top: 33%; height: min(30vh, 52vw); }
+.hw-scene[data-lite="1"] .hw-zombie { left: 5%; bottom: 29%; width: min(20vh, 26vw); }
+.hw-scene[data-lite="1"] .hw-ghost--a { left: 8%; top: 38%; height: min(11vh, 22vw); }
+.hw-scene[data-lite="1"] .hw-ghost--b { left: 64%; top: 18%; height: min(8vh, 16vw); }
+.hw-scene[data-lite="1"] .hw-ghost--c { display: none; }
+.hw-scene[data-lite="1"] .hw-witch { width: min(20vh, 40vw); top: calc(var(--my) - 12vh); }
+.hw-scene[data-lite="1"] .hw-bat { width: min(4.4vh, 9vw); }
+.hw-scene[data-lite="1"] .hw-bat--4, .hw-scene[data-lite="1"] .hw-bat--5 { display: none; }
+.hw-scene[data-lite="1"] .hw-cluster { display: none; }
+.hw-scene[data-lite="1"] .hw-fog--b, .hw-scene[data-lite="1"] .hw-drop--2 { display: none; }
+.hw-scene[data-lite="1"] .hw-drop--1 { left: 78%; }
+.hw-scene[data-lite="1"] .hw-web--tr { width: min(22vh, 40vw); }
+.hw-scene[data-lite="1"] .hw-web--tl { display: none; }
+.hw-scene[data-lite="1"] .hw-veil {
+  background:
+    linear-gradient(180deg, rgb(4 2 8 / .5) 0, transparent 26%),
+    linear-gradient(0deg, rgb(4 2 8 / .7) 0, rgb(4 2 8 / .35) 40%, transparent 62%),
+    radial-gradient(120% 95% at 50% 42%, transparent 58%, rgb(0 0 0 / .55) 100%);
+}
+
+/* ---- aba oculta e movimento reduzido ---------------------------------------------------------------------- */
+html[data-os-hidden] .hw-scene *, html[data-os-hidden] .hw-scene { animation-play-state: paused !important; }
+/* composição estável: sem animações, sem paralaxe; bruxa, morcegos e zumbi ficam em pontos fixos */
+.hw-scene[data-reduced="1"] *, .hw-scene[data-reduced="1"] { animation: none !important; transition: none !important; }
+.hw-scene[data-reduced="1"] .hw-witch { opacity: 1; transform: translate3d(54vw, -2vh, 0) rotate(-3deg); }
+.hw-scene[data-reduced="1"] .hw-bat--1 { opacity: 1; transform: translate3d(48vw, 6vh, 0); }
+.hw-scene[data-reduced="1"] .hw-bat--3 { opacity: 1; transform: translate3d(80vw, 14vh, 0); }
+.hw-scene[data-reduced="1"] .hw-bat--2, .hw-scene[data-reduced="1"] .hw-bat--4, .hw-scene[data-reduced="1"] .hw-bat--5 { display: none; }
+.hw-scene[data-reduced="1"] .hw-zl--hand, .hw-scene[data-reduced="1"] .hw-zl--body { transform: translateY(30%); }
+.hw-scene[data-reduced="1"] .hw-drop { transform: translateY(24vh); }
+.hw-scene[data-reduced="1"][data-lite="1"] .hw-witch { transform: translate3d(38vw, 0, 0) rotate(-3deg); }
+.hw-scene[data-reduced="1"][data-lite="1"] .hw-bat--1 { transform: translate3d(18vw, 8vh, 0); }
+.hw-scene[data-reduced="1"][data-lite="1"] .hw-bat--3 { transform: translate3d(70vw, 18vh, 0); }
+@media (prefers-reduced-motion: reduce) {
+  .hw-scene, .hw-scene * { animation: none !important; transition: none !important; }
+}

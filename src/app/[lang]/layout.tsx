@@ -8,6 +8,8 @@ import { Footer } from "@/components/footer";
 import { OsShell } from "@/features/os/os-shell";
 import { buildOsPayload } from "@/features/os/payload";
 import { THEME_COLOR, THEME_SCRIPT } from "@/features/os/theme";
+import { halloweenScript } from "@/features/os/halloween/config";
+import { HALLOWEEN_POLICY } from "@/features/os/halloween/policy";
 import { InspectProvider } from "@/features/inspect/inspect-provider";
 import { MilwebSystemProvider } from "@/features/system/system-provider";
 import { ROOT_NODE } from "@/data/milweb-system";
@@ -72,6 +74,8 @@ export default async function LangLayout({ children, params }: { children: React
       <body>
     {/* Tema do MilWeb OS antes de qualquer pintura (preferência salva ou o tema do sistema) — sem flash do tema errado. */}
     <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+    {/* Edição de Halloween (features/os/halloween): marca o <html> antes da pintura se o instante atual cair na janela — decidido no navegador, não no build. */}
+    <script dangerouslySetInnerHTML={{ __html: halloweenScript(HALLOWEEN_POLICY) }} />
     <ScrollProvider>
       <InspectProvider strings={{ title: d.inspect.title, dev: d.inspect.dev }}>
       <MilwebSystemProvider root={{ id: ROOT_NODE.id, index: ROOT_NODE.index, key: ROOT_NODE.key, title: ROOT_NODE.title[locale], readout: ROOT_NODE.readout?.[locale] ?? null }}>

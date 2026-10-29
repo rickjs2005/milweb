@@ -4,6 +4,8 @@ import { useOs } from "../os-shell";
 import { SocialIcon, type SocialKey } from "../social-hud";
 import { ThemeToggle } from "../theme-toggle";
 import { WhatsAppIcon } from "./icons";
+import { useHalloweenActive } from "../halloween/clock";
+import { HalloweenSoundControl } from "../halloween/sound-control";
 
 /**
  * Dock do telefone — os caminhos rápidos de conversa, não os apps da grade:
@@ -17,6 +19,7 @@ const SOCIAL_ORDER: SocialKey[] = ["linkedin", "github", "instagram"];
 export function MobileDock() {
   const { payload } = useOs();
   const s = payload.s;
+  const halloween = useHalloweenActive();
   const label = (k: SocialKey) => (k === "instagram" ? "Instagram" : s.contact[k]);
   const items: { key: "whatsapp" | SocialKey; href: string; label: string }[] = [
     { key: "whatsapp", href: payload.contact.waHref, label: s.contact.whatsapp },
@@ -39,6 +42,11 @@ export function MobileDock() {
         <li>
           <ThemeToggle variant="mdock" />
         </li>
+        {halloween && (
+          <li>
+            <HalloweenSoundControl variant="mdock" />
+          </li>
+        )}
       </ul>
     </nav>
   );

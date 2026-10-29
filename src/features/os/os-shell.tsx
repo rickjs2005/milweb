@@ -18,6 +18,7 @@ import { SimpleShell } from "./simple-shell";
 import { MobileDock } from "./mobile/dock";
 import { OsBoot } from "./boot";
 import { readMark, stampEntry } from "./mobile/history";
+import { readHalloweenNow, useHalloweenActive } from "./halloween/clock";
 
 /**
  * MilWeb OS — a casca. Decide o modo (área de trabalho, telefone, simples),
@@ -107,6 +108,9 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
   const themeAuto = useStore(store, (s) => s.prefs.themeAuto);
   const hydrated = useStore(store, (s) => s.hydrated);
   const motion = useStore(store, (s) => s.prefs.motion);
+  // Edição de Halloween: durante o evento a interface usa o conjunto de tokens escuro (Obito) SEM tocar na
+  // preferência salva; ao terminar, o efeito de espelho abaixo reaplica o tema do visitante.
+  const halloween = useHalloweenActive();
 
   const navigate = useCallback(
     (target: string, mode: "push" | "replace" = "push", sync = false) => {
@@ -207,9 +211,10 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     // O tema só depois da hidratação: até lá o atributo é o do script inline (THEME_SCRIPT), que
     // aplica a mesma regra que `hydrate` — o HTML do servidor nunca força o tema errado.
     if (hydrated) {
-      h.dataset.osTheme = theme;
+      const shown = readHalloweenNow() ? "obito" : theme;
+      h.dataset.osTheme = shown;
       document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
-        m.content = THEME_COLOR[theme];
+        m.content = THEME_COLOR[shown];
       });
     }
     if (motion === "reduce") h.dataset.osMotion = "reduce";
@@ -217,7 +222,7 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     return () => {
       delete h.dataset.os;
     };
-  }, [isOs, shell, theme, motion, hydrated]);
+  }, [isOs, shell, theme, motion, hydrated, halloween]);
 
   // 4b) Sem escolha salva, o tema segue o sistema — inclusive quando ele muda com a página aberta.
   useEffect(() => {

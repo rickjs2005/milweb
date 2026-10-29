@@ -3,6 +3,7 @@
 @import "../styles/system.css";
 @import "../styles/os.css";
 @import "../styles/os-mobile.css";
+@import "../styles/halloween.css";
 
 @tailwind base;
 @tailwind components;
