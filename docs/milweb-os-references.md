@@ -585,29 +585,56 @@ Não há parâmetro de URL público. Exemplo local: `NEXT_PUBLIC_HALLOWEEN_PREVI
 
 - **Frase**: "Sites de / outro mundo." (pt), "Otherworldly / websites." (en), "Sitios de / otro mundo." (es) — textos em `i18n/*.ts › os.halloween`. A frase normal e a do evento estão no DOM; o CSS mostra uma só (a outra é `display: none`).
 - **Aplicativos**: o mesmo `<a>` com o ícone original dentro de um medalhão escuro, sobre uma abóbora SVG (`public/halloween/pumpkin-{a,b,c}.svg`, gerada por `node scripts/halloween-assets.mjs`) no `::before`. Rótulo em HTML, flutuação de 4,6 a 6,8 s com fases diferentes, hover/foco sobe e brilha com um movimento curto, toque abre direto. Decoração sem ponteiro nem foco. Telefone: grade de 3 colunas.
-- **Cenário** (`halloween/scene.tsx`, `art/layers.tsx`, `art/trees.ts`): camadas independentes, todas SVG/CSS desenhadas em código — céu e estrelas, lua e halo, nuvens, bruxa (cruza a lua a cada ~54 s), castelo, cemitério com árvores secas procedurais, vampiro (capa e olhos animados), três fantasmas, zumbi (a mão sai primeiro; ciclo de 72 s), cinco morcegos em voos espaçados, névoa, velas e abóboras, teias e duas aranhas. Paralaxe do mouse só no desktop (GSAP `quickTo`, intensidade por profundidade). O texto, os apps e os controles ficam fora da cena.
+- **Cenário** (`halloween/scene.tsx`, `art/layers.tsx`, `art/trees.ts`): camadas independentes, todas SVG/CSS desenhadas em código — céu e estrelas, lua e halo, nuvens, bruxa (cruza a lua a cada ~54 s), castelo gótico em ruínas, cemitério com árvores secas procedurais, vampiro (capa e olhos animados), três fantasmas, zumbi (a mão sai primeiro; ciclo de 72 s), cinco morcegos em voos espaçados, névoa, velas e abóboras, teias e duas aranhas. A lua é uma foto de domínio público (NASA/LRO, `public/halloween/moon.webp`, tingida de laranja). Paralaxe do mouse só no desktop (GSAP `quickTo`, intensidade por profundidade). O texto, os apps e os controles ficam fora da cena.
+- **Casa assombrada interativa** (`halloween/interaction.ts`, um único listener de ponteiro, loop de 10 Hz, GSAP `quickTo`):
+  - *Lanterna*: o mouse (ou o dedo, na `.hw-touchzone`) ilumina um círculo com inércia; por baixo, uma camada escura com cópias "acesas" do castelo, do cemitério e olhos escondidos reveladas por contrafluxo de transform. Apaga ao sair da janela, com janela de app aberta ela atenua (×0,4) e as reações param (`setBusy`).
+  - *Criaturas*: olhos do vampiro e dos fantasmas (elementos HTML `.hw-vp`/`.hw-gp` por cima dos SVGs, só `transform`, passos de 0,25 px); o fantasma foge ~46–80 px e volta; a aranha desce perto da teia (recarga 8,5–11,5 s).
+  - *Descoberta do castelo*: ~1 s de foco (0,5 s no toque) acende as janelas em sequência, mostra uma silhueta e solta 7 morcegos por ~6 s; recarga de 22–30 s. A dica "Explore o cenário" some na primeira interação.
+  - *Abóboras vivas* (`pumpkin-fx.tsx`): inclinação ±9° em direção ao ponteiro (`rotateX/Y` por variável CSS, sem disputar o `translate` da flutuação), pupilas nas abóboras a < 420 px, 6 faíscas no hover/foco, pulso de luz de ~0,5 s no clique; a navegação não espera nada disso.
+  - *Modo lean* (`probeGpu().tier === "low"`, `data-lean`): sem cópias acesas e sem paralaxe, para GPUs fracas/por software; `?quality=high` força o modo completo.
+  - *Movimento reduzido*: luz sem inércia, fantasmas e aranha parados, castelo só acende as janelas, sem inclinação/pupilas/faíscas. Teclado: foco visível e Enter abrem normalmente.
+  - `.hw-shield` é um escudo de hit-test para a cena não interceptar o ponteiro dos apps.
 - **Movimento reduzido** (sistema ou Ajustes, inclusive mudando na sessão): composição estável sem animação nem paralaxe. **Aba oculta**: animações pausam (`html[data-os-hidden]`).
 
 ### Som (`halloween/audio.ts`, `halloween/sound-control.tsx`)
 
 - **Onde ficam os controles**: desktop — dock, ao lado de Buscar/Ajustes/tema (botão "Ativar som / Desativar som" e, com o som ligado, um `<input type="range">` de volume); telefone — último item da dock de redes ("Som") e, ligado, uma barra de volume no espaço livre sob a frase.
 - Silencioso por padrão. O botão cria o `AudioContext` dentro do clique; o estado "ligado" só aparece com o contexto rodando. Nada toca sem gesto, nem com preferência salva; clique num aplicativo nunca dispara som (só hover/foco com intenção, no máximo 1 a cada 900 ms).
-- Síntese em tempo real (Web Audio, **sem arquivos e sem rede**): vento em três camadas e drone grave (sem emenda, sem loop audível) + eventos esparsos a cada 16–36 s (trovão, lamento fantasmagórico, morcegos, coruja, rangido, sino). Volume inicial 12 %, compressor de segurança. Preferência e volume em `localStorage` (`milweb-halloween:audio`), protegidos contra SSR e armazenamento indisponível.
+- **Direção v2** (dark ambient): laço de 90 s agendado em `scheduleLoop`, com três buracos de silêncio, drone 82–233 Hz, cluster de cordas (A3/Bb3/Eb4/E4) com crescendos e deriva de afinação, vento sintético + vento real em duas vozes, e eventos reais (rangidos de porta/caixão/metal/cadeira, uivo de lobo, batimento cardíaco, trovão) e sintéticos (madeira, sino, asas). Estéreo, ducking e recargas por evento. Volume inicial 12 %.
+- **Reações** (`reactGhost/reactSpider/reactCastle/reactPumpkin`): sons curtos com pan pela posição do elemento, barramento próprio sem ducking, no máximo 3 simultâneas.
+- **Cadeia**: `mix → compressor (−7 dB, antes do volume) → volume mestre → WaveShaper tanh → saída`.
+- **Arquivos**: 10 MP3 mono (~570 KB) em `public/halloween/audio/`, gerados por `node scripts/halloween-audio.mjs` (baixa do Wikimedia Commons, recorta, normaliza). Só são baixados **depois do clique** em "Ativar som"; antes disso nenhum contexto e nenhum MP3. Instância única, aba oculta suspende.
+- Preferência e volume em `localStorage` (`milweb-halloween:audio`), protegidos contra SSR e armazenamento indisponível.
+- Teste offline: em dev, `window.__hwAudio.render(...)` renderiza a mixagem num `OfflineAudioContext` (usado para medir pico, LUFS e faixa dinâmica).
 - Aba oculta suspende o contexto e os eventos; ao voltar retoma se o navegador deixar, senão o botão volta a "Ativar som". Desativar corta tudo em 20 ms e fecha o contexto; sair da área temática (fim do evento, rota fora do OS, modo simples) faz o mesmo.
 - Fora de produção, `window.__hwAudio` expõe estado e nível do sinal (RMS) para testes; em produção não existe.
 
 ### Créditos e licenças
 
-Todo o material é original desta edição: SVGs e CSS desenhados em código, áudio sintetizado por código. **Nenhum asset de terceiros, nenhum áudio externo, nenhuma música comercial.** Não há arquivo de créditos de terceiros porque não há o que creditar.
+SVGs, CSS e a síntese de áudio são originais desta edição. Há **assets de terceiros**: a foto da Lua (NASA, domínio público) e 10 sons do Wikimedia Commons (domínio público, CC0 e **um CC BY 4.0 que exige atribuição**: o trovão, de Richard Humphries). Fontes, licenças e a atribuição estão em `docs/halloween-credits.md`. Nenhuma música comercial.
 
 ### Verificação
 
 - `node --test scripts/halloween-check.mjs`: 6 testes (janela inclusiva/exclusiva, instantes absolutos com offsets diferentes, anos futuros, política de ambiente, script inline).
 - Navegador (build de produção; scripts em `.audit/halloween/`, pasta ignorada): virada de início e de fim com a página aberta (relógio falso do Playwright), 1440×900, 1280×720, 1920×1080, 900×1000, 390×844 e 360×640 (sem sobreposição, corte, rolagem horizontal nem erro de console), pt/en/es, movimento reduzido, teclado (Tab, Enter, setas, Home), toque, 1 único `AudioContext`, sem rede de Halloween fora do evento.
 
+### Desempenho (medido, com ressalvas)
+
+Ambiente: Chromium 151 headless, GPU **por software** (SwiftShader), 8 threads, build de produção. Não há medição em GPU real; **não se afirma 60 fps**.
+
+| Cenário | fps |
+| --- | --- |
+| Site normal (sem evento) | 62 |
+| Halloween parado, modo lean (automático aqui) | 43 |
+| Halloween, mouse em movimento contínuo, lean | 32,8 (p95 50 ms, 0 tarefas longas) |
+| Halloween completo (`?quality=high`), parado / movimento | 29 / 17 |
+
+Causas achadas: pupilas mudando atributo dentro de SVG com filtros (agora HTML), escritas do `PumpkinFxHost` em todas as abóboras, animação de `filter` nos brilhos (agora opacidade), e `inspect-provider.tsx` escrevendo `--ix/--iy` no `<html>` a cada `pointermove` (**correção em código anterior**: agora só com o modo inspeção ativo).
+
 ### Limitações
 
 - Sem imagem de referência (não chegou anexada) e sem geração de imagem por IA (o plano gratuito do Higgsfield recusou as gerações): os personagens são ilustrações vetoriais próprias, não pintura.
-- Não há risada de bruxa: só se anuncia o que existe como som. A síntese cobre vento, drone, trovão, lamento, morcegos, coruja, rangido e sino.
+- Não há risada de bruxa, sussurros nem coros: só se anuncia o que existe como som.
+- A mixagem não pôde ser **ouvida**; só medida (sem clipping, faixa dinâmica ~16 LU, pico −3,5 dBFS a volume máximo). Se "assusta" é julgamento humano.
 - O HTML estático contém as duas frases (a normal e a do evento); fora do evento a do evento fica `display: none`.
 - Preview na Vercel depende de `NEXT_PUBLIC_VERCEL_ENV`.

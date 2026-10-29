@@ -89,12 +89,14 @@ const GLYPH: Record<IconKind, React.ReactNode> = {
 };
 
 /** Placa + glifo. `size` em px (a placa escala tudo). */
-export function AppGlyph({ kind, size = 56, className = "" }: { kind: IconKind; size?: number; className?: string }) {
+export function AppGlyph({ kind, size = 56, className = "", children }: { kind: IconKind; size?: number; className?: string; children?: React.ReactNode }) {
   return (
     <span className={"os-icon " + className} data-kind={kind} style={{ width: size, height: size }} aria-hidden="true">
       <svg viewBox="0 0 48 48" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         {GLYPH[kind]}
       </svg>
+      {/* decoração dentro da placa (a edição de Halloween pendura ali as pupilas e as faíscas da abóbora) */}
+      {children}
     </span>
   );
 }

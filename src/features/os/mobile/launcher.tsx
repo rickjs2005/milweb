@@ -4,6 +4,8 @@ import { APPS, MOBILE_GRID } from "../registry";
 import { useOs, useOsStore } from "../os-shell";
 import { useClock, useLaunch } from "../launch";
 import { LaunchIcon } from "./icons";
+import { useHalloweenActive } from "../halloween/clock";
+import { PumpkinFx, type FxVariant } from "../halloween/pumpkin-fx";
 
 /**
  * Tela inicial do telefone — um launcher, não uma landing comprimida.
@@ -25,6 +27,8 @@ export function MobileLauncher() {
   const launch = useLaunch();
   const time = useClock(payload.locale);
   const dim = useOsStore((st) => (st.focused ? "1" : "0"));
+  const halloween = useHalloweenActive();
+  const variants: FxVariant[] = ["a", "b", "c"];
 
   return (
     <div className="os-launcher">
@@ -37,17 +41,17 @@ export function MobileLauncher() {
 
       <nav className="os-launcher__apps" aria-label={s.regions.appGrid} data-dim={dim}>
         <ul>
-          {MOBILE_GRID.map((id) => (
+          {MOBILE_GRID.map((id, i) => (
             <li key={id}>
               <a id={`os-launch-${id}`} href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"} className="os-launch" onClick={(e) => launch(e, id)} data-no-inspect>
-                <LaunchIcon app={id} />
+                <LaunchIcon app={id}>{halloween && <PumpkinFx variant={variants[i % 3]} />}</LaunchIcon>
                 <span className="os-launch__label">{s.apps[id]}</span>
               </a>
             </li>
           ))}
           <li>
             <button type="button" id="os-launch-search" className="os-launch" onClick={openSearch} aria-keyshortcuts="/" data-no-inspect>
-              <LaunchIcon app="search" />
+              <LaunchIcon app="search">{halloween && <PumpkinFx variant={variants[MOBILE_GRID.length % 3]} />}</LaunchIcon>
               <span className="os-launch__label">{s.apps.search}</span>
             </button>
           </li>

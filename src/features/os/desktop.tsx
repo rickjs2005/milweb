@@ -13,6 +13,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { useClock, useDesktopWide, useLaunch } from "./launch";
 import { useHalloweenActive } from "./halloween/clock";
 import { HalloweenAudioHost, HalloweenSoundControl } from "./halloween/sound-control";
+import { PumpkinFx, PumpkinFxHost, VARIANT_OF } from "./halloween/pumpkin-fx";
 
 export { useClock, useLaunch } from "./launch";
 
@@ -92,6 +93,7 @@ export function Desktop() {
         <>
           <HalloweenScene />
           <HalloweenAudioHost />
+          <PumpkinFxHost />
         </>
       ) : (
         <OsScene />
@@ -154,6 +156,7 @@ function DesktopApps() {
   const focused = useOsStore((st) => st.focused);
   const launch = useLaunch();
   const wide = useDesktopWide();
+  const halloween = useHalloweenActive();
   const order = wide ? DESKTOP_GRID : ICON_ORDER.filter((id) => APPS[id].desktopIcon);
   return (
     <nav className="os-icons" aria-label={s.regions.icons}>
@@ -173,7 +176,9 @@ function DesktopApps() {
                 data-focused={focused === id ? "1" : "0"}
                 data-no-inspect
               >
-                <AppGlyph kind={id} size={52} />
+                <AppGlyph kind={id} size={52}>
+                  {halloween && <PumpkinFx variant={VARIANT_OF[id] ?? "a"} />}
+                </AppGlyph>
                 <span className="os-icon-btn__label">{s.apps[id]}</span>
                 {state && <span className="os-icon-btn__state"> · {state}</span>}
               </a>

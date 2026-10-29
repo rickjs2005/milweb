@@ -89,12 +89,13 @@ const GLYPH: Record<LaunchKind, React.ReactNode> = {
 };
 
 /** Placa + glifo do launcher. A placa escala com `--mw-icon` (CSS); o SVG ocupa ~56 % dela. */
-export function LaunchIcon({ app }: { app: LaunchKind }) {
+export function LaunchIcon({ app, children }: { app: LaunchKind; children?: React.ReactNode }) {
   return (
     <span className="os-micon" data-app={app} aria-hidden="true">
       <svg viewBox="0 0 48 48" fill="none">
         {GLYPH[app]}
       </svg>
+      {children}
     </span>
   );
 }

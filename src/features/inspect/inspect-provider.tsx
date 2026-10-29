@@ -37,6 +37,9 @@ export function InspectProvider({ children, strings }: { children: ReactNode; st
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const on = () => {
+      // as coordenadas só interessam com o modo ligado: nasce já na posição do ponteiro
+      root.style.setProperty("--ix", `${pointer.current.x}px`);
+      root.style.setProperty("--iy", `${pointer.current.y}px`);
       root.setAttribute("data-mode", "dev");
       root.classList.add("inspecting");
       setActive(true);
@@ -73,6 +76,9 @@ export function InspectProvider({ children, strings }: { children: ReactNode; st
     };
     const move = (e: PointerEvent) => {
       pointer.current = { x: e.clientX, y: e.clientY };
+      // Escrever variáveis no <html> a cada movimento invalida o estilo de TODA a árvore (elas herdam): só no modo inspect.
+      // Fora dele ninguém as lê (a camada tem valor padrão) e, com a cena de Halloween, isso virava raster contínuo.
+      if (!root.hasAttribute("data-mode")) return;
       root.style.setProperty("--ix", `${e.clientX}px`);
       root.style.setProperty("--iy", `${e.clientY}px`);
     };

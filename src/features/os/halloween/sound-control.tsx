@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useOs } from "../os-shell";
-import { disposeHalloweenAudio, playPumpkinSound, setHalloweenVolume, startHalloweenAudio, stopHalloweenAudio, useHalloweenAudio } from "./audio";
+import { disposeHalloweenAudio, reactPumpkin, setHalloweenVolume, startHalloweenAudio, stopHalloweenAudio, useHalloweenAudio } from "./audio";
 
 /**
  * Controles do som do Halloween: o botão "Ativar som / Desativar som" e o volume. Moram junto dos
@@ -103,12 +103,22 @@ export function HalloweenAudioHost() {
       if (timer) clearTimeout(timer);
       timer = null;
     };
+    // posição estéreo coerente com a origem visual: a abóbora à esquerda soa à esquerda
+    const panOf = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return Math.max(-0.85, Math.min(0.85, ((r.left + r.width / 2) / window.innerWidth) * 2 - 1));
+    };
     const onOver = (e: PointerEvent) => {
       if (e.pointerType === "touch") return;
       const el = (e.target as Element | null)?.closest(sel);
       if (!el || el.contains(e.relatedTarget as Node | null)) return;
       cancel();
-      timer = setTimeout(playPumpkinSound, 130);
+      timer = setTimeout(() => reactPumpkin(panOf(el), "hover"), 130);
+    };
+    // ativar a abóbora (clique/toque): pulso curto e a navegação segue na hora — o som nunca a atrasa
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest(sel);
+      if (el) reactPumpkin(panOf(el), "click");
     };
     const onOut = (e: PointerEvent) => {
       const el = (e.target as Element | null)?.closest(sel);
@@ -116,16 +126,19 @@ export function HalloweenAudioHost() {
     };
     const onFocus = (e: FocusEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t?.closest(sel) && t.matches(":focus-visible")) playPumpkinSound();
+      const el = t?.closest(sel);
+      if (el && t!.matches(":focus-visible")) reactPumpkin(panOf(el), "hover");
     };
     document.addEventListener("pointerover", onOver);
     document.addEventListener("pointerout", onOut);
     document.addEventListener("focusin", onFocus);
+    document.addEventListener("click", onClick, { capture: true });
     return () => {
       cancel();
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("pointerout", onOut);
       document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("click", onClick, { capture: true });
       disposeHalloweenAudio();
     };
   }, []);

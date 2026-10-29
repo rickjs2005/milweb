@@ -82,7 +82,7 @@ export const pt: Dictionary = {
     mobile: { back: "Voltar", home: "Início", open: "Abrir", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
     about: { base: "Base", focus: "Foco" },
     sign: { craft: "Desenvolvimento criativo", origin: "Brasil → Mundo", motto: "Códigos movem o mundo." },
-    halloween: { motto: ["Sites de", "outro mundo"], soundOn: "Ativar som", soundOff: "Desativar som", soundShort: "Som", volume: "Volume do som do Halloween" },
+    halloween: { motto: ["Sites de", "outro mundo"], soundOn: "Ativar som", soundOff: "Desativar som", soundShort: "Som", volume: "Volume do som do Halloween", hint: "Explore o cenário", hintTouch: "Toque no cenário" },
     projects: {
       back: "Todos os projetos", open: "Abrir case", visit: "Abrir site", code: "Código", stack: "Stack", context: "Contexto", done: "O que foi feito", solutions: "Soluções", gallery: "Telas", result: "Resultado",
       similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",

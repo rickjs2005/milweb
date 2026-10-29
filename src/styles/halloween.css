@@ -109,8 +109,8 @@ html[data-os-event="halloween"] .os-icons .os-icon .os-icon__knob { fill: #140c1
 /* ao passar o mouse ou receber foco: sobe, brilha e reage com um movimento curto (o botão e o rótulo ficam parados) */
 html[data-os-event="halloween"] .os-icon-btn:hover .os-icon,
 html[data-os-event="halloween"] .os-icon-btn:focus-visible .os-icon {
-  transform: translateY(-7px) scale(1.07);
-  filter: drop-shadow(0 12px 22px rgb(255 120 24 / .62)) brightness(1.16) saturate(1.1);
+  transform: translateY(-7px) scale(1.07) perspective(520px) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg));
+  filter: drop-shadow(0 12px 24px rgb(255 120 24 / .7)) brightness(1.22) saturate(1.12);
   animation-name: hw-float, hw-pop; animation-duration: inherit, .5s; animation-iteration-count: infinite, 1; animation-timing-function: ease-in-out, ease-out;
 }
 html[data-os-event="halloween"] .os-icon-btn:hover .os-icon::after,
@@ -284,3 +284,57 @@ html[data-os-event="halloween"][data-os-motion="reduce"] .os-icons li::before, h
 html[data-os-event="halloween"][data-os-motion="reduce"] .os-launcher__apps .os-micon, html[data-os-event="halloween"][data-os-motion="reduce"] .os-launcher__apps .os-micon::before,
 html[data-os-event="halloween"][data-os-motion="reduce"] .hw-sound-btn .os-icon { animation: none !important; transition: none !important; }
 html[data-os-event="halloween"][data-os-motion="reduce"] .os-icons li::after { display: none; }
+
+/* ---- abóboras vivas: pupilas, faíscas, pulso de luz --------------------------------------------------- */
+html[data-os-event="halloween"] .os-icon-btn, html[data-os-event="halloween"] .os-launch { position: relative; }
+html[data-os-event="halloween"] .hw-fx { position: absolute; inset: 0; z-index: 1; pointer-events: none; --px: 0px; --py: 0px; }
+html[data-os-event="halloween"] .hw-pup {
+  position: absolute; width: 5.4%; aspect-ratio: 1 / 1.35; margin: -3.7% 0 0 -2.7%; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #5a2208, #1a0602 72%); box-shadow: 0 0 3px 1px rgb(255 196 90 / .6);
+  translate: var(--px) var(--py); transition: translate .12s linear;
+}
+html[data-os-event="halloween"] .hw-fx[data-variant="a"] .hw-pup { top: 42.3%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="a"] .hw-pup--l { left: 21.4%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="a"] .hw-pup--r { left: 78.6%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="b"] .hw-pup { top: 46.3%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="b"] .hw-pup--l { left: 21.7%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="b"] .hw-pup--r { left: 78.3%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="c"] .hw-pup { top: 44.4%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="c"] .hw-pup--l { left: 22.9%; }
+html[data-os-event="halloween"] .hw-fx[data-variant="c"] .hw-pup--r { left: 77.1%; }
+html[data-os-event="halloween"] .hw-spark { position: absolute; left: 50%; top: 48%; width: 4px; height: 4px; border-radius: 50%; background: #ffc464; box-shadow: 0 0 6px 2px rgb(255 150 40 / .85); opacity: 0; }
+html[data-os-event="halloween"] .os-icon-btn:hover .hw-spark, html[data-os-event="halloween"] .os-icon-btn:focus-visible .hw-spark { animation: hw-spark 1.05s ease-out infinite; animation-delay: calc(var(--k) * -.17s); }
+@keyframes hw-spark { 0% { opacity: 0; transform: rotate(var(--a)) translateX(10px) scale(.6); } 18% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) translateY(-16px) scale(.25); } }
+/* clique: um pulso curto de luz; a navegação já saiu, nada espera por ele */
+html[data-os-event="halloween"] .os-icon-btn[data-pulse] .hw-fx::before, html[data-os-event="halloween"] .os-launch[data-pulse] .hw-fx::before {
+  content: ""; position: absolute; inset: -4%; border-radius: 50%; border: 2px solid rgb(255 208 130 / .95); box-shadow: 0 0 26px 8px rgb(255 150 40 / .65), inset 0 0 18px rgb(255 190 90 / .5); animation: hw-ring .5s ease-out both;
+}
+@keyframes hw-ring { 0% { opacity: 1; transform: scale(.72); } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes hw-ring-soft { 0% { opacity: .9; } 100% { opacity: 0; } }
+html[data-os-event="halloween"][data-os-hidden] .hw-spark { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-os-event="halloween"] .hw-pup { translate: none !important; transition: none !important; }
+  html[data-os-event="halloween"] .hw-spark { animation: none !important; }
+  html[data-os-event="halloween"] .os-icon-btn[data-pulse] .hw-fx::before, html[data-os-event="halloween"] .os-launch[data-pulse] .hw-fx::before { animation: hw-ring-soft .4s ease-out both !important; transform: none; }
+}
+html[data-os-event="halloween"][data-os-motion="reduce"] .hw-pup { translate: none !important; transition: none !important; }
+html[data-os-event="halloween"][data-os-motion="reduce"] .hw-spark { animation: none !important; }
+html[data-os-event="halloween"][data-os-motion="reduce"] .os-icon-btn[data-pulse] .hw-fx::before, html[data-os-event="halloween"][data-os-motion="reduce"] .os-launch[data-pulse] .hw-fx::before { animation: hw-ring-soft .4s ease-out both !important; transform: none; }
+
+/* ---- brilho das abóboras dos aplicativos: halo em opacidade no lugar do `filter: brightness` animado ---------- */
+html[data-os-event="halloween"] .os-icons .os-icon::before,
+html[data-os-event="halloween"] .os-launcher__apps .os-micon::before { animation: none !important; }
+html[data-os-event="halloween"] .hw-fx::after {
+  content: ""; position: absolute; inset: 4% 6%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 54%, transparent 0, transparent 34%, rgb(255 196 90 / .38) 54%, rgb(255 150 40 / .12) 66%, transparent 78%);
+  opacity: .5; animation: hw-glowpulse 3.4s ease-in-out infinite; will-change: opacity;
+}
+html[data-os-event="halloween"] .os-icons li[data-app="services"] .hw-fx::after { animation-delay: -1.1s; animation-duration: 2.9s; }
+html[data-os-event="halloween"] .os-icons li[data-app="studio"] .hw-fx::after { animation-delay: -2.3s; animation-duration: 3.8s; }
+html[data-os-event="halloween"] .os-icons li[data-app="lab"] .hw-fx::after { animation-delay: -.7s; animation-duration: 3.1s; }
+html[data-os-event="halloween"] .os-icons li[data-app="profile"] .hw-fx::after { animation-delay: -1.9s; animation-duration: 4.1s; }
+html[data-os-event="halloween"] .os-icons li[data-app="contact"] .hw-fx::after { animation-delay: -2.8s; animation-duration: 3.3s; }
+html[data-os-event="halloween"] .os-icon-btn:hover .hw-fx::after, html[data-os-event="halloween"] .os-icon-btn:focus-visible .hw-fx::after { opacity: 1; animation: none; }
+html[data-os-event="halloween"][data-os-hidden] .hw-fx::after { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { html[data-os-event="halloween"] .hw-fx::after { animation: none !important; } }
+html[data-os-event="halloween"][data-os-motion="reduce"] .hw-fx::after { animation: none !important; }

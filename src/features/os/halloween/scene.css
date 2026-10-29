@@ -29,17 +29,17 @@
 @keyframes hw-halo { 0%, 100% { opacity: .85; scale: 1; } 50% { opacity: 1; scale: 1.04; } }
 .hw-moon {
   position: absolute; width: var(--moon); aspect-ratio: 1; left: calc(var(--mx) - var(--moon) / 2); top: calc(var(--my) - var(--moon) / 2); border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 26%, rgb(255 244 210 / .6) 0, transparent 32%),
-    radial-gradient(circle at 63% 36%, rgb(140 60 10 / .32) 0, transparent 13%),
-    radial-gradient(circle at 36% 63%, rgb(150 70 12 / .3) 0, transparent 11%),
-    radial-gradient(circle at 70% 72%, rgb(120 50 8 / .32) 0, transparent 17%),
-    radial-gradient(circle at 24% 45%, rgb(130 56 10 / .24) 0, transparent 9%),
-    radial-gradient(circle at 52% 18%, rgb(130 56 10 / .2) 0, transparent 8%),
-    radial-gradient(circle at 50% 50%, #ffc872 0, #ffa040 40%, #ea761e 70%, #b8480e 92%, #983808 100%);
-  box-shadow: 0 0 0 1px rgb(255 190 110 / .35), 0 0 60px 6px rgb(255 140 50 / .35);
+  background: url("/halloween/moon.webp") center / 100% 100% no-repeat;
+  box-shadow: 0 0 70px 8px rgb(255 140 50 / .32);
 }
-.hw-cloud { position: absolute; width: 62%; height: 17%; opacity: .92; will-change: transform; }
+/* luz e relevo: escurece o limbo, aquece o centro e dá volume (sem achatar a textura) */
+.hw-moon::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 34%, rgb(255 230 170 / .28) 0, transparent 46%),
+    radial-gradient(circle at 50% 50%, transparent 56%, rgb(70 20 0 / .5) 92%, rgb(40 10 0 / .78) 100%);
+}
+.hw-cloud { position: absolute; width: 62%; height: 20%; opacity: .96; will-change: transform; }
 .hw-cloud svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hw-cloud--1 { top: 22%; animation: hw-drift 130s linear infinite; animation-delay: -30s; }
 .hw-cloud--2 { top: 40%; height: 14%; opacity: .8; animation: hw-drift 170s linear infinite; animation-delay: -110s; }
@@ -61,14 +61,14 @@
 }
 
 /* ---- castelo e cemitério ---------------------------------------------------------------------------- */
-.hw-castle { --cw: min(60vh, 48vw); position: absolute; width: var(--cw); left: calc(var(--mx) - var(--cw) / 2); bottom: 5%; aspect-ratio: 520 / 420; }
+.hw-castle { --cw: min(66vh, 52vw); position: absolute; width: var(--cw); left: calc(var(--mx) - var(--cw) / 2); bottom: 4%; aspect-ratio: 640 / 480; }
 .hw-castle svg, .hw-grave svg { display: block; width: 100%; height: 100%; }
 .hw-win { animation: hw-win 4.2s ease-in-out infinite; transform-box: fill-box; }
 @keyframes hw-win { 0%, 100% { opacity: 1; } 22% { opacity: .55; } 47% { opacity: .95; } 70% { opacity: .62; } }
 .hw-grave { position: absolute; left: 0; right: 0; bottom: 0; height: min(46vh, 40vw); }
 
 /* ---- personagens ---------------------------------------------------------------------------------------- */
-.hw-vampire { position: absolute; right: 1%; bottom: 4%; height: min(54vh, 48vw); aspect-ratio: 260 / 470; transform-origin: 50% 100%; animation: hw-vamp 8s ease-in-out infinite; }
+.hw-vampire { position: absolute; right: 1%; bottom: 3%; height: min(58vh, 52vw); aspect-ratio: 300 / 530; transform-origin: 50% 100%; animation: hw-vamp 8s ease-in-out infinite; }
 .hw-vampire svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes hw-vamp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .hw-cape { transform-box: fill-box; transform-origin: 50% 0; animation: hw-cape 6.5s ease-in-out infinite; }
@@ -78,9 +78,9 @@
 
 .hw-ghost { position: absolute; opacity: .72; will-change: transform, opacity; }
 .hw-ghost svg { display: block; width: 100%; height: 100%; }
-.hw-ghost--a { left: 27%; top: 22%; height: min(17vh, 15vw); aspect-ratio: 120 / 170; animation: hw-ghost-a 15s ease-in-out infinite; }
-.hw-ghost--b { left: 51%; top: 12%; height: min(11vh, 10vw); aspect-ratio: 120 / 170; animation: hw-ghost-b 12s ease-in-out infinite; animation-delay: -4s; }
-.hw-ghost--c { left: 74%; top: 56%; height: min(14vh, 12vw); aspect-ratio: 120 / 170; animation: hw-ghost-c 18s ease-in-out infinite; animation-delay: -9s; }
+.hw-ghost--a { left: 27%; top: 18%; height: min(26vh, 22vw); aspect-ratio: 140 / 270; animation: hw-ghost-a 15s ease-in-out infinite; }
+.hw-ghost--b { left: 51%; top: 8%; height: min(17vh, 15vw); aspect-ratio: 140 / 270; animation: hw-ghost-b 12s ease-in-out infinite; animation-delay: -4s; }
+.hw-ghost--c { left: 72%; top: 50%; height: min(21vh, 18vw); aspect-ratio: 140 / 270; animation: hw-ghost-c 18s ease-in-out infinite; animation-delay: -9s; }
 @keyframes hw-ghost-a { 0%, 100% { transform: translate(0, 0) rotate(-3deg); opacity: .55; } 25% { transform: translate(34px, -22px) rotate(2deg); opacity: .8; } 50% { transform: translate(10px, -42px) rotate(-2deg); opacity: .6; } 75% { transform: translate(-26px, -16px) rotate(3deg); opacity: .82; } }
 @keyframes hw-ghost-b { 0%, 100% { transform: translate(0, 0) rotate(4deg); opacity: .5; } 33% { transform: translate(-30px, 14px) rotate(-3deg); opacity: .78; } 66% { transform: translate(24px, 26px) rotate(2deg); opacity: .6; } }
 @keyframes hw-ghost-c { 0%, 100% { transform: translate(0, 0) rotate(-2deg); opacity: .6; } 30% { transform: translate(-40px, -26px) rotate(3deg); opacity: .82; } 60% { transform: translate(18px, -50px) rotate(-3deg); opacity: .5; } }
@@ -168,8 +168,8 @@
 .hw-scene[data-lite="1"] .hw-grave { height: min(24vh, 62vw); bottom: 24%; }
 .hw-scene[data-lite="1"] .hw-vampire { right: -3%; bottom: auto; top: 33%; height: min(30vh, 52vw); }
 .hw-scene[data-lite="1"] .hw-zombie { left: 5%; bottom: 29%; width: min(20vh, 26vw); }
-.hw-scene[data-lite="1"] .hw-ghost--a { left: 8%; top: 38%; height: min(11vh, 22vw); }
-.hw-scene[data-lite="1"] .hw-ghost--b { left: 64%; top: 18%; height: min(8vh, 16vw); }
+.hw-scene[data-lite="1"] .hw-ghost--a { left: 8%; top: 36%; height: min(17vh, 34vw); }
+.hw-scene[data-lite="1"] .hw-ghost--b { left: 64%; top: 16%; height: min(12vh, 24vw); }
 .hw-scene[data-lite="1"] .hw-ghost--c { display: none; }
 .hw-scene[data-lite="1"] .hw-witch { width: min(20vh, 40vw); top: calc(var(--my) - 12vh); }
 .hw-scene[data-lite="1"] .hw-bat { width: min(4.4vh, 9vw); }
@@ -202,3 +202,104 @@ html[data-os-hidden] .hw-scene *, html[data-os-hidden] .hw-scene { animation-pla
 @media (prefers-reduced-motion: reduce) {
   .hw-scene, .hw-scene * { animation: none !important; transition: none !important; }
 }
+
+/* =========================================================================
+   Interação (halloween/interaction.ts): lanterna, revelação, criaturas, descoberta do castelo, dica
+   ===================================================================== */
+/* a escuridão que a lanterna fura: um gradiente radial centrado no foco (--lx/--ly escritos por JS neste elemento) */
+.hw-dark {
+  --lr: 200px; --lx: -999px; --ly: -999px;
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle calc(var(--lr) * 1.9) at var(--lx) var(--ly), rgb(3 1 8 / 0) 0, rgb(3 1 8 / 0) 26%, rgb(3 1 8 / .4) 56%, rgb(3 1 8 / .72) 100%);
+}
+/* a janela da lanterna: só se move por transform; a camada interna anda ao contrário e mantém o conteúdo no lugar */
+.hw-lantern {
+  position: absolute; left: 0; top: 0; width: 380px; height: 380px; border-radius: 50%; overflow: hidden; opacity: 0; pointer-events: none; will-change: transform, opacity;
+  -webkit-mask-image: radial-gradient(circle, #000 0, #000 44%, transparent 100%); mask-image: radial-gradient(circle, #000 0, #000 44%, transparent 100%);
+}
+.hw-lantern::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle, rgb(255 206 134 / .22) 0, rgb(255 170 90 / .1) 46%, transparent 74%); }
+.hw-lantern__in { position: absolute; left: 0; top: 0; will-change: transform; }
+.hw-rfog { position: absolute; left: -10%; width: 130%; will-change: transform; }
+.hw-rfog--a { bottom: 4%; height: 38%; background: radial-gradient(50% 100% at 28% 100%, rgb(214 194 240 / .6), transparent 70%), radial-gradient(40% 80% at 72% 92%, rgb(255 200 140 / .34), transparent 70%); animation: hw-fog-a 38s ease-in-out infinite alternate; }
+.hw-rfog--b { bottom: 20%; height: 24%; background: radial-gradient(46% 100% at 60% 100%, rgb(190 170 225 / .5), transparent 72%), radial-gradient(34% 90% at 14% 100%, rgb(180 160 220 / .4), transparent 70%); animation: hw-fog-b 52s ease-in-out infinite alternate; }
+/* olhos escondidos: só aparecem dentro da lanterna */
+.hw-eyepair { position: absolute; display: flex; gap: .9vh; transform: translate(-50%, -50%); animation: hw-blink 7s ease-in-out infinite; }
+.hw-eyepair i { display: block; width: 1.15vh; height: .55vh; border-radius: 50%; background: var(--c); box-shadow: 0 0 .9vh .25vh var(--c); }
+@keyframes hw-blink { 0%, 90%, 100% { transform: translate(-50%, -50%) scaleY(1); opacity: .95; } 94% { transform: translate(-50%, -50%) scaleY(.08); opacity: .6; } }
+
+/* invólucros de reação: a animação ambiente fica no elemento de fora, a reação (GSAP) no de dentro */
+.hw-gr { width: 100%; height: 100%; will-change: transform; }
+.hw-dr { position: absolute; inset: 0; will-change: transform; }
+.hw-drop { top: -84vh; height: 84vh; }
+.hw-ghost--a { left: 33%; top: 24%; }
+
+/* descoberta do castelo: janelas acesas em sequência, silhueta e morcegos saindo da torre */
+.hw-win.hw-lit { animation: none !important; opacity: 1 !important; filter: brightness(2.3) saturate(1.25); }
+.hw-burst { position: absolute; left: 0; top: 0; width: min(4.8vh, 9vw); aspect-ratio: 2 / 1; pointer-events: none; will-change: transform; }
+.hw-burst svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-scene[data-event="castle"] .hw-moon-halo { opacity: 1; scale: 1.08; }
+
+/* dica temporária: some na primeira interação (ou sozinha, depois de ~17 s) */
+.hw-hint {
+  position: absolute; left: 41%; top: 9%; display: flex; align-items: center; gap: 10px; opacity: 0; pointer-events: none;
+  font: 11px/1 var(--font-mono), monospace; letter-spacing: .14em; text-transform: uppercase; color: rgb(255 216 168 / .92); text-shadow: 0 1px 8px #000, 0 0 14px rgb(0 0 0 / .8);
+  animation: hw-hint-in .9s ease 1.2s forwards, hw-hint-out .9s ease 17s forwards;
+}
+.hw-hint__dot { width: 9px; height: 9px; border-radius: 50%; background: rgb(255 172 84); box-shadow: 0 0 12px 3px rgb(255 140 40 / .7); animation: hw-pulse 1.6s ease-in-out infinite; }
+@keyframes hw-hint-in { to { opacity: 1; } }
+@keyframes hw-hint-out { to { opacity: 0; visibility: hidden; } }
+@keyframes hw-pulse { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.35); opacity: .5; } }
+.hw-scene[data-explored="1"] .hw-hint { animation: hw-hint-out .45s ease forwards; }
+.hw-scene[data-busy="1"] .hw-hint { display: none; }
+
+/* zona de toque do celular: decorativa, só aqui a cena escuta; não bloqueia gestos nem links (ela fica no espaço livre) */
+.hw-touchzone { position: absolute; left: 0; right: 0; top: 19%; height: 38%; pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.hw-scene[data-lite="1"] .hw-hint { left: 50%; top: 31%; transform: translateX(-50%); }
+.hw-scene[data-lite="1"] .hw-dark { background: radial-gradient(circle calc(var(--lr) * 1.8) at var(--lx) var(--ly), rgb(3 1 8 / 0) 0, rgb(3 1 8 / 0) 26%, rgb(3 1 8 / .34) 58%, rgb(3 1 8 / .6) 100%); }
+.hw-scene[data-lite="1"] .hw-eyepair:nth-child(n+7) { display: none; }
+
+/* movimento reduzido: a luz continua (é luz, não deslocamento); o resto fica quieto */
+.hw-scene[data-reduced="1"] .hw-burst, .hw-scene[data-reduced="1"] .hw-figure { display: none; }
+.hw-scene[data-reduced="1"] .hw-win.hw-lit { filter: brightness(2.3) saturate(1.25); }
+
+/* escudo do hit-test: transparente, entre a cena e a interface (a interface está acima e continua clicável) */
+.hw-shield { position: absolute; inset: 0; pointer-events: auto; background: transparent; }
+
+/* modo enxuto (aparelho sem GPU real, lento ou econômico — lib/quality tier "low"): menos camadas e menos
+   animação; a composição e as interações principais permanecem */
+.hw-scene[data-lean="1"] .hw-cloud--2, .hw-scene[data-lean="1"] .hw-cloud--3, .hw-scene[data-lean="1"] .hw-fog--b, .hw-scene[data-lean="1"] .hw-rfog--b,
+.hw-scene[data-lean="1"] .hw-ghost--c, .hw-scene[data-lean="1"] .hw-bat--3, .hw-scene[data-lean="1"] .hw-bat--4, .hw-scene[data-lean="1"] .hw-bat--5,
+.hw-scene[data-lean="1"] .hw-cluster--r, .hw-scene[data-lean="1"] .hw-drop--1, .hw-scene[data-lean="1"] .hw-web--tl { display: none; }
+.hw-scene[data-lean="1"] .hw-win, .hw-scene[data-lean="1"] .hw-cape, .hw-scene[data-lean="1"] .hw-eyes, .hw-scene[data-lean="1"] .hw-zeyes,
+.hw-scene[data-lean="1"] .hw-twinkle, .hw-scene[data-lean="1"] .hw-flame, .hw-scene[data-lean="1"] .hw-candle-glow, .hw-scene[data-lean="1"] .hw-pump,
+.hw-scene[data-lean="1"] .hw-moon-halo, .hw-scene[data-lean="1"] .hw-eyepair, .hw-scene[data-lean="1"] .hw-wing { animation: none; }
+
+/* =========================================================================
+   Olhos como elementos HTML (só transform/opacity) e brilhos por opacidade — nada de animar `filter` nem de
+   mexer dentro dos SVGs com filtros (cada mudança ali repinta o SVG inteiro).
+   ===================================================================== */
+.hw-veyes, .hw-geyes { position: absolute; inset: 0; pointer-events: none; }
+.hw-veye {
+  position: absolute; top: 19.25%; width: 6.3%; aspect-ratio: 18 / 10.4; margin: -1.65% 0 0 -3.15%; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #ffb4b8 0, #ff7a80 38%, #ff2a3a 72%, #b0101e 100%); box-shadow: 0 0 .9vh .3vh rgb(255 40 60 / .7);
+  animation: hw-veyeblink 7.4s ease-in-out infinite; will-change: transform, opacity;
+}
+.hw-veye--l { left: 45.33%; }
+.hw-veye--r { left: 54.67%; }
+.hw-vp { position: absolute; left: 50%; top: 50%; width: 36%; height: 80%; margin: -23% 0 0 -18%; border-radius: 50%; background: #1a0206; will-change: transform; }
+@keyframes hw-veyeblink { 0%, 86%, 100% { transform: scaleY(1); opacity: .9; } 45% { opacity: 1; } 90% { transform: scaleY(.1); } 94% { transform: scaleY(1); } }
+.hw-gr { position: relative; }
+.hw-geyes i { position: absolute; top: 22.2%; width: 8.5%; height: 14%; margin: -7% 0 0 -4.25%; }
+.hw-geyes i:first-child { left: 37.14%; }
+.hw-geyes i:last-child { left: 62.86%; }
+.hw-gp { position: absolute; left: 50%; top: 62%; width: 40%; aspect-ratio: 1; margin: -20% 0 0 -20%; border-radius: 50%; background: #e4f2ff; box-shadow: 0 0 5px 1px rgb(190 224 255 / .75); will-change: transform; }
+.hw-scene[data-lean="1"] .hw-veye { animation: none; }
+
+/* brilho das abóboras de primeiro plano: halo em opacidade, sem animar filter */
+.hw-pump { animation: none !important; filter: drop-shadow(0 0 14px rgb(255 120 24 / .5)); position: absolute; }
+.hw-pump::after { content: ""; position: absolute; inset: -14%; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 50% 54%, rgb(255 168 60 / .42) 0, rgb(255 130 30 / .16) 42%, transparent 68%); opacity: .55; animation: hw-glowpulse 4.2s ease-in-out infinite; will-change: opacity; }
+.hw-pump--2::after { animation-delay: -1.7s; }
+.hw-pump--3::after { animation-delay: -.9s; }
+.hw-pump--4::after { animation-delay: -2.6s; }
+@keyframes hw-glowpulse { 0%, 100% { opacity: .4; } 40% { opacity: .95; } 70% { opacity: .55; } }
+.hw-scene[data-lean="1"] .hw-pump::after { animation: none; }

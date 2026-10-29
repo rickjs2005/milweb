@@ -23,106 +23,6 @@ export function Stars() {
   );
 }
 
-/* ---- nuvens (contraluz alaranjado no topo) ---------------------------------------------------------- */
-export function CloudBand({ id }: { id: string }) {
-  return (
-    <svg viewBox="0 0 900 170" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={`hw-cl-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#5a3a5a" stopOpacity=".78" />
-          <stop offset=".45" stopColor="#2a1540" stopOpacity=".72" />
-          <stop offset="1" stopColor="#120a24" stopOpacity="0" />
-        </linearGradient>
-        <filter id={`hw-clb-${id}`} x="-30%" y="-60%" width="160%" height="220%">
-          <feGaussianBlur stdDeviation="11" />
-        </filter>
-      </defs>
-      <g filter={`url(#hw-clb-${id})`} fill={`url(#hw-cl-${id})`}>
-        <ellipse cx="120" cy="96" rx="130" ry="40" />
-        <ellipse cx="260" cy="78" rx="150" ry="46" />
-        <ellipse cx="430" cy="92" rx="170" ry="42" />
-        <ellipse cx="610" cy="74" rx="150" ry="48" />
-        <ellipse cx="760" cy="96" rx="140" ry="38" />
-      </g>
-    </svg>
-  );
-}
-
-/* ---- castelo assombrado (contraluz da lua, janelas roxas) -------------------------------------------- */
-function Battlements({ x, y, w, n, fill }: { x: number; y: number; w: number; n: number; fill: string }) {
-  const step = w / n;
-  return (
-    <>
-      {Array.from({ length: n }, (_, i) => (
-        <rect key={i} x={x + i * step + step * 0.12} y={y - 9} width={step * 0.56} height={10} fill={fill} />
-      ))}
-    </>
-  );
-}
-const WIN = [
-  [253, 176, 0], [275, 176, 1], [289, 176, 2], [176, 150, 3], [346, 138, 1], [182, 196, 2], [350, 160, 0], [112, 214, 3], [412, 222, 1],
-  [190, 238, 0], [214, 238, 2], [250, 232, 1], [286, 232, 3], [318, 238, 0], [348, 238, 2],
-] as const;
-export function Castle() {
-  const ink = "#0a0512";
-  return (
-    <svg viewBox="0 0 520 420" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id="hw-castle-g" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1a0d26" />
-          <stop offset="1" stopColor="#07030c" />
-        </linearGradient>
-        <radialGradient id="hw-win-g" cx=".5" cy=".5" r=".6">
-          <stop offset="0" stopColor="#f4d8ff" />
-          <stop offset=".5" stopColor="#b57bff" />
-          <stop offset="1" stopColor="#6b2fc4" />
-        </radialGradient>
-        <filter id="hw-win-b" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="3.2" />
-        </filter>
-      </defs>
-      {/* encosta */}
-      <path d="M0 420V338L38 326L70 304L112 312L150 288L192 296L232 274L300 272L352 284L402 272L442 300L482 294L520 322V420Z" fill="url(#hw-castle-g)" />
-      <g fill="url(#hw-castle-g)" stroke="#ff9a3c" strokeOpacity=".42" strokeWidth="1.1">
-        {/* muralha e salão */}
-        <rect x="132" y="236" width="258" height="50" />
-        <rect x="150" y="212" width="222" height="28" />
-        {/* torres menores */}
-        <rect x="98" y="196" width="36" height="92" />
-        <path d="M94 196L116 146L138 196Z" />
-        <rect x="396" y="206" width="36" height="84" />
-        <path d="M392 206L414 160L436 206Z" />
-        {/* torre esquerda e direita */}
-        <rect x="158" y="128" width="46" height="120" />
-        <path d="M152 128L181 62L210 128Z" />
-        <rect x="334" y="118" width="48" height="130" />
-        <path d="M328 118L358 46L388 118Z" />
-        {/* torre central (a mais alta) */}
-        <rect x="236" y="138" width="72" height="116" />
-        <path d="M230 138L272 74L314 138Z" />
-        <path d="M265 78L272 14L279 78Z" />
-      </g>
-      <path d="M272 14L292 22L272 30Z" fill={ink} />
-      <g fill={ink}>
-        <Battlements x={150} y={212} w={222} n={13} fill={ink} />
-        <Battlements x={132} y={236} w={20} n={1} fill={ink} />
-      </g>
-      {/* janelas */}
-      {WIN.map(([x, y, k], i) => (
-        <g key={i} className="hw-win" style={{ animationDelay: `${-k * 1.7}s`, animationDuration: `${3.6 + k * 0.9}s` }}>
-          <ellipse cx={x} cy={y} rx="6" ry="9" fill="#a56bff" opacity=".55" filter="url(#hw-win-b)" />
-          <path d={`M${x - 3.2} ${y + 7}V${y - 2}Q${x - 3.2} ${y - 7} ${x} ${y - 7}Q${x + 3.2} ${y - 7} ${x + 3.2} ${y - 2}V${y + 7}Z`} fill="url(#hw-win-g)" />
-        </g>
-      ))}
-      {/* morcegos presos na torre */}
-      <g fill={ink}>
-        <circle cx="181" cy="60" r="2.4" />
-        <circle cx="358" cy="44" r="2.4" />
-      </g>
-    </svg>
-  );
-}
-
 /* ---- cemitério: colina, árvores secas, lápides e grade -------------------------------------------- */
 type Stone = { x: number; y: number; w: number; h: number; kind: "round" | "cross" | "slab"; tilt: number };
 const STONES: Stone[] = [
@@ -146,8 +46,8 @@ const TREES = [
   { seed: 43, x: 1090, y: 296, h: 250, lean: 0.08 },
   { seed: 57, x: 1460, y: 292, h: 320, lean: -0.04 },
 ];
-export function Graveyard() {
-  const ink = "#07040c";
+export function Graveyard({ lit = false, id = "g" }: { lit?: boolean; id?: string }) {
+  const ink = lit ? "#3a2e26" : "#07040c";
   const trees = TREES.map((t) => deadTree(t.seed, t.x, t.y, t.h, t.lean));
   const pickets = (from: number, to: number) => {
     const out: number[] = [];
@@ -157,17 +57,23 @@ export function Graveyard() {
   return (
     <svg viewBox="0 0 1600 380" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
       <defs>
-        <linearGradient id="hw-hill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2a1640" />
-          <stop offset=".55" stopColor="#0e0818" />
+        <linearGradient id={`hw-hill-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={lit ? "#5a4a28" : "#2a1640"} />
+          <stop offset=".55" stopColor={lit ? "#2c2418" : "#0e0818"} />
           <stop offset="1" stopColor="#040208" />
         </linearGradient>
-        <linearGradient id="hw-stone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#3a2a4c" />
-          <stop offset="1" stopColor="#0f0a18" />
+        <linearGradient id={`hw-stone-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={lit ? "#9a8c78" : "#3a2a4c"} />
+          <stop offset="1" stopColor={lit ? "#322a22" : "#0f0a18"} />
         </linearGradient>
+        <filter id={`hw-rock-${id}`} x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="21" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.5 -.5" />
+        </filter>
       </defs>
-      <path d="M0 380V304C180 286 340 300 560 292C760 284 900 304 1100 294C1300 286 1460 298 1600 288V380Z" fill="url(#hw-hill)" stroke="#7a4ab8" strokeOpacity=".4" strokeWidth="2" />
+      <path d="M0 380V304C180 286 340 300 560 292C760 284 900 304 1100 294C1300 286 1460 298 1600 288V380Z" fill={`url(#hw-hill-${id})`} stroke="#7a4ab8" strokeOpacity=".4" strokeWidth="2" />
+      {/* tufos de mato seco na crista */}
+      <path d="M0 302l6-14 4 14 7-18 4 18 6-12 3 12" stroke={lit ? "#8a7a3a" : "#120a1c"} strokeWidth="1.6" fill="none" strokeLinecap="round" transform="translate(40 0) scale(1.4 1)" />
       {/* árvores secas */}
       {trees.map((levels, i) => (
         <g key={i} fill="none" stroke={ink} strokeLinecap="round" strokeLinejoin="round">
@@ -192,7 +98,16 @@ export function Graveyard() {
       {/* lápides */}
       {STONES.map((s, i) => (
         <g key={i} transform={`rotate(${s.tilt} ${s.x + s.w / 2} ${s.y + s.h})`}>
-          <path d={stonePath(s)} fill="url(#hw-stone)" stroke="#ff9a3c" strokeOpacity=".28" strokeWidth="1.3" />
+          <path d={stonePath(s)} fill={`url(#hw-stone-${id})`} stroke="#ff9a3c" strokeOpacity=".28" strokeWidth="1.3" />
+          {/* desgaste da pedra (manchas) e, na variante iluminada, rachaduras, musgo e uma cruz gravada */}
+          <path d={stonePath(s)} fill="#000" opacity={lit ? 0.25 : 0.4} filter={`url(#hw-rock-${id})`} />
+          {lit && (
+            <g fill="none" strokeLinecap="round">
+              <path d={`M${s.x + s.w * 0.62} ${s.y + 6}l-5 12 5 9-4 10`} stroke="#1a1226" strokeWidth="1.3" />
+              <path d={`M${s.x + s.w / 2} ${s.y + s.h * 0.3}v16M${s.x + s.w / 2 - 5} ${s.y + s.h * 0.3 + 5}h10`} stroke="#2a2036" strokeWidth="1.6" />
+              <path d={`M${s.x} ${s.y + s.h - 4}q${s.w * 0.4} -8 ${s.w} -2`} stroke="#5a7a3a" strokeWidth="3" opacity=".7" />
+            </g>
+          )}
         </g>
       ))}
       <path d="M0 380V342C260 330 520 346 800 338C1080 330 1340 346 1600 336V380Z" fill="#050309" />
@@ -246,90 +161,6 @@ export function Bat() {
       <path d="M29.4 9L28.6 3.6L31.4 8ZM34.6 9L35.4 3.6L32.6 8Z" fill={ink} />
       <circle cx="30.8" cy="11" r=".7" fill="#ff5a3a" />
       <circle cx="33.2" cy="11" r=".7" fill="#ff5a3a" />
-    </svg>
-  );
-}
-
-/* ---- fantasma translúcido ----------------------------------------------------------------------------- */
-export function Ghost({ id }: { id: string }) {
-  return (
-    <svg viewBox="0 0 120 170" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={`hw-gh-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f2f6ff" stopOpacity=".92" />
-          <stop offset=".6" stopColor="#c9d8ff" stopOpacity=".62" />
-          <stop offset="1" stopColor="#a9b8ff" stopOpacity=".05" />
-        </linearGradient>
-        <filter id={`hw-ghb-${id}`} x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="7" />
-        </filter>
-      </defs>
-      <path d="M60 8C30 8 14 32 14 64V132C14 144 22 150 28 140C34 130 40 152 48 152C56 152 56 134 62 134C68 134 68 152 76 152C84 152 90 130 96 140C102 150 108 144 108 132V64C108 32 90 8 60 8Z" fill="#9fb4ff" opacity=".5" filter={`url(#hw-ghb-${id})`} />
-      <path d="M60 8C30 8 14 32 14 64V132C14 144 22 150 28 140C34 130 40 152 48 152C56 152 56 134 62 134C68 134 68 152 76 152C84 152 90 130 96 140C102 150 108 144 108 132V64C108 32 90 8 60 8Z" fill={`url(#hw-gh-${id})`} />
-      <path d="M16 84C4 84 0 98 8 104C14 108 20 100 18 92Z" fill={`url(#hw-gh-${id})`} />
-      <path d="M104 84C116 84 120 98 112 104C106 108 100 100 102 92Z" fill={`url(#hw-gh-${id})`} />
-      <ellipse cx="44" cy="62" rx="8" ry="11" fill="#1a1230" opacity=".88" />
-      <ellipse cx="76" cy="62" rx="8" ry="11" fill="#1a1230" opacity=".88" />
-      <ellipse cx="60" cy="92" rx="7" ry="11" fill="#1a1230" opacity=".82" />
-    </svg>
-  );
-}
-
-/* ---- vampiro (capa balança, olhos pulsam) ------------------------------------------------------------- */
-export function Vampire() {
-  return (
-    <svg viewBox="0 0 260 470" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id="hw-v-cape" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#2a1a38" />
-          <stop offset=".4" stopColor="#120a1c" />
-          <stop offset="1" stopColor="#07030c" />
-        </linearGradient>
-        <linearGradient id="hw-v-lining" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#b01c34" />
-          <stop offset="1" stopColor="#3a0612" />
-        </linearGradient>
-        <radialGradient id="hw-v-skin" cx=".4" cy=".35" r=".8">
-          <stop offset="0" stopColor="#f4e8e2" />
-          <stop offset=".7" stopColor="#c9b4b0" />
-          <stop offset="1" stopColor="#8a7480" />
-        </radialGradient>
-        <filter id="hw-v-glow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="3" />
-        </filter>
-      </defs>
-      <g className="hw-cape">
-        <path d="M130 74C80 80 36 132 20 232C10 312 6 392 0 470H260C254 392 250 312 240 232C224 132 180 80 130 74Z" fill="url(#hw-v-cape)" stroke="#ff9a3c" strokeOpacity=".4" strokeWidth="1.5" />
-        <path d="M130 108C102 150 80 250 72 470H132Z" fill="url(#hw-v-lining)" />
-        <path d="M130 108C158 150 180 250 188 470H128Z" fill="url(#hw-v-lining)" opacity=".9" />
-      </g>
-      {/* casaco e camisa */}
-      <path d="M94 124L166 124L178 308L172 470H88L82 308Z" fill="#0c0713" />
-      <path d="M116 124L144 124L130 236Z" fill="#e9e2e4" />
-      <circle cx="130" cy="150" r="5" fill="#c4122b" />
-      <circle cx="130" cy="150" r="2" fill="#ff7a8a" />
-      {/* gola alta */}
-      <path d="M96 128L82 54L120 98Z" fill="#1c0e28" stroke="#b01c34" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M164 128L178 54L140 98Z" fill="#1c0e28" stroke="#b01c34" strokeWidth="2" strokeLinejoin="round" />
-      {/* cabeça */}
-      <ellipse cx="130" cy="88" rx="27" ry="34" fill="url(#hw-v-skin)" />
-      <path d="M103 80C103 46 157 46 157 80C149 68 141 64 130 72C119 64 111 68 103 80Z" fill="#07030c" />
-      <path d="M103 84L97 94L106 92ZM157 84L163 94L154 92Z" fill="#c9b4b0" />
-      <path d="M113 80L125 84M147 80L135 84" stroke="#07030c" strokeWidth="2.6" strokeLinecap="round" />
-      <g className="hw-eyes">
-        <ellipse cx="119" cy="88" rx="5.2" ry="3.4" fill="#ff2a3a" filter="url(#hw-v-glow)" />
-        <ellipse cx="141" cy="88" rx="5.2" ry="3.4" fill="#ff2a3a" filter="url(#hw-v-glow)" />
-        <ellipse cx="119" cy="88" rx="3.4" ry="2.2" fill="#ff8a8a" />
-        <ellipse cx="141" cy="88" rx="3.4" ry="2.2" fill="#ff8a8a" />
-      </g>
-      <path d="M130 90L127 100L133 100" stroke="#8a7480" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-      <path d="M118 108Q130 114 142 108" stroke="#5a1a28" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <path d="M124 110L126 118L128 110ZM132 110L134 118L136 110Z" fill="#fff" />
-      {/* mãos pálidas segurando a capa */}
-      <g fill="#d8c8c4">
-        <path d="M76 304L66 322L72 334L84 324L94 310Z" />
-        <path d="M184 304L194 322L188 334L176 324L166 310Z" />
-      </g>
     </svg>
   );
 }

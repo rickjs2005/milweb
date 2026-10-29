@@ -1,77 +1,117 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "@/animations/gsap";
-import { useOsStore } from "../os-shell";
-import { Bat, Candle, Castle, CloudBand, Ghost, Graveyard, Mound, Spider, Stars, Vampire, Web, Witch, ZombieBody, ZombieHand } from "./art/layers";
+import { useOs, useOsStore } from "../os-shell";
+import { Bat, Candle, Graveyard, Mound, Spider, Stars, Web, Witch, ZombieBody, ZombieHand } from "./art/layers";
+import { Castle } from "./art/castle";
+import { CloudBand } from "./art/clouds";
+import { Ghost } from "./art/ghost";
+import { Vampire } from "./art/vampire";
+import { reactCastle, reactGhost, reactSpider } from "./audio";
+import { createInteractions, type Controller } from "./interaction";
+import { probeGpu } from "@/lib/quality";
 import "./scene.css";
 
 /**
- * O cenário de Halloween: camadas independentes, cada uma com a sua profundidade, atrás da interface.
+ * A casa assombrada: camadas independentes, cada uma com a sua profundidade, atrás da interface.
  *
  *   céu e estrelas → lua e halo → nuvens → bruxa → castelo → cemitério e árvores → personagens (vampiro,
- *   fantasmas, zumbi, morcegos) → primeiro plano (névoa, velas, abóboras) → teias e aranhas → véu
+ *   fantasmas, zumbi, morcegos) → primeiro plano (névoa, velas, abóboras) → teias e aranhas
+ *   → ESCURIDÃO (camada que a lanterna fura) → LANTERNA (a versão iluminada do castelo e do cemitério,
+ *   olhos escondidos e névoa, só dentro do foco) → véu de legibilidade → dica.
  *
- * Toda a animação ambiente é CSS (transform/opacity, camadas próprias no compositor): nada de React por
- * quadro. A única coisa em JS é o paralaxe do mouse — GSAP quickTo, suave e limitado, com intensidade
- * crescente conforme a profundidade (`data-depth`), só no desktop e sem movimento reduzido. O texto, os
- * apps e os controles ficam FORA desta árvore e nunca se movem. A cena inteira é decorativa: aria-hidden,
- * pointer-events: none, nenhum elemento focável.
+ * Toda a animação ambiente é CSS (transform/opacity, camadas no compositor). A reação ao visitante é o
+ * sistema coordenado de interaction.ts (um listener de ponteiro, `gsap.quickTo`, nada de React por quadro).
+ * Cada criatura que reage tem um invólucro próprio (`.hw-gr`, `.hw-dr`): a animação ambiente fica no elemento
+ * de fora e a reação no de dentro — dois sistemas nunca escrevem o mesmo `transform`.
+ * O texto, os apps e os controles ficam FORA desta árvore e nunca se movem. A cena é decorativa: aria-hidden,
+ * pointer-events: none (a zona de toque do celular é a única parte que escuta, e não bloqueia rolagem).
  *
- * Movimento reduzido (sistema ou Ajustes, inclusive mudando durante a sessão): composição estável — bruxa,
- * morcegos e zumbi parados em pontos fixos, sem paralaxe e sem eventos periódicos. Aba oculta: as
- * animações pausam (`html[data-os-hidden]`, ver clock.ts). Telefone: movimento ambiente leve, composição
- * enxuta (CSS `data-lite`), sem sensores.
+ * Movimento reduzido (sistema ou Ajustes, mesmo mudando na sessão): composição estável, criaturas só com
+ * brilho. Aba oculta: animações pausam (`html[data-os-hidden]`). Janela aberta: a lanterna e as reações
+ * diminuem para o conteúdo ter prioridade.
  */
+const EYES = [
+  { x: 5, y: 66, c: "#ffd34a" }, { x: 17, y: 82, c: "#ff3a3a" }, { x: 29, y: 74, c: "#7dff7a" }, { x: 41, y: 88, c: "#ffd34a" },
+  { x: 55, y: 79, c: "#ff3a3a" }, { x: 68, y: 86, c: "#ffd34a" }, { x: 81, y: 72, c: "#7dff7a" }, { x: 92, y: 84, c: "#ff3a3a" },
+  { x: 47, y: 60, c: "#ffd34a" }, { x: 76, y: 58, c: "#ff3a3a" },
+];
+
+/** Olhos do vampiro: íris vermelhas e pupilas como elementos HTML (só transform), por cima do SVG — o SVG com filtros nunca é repintado. */
+function VampireEyes() {
+  return (
+    <span className="hw-veyes">
+      <i className="hw-veye hw-veye--l"><b className="hw-vp" /></i>
+      <i className="hw-veye hw-veye--r"><b className="hw-vp" /></i>
+    </span>
+  );
+}
+/** Pupilas pálidas dos fantasmas, pelo mesmo motivo. */
+function GhostEyes() {
+  return (
+    <span className="hw-geyes">
+      <i><b className="hw-gp" /></i>
+      <i><b className="hw-gp" /></i>
+    </span>
+  );
+}
+
 export function HalloweenScene() {
+  const { payload } = useOs();
+  const h = payload.s.halloween;
   const shell = useOsStore((s) => s.shell);
   const motion = useOsStore((s) => s.prefs.motion);
+  const busy = useOsStore((s) => s.focused !== null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const ctrl = useRef<Controller | null>(null);
   const [sysReduce, setSysReduce] = useState(false);
+  const [fine, setFine] = useState(false);
+  // Modo enxuto: aparelho sem GPU de verdade (software), lento ou econômico (lib/quality: tier "low"). Menos camadas,
+  // sem paralaxe, sem as cópias iluminadas, sem animação dentro de SVG. O componente só existe no cliente.
+  const [lean] = useState(() => {
+    try {
+      return probeGpu().tier === "low";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const on = () => setSysReduce(mq.matches);
-    on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
+    const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const pf = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => {
+      setSysReduce(rm.matches);
+      setFine(pf.matches);
+    };
+    sync();
+    rm.addEventListener("change", sync);
+    pf.addEventListener("change", sync);
+    return () => {
+      rm.removeEventListener("change", sync);
+      pf.removeEventListener("change", sync);
+    };
   }, []);
 
   const reduced = motion === "reduce" || sysReduce;
   const lite = shell === "mobile";
 
-  // Paralaxe: cada camada anda no sentido oposto ao do ponteiro, tanto mais quanto mais perto (data-depth).
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || reduced || lite) return;
-    const layers = Array.from(root.querySelectorAll<HTMLElement>("[data-depth]"));
-    const AMP = 11;
-    const movers = layers.map((el) => ({
-      x: gsap.quickTo(el, "x", { duration: 1.1, ease: "power3.out" }),
-      y: gsap.quickTo(el, "y", { duration: 1.1, ease: "power3.out" }),
-      d: Number(el.dataset.depth) || 0,
-    }));
-    const move = (e: PointerEvent) => {
-      const nx = (e.clientX / window.innerWidth) * 2 - 1;
-      const ny = (e.clientY / window.innerHeight) * 2 - 1;
-      for (const m of movers) {
-        m.x(-nx * AMP * m.d);
-        m.y(-ny * AMP * 0.5 * m.d);
-      }
-    };
-    const rest = () => movers.forEach((m) => (m.x(0), m.y(0)));
-    window.addEventListener("pointermove", move, { passive: true });
-    document.documentElement.addEventListener("pointerleave", rest);
+    if (!root) return;
+    const c = createInteractions(root, { fine: fine && !lite, reduced, lite, lean, reactions: { ghost: reactGhost, spider: reactSpider, castle: reactCastle } });
+    ctrl.current = c;
     return () => {
-      window.removeEventListener("pointermove", move);
-      document.documentElement.removeEventListener("pointerleave", rest);
-      gsap.killTweensOf(layers);
-      gsap.set(layers, { clearProps: "transform" });
+      c.dispose();
+      ctrl.current = null;
     };
-  }, [reduced, lite]);
+  }, [fine, reduced, lite, lean]);
+
+  useEffect(() => {
+    ctrl.current?.setBusy(busy);
+  }, [busy, fine, reduced, lite]);
 
   return (
-    <div ref={rootRef} className="hw-scene" data-reduced={reduced ? "1" : "0"} data-lite={lite ? "1" : "0"} aria-hidden="true" data-no-inspect>
+    <div ref={rootRef} className="hw-scene" data-reduced={reduced ? "1" : "0"} data-lite={lite ? "1" : "0"} data-lean={lean ? "1" : "0"} data-busy={busy ? "1" : "0"} aria-hidden="true" data-no-inspect>
       <div className="hw-l" data-depth="0.2">
         <div className="hw-sky" />
         <Stars />
@@ -81,24 +121,24 @@ export function HalloweenScene() {
         <div className="hw-moon" />
       </div>
       <div className="hw-l" data-depth="0.9">
-        <div className="hw-cloud hw-cloud--1"><CloudBand id="a" /></div>
-        <div className="hw-cloud hw-cloud--2"><CloudBand id="b" /></div>
-        <div className="hw-cloud hw-cloud--3"><CloudBand id="c" /></div>
+        <div className="hw-cloud hw-cloud--1"><CloudBand id="a" seed={2} /></div>
+        <div className="hw-cloud hw-cloud--2"><CloudBand id="b" seed={5} /></div>
+        <div className="hw-cloud hw-cloud--3"><CloudBand id="c" seed={8} /></div>
       </div>
       <div className="hw-l" data-depth="1.1">
         <div className="hw-witch"><Witch /></div>
       </div>
       <div className="hw-l" data-depth="1.3">
-        <div className="hw-castle"><Castle /></div>
+        <div className="hw-castle"><Castle id="b" /></div>
       </div>
       <div className="hw-l" data-depth="1.9">
-        <div className="hw-grave"><Graveyard /></div>
+        <div className="hw-grave"><Graveyard id="b" /></div>
       </div>
       <div className="hw-l" data-depth="2.7">
-        <div className="hw-vampire"><Vampire /></div>
-        <div className="hw-ghost hw-ghost--a"><Ghost id="a" /></div>
-        <div className="hw-ghost hw-ghost--b"><Ghost id="b" /></div>
-        <div className="hw-ghost hw-ghost--c"><Ghost id="c" /></div>
+        <div className="hw-vampire"><Vampire /><VampireEyes /></div>
+        <div className="hw-ghost hw-ghost--a"><div className="hw-gr"><Ghost id="a" seed={3} /><GhostEyes /></div></div>
+        <div className="hw-ghost hw-ghost--b"><div className="hw-gr"><Ghost id="b" seed={11} /><GhostEyes /></div></div>
+        <div className="hw-ghost hw-ghost--c"><div className="hw-gr"><Ghost id="c" seed={19} /><GhostEyes /></div></div>
         <div className="hw-zombie">
           <div className="hw-zl hw-zl--hand"><ZombieHand /></div>
           <div className="hw-zl hw-zl--body"><ZombieBody /></div>
@@ -129,9 +169,46 @@ export function HalloweenScene() {
       </div>
       <div className="hw-web hw-web--tr"><Web /></div>
       <div className="hw-web hw-web--tl"><Web /></div>
-      <div className="hw-drop hw-drop--1"><span className="hw-thread" /><div className="hw-spider"><Spider /></div></div>
-      <div className="hw-drop hw-drop--2"><span className="hw-thread" /><div className="hw-spider"><Spider /></div></div>
+      <div className="hw-drop hw-drop--1"><div className="hw-dr"><span className="hw-thread" /><div className="hw-spider"><Spider /></div></div></div>
+      <div className="hw-drop hw-drop--2"><div className="hw-dr"><span className="hw-thread" /><div className="hw-spider"><Spider /></div></div></div>
+
+      {/* escuridão furada pela lanterna e a janela que revela os detalhes (só o cenário; a interface fica acima) */}
+      <div className="hw-dark" />
+      <div className="hw-lantern">
+        <div className="hw-lantern__in">
+          {!lean && (
+            <>
+              <div className="hw-l" data-depth="1.3">
+                <div className="hw-castle"><Castle lit id="r" /></div>
+              </div>
+              <div className="hw-l" data-depth="1.9">
+                <div className="hw-grave"><Graveyard lit id="r" /></div>
+              </div>
+            </>
+          )}
+          <div className="hw-l" data-depth="2.7">
+            {EYES.map((e, i) => (
+              <span key={i} className="hw-eyepair" style={{ left: `${e.x}%`, top: `${e.y}%`, ["--c" as string]: e.c, animationDelay: `${-(i * 1.7)}s` }}>
+                <i />
+                <i />
+              </span>
+            ))}
+          </div>
+          <div className="hw-l" data-depth="3.8">
+            <div className="hw-rfog hw-rfog--a" />
+            <div className="hw-rfog hw-rfog--b" />
+          </div>
+        </div>
+      </div>
+      {/* morcegos da descoberta do castelo: parados e ocultos até o evento */}
+      {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+        <div key={n} className="hw-burst" style={{ display: "none" }}><Bat /></div>
+      ))}
       <div className="hw-veil" />
+      {/* Escudo do hit-test: o ponteiro que não cai na interface para aqui, sem varrer as dezenas de camadas da cena. */}
+      <div className="hw-shield" />
+      <div className="hw-hint"><span className="hw-hint__dot" />{lite ? h.hintTouch : h.hint}</div>
+      {(!fine || lite) && <div className="hw-touchzone" />}
     </div>
   );
 }
