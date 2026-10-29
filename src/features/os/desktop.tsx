@@ -86,6 +86,7 @@ export function Desktop() {
   // Edição de Halloween (halloween/): cenário e frase próprios enquanto durar; as duas cenas pesadas nunca coexistem.
   const halloween = useHalloweenActive();
   const eventLines = s.halloween.motto;
+  const eventBadge = s.halloween.badge;
 
   return (
     <div className="os-desktop" aria-label={s.regions.desktop}>
@@ -108,6 +109,8 @@ export function Desktop() {
       {/* Assinatura: pequena, numa área livre (canto inferior esquerdo); no telefone fica só para leitores de tela.
           Desktop largo: o lema sobe para o alto à esquerda e a linha fica sozinha no canto, como rodapé. */}
       <div className="os-sign">
+        {/* Selo do evento: sempre no DOM, escondido por CSS fora do evento (mesmo atributo da frase abaixo). */}
+        <p className="os-sign__badge">{eventBadge}</p>
         <Motto className="os-sign__motto">
           <span className="os-sign__normal">
             {dot ? motto.slice(0, -1) : motto}

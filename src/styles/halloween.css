@@ -338,3 +338,32 @@ html[data-os-event="halloween"] .os-icon-btn:hover .hw-fx::after, html[data-os-e
 html[data-os-event="halloween"][data-os-hidden] .hw-fx::after { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { html[data-os-event="halloween"] .hw-fx::after { animation: none !important; } }
 html[data-os-event="halloween"][data-os-motion="reduce"] .hw-fx::after { animation: none !important; }
+
+/* ---- selo do evento, acima da frase ------------------------------------------------------------------- */
+.os-sign__badge { display: none; }
+html[data-os-event="halloween"] .os-sign__badge {
+  display: inline-block; position: relative; margin: 0 0 12px; padding: 7px 14px 6px; border-radius: 999px; pointer-events: none;
+  font-family: var(--font-mono), ui-monospace, monospace; font-size: 11px; font-weight: 600; line-height: 1.2; letter-spacing: .12em; white-space: nowrap;
+  color: #ffe2b8; text-shadow: 0 1px 6px rgb(0 0 0 / .7);
+  background: rgb(16 8 20 / .66); border: 1px solid rgb(255 140 32 / .9);
+  box-shadow: 0 0 14px rgb(255 124 24 / .32), inset 0 0 10px rgb(255 124 24 / .12);
+}
+/* o brilho "respira" só em opacity de uma camada própria (nada de filter animado) */
+html[data-os-event="halloween"] .os-sign__badge::after {
+  content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 22px 2px rgb(255 124 24 / .55); opacity: .35; animation: hw-badge-glow 3.6s ease-in-out infinite;
+}
+@keyframes hw-badge-glow { 0%, 100% { opacity: .22; } 50% { opacity: .7; } }
+html[data-os-event="halloween"][data-os-motion="reduce"] .os-sign__badge::after { animation: none; opacity: .4; }
+@media (prefers-reduced-motion: reduce) { html[data-os-event="halloween"] .os-sign__badge::after { animation: none; opacity: .4; } }
+html[data-os-event="halloween"][data-os-hidden] .os-sign__badge::after { animation-play-state: paused; }
+@media (min-width: 1080px) {
+  /* desktop largo: o lema é posicionado pelo CSS do shell; o selo ocupa a faixa acima e empurra lema e grade juntos.
+     O espaço vem em parte do respiro lema → apps (--hgap), para a grade não encostar na linha do rodapé em telas baixas. */
+  html[data-os-event="halloween"] .os-desktop { --hb: clamp(24px, 3.4vh, 36px); --hy: calc(clamp(18px, 3.6vh, 44px) + var(--hb)); --hgap: clamp(10px, 3.2vh, 48px); }
+  html[data-os-event="halloween"] .os-sign__badge { position: absolute; left: var(--hx); top: calc(clamp(18px, 3.6vh, 44px) - 4px); margin: 0; padding: 5px 12px 4px; z-index: 1; }
+}
+@media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
+  /* celular: o selo abre a coluna do topo e o lema desce junto; a fonte acompanha a largura para caber em 320 px */
+  html[data-os-event="halloween"] .os-sign__badge { margin-bottom: 9px; padding: 6px 11px 5px; font-size: clamp(9px, 2.9vw, 11px); letter-spacing: .1em; }
+}

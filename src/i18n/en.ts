@@ -82,7 +82,7 @@ export const en: Dictionary = {
     mobile: { back: "Back", home: "Home", open: "Open", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
     about: { base: "Base", focus: "Focus" },
     sign: { craft: "Creative development", origin: "Brazil → World", motto: "Code moves the world." },
-    halloween: { motto: ["Otherworldly", "websites"], soundOn: "Turn sound on", soundOff: "Turn sound off", soundShort: "Sound", volume: "Halloween sound volume", hint: "Explore the scene", hintTouch: "Touch the scene" },
+    halloween: { motto: ["Otherworldly", "websites"], soundOn: "Turn sound on", soundOff: "Turn sound off", soundShort: "Sound", volume: "Halloween sound volume", hint: "Explore the scene", hintTouch: "Touch the scene", badge: "🎃 HALLOWEEN EVENT · UNTIL OCT 31" },
     projects: {
       back: "All projects", open: "Open case", visit: "Open site", code: "Code", stack: "Stack", context: "Context", done: "What was done", solutions: "Solutions", gallery: "Screens", result: "Result",
       similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",

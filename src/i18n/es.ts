@@ -82,7 +82,7 @@ export const es: Dictionary = {
     mobile: { back: "Volver", home: "Inicio", open: "Abrir", apps: "Aplicaciones", message: "Sitios, sistemas y experiencias digitales con diseño, código y motion." },
     about: { base: "Base", focus: "Enfoque" },
     sign: { craft: "Desarrollo creativo", origin: "Brasil → Mundo", motto: "Códigos mueven el mundo." },
-    halloween: { motto: ["Sitios de", "otro mundo"], soundOn: "Activar sonido", soundOff: "Desactivar sonido", soundShort: "Sonido", volume: "Volumen del sonido de Halloween", hint: "Explora el escenario", hintTouch: "Toca el escenario" },
+    halloween: { motto: ["Sitios de", "otro mundo"], soundOn: "Activar sonido", soundOff: "Desactivar sonido", soundShort: "Sonido", volume: "Volumen del sonido de Halloween", hint: "Explora el escenario", hintTouch: "Toca el escenario", badge: "🎃 EVENTO DE HALLOWEEN · HASTA EL 31/10" },
     projects: {
       back: "Todos los proyectos", open: "Abrir caso", visit: "Abrir sitio", code: "Código", stack: "Stack", context: "Contexto", done: "Qué se hizo", solutions: "Soluciones", gallery: "Pantallas", result: "Resultado",
       similar: "Quiero algo parecido", next: "Siguiente proyecto", prev: "Proyecto anterior", client: "Trabajo para cliente", demo: "Demostración", study: "Proyecto propio", live: "En línea", detail: "Detalle técnico", idea: "La idea", experience: "Experiencia",
