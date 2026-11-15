@@ -50,3 +50,10 @@ scripts/.rsc-audit/**/*.json
 scripts/.rsc-audit/**/*.log
 scripts/.rsc-audit/**/*.png
 scripts/.rsc-audit/**/*.webm
+
+# renders de revisão do personagem (refeitos por assets/entity/build_entity.py -- --render)
+assets/entity/renders/
+*.blend1
+
+# vídeos de divulgação do personagem (pesados; refeitos por scripts/entity-video.mjs)
+docs/entity/video/

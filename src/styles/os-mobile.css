@@ -8,7 +8,7 @@
    toca o desktop (os.css), que é regredido por capturas a cada revisão.
 
    Composição: uma tela inicial de telefone — linha de status, o palco onde
-   aparece a lua do Tsukuyomi (Obito) ou o portal do Vazio Ilimitado (Gojo),
+   flutua o personagem do fundo (features/os/scene),
    a grade de aplicativos (ícone + nome curto, 4 colunas) e a dock de redes
    com o olho do tema no fim. Cada app abre em tela cheia
    crescendo do próprio ícone.
@@ -42,18 +42,11 @@
     overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
     padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) var(--os-mdock) max(16px, env(safe-area-inset-left, 0px));
   }
-  /* fundo: em tela cheia, atrás de tudo; a imagem estática usa o enquadramento do telefone (700 × 1520 em volta
-     de (350, 520) com raio 400 — scene.config.ts › SCENE_STILL.mobile) e o palpite inicial do palco segue a
-     grade de 2 linhas; os-scene.tsx mede o palco de verdade logo depois. */
+  /* fundo: em tela cheia, atrás de tudo; o personagem ocupa o palco (entre o status e a grade). O palpite
+     inicial da composição segue a grade de 2 linhas (palco ≈ 100dvh − 350px, centro em 50dvh − 127px —
+     scene.config.ts › COMPOSE.mobile); os-scene.tsx mede o palco de verdade logo depois. */
   .os-wallpaper { position: fixed; inset: 0; z-index: -1; }
-  .os-scene { --st-x: 50vw; --st-y: calc(50dvh - 127px); --st-r: min(62vw, calc((100dvh - 350px) * .78)); }
-  .os-scene__still {
-    background-color: #370c0a;
-    background-image: url("/art/scene-tsukuyomi-mobile.webp");
-    background-size: calc(var(--st-r) * 1.75) auto;
-    background-position: calc(var(--st-x) - var(--st-r) * .875) calc(var(--st-y) - var(--st-r) * 1.3);
-  }
-  html[data-os-theme="gojo"] .os-scene__still { background-color: #e0eaf2; background-image: url("/art/scene-void-mobile.webp"); }
+  .os-scene { --en-x: 50vw; --en-y: calc(50dvh - 127px + (100dvh - 350px) * .04); --en-k: min(calc((100dvh - 350px) * .4), 52vw); }
   /* áreas de leitura: a linha de status (topo) e a grade de apps (pé) */
   .os-scene__calm::before {
     background:
@@ -75,7 +68,7 @@
   .os-launcher__brand { font-family: var(--font-display), sans-serif; font-weight: 900; font-size: 12px; letter-spacing: .02em; text-transform: none; color: rgb(var(--os-fg) / .92); }
   .os-launcher__time { font-variant-numeric: tabular-nums; }
 
-  /* o palco ocupa o espaço entre o status e a grade, sangrando até as bordas: é ali que a lua/o portal aparecem */
+  /* o palco ocupa o espaço entre o status e a grade, sangrando até as bordas: é ali que o personagem flutua */
   .os-stage {
     order: 2; position: relative; left: auto; top: auto; flex: 1 1 0; min-height: 132px; width: auto; aspect-ratio: auto;
     margin: 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
@@ -92,6 +85,7 @@
     -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none;
   }
   .os-launch:focus-visible { outline: none; }
+  .os-launch[data-touch] .os-micon { box-shadow: 0 0 0 2px rgb(var(--os-signal)), 0 0 26px rgb(var(--os-signal) / .65), 0 8px 18px rgb(0 0 0 / .4); }
   .os-launch:focus-visible .os-micon { box-shadow: 0 0 0 3px rgb(var(--os-signal)), 0 8px 18px rgb(0 0 0 / .4); }
   .os-launch__label {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

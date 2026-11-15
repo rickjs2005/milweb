@@ -1,168 +1,182 @@
 import type { OsTheme } from "../theme";
 
 /**
- * O FUNDO DO MILWEB OS — dois universos e a travessia entre eles.
+ * O FUNDO DO MILWEB OS — a entidade.
  *
- *   tsukuyomi · tema Obito (escuro): lua vermelha monumental com relevo, os anéis
- *               e os tomoe girando, nuvens em camadas atravessando a lua, rochas
- *               facetadas girando e flutuando, brasas orbitando em profundidade,
- *               feixes vermelhos e névoa que respiram.
- *   void      · tema Gojo (claro): um túnel dimensional que envolve a tela, com
- *               energia curva fluindo pelas paredes até o centro azul profundo,
- *               anéis inclinados girando em sentidos opostos, correntes de luz
- *               em hélice, partículas, névoa branca, estilhaços de vidro e
- *               distorção localizada.
+ * Um personagem 3D autoral (assets/entity → public/models/entity.glb) flutua
+ * atrás da interface e reage à navegação: olha para o aplicativo destacado,
+ * aproxima o corpo e leva a ponta do indicador até a posição REAL do ícone
+ * na tela. O mesmo asset serve aos dois temas — muda a luz, o ambiente e a
+ * cor da emissão:
+ *
+ *   dark   · tema Obito (escuro): grafite sobre carvão, emissão vermelha
+ *   light  · tema Gojo (claro): grafite sobre gelo, emissão azul
  *
  * Cena em Three.js (scene/engine.ts), com um laço só — o ticker do GSAP — e
- * tempo decorrido. Profundidade real: a câmera em perspectiva faz a paralaxe
- * (o que está perto anda mais) e a travessia é a câmera atravessando a cena.
+ * tempo decorrido. Tudo aqui é número de ajuste: pose, alcance, ritmo,
+ * intensidade. Ver docs/milweb-os-references.md › "Revisão 17".
  */
-export type SceneWorld = "tsukuyomi" | "void";
+export type Mood = "dark" | "light";
 
-export const WORLD_OF: Record<OsTheme, SceneWorld> = { obito: "tsukuyomi", gojo: "void" };
-export const THEME_OF: Record<SceneWorld, OsTheme> = { tsukuyomi: "obito", void: "gojo" };
+export const MOOD_OF: Record<OsTheme, Mood> = { obito: "dark", gojo: "light" };
+export const THEME_OF: Record<Mood, OsTheme> = { dark: "obito", light: "gojo" };
 
 /**
- * Distância focal da câmera em raios do palco (f = F × R px): um ponto a z
- * unidades aparece deslocado (x, y) · F / z raios do centro. Fixo, para a
- * composição ser a mesma em qualquer tela e nas imagens estáticas.
+ * O modelo, com a revisão do arquivo na URL (next.config.mjs › entityRev, embutida no build): o código e o
+ * GLB são sempre do mesmo par. Sem ela, um GLB antigo no cache do navegador (um dia de validade) encontrava
+ * o código novo, faltava um clipe e o personagem ficava na imagem estática.
  */
-export const F = 2;
+const ENTITY_REV = process.env.NEXT_PUBLIC_ENTITY_REV;
+export const ENTITY_URL = ENTITY_REV ? `/models/entity.glb?v=${ENTITY_REV}` : "/models/entity.glb";
 
 export const OS_SCENE = {
-  /** Travessia entre universos (s). */
-  duration: 2.2,
+  /** Troca de tema: a luz nova nasce no controle e atravessa a tela (s). */
+  duration: 1.5,
+  /** Progresso em que a interface adota o tema novo (a frente passa pelo meio da tela). */
+  commitAt: 0.5,
+  /** Câmera: campo de visão vertical (graus). Estreito: o personagem não deforma ao se deslocar. */
+  fov: 24,
   /**
-   * Progresso em que a interface adota o tema novo, por universo de destino:
-   * quando a frente do universo novo passa pelas áreas de leitura (lema,
-   * coluna de apps, microtextos do HUD).
+   * Teto de quadros: 60 sempre que algo se mexe por causa do visitante (gesto, troca de tema, ponteiro
+   * andando — a cabeça o acompanha) e por `calm` s depois. Em repouso de verdade: 60 se a GPU tem folga
+   * (custo do quadro ≤ `budget.smoothMs`), senão 30 — a flutuação lenta aguenta, o olhar não.
    */
-  commitAt: { void: 0.57, tsukuyomi: 0.47 } as Record<SceneWorld, number>,
-  /** Onda de distorção que nasce no controle de tema (fração do progresso). */
-  wave: { from: 0.02, to: 0.42 },
-  /** Composição: raio do palco = 0,6 × altura (desktop); min(0,62 × largura, 0,78 × altura do palco) no telefone. */
-  desktopR: 0.6,
-  mobileR: { w: 0.62, h: 0.78 },
-  /** Paralaxe: constante de tempo do amortecimento (s), deriva automática sem mouse (amplitude −1..1). */
-  parallax: { tau: 0.55, idle: 3.5, drift: 0.45, mobileDrift: 0.55 },
+  fps: { idle: 30, active: 60, calm: 2.4 },
   /**
-   * Teto de quadros, o mesmo para o ambiente, a travessia e as reações: a
-   * travessia desenha os dois universos, então subir para 60 numa GPU que
-   * calibrou em 30 a satura e trava; 30 constantes valem mais que 60 aos trancos.
+   * Resolução: começa em min(devicePixelRatio, max); logo depois de carregar, o motor mede o custo real de
+   * um quadro (sincronizado com a GPU) e, se passar de `targetMs`, baixa a resolução na proporção — com o
+   * canvas ainda invisível. Se mesmo assim o quadro custar mais que `heavyMs`, os gestos ficam em 30 qps.
+   * Acima de `giveUpMs` na resolução mínima a GPU não dá conta: o motor sai e fica a imagem estática.
+   * Em regime, o monitor de quadros ainda a baixa em passos quando o quadro fica lento, até `min`.
+   * Antialias do próprio contexto.
    */
-  fps: { ambient: 30, ambientHigh: 60 },
-  /**
-   * Orçamento de GPU (ms de quadro medidos no ritmo do ambiente, a 30 qps;
-   * a 60 qps, metade) — decide a resolução e o teto de quadros: 60 qps só
-   * quando cabem em pelo menos `go60` da resolução máxima (e continuam
-   * enquanto couberem em `keep60`); senão 30 qps com a imagem nítida —
-   * fundo lento borrado parece parado, 30 quadros nítidos não. Medido entre
-   * quadros, a GPU integrada está desacelerada: o mesmo quadro sob carga
-   * custa de 1/2 a 1/3 disso (por isso 14 ms). Quadros lentos de verdade o
-   * monitor pega e baixa a resolução. Abaixo de minDpr a cena continua
-   * viva; só GPU por software ou sem WebGL 2 ficam com a imagem.
-   */
-  budget: { probeDpr: 0.5, targetMs: 14, minDpr: 0.45, maxDpr: 1.25, mobileMaxDpr: 1, go60: 0.9, keep60: 0.8 },
-  /**
-   * Reação a um app destacado / onda de abertura (px CSS, s). O raio passa do véu que acalma a coluna de
-   * apps (~210 px): o anel que respira em volta do app aparece no cenário, ao lado dele.
-   */
-  hover: { radius: 190, in: 0.45, out: 0.7 },
-  click: { duration: 1.1 },
+  budget: { maxDpr: 1.5, mobileMaxDpr: 1.5, liteMaxDpr: 1.15, minDpr: 0.6, targetMs: 9, smoothMs: 6, heavyMs: 20, giveUpMs: 45, slowMs: 24, step: 0.85 },
+  /** Paralaxe: a câmera anda um pouco com o mouse (unidades do mundo) — constante de tempo (s) e ociosidade (s). */
+  parallax: { amount: 0.07, tau: 0.95, idle: 3.5 },
   /** Período do relógio dos shaders (s): evita perda de precisão em sessões longas. */
   timeWrap: 3600,
 } as const;
 
 /**
- * Imagens estáticas — a mesma cena no instante zero (scripts/scene-still.mjs).
- * Cada uma é desenhada em volta de (cx, cy) com raio r (px da imagem); o CSS
- * a posiciona pelo centro e raio do palco (`--st-x/--st-y/--st-r`).
+ * Composição (frações da área do fundo). O personagem mede `height` unidades;
+ * `k` é quantos px vale uma unidade — a câmera se afasta ou aproxima para isso.
  */
-export const SCENE_STILL = {
-  desktop: { w: 1880, h: 820, cx: 940, cy: 360, r: 460 },
-  mobile: { w: 700, h: 1520, cx: 350, cy: 520, r: 400 },
+export const COMPOSE = {
+  /** Altura do modelo em unidades (dos pés à ponta da crista) e altura do quadril (o pivô). */
+  height: 2.12,
+  hips: 1.1,
+  desktop: {
+    /** px por unidade = min(kH × altura, kW × largura). */
+    kH: 0.35,
+    kW: 0.205,
+    /** Centro do corpo (quadril) em repouso. */
+    home: { x: 0.565, y: 0.52 },
+    /** Com janela aberta: recolhido à direita, um pouco menor na profundidade. */
+    present: { x: 0.9, y: 0.56, z: -0.9 },
+    /** Até onde o quadril pode ir ao se aproximar de um app (frações da área). */
+    bounds: { x0: 0.2, x1: 0.92, y0: 0.52, y1: 0.575 },
+  },
+  /** Tablet (coluna de apps à esquerda, HUD das redes em volta do palco). */
+  tablet: {
+    kH: 0.3,
+    kW: 0.36,
+    home: { x: 0.56, y: 0.5 },
+    present: { x: 0.86, y: 0.52, z: -0.9 },
+    bounds: { x0: 0.26, x1: 0.9, y0: 0.2, y1: 0.8 },
+  },
+  /** Telefone: o personagem ocupa o palco (entre o status e a grade); `kS` × altura do palco, `kW` × largura. */
+  mobile: {
+    kS: 0.4,
+    kW: 0.52,
+    /** deslocamento do quadril em relação ao centro do palco (frações da altura do palco) */
+    homeDy: 0.04,
+    bounds: { x0: 0.24, x1: 0.76, y0: 0.14, y1: 0.86 },
+  },
 } as const;
 
-/* ---------------------------------------------------------------------------
- * Conteúdo dos universos. Posições em raios do palco (u para a direita, v
- * para cima, centro da lua/portal = 0,0) e profundidade z em unidades do
- * mundo (câmera em z = 0 olhando para −z). Desktop vai de u ≈ ±1,4 (16:10)
- * até ±2 (ultrawide); o telefone, de v ≈ −2,3 a +1,2.
- * ------------------------------------------------------------------------- */
-
-export const TSUKU = {
-  moon: { z: 12, spin: 0.012 },
-  /** rotação dos anéis do padrão (rad/s): o de dentro mais rápido, sentidos alternados */
-  rings: [0.07, -0.05, 0.034] as const,
+/**
+ * Alcance e coreografia. Distâncias em unidades do modelo, tempos em segundos,
+ * ângulos em graus. O braço mede ~0,88 do ombro à ponta do indicador.
+ */
+export const REACH = {
+  /** Plano onde a ponta do dedo trabalha (à frente do corpo, em direção à câmera). */
+  planeZ: 0.2,
+  /** Fração do comprimento do braço usada no alcance confortável (o corpo se aproxima para caber nela). */
+  comfort: 0.8,
+  /** Nunca trava o cotovelo: fração máxima do comprimento ombro–pulso. */
+  maxStretch: 0.985,
   /**
-   * Nuvens: faixas em profundidade, cada uma com a própria velocidade (raios/s) e sentido.
-   * kind: 0 fiapo, 1 banco, 2 tufo. lit: quanto a lua acende as bordas finas por trás.
+   * O corpo chega primeiro, o braço estende depois: enquanto o corpo se aproxima, a ponta do dedo só vai
+   * até esta fração do alcance a partir do ombro (o cotovelo fica dobrado, sem o braço travado à espera).
    */
-  clouds: [
-    { v: 0.6, h: 0.36, z: 11.2, speed: 0.022, alpha: 0.6, kind: 0, lit: 1.0 },
-    { v: -0.32, h: 0.46, z: 10.6, speed: -0.03, alpha: 0.62, kind: 0, lit: 1.0 },
-    { v: 0.1, h: 0.24, z: 9.4, speed: 0.04, alpha: 0.32, kind: 0, lit: 0.9 },
-    { v: -0.8, h: 0.66, z: 8.6, speed: 0.026, alpha: 0.96, kind: 1, lit: 0.9 },
-    { v: 0.98, h: 0.42, z: 6.4, speed: -0.05, alpha: 0.5, kind: 2, lit: 0.55 },
-    { v: -1.12, h: 0.78, z: 5.6, speed: 0.06, alpha: 0.92, kind: 1, lit: 0.4 },
-    { v: -1.8, h: 1.3, z: 7.4, speed: 0.035, alpha: 0.96, kind: 1, lit: 0.25 },
-  ],
-  /** Rochas: (u, v) em raios, z, tamanho em raios, giro (rad/s), oscilação (raios) e frequência (Hz). */
-  rocks: [
-    { u: -0.52, v: 0.4, z: 10.4, s: 0.055, spin: 0.32, bob: 0.012, hz: 0.22 },
-    { u: 0.6, v: 0.33, z: 10.8, s: 0.045, spin: -0.4, bob: 0.01, hz: 0.27 },
-    { u: 0.22, v: -0.5, z: 9.8, s: 0.05, spin: 0.26, bob: 0.012, hz: 0.19 },
-    { u: 1.02, v: -0.42, z: 7.4, s: 0.085, spin: -0.22, bob: 0.016, hz: 0.17 },
-    { u: -0.86, v: 0.18, z: 8.0, s: 0.07, spin: 0.3, bob: 0.014, hz: 0.24 },
-    { u: -0.3, v: 0.88, z: 8.5, s: 0.05, spin: -0.36, bob: 0.012, hz: 0.29 },
-    { u: 1.22, v: 0.5, z: 5.4, s: 0.12, spin: 0.18, bob: 0.02, hz: 0.14 },
-    { u: -1.0, v: -0.58, z: 5.8, s: 0.1, spin: -0.2, bob: 0.018, hz: 0.16 },
-    { u: 0.5, v: 1.05, z: 6.4, s: 0.075, spin: 0.28, bob: 0.014, hz: 0.21 },
-    { u: -0.66, v: -0.82, z: 6.2, s: 0.08, spin: -0.26, bob: 0.015, hz: 0.2 },
-    { u: 1.56, v: -0.08, z: 4.2, s: 0.15, spin: 0.15, bob: 0.022, hz: 0.12 },
-    { u: -1.52, v: 0.42, z: 4.6, s: 0.13, spin: -0.17, bob: 0.02, hz: 0.13 },
-    { u: 0.32, v: -1.28, z: 5.0, s: 0.09, spin: 0.24, bob: 0.016, hz: 0.18 },
-    { u: -0.42, v: 1.16, z: 9.0, s: 0.05, spin: -0.3, bob: 0.012, hz: 0.25 },
-  ],
-  embers: { high: 1500, low: 650 },
+  armLead: 0.9,
+  /** A ponta do dedo não entra neste raio em volta do ombro (fração do alcance): ali o cotovelo dobraria demais. */
+  armMin: 0.6,
+  /** Atenção (hover/foco): a ponta do dedo para a esta distância do ícone. */
+  hoverGap: 0.13,
+  /** Toque: quanto o dedo avança sobre o ponto de contato e por quanto tempo. */
+  press: { depth: 0.014, in: 0.16, hold: 0.09, out: 0.36 },
+  /** De onde o dedo chega ao ícone (vetor do contato para o corpo; x é multiplicado pelo lado). */
+  approachSide: { x: 0.9, y: 0.18, z: 0.4 },
+  approachAbove: { x: 0.16, y: 0.9, z: 0.42 },
+  /** Com um app vizinho no caminho: quase horizontal, rente ao vão acima da fileira. */
+  approachOver: { x: 0.97, y: 0.1, z: 0.22 },
+  /** Pelo lado: o ombro fica esta fração do alcance ABAIXO do contato (o braço sobe um pouco até o ícone). */
+  bodySide: { x: 1, y: 0.1 },
+  bodyAbove: { x: 0.28, y: 1 },
+  /**
+   * Molas (rad/s): corpo, ponta do dedo, olhar. Maior = mais rápido. Corpo e mão andam em DUAS molas em
+   * série (o alvo passa antes por uma mola `lead` vezes mais rápida): a partida fica sem tranco —
+   * acelera aos poucos, em vez de arrancar — e a chegada continua sem ultrapassar. Para deixar tudo mais
+   * solto ou mais firme, mexa aqui: é o "quão suave" do personagem.
+   */
+  spring: { body: 5.6, bodyRush: 7.6, hand: 11.5, handRush: 15, look: 4.4, lead: 1.7 },
+  /** Mistura dos clipes e do IK (constantes de tempo, s). */
+  blend: { clip: 0.26, ik: 0.2, ikOut: 0.46 },
+  /** Depois de quanto tempo sem app destacado o personagem volta ao repouso. */
+  grace: 0.6,
+  /** Quanto o corpo inclina na direção do alvo (graus) por unidade de deslocamento, e o teto. */
+  lean: { perUnit: 7, max: 10 },
+  /** Limites articulares (iguais aos gravados no .blend — assets/entity/entity_anim.py › LIMITS). */
+  limits: { elbowMin: 6, elbowMax: 150, wrist: 62, headYaw: 40, headPitch: 30 },
+  /** O olhar mira um ponto à frente do plano dos apps, para a cabeça não virar de perfil. */
+  lookAhead: 1.25,
+} as const;
+
+/**
+ * Apresentação — uma vez, quando o personagem entra em cena: surge (sobe e cresce, com os fragmentos
+ * convergindo), dá um giro completo e faz uma reverência (clipe `Bow`). Tempos em segundos a partir do início.
+ * Qualquer interação do visitante interrompe e o corpo assenta sozinho.
+ */
+export const INTRO = {
+  /** Surgir: duração, de quanto abaixo vem (unidades) e de que escala parte. */
+  appear: 1.0,
+  rise: 0.55,
+  scaleFrom: 0.62,
+  /** Giro: início, duração e número de voltas. */
+  spinAt: 0.55,
+  spin: 1.7,
+  turns: 1,
+  /** Reverência: início (o clipe dura ~2,1 s) e fim da apresentação. */
+  bowAt: 2.35,
+  end: 4.6,
+} as const;
+
+/** Cores por tema (sRGB). A emissão do modelo, a luz de recorte e o ponto de contato usam `accent`. */
+export const PALETTE: Record<Mood, { base: string; deep: string; glow: string; haze: string; accent: string; key: string; rim: string; fill: string; sky: string; ground: string }> = {
+  dark: { base: "#0a0a0c", deep: "#050506", glow: "#3a0b0a", haze: "#1a1012", accent: "#ff3a2a", key: "#fff1e6", rim: "#ff2a1c", fill: "#3a4a66", sky: "#20222a", ground: "#0b0606" },
+  light: { base: "#f3f5f8", deep: "#dfe6ee", glow: "#ffffff", haze: "#cfdbe8", accent: "#1f6bff", key: "#ffffff", rim: "#3d8bff", fill: "#b8c6d8", sky: "#c9d4e2", ground: "#5d6878" },
 };
 
-export const VOID = {
-  /** túnel: raio, comprimento, quanto ele se curva (o ponto de fuga passeia) */
-  tunnel: { radius: 3.5, length: 110, bend: 1 },
-  /** Anéis: profundidade, raio, espessura, inclinação (rad), giro (rad/s, sinal = sentido), deriva para a câmera (unid./s). */
-  rings: [
-    { d: 7.5, r: 2.55, w: 0.022, tx: 0.42, ty: -0.18, spin: 0.34, flow: 0.55 },
-    { d: 10.5, r: 2.85, w: 0.018, tx: -0.3, ty: 0.36, spin: -0.22, flow: 0.55 },
-    { d: 14.5, r: 3.0, w: 0.02, tx: 0.16, ty: 0.48, spin: 0.46, flow: 0.55 },
-    { d: 19.5, r: 2.9, w: 0.016, tx: -0.5, ty: -0.12, spin: -0.3, flow: 0.55 },
-    { d: 26, r: 2.75, w: 0.018, tx: 0.28, ty: -0.42, spin: 0.2, flow: 0.55 },
-    { d: 34, r: 2.6, w: 0.016, tx: -0.2, ty: 0.22, spin: -0.4, flow: 0.55 },
-    { d: 44, r: 2.4, w: 0.014, tx: 0.36, ty: 0.3, spin: 0.26, flow: 0.55 },
-  ],
-  /** Correntes de luz em hélice: raio, voltas por 10 unid., fase, velocidade do pulso, espessura. */
-  currents: [
-    { r: 1.4, turns: 0.32, ph: 0.0, speed: 0.34, w: 0.012 },
-    { r: 2.1, turns: -0.26, ph: 1.7, speed: 0.28, w: 0.014 },
-    { r: 2.7, turns: 0.21, ph: 3.1, speed: 0.4, w: 0.012 },
-    { r: 1.8, turns: -0.38, ph: 4.4, speed: 0.31, w: 0.01 },
-    { r: 3.05, turns: 0.17, ph: 5.6, speed: 0.36, w: 0.013 },
-    { r: 2.35, turns: 0.29, ph: 2.4, speed: 0.26, w: 0.011 },
-    { r: 1.1, turns: -0.45, ph: 0.9, speed: 0.44, w: 0.009 },
-    { r: 2.9, turns: -0.2, ph: 3.9, speed: 0.3, w: 0.012 },
-  ],
-  /** Estilhaços: (u, v) em raios, z, tamanho em raios, giro (rad/s). */
-  shards: [
-    { u: -0.66, v: 0.46, z: 7.5, s: 0.09, spin: 0.4 },
-    { u: 0.74, v: 0.38, z: 8.2, s: 0.08, spin: -0.33 },
-    { u: 0.34, v: -0.62, z: 6.8, s: 0.085, spin: 0.46 },
-    { u: -0.9, v: -0.3, z: 5.2, s: 0.1, spin: -0.28 },
-    { u: 1.14, v: -0.46, z: 4.4, s: 0.12, spin: 0.24 },
-    { u: 0.98, v: 0.64, z: 5.6, s: 0.09, spin: -0.38 },
-    { u: -0.42, v: 1.0, z: 6.0, s: 0.085, spin: 0.3 },
-    { u: 0.56, v: -1.1, z: 5.4, s: 0.095, spin: -0.26 },
-    { u: -1.4, v: 0.2, z: 3.8, s: 0.14, spin: 0.2 },
-    { u: 0.2, v: 1.3, z: 7.2, s: 0.08, spin: 0.36 },
-  ],
-  particles: { high: 1800, low: 750 },
+/** Luz e material por tema: intensidades (three, unidades físicas desligadas) e exposição. */
+export const LOOK: Record<Mood, { exposure: number; key: number; rim: number; hemi: number; env: number; emissive: number; particles: number }> = {
+  dark: { exposure: 1.2, key: 3.3, rim: 5.0, hemi: 0.6, env: 1.3, emissive: 1.0, particles: 0.5 },
+  light: { exposure: 1.0, key: 2.4, rim: 4.2, hemi: 0.5, env: 1.15, emissive: 1.0, particles: 0.35 },
 };
+
+/**
+ * Imagens estáticas (scripts/entity-still.mjs): o personagem em repouso, fundo transparente,
+ * desenhado com o quadril em (cx, cy) e `k` px por unidade. O CSS as posiciona por
+ * `--en-x/--en-y/--en-k` (styles/os.css › .os-scene__still).
+ */
+export const SCENE_STILL = { w: 760, h: 1040, cx: 380, cy: 540, k: 430 } as const;

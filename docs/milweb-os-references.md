@@ -638,3 +638,226 @@ Causas achadas: pupilas mudando atributo dentro de SVG com filtros (agora HTML),
 - A mixagem não pôde ser **ouvida**; só medida (sem clipping, faixa dinâmica ~16 LU, pico −3,5 dBFS a volume máximo). Se "assusta" é julgamento humano.
 - O HTML estático contém as duas frases (a normal e a do evento); fora do evento a do evento fica `display: none`.
 - Preview na Vercel depende de `NEXT_PUBLIC_VERCEL_ENV`.
+
+---
+
+## Revisão 17 (14/11/2026) — a entidade: personagem 3D interativo no lugar dos universos
+
+Pedido do Rick: trocar os efeitos inspirados no Tsukuyomi e no Vazio por um personagem 3D autoral que interage fisicamente com a navegação — olha para o app, aproxima o corpo e leva ombro, cotovelo, pulso e dedos até a posição REAL do ícone, em tempo real. Preservar barra, grade, lema, dock, janelas, rotas, idiomas, temas, teclado e modo simples. Versão local, sem push nem deploy.
+
+Mídia: `docs/entity/` (11 capturas + `demo-desktop.mp4`, 28 s, gravado no build de produção com a GPU da máquina) e `docs/entity/video/` (o vídeo vertical de divulgação e a gravação limpa da tela; fora do git).
+
+### O que não chegou e o que mudou no caminho
+
+- **As imagens de referência não vieram anexadas** e não existem no repositório. A direção do personagem seguiu a descrição escrita do pedido; o link do TikTok enviado antes mostra o formato do vídeo de divulgação, não o personagem.
+- **MCP do Blender não estava configurado** nesta sessão: a construção foi pela API Python do Blender em linha de comando (o caminho alternativo previsto no pedido).
+- **EEVEE trava em modo headless nesta máquina** (a GPU NVIDIA está em estado "lost"): os renders de revisão são Cycles em CPU. A aparência final é a do three.js, conferida no navegador.
+- Modelo usado na sessão: Claude Fable 5.2.
+
+### O personagem (`assets/entity/`)
+
+- `build_entity.py` constrói tudo do zero e de forma reproduzível; `entity_anim.py` (mesmo processo) traz poses, clipes, limites, renders e a exportação. Saídas: `assets/entity/entity.blend` (editável) e `public/models/entity.glb`.
+- Forma: entidade esguia de placas rígidas. Elmo com perfil varrido para trás, máscara em duas metades com emenda inclinada, aba de aço sobre uma fenda estreita e inclinada (a única "face"), crista só na têmpora esquerda; ombreira grande em duas camadas só no ombro direito; cintura vazada (coluna de metal com costelas flutuantes, 3 à direita e 2 à esquerda); lâmina pendurada no quadril esquerdo; pés em ponta; seis lascas flutuando perto do corpo; cinco dedos por mão, três falanges cada.
+- Cada peça é uma placa paramétrica sobre a superfície do membro (`Surf` + `patch`), com espessura, chanfro e normais ponderadas. **Peso rígido:** cada vértice pesa 100% em um osso — o metal não deforma.
+- 58 ossos, nomes sem ponto (`upper_arm_R`, `index_02_L`, `tip_index_R`…). Convenção de eixos documentada no topo do `build_entity.py`: todo osso aponta pelo +Y; o cotovelo dobra para o +Z do braço; a flexão dos dedos é em torno do Z local.
+- Quatro materiais, **sem textura** (só fatores PBR, reproduzíveis em glTF): `MW_Graphite`, `MW_DarkMetal`, `MW_Steel`, `MW_Glow`.
+- Nove clipes: `Idle` (6 s), `Attention`, `Anticipate`, `Reach_R/L`, `Touch_R/L`, `Present` (4 s), `Return`. As poses são escritas como direções no espaço do personagem e viram keyframes de quaternion: **nenhuma constraint do Blender é necessária no runtime**.
+- Limites articulares: gravados nos ossos do `.blend` (`LIMITS` em `entity_anim.py`) e repetidos em `scene.config.ts › REACH.limits`.
+
+| Medida | Valor | Meta do pedido |
+|---|---|---|
+| Triângulos | 32.004 | 15–40 mil |
+| GLB | 1,74 MB (malha 1,31 MB, animação 0,21 MB) | até ~3 MB |
+| Draw calls do personagem | 4 (um por material) | — |
+| Draw calls do quadro inteiro | 9 (fundo, 4 do corpo, poeira, 3 halos) | — |
+| Texturas | 0 | — |
+
+Sem compressão de malha (Draco/Meshopt): o arquivo já cabe no orçamento e assim não há decodificador para configurar no build. Se precisar encolher, quantização (`KHR_mesh_quantization`, que o three lê sem decodificador) é o próximo passo.
+
+### Runtime (`src/features/os/scene/`)
+
+O personagem entrou no MESMO canvas, contexto WebGL e laço da cena anterior (ticker do GSAP). Saíram `tsukuyomi.ts`, `void.ts`, `bake.ts`, `composite.ts`, `glsl.ts`, `noise.ts`, `world.ts`, as quatro `scene-*.webp` e `scripts/scene-still.mjs`.
+
+- `scene.config.ts` — todos os números de ajuste: composição por tela, alcance, molas, limites, cores e luz por tema.
+- `entity.ts` — carrega o GLB (GLTFLoader do próprio three), monta o mixer só com as rotações dos clipes, troca a emissão por um material sem luz (cor exata do tema).
+- `rig.ts` — esqueleto e a **IK analítica de dois segmentos** (ombro → cotovelo → pulso).
+- `director.ts` — a máquina de estados e a coreografia.
+- `backdrop.ts` — o ambiente (um plano de tela inteira, sem textura).
+- `engine.ts` — renderer, luzes, ambiente de reflexo por tema (PMREM de painéis, sem HDR), câmera, troca de tema, calibração e monitor de resolução.
+- `os-scene.tsx` — cola com a interface: composição, eventos, alvos, tema, pausa.
+
+**Por que IK própria e não o `CCDIKSolver`:** há exatamente dois ossos entre o ombro e o pulso, então a lei dos cossenos dá a solução exata num passo; o plano da dobra vem de um vetor de polo (o cotovelo não inverte) e a torção de cada osso é construída explicitamente. O CCD itera e não controla a torção.
+
+**A mão mira o ícone de verdade.** A cada quadro em que há alvo, a placa do ícone é medida no DOM (`getBoundingClientRect`), convertida para o mundo pela câmera num plano à frente do corpo, e a IK leva a PONTA do indicador até lá (a orientação da mão é resolvida primeiro; o pulso recua da ponta pelo vetor pulso → ponta medido nos ossos naquele quadro). Nada de coordenada fixa: redimensionar, trocar de idioma e a flutuação dos ícones entram na medida.
+
+**Ponto de contato:** sempre na borda da placa, nunca sobre o rótulo. Pelo lado (desktop/tablet): a borda voltada para o corpo. Se há outro app na mesma fileira no caminho (a primeira coluna da grade 2 × 3), a mão chega rente ao vão acima da fileira, sem passar por trás do vizinho. Por cima (grade do telefone, dock): o meio da borda superior.
+
+**Ordem de um quadro** (em `director.ts › update`, verificável por `debug.seq`): estados e pesos → `mixer.update` → corpo (posição, inclinação, olhar) → matrizes → IK dos braços → matrizes dos braços, fragmentos, luzes, medição. O IK roda depois do mixer no mesmo quadro, então os clipes nunca o sobrescrevem.
+
+**Estados:** `idle` → `attention` (hover ou foco de teclado: olha, inclina, aproxima, a mão para a ~13 cm do ícone) → `reaching` (ativação) → `touching` (pressiona, luz no contato, anel no ícone) → `presenting` (janela aberta: recolhido à direita) → `returning`.
+
+**O personagem observa, não comanda.** Os handlers dos apps são os de sempre; os ouvintes da cena são passivos. A → B → C termina em C porque cada evento só troca o alvo, e tudo o que tem duração é contado no próprio laço — não há timer solto. Se a tela é coberta no meio de um gesto (telefone, janela maximizada, aba oculta), o gesto é largado.
+
+**Sem personagem, tudo funciona:** enquanto o GLB carrega, se ele falhar, sem WebGL 2, com GPU por software ou com movimento reduzido, fica a imagem estática (`public/art/entity-{dark,light}.webp`, geradas pelo mesmo motor em `scripts/entity-still.mjs`) e a navegação é idêntica.
+
+**Temas:** o mesmo asset nos dois. Obito (escuro): grafite sobre carvão, emissão e recorte vermelhos. Gojo (claro): o grafite continua escuro, recortado contra o gelo, com emissão azul. Na troca, a luz nova abre em círculo a partir do controle de tema e a interface adota o tema no meio.
+
+**Desempenho:** 30 qps em repouso, 60 num gesto; pausa com aba oculta, janela maximizada e app aberto no telefone; logo depois de carregar, o motor mede o custo real de um quadro e ajusta a resolução; o monitor ainda a baixa se os quadros ficarem lentos. Nenhum estado React por quadro.
+
+### Medições (build de produção local, `scripts/entity-check.mjs`)
+
+GPU: Intel UHD desta máquina, via ANGLE/D3D11 no Chromium headless. Erro = distância entre a ponta do indicador projetada e o ponto de contato do DOM, em px CSS, no instante do toque. Meta do pedido: 8–12 px.
+
+| Cenário | Toques | Erro médio | Erro máx. | Clique → toque (média) |
+|---|---|---|---|---|
+| Desktop 1920×1080 | 6 | 3,48 px | 3,93 px | 753 ms |
+| Notebook 1366×768 | 6 | 2,32 px | 2,65 px | 653 ms |
+| Tablet 900×1100 | 6 | 2,85 px | 3,13 px | 541 ms |
+| Notebook, tema claro | 3 | 2,54 px | 2,60 px | 661 ms |
+| Notebook, inglês / espanhol | 4 | 2,41 px | 2,60 px | 652 ms |
+| Notebook, teclado (Enter) | 3 | 2,24 px | 2,48 px | 680 ms |
+| Depois de redimensionar (3 tamanhos) | 3 | 2,43 px | 2,81 px | 542 ms |
+| **Total** | **31** | **2,68 px** | **3,93 px** | **643 ms** |
+
+Números do build final, já com o ajuste de suavidade (abaixo). O teste destaca o ícone por 0,65 s e clica; quem deixa o mouse parado mais tempo vê o toque mais cedo, porque a mão já está perto. O primeiro gesto de uma sessão pode levar mais (até 1,08 s medido) porque o corpo parte do repouso. Durante o toque o dedo avança ~4 px sobre o ponto, de propósito (é a "pressão"). No telefone emulado os seis apps abrem, mas nenhum toque chega a acontecer — ver "Limitações reais".
+
+- 88 de 88 verificações: seis apps com mouse, toque e Enter; cliques rápidos; redimensionamento; modelo atrasado 4 s; modelo ausente (404); sem WebGL; movimento reduzido; fundo sem ponteiro; console limpo; nenhum salto de articulação; maior passo de uma junta do braço num quadro entre 19° e 23°; cotovelo entre 20° e 100° (limites 6°–150°).
+- Quadros por segundo nesta Intel UHD: 28 em repouso e 52 a 54 nos gestos (teto 60), em 1366×768 com resolução 0,98 e em 1920×1080 com a resolução calibrada para 0,80. CPU por quadro: ~1,2 ms. Nesta GPU o custo do quadro não dá folga para o repouso a 60; com o ponteiro andando o laço sobe para 60.
+- `tsc` limpo; `next lint` só o aviso antigo do `<img>` de OG; `next build` ok (JS compartilhado 103 kB, igual a antes; o motor + GLTFLoader ficam num pedaço de 44 kB / 13 kB gzip, sob demanda).
+- Suíte do OS (`scripts/os-check.mjs`): 493 de 505. As 12 falhas são anteriores a esta revisão: a suíte ainda espera 31 projetos no mural e o commit `74480ba` (28/10) reduziu para 25 sem atualizá-la.
+
+### Ajuste de suavidade (14/11, noite) — "tem que ser mais suave"
+
+O Rick achou o movimento brusco. O que mudou, tudo em `scene.config.ts › REACH` e em `director.ts`:
+
+- **Partida sem tranco:** corpo e mão andam em duas molas em série (`spring.lead`): aceleram aos poucos em vez de arrancar e chegam sem ultrapassar. As molas ficaram mais lentas (`spring.body/hand`), a mistura dos clipes e do IK mais longa (`blend`), o toque mais brando (`press`) e o olhar mais lento.
+- **O corpo chega primeiro, o braço estende depois** (`armLead`): enquanto o corpo se aproxima, a ponta do dedo só vai até 90% do alcance a partir do ombro; num alcance esse limite se solta em ~0,7 s.
+- **A mão acompanha o corpo:** longe do ícone ela é simulada andando junto com o pivô; perto dele fica presa ao ponto do mundo. Sem isso, num deslocamento rápido a mão ficava para trás e contornava o ombro por cima.
+- **Zona do ombro** (`armMin`): a ponta não entra no raio em que o cotovelo dobraria demais, e o dedo só assume a direção de chegada perto do ícone (longe, aponta na linha do braço).
+- **Ao soltar o alvo**, a mão fica onde estava em relação ao corpo enquanto o IK se desfaz (antes mirava um ponto fixo do mundo e o braço virava do avesso quando o corpo passava por ele).
+- **Plano do cotovelo estável** (`rig.ts`): quando o braço fica quase paralelo ao vetor de polo, entra aos poucos um polo de reserva.
+- **Quadros:** 60 qps enquanto o ponteiro anda (a cabeça o acompanha) e em repouso quando a GPU tem folga (`budget.smoothMs`).
+
+Efeito medido: o maior passo de uma junta do braço num quadro caiu de 43–55° para 19–23°; o tempo clique → toque subiu de 309 ms para 643 ms em média. Duas regressões apareceram no caminho e foram corrigidas antes de fechar (braço travado esticado à espera do corpo; saltos de articulação em 1920×1080).
+
+### Vídeo de divulgação (`scripts/entity-video.mjs`)
+
+- `docs/entity/video/fable-personagem-vertical.mp4` — 1080×1920, 30 qps, 28 s, sem áudio: a gravação do site dentro de um notebook desenhado, fundo escuro, legenda fixa "Fable 5.2 + web design 🔥", aproximação lenta e leve deriva de câmera. Formato da referência que o Rick mandou (TikTok de @overlocked.hq).
+- A gravação limpa para filmar o notebook de verdade foi substituída na Revisão 18 pela tela dividida (`docs/entity/video/tela-dividida-para-filmar.mp4`).
+- A tela é captura real do build de produção (screencast do Chromium com a GPU da máquina, ~52 qps capturados), com um cursor desenhado seguindo o mouse real do teste. **O notebook é moldura desenhada**, não filmagem. A referência mostra a IA construindo o site; este vídeo mostra o resultado em uso.
+- Conferido: `media_audit.py` (H.264, BT.709, decodifica inteiro) e quadros extraídos ao longo da peça. Não foi reproduzido nem ouvido por ninguém; o som fica para o app.
+
+### Limitações reais
+
+- **Telefone:** o app abre em 0,38 s a partir do próprio ícone e cobre a grade. Com o movimento suave o personagem não chega a encostar: o laço para 0,7 s depois de a tela ser coberta e o gesto é largado (antes do ajuste ele encostava em ~0,5 s, atrás da tela do app). O que se vê é o início do mergulho e, ao voltar, o retorno. Segurar a navegação para mostrar o toque seria a espera obrigatória que o pedido proíbe.
+- **Telefone é emulação.** Nada foi medido em aparelho físico: não há número de quadros por segundo, bateria ou compatibilidade de Safari iOS aqui.
+- **Desempenho medido só numa GPU** (Intel UHD integrada, Chromium). A placa NVIDIA desta máquina estava indisponível.
+- **O canvas fica atrás da interface.** O dedo encosta na borda da placa do ícone; não passa por cima dela. É o que garante que o personagem nunca cobre um rótulo nem intercepta um clique.
+- **Com foco de teclado o personagem fica apontando para o ícone focado** até o foco sair (é o estado de atenção). Com mouse e toque ele volta sozinho.
+- Em telas de até ~1300 px, a janela aberta cobre o personagem quase todo (as janelas têm prioridade).
+- As pernas passam por trás da linha de assinatura do canto inferior esquerdo quando ele se aproxima da terceira fileira (fica atrás do texto, que continua legível).
+- A direção de arte não foi comparada com a imagem de conceito, que não chegou.
+
+### Como ajustar
+
+- **Pose e ritmo de um clipe:** `assets/entity/entity_anim.py` (`idle`, `reach`, `present`, `coil`) → `blender --background --factory-startup --python assets/entity/build_entity.py` → `node scripts/entity-still.mjs`.
+- **Forma, proporção, materiais do arquivo:** `assets/entity/build_entity.py` (mesmos dois comandos). `-- --render --views=idle,head,reach,extreme` gera renders de revisão em `assets/entity/renders/` (fora do git).
+- **Onde o personagem fica, o tamanho, até onde vai:** `scene.config.ts › COMPOSE`.
+- **Alcance, distância do hover, pressão do toque:** `scene.config.ts › REACH` (`comfort`, `hoverGap`, `press`).
+- **Quão suave ou quão rápido:** `REACH.spring` (número menor = mais lento e mais macio; `lead` controla a suavidade da partida) e `REACH.blend`.
+- **Cor e intensidade da luz e da emissão por tema:** `scene.config.ts › PALETTE` e `LOOK`. Os painéis de reflexo estão em `engine.ts › buildEnv`.
+- **Conferir depois de mexer:** `node scripts/entity-inspect.mjs` (orçamento do GLB) e `node scripts/entity-check.mjs --base <url>` (88 verificações) e `node scripts/entity-video.mjs --base <url>` (regrava a tela e remonta o vídeo vertical).
+
+### Recursos externos e licenças
+
+- three.js 0.185 e seu `GLTFLoader` (MIT) — já eram dependência do projeto. **Nenhum pacote novo foi instalado.**
+- Blender 5.2.1 (GPL) como ferramenta de autoria; o modelo é saída de um script próprio.
+- Playwright (Apache-2.0, já no projeto) e FFmpeg, só para verificar e gravar.
+- Nenhum asset de terceiros, textura, HDR, serviço de geração 3D ou modelo de IA em runtime. Os movimentos rodam no navegador, sem chamada a LLM.
+
+---
+
+## Revisão 18 (15/11/2026) — apresentação do personagem, atalhos sociais em 3D e vídeo com tela dividida
+
+Três pedidos do Rick na mesma rodada: (1) os quatro atalhos sociais do rodapé em 3D, no mesmo material do personagem; (2) mais movimentos — o personagem surgir na tela, dar um giro como quem se apresenta e fazer uma reverência; (3) regravar o vídeo no formato da referência do TikTok, agora com tela dividida: código de um lado, resultado do outro. Versão local, sem push nem deploy. **A imagem de referência dos ícones não veio anexada**; valeu a descrição escrita.
+
+Mídia nova em `docs/entity/`: `12-apresentacao-surge-gira-reverencia.jpg`, `13-sociais-3d-repouso-hover-pressao.jpg`, `14-rodape-1366-dois-temas.jpg`, `demo-desktop.mp4` regravado e a pasta `video/` (fora do git).
+
+### Apresentação (`director.ts › intro`, `scene.config.ts › INTRO`)
+
+- Uma vez, quando o personagem entra em cena e a área está livre: **surge** (sobe 0,55 unidade e cresce de 62% ao tamanho final, passando um pouco e assentando, com os fragmentos convergindo), **dá um giro completo** e **faz a reverência**. 4,6 s no total.
+- A reverência é um clipe novo no Blender, `Bow` (2,1 s, `assets/entity/entity_anim.py › bow`): tronco inclinado, mão direita ao peito, braço esquerdo aberto para trás, uma perna recuada. O GLB passou a 1,81 MB e 10 clipes; a malha é a mesma.
+- Qualquer interação interrompe: o corpo atende o app e o giro termina pela volta mais próxima, sem tranco (verificado: maior passo de junta 11° num quadro, nenhum salto).
+- Com janela aberta na carga (link direto para um app) a apresentação não roda.
+
+### Atalhos sociais em 3D (`src/features/os/social/`)
+
+**Caminho escolhido: geometria procedural em Three.js**, não Blender. São quatro extrusões de vetores que o projeto já tinha; gerar no navegador dispensa assets, mantém tudo editável num arquivo de parâmetros e garante que o símbolo 3D seja exatamente o do ícone em HTML.
+
+- `social-paths.ts` — fonte ÚNICA dos vetores, usada pelos ícones SVG (`social-hud.tsx`, `mobile/icons.tsx`) e pelo 3D. GitHub: Invertocat do Octicons (MIT). WhatsApp: glifo do Simple Icons (CC0-1.0). LinkedIn: o "in" já desenhado no projeto. Instagram: a câmera em traço do projeto, convertida em contornos fechados (anel do corpo, anel da lente, ponto). As marcas são das respectivas empresas; nenhum símbolo foi redesenhado.
+- `social-3d.ts` — base quadrada de cantos arredondados com espessura e chanfro (`ExtrudeGeometry`), moldura que deixa a face rebaixada, símbolo extrudado em prata acetinada com sombra real sobre a face, filete e luz na cor do tema por baixo. Furos e recortes (o gato, o miolo do balão) saem do `SVGLoader.createShapes`.
+- `social-3d.config.ts` — todos os parâmetros: profundidade, chanfro, tamanho óptico de cada marca, materiais, luz, pose de repouso, inclinação, elevação, pressão e tempos.
+- `use-social-3d.ts` — liga ao `<nav class="os-social">` do desktop largo.
+
+**Um canvas e um contexto para os quatro**, dentro do próprio `<nav>`, com resolução 2× (os ícones têm 38 px) e desenhado **sob demanda**: só há quadros enquanto uma peça se move. Não reaproveitei o canvas do personagem porque ele roda em resolução adaptativa (0,8 nesta GPU em 1920) e fica atrás de toda a interface; ícones de 38 px precisam de nitidez e do empilhamento dos próprios links. O relógio é o mesmo ticker do GSAP.
+
+**Os links não mudaram.** São os mesmos quatro `<a>` (ordem LinkedIn, GitHub, Instagram, WhatsApp; `target="_blank"`, `rel="noopener noreferrer"`, hrefs do payload). O 3D só escuta os eventos deles; nada de `preventDefault` nem `window.open`. Clique, clique do meio, Ctrl+clique, menu de contexto e Enter são do navegador. O canvas não recebe ponteiro. Com as peças em cena o link deixou de subir 2 px no hover (quem sobe é a peça) e o foco ganhou contorno no próprio link.
+
+| Estado | O que acontece |
+|---|---|
+| Repouso | Peça parada, inclinada −11° / 9° para a espessura aparecer |
+| Hover | Inclina até 8° seguindo o cursor, sobe 4 px, cresce 4,5%, o filete e a luz acendem na cor do tema |
+| Pressionado | Afunda 3,2 px e encolhe 3,5%, em ~50 ms; volta em `pointerup`, `pointercancel`, saída do ponteiro e perda de foco |
+| Foco de teclado | Mesma elevação e luz do hover, mais o contorno no link |
+
+**Sem 3D, tudo igual a antes:** enquanto o módulo carrega (ele entra ~5 s depois da carga, após a apresentação do personagem), sem WebGL, com GPU por software, com movimento reduzido no sistema, no modo simples ou se o contexto cair, valem os ícones SVG atuais. "Reduzir movimento" nos Ajustes mantém as peças paradas e mostra o estado só pela luz. **Tablet e telefone não mudaram**: ali este grupo não existe (o tablet usa os cartões do HUD e o telefone, a dock de redes).
+
+Medido: **13.932 triângulos** nas quatro peças (referência do pedido: até ~20 mil), **nenhum asset novo** (0 KB de GLB; o módulo com three + SVGLoader vai num pedaço sob demanda), 24 chamadas de desenho por quadro contando a passada de sombra, e **zero quadros com o grupo parado**.
+
+### Robustez (achados da suíte antiga em GPU por software)
+
+- A troca de tema passou a andar por **relógio real** (`engine.ts`): o do GSAP comprime o tempo quando um quadro demora e a troca ficava presa.
+- O motor **desiste** e deixa a imagem estática quando, depois de calibrar, o quadro ainda custa mais de 45 ms na resolução mínima (`budget.giveUpMs`). Com `?quality=` forçado (testes) a resolução pode descer até 0,25.
+- Os atalhos sociais não regeneram mais o mapa de reflexos ao trocar de tema: a cor do tema vem só da luz e do filete.
+- `scripts/os-check.mjs`: a checagem do olho do controle de tema amostrava de fora a cada ~25 ms e perdia a janela de 80 ms sob carga; agora registra a pálpebra no instante exato da troca (resultado: totalmente fechada, como sempre foi).
+
+### Correção de 15/11 — "o personagem não está se movimentando" (Edge do Rick)
+
+Dois defeitos, os dois silenciosos (ficava a imagem estática, sem erro no console):
+
+- **Modelo antigo no cache + código novo.** `/models/entity.glb` tem um dia de cache; o navegador do Rick guardava o GLB da revisão 17 (9 clipes) e o código da 18 exige o clipe `Bow`: o carregador devolvia "sem modelo" e o motor saía. Navegador de teste nasce sem cache, por isso a suíte não viu. Correção: a **URL do modelo leva a revisão do arquivo** (`next.config.mjs › entityRev`, o começo do SHA-256, embutido no build como `NEXT_PUBLIC_ENTITY_REV`; `scene.config.ts › ENTITY_URL` = `/models/entity.glb?v=…`). Modelo novo = endereço novo, sem depender de ninguém lembrar de renomear. E o carregador agora **diz o motivo** (`[milweb] personagem indisponível: o modelo não tem o clipe "Bow"…`).
+- **Ajustes › Reduzir movimento → Seguir o sistema** deixava o personagem parado até recarregar: ao sair, o motor força a perda do contexto WebGL e o canvas (que continuava montado) guarda o seu contexto para sempre. Correção: o `<canvas>` ganhou `key` com as dependências do efeito (`os-scene.tsx`) — cada montagem do motor recebe um canvas novo.
+
+`scripts/entity-check.mjs` ganhou o grupo `model` (a URL pedida leva a revisão do próprio arquivo; um GLB sem o `Bow` cai na imagem, o app abre e o aviso aparece) e, no grupo `reduced`, a ida e volta pelos Ajustes. Conferido também no Edge real do Rick (pela extensão) e numa janela visível do Edge: ~58 qps na apresentação e ~30 em repouso. A aba aberta pela extensão é estrangulada pelo navegador (6–11 `requestAnimationFrame` por segundo até numa página de texto): não serve para medir quadros.
+
+### Verificações (build de produção local, GPU Intel UHD via ANGLE/D3D11)
+
+- Depois da correção de 15/11: `scripts/entity-check.mjs` **112 de 112** (erro dedo × ícone 2,66 px em média, máx. 3,83; clique → toque 720 ms em média, com um toque isolado de 2,7 s com a máquina sob carga), `tsc`, lint e build ok. A suíte antiga (`os-check.mjs`) não foi repetida depois dela. Os números abaixo são da rodada anterior.
+- `scripts/entity-check.mjs`: **109 de 109**. Além das 88 anteriores: apresentação e sua interrupção; atalhos sociais (um canvas sem ponteiro, ordem e atributos dos links, área de toque de 68 × 68 px, hover/pressão/foco em cada peça sem deslocar link nem rótulo, clique e Enter abrindo a rede em nova aba, render sob demanda, tema claro, SVG de volta sem WebGL e com movimento reduzido, telefone intacto) e nenhuma regressão no personagem.
+- Personagem: erro dedo × ícone médio de 2,74 px (máx. 3,92) em 31 toques; clique → toque 652 ms em média.
+- Quadros por segundo: 27–28 em repouso (teto 30) e 54 nos gestos, em 1366×768 e em 1920×1080 (resolução 0,77).
+- `scripts/os-check.mjs`: 379 de 379 nos grupos desktop, tablet, controls, simple, resize, boot, share, theme, mobile e profile. Os grupos `projects` e `phones` não foram repetidos nesta rodada: carregam as 12 falhas antigas dos 31 → 25 projetos.
+- `tsc` limpo, `next lint` só o aviso antigo do OG, `next build` ok (103 kB compartilhados).
+
+### Vídeo com tela dividida (`scripts/entity-video.mjs`)
+
+- `docs/entity/video/fable-personagem-vertical.mp4` — 1080×1920, 30 qps, 30 s, sem áudio: notebook desenhado em fundo escuro com a legenda "Fable 5.2 + web design 🔥" e, na tela, um editor com o código à esquerda, o site à direita e o log das verificações embaixo.
+- `docs/entity/video/tela-dividida-para-filmar.mp4` — a mesma tela dividida limpa em 1440×900, para tocar em tela cheia e filmar o notebook de verdade.
+- **Real:** o site (gravação do build de produção com a GPU da máquina, cursor desenhado seguindo o mouse do teste), o código (trechos de `director.ts`, `rig.ts` e `social-3d.ts` lidos do repositório) e as linhas do log (saídas reais desta rodada). **Encenado:** a digitação — é o código real, mas não é a captura da sessão em que ele foi escrito — e o notebook, que é moldura.
+- Roteiro: apresentação (surge, gira, reverência) → a mão segue os ícones e um clique abre a janela → a prévia aproxima nos atalhos sociais (inclinam, um afunda) → troca de tema.
+- Conferido: `media_audit.py` (H.264, BT.709, decodifica inteiro) e quadros extraídos ao longo da peça. Não foi reproduzido por ninguém; o som fica para o app.
+
+### Limitações reais
+
+- A imagem de referência dos ícones não chegou: o acabamento não foi comparado com ela.
+- As peças sociais entram ~5 s depois da carga; até lá aparecem os ícones SVG (troca suave, sem mexer no layout).
+- Só o grupo do desktop largo (≥ 1080 px) virou 3D. Tablet e telefone seguem com os ícones atuais.
+- No tema claro as peças continuam grafite com luz azul, como o personagem.
+- Nada foi medido em aparelho físico nem em outra GPU.
+- O vídeo mostra o código em corpo pequeno dentro do notebook, como na referência: lê-se que é código, não dá para ler linha a linha.
+
+### Como ajustar
+
+- **Apresentação:** tempos e amplitude em `scene.config.ts › INTRO`; a pose da reverência em `assets/entity/entity_anim.py › bow` (depois, rodar o `build_entity.py`).
+- **Ícones:** tudo em `social-3d.config.ts` — `base`/`rim`/`symbol` (forma), `material`, `light`, `rest`, `hover`, `press`, `ease`. Vetores em `social-paths.ts`.
+- **Vídeo:** o roteiro da gravação e os trechos de código estão no `scripts/entity-video.mjs`; `--compose-only` refaz a montagem sem regravar; `--caption` troca a legenda.

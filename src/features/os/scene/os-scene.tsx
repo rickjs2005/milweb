@@ -4,57 +4,67 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { onIdle } from "@/animations/idle";
 import { getQuality, probeGpu } from "@/lib/quality";
 import { useOs, useOsStore } from "../os-shell";
+import { DESKTOP_WIDE_MQ } from "../registry";
 import type { OsTheme } from "../theme";
-import { OS_SCENE, THEME_OF, WORLD_OF } from "./scene.config";
+import { COMPOSE, MOOD_OF, OS_SCENE, THEME_OF } from "./scene.config";
+import type { Layout, Rect } from "./director";
 import type { Engine } from "./engine";
 
 /**
- * O fundo do MilWeb OS — Tsukuyomi (Obito, escuro) e Vazio Ilimitado (Gojo,
- * claro) — e a travessia entre eles. A cena é Three.js (scene/engine.ts,
- * carregado em idle num pedaço próprio); este componente é a cola com a
+ * O fundo do MilWeb OS — a entidade: um personagem 3D que flutua atrás da
+ * interface, olha para o aplicativo destacado e leva a ponta do dedo até o
+ * ícone que o visitante ativa. A cena é Three.js (scene/engine.ts, carregado
+ * em idle num pedaço próprio, com o GLB); este componente é a cola com a
  * interface.
  *
  * Camada visual pura, ATRÁS da interface: `pointer-events: none`,
  * aria-hidden, z-index negativo dentro da área de trabalho; nada aqui mexe
  * em layout, nos apps, no lema ou na dock. O HTML entrega a imagem estática
- * do universo do tema em vigor (fundo CSS escolhido por `data-os-theme`,
- * posicionada pelo centro e raio do palco — `--st-x/--st-y/--st-r`), então o
- * primeiro quadro já é o certo, sem flash de tema, e quem tem movimento
- * reduzido, WebGL 2 ausente ou GPU por software fica com ela.
+ * do personagem em repouso (fundo CSS, posicionada por `--en-x/--en-y/--en-k`),
+ * então o primeiro quadro já é o certo, e quem tem movimento reduzido, WebGL 2
+ * ausente, GPU por software ou falha ao carregar o modelo fica com ela — a
+ * navegação é a mesma.
  *
- * UM laço: o ticker do GSAP (dentro do motor) faz as tweens e o quadro da
- * cena; este componente só recebe um gancho por quadro (commit do tema,
- * calibração, marcas no DOM) — nenhum estado React por quadro.
+ * O personagem OBSERVA a navegação: os ouvintes aqui são passivos e em fase
+ * de captura, os handlers dos apps são os de sempre e abrem na hora. A mão
+ * mira a posição REAL do ícone: a cada quadro em que há alvo, a placa do
+ * ícone é medida no DOM (`getBoundingClientRect`) — redimensionar, girar a
+ * tela, trocar de idioma ou a flutuação dos ícones já entram na medida.
  *
- * Troca de tema: o cenário é o driver do store (`setThemeDriver`): um pedido
- * vira uma travessia (~2,2 s, uma tween do GSAP que inverte o sentido se o
- * destino voltar) e a interface adota o tema novo (`commitTheme`) quando o
- * universo novo chega às áreas de leitura. Sem driver (imagem, janela
- * maximizada, tela aberta no telefone, aba oculta): troca imediata.
- *
- * Interação: paralaxe amortecida (a câmera anda; o que está perto anda mais),
- * deriva automática sem mouse e no telefone; destacar um app (ponteiro ou
- * foco) produz uma reação localizada no cenário; clicar num app solta uma
- * onda pequena que acompanha a abertura da janela. O cenário nunca captura o
- * ponteiro — todos os cliques continuam da interface.
+ * UM laço: o ticker do GSAP (dentro do motor). Troca de tema: o cenário é o
+ * driver do store (`setThemeDriver`) — a luz nova atravessa a tela a partir
+ * do controle e a interface adota o tema no meio (`commitTheme`). Sem driver
+ * (imagem, janela maximizada, tela aberta no telefone, aba oculta): troca
+ * imediata.
  */
-type Stage = { x: number; y: number; r: number };
-
 const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
-/** O que reage ao ser destacado (coluna do desktop, grade do telefone) e o que solta a onda ao abrir. */
-const HOVER_SEL = ".os-icon-btn, .os-launch";
-const CLICK_SEL = ".os-icon-btn, .os-launch, .os-dock__item[data-dock-id]";
+/** Controles que abrem um app: grade/coluna do desktop, grade do telefone, itens da dock. */
+const APP_SEL = ".os-icon-btn, .os-launch, .os-dock__item[data-dock-id]";
+const idOf = (el: Element) => el.id.replace(/^os-(icon|launch|dock)-/, "");
 
-/** Centro e raio da composição a partir do palco (`.os-stage`, irmão do fundo), em px CSS relativos ao fundo. */
-function measureStage(root: HTMLElement, mobile: boolean): Stage | null {
+/** Composição a partir da área do fundo e do palco (`.os-stage`, irmão do fundo), em px CSS relativos ao fundo. */
+function measure(root: HTMLElement, mobile: boolean): Layout | null {
   const box = root.getBoundingClientRect();
-  const stage = root.parentElement?.querySelector<HTMLElement>(".os-stage");
-  if (!stage || box.width === 0 || box.height === 0) return null;
-  const s = stage.getBoundingClientRect();
+  if (box.width === 0 || box.height === 0) return null;
+  const w = box.width;
+  const h = box.height;
+  if (mobile) {
+    const stage = root.parentElement?.querySelector<HTMLElement>(".os-stage");
+    const s = stage?.getBoundingClientRect();
+    const C = COMPOSE.mobile;
+    const sh = s && s.height > 0 ? s.height : h * 0.55;
+    const cx = s && s.width > 0 ? s.left + s.width / 2 - box.left : w / 2;
+    const cy = s && s.height > 0 ? s.top + s.height / 2 - box.top : h * 0.36;
+    return { w, h, k: Math.min(C.kS * sh, C.kW * w), home: { x: cx, y: cy + C.homeDy * sh }, present: null, bounds: { x0: C.bounds.x0 * w, x1: C.bounds.x1 * w, y0: C.bounds.y0 * h, y1: C.bounds.y1 * h } };
+  }
+  const C = window.matchMedia(DESKTOP_WIDE_MQ).matches ? COMPOSE.desktop : COMPOSE.tablet;
   return {
-    x: s.left + s.width / 2 - box.left,
-    y: s.top + s.height / 2 - box.top,
-    r: mobile ? Math.min(box.width * OS_SCENE.mobileR.w, s.height * OS_SCENE.mobileR.h) : box.height * OS_SCENE.desktopR,
+    w,
+    h,
+    k: Math.min(C.kH * h, C.kW * w),
+    home: { x: C.home.x * w, y: C.home.y * h },
+    present: { x: C.present.x * w, y: C.present.y * h, z: C.present.z },
+    bounds: { x0: C.bounds.x0 * w, x1: C.bounds.x1 * w, y0: C.bounds.y0 * h, y1: C.bounds.y1 * h },
   };
 }
 
@@ -64,33 +74,35 @@ export function OsScene() {
   const motion = useOsStore((s) => s.prefs.motion);
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stageRef = useRef<Stage | null>(null);
+  const layoutRef = useRef<Layout | null>(null);
   const engineRef = useRef<Engine | null>(null);
 
-  // Composição: medida no palco e publicada em variáveis CSS (posiciona a imagem estática) — a cena lê a mesma.
+  // Composição: medida na área e no palco e publicada em variáveis CSS (posiciona a imagem estática) — a cena lê a mesma.
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root || shell === "auto" || shell === "simple") return;
     const mobile = shell === "mobile";
     const apply = () => {
-      const st = measureStage(root, mobile);
-      if (!st) return;
-      stageRef.current = st;
-      root.style.setProperty("--st-x", `${st.x.toFixed(1)}px`);
-      root.style.setProperty("--st-y", `${st.y.toFixed(1)}px`);
-      root.style.setProperty("--st-r", `${st.r.toFixed(1)}px`);
-      const c = canvasRef.current;
-      if (c && engineRef.current) engineRef.current.setStage(st, c.clientWidth, c.clientHeight);
+      const l = measure(root, mobile);
+      if (!l) return;
+      layoutRef.current = l;
+      root.style.setProperty("--en-x", `${l.home.x.toFixed(1)}px`);
+      root.style.setProperty("--en-y", `${l.home.y.toFixed(1)}px`);
+      root.style.setProperty("--en-k", `${l.k.toFixed(1)}px`);
+      engineRef.current?.setLayout(l);
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(root);
     const stage = root.parentElement?.querySelector(".os-stage");
     if (stage) ro.observe(stage);
+    const wide = window.matchMedia(DESKTOP_WIDE_MQ);
+    wide.addEventListener("change", apply);
     return () => {
       ro.disconnect();
-      stageRef.current = null;
-      ["--st-x", "--st-y", "--st-r"].forEach((k) => root.style.removeProperty(k));
+      wide.removeEventListener("change", apply);
+      layoutRef.current = null;
+      ["--en-x", "--en-y", "--en-k"].forEach((k) => root.style.removeProperty(k));
     };
   }, [shell]);
 
@@ -111,73 +123,124 @@ export function OsScene() {
       if (disposed || !root || !canvas) return;
       const gq = probeGpu();
       if (!gq.webgl) return;
-      const forced = gq.reason.startsWith("forçado");
+      const lite = mobile || gq.tier !== "high";
       const { createEngine } = await import("./engine");
       if (disposed) return;
-      const lite = mobile || gq.tier !== "high";
-      const e = createEngine({ canvas, world: WORLD_OF[store.getState().prefs.theme], lite });
-      if (!e) return;
-      const fail = () => {
-        e.dispose();
-        engineRef.current = null;
-      };
-      const st0 = stageRef.current;
-      e.setStage(st0 ?? { x: canvas.clientWidth / 2, y: canvas.clientHeight * 0.46, r: canvas.clientHeight * OS_SCENE.desktopR }, canvas.clientWidth, canvas.clientHeight);
 
-      // Compila os programas (em paralelo quando a GPU permite: sem travar a página) e mede o custo.
-      const B = OS_SCENE.budget;
-      try {
-        e.setDpr(B.probeDpr);
-        await e.warm();
-      } catch (err) {
-        console.error(err);
-        fail();
-        return;
-      }
-      if (disposed) {
-        fail();
-        return;
-      }
-      const maxDpr = Math.min(window.devicePixelRatio || 1, mobile ? B.mobileMaxDpr : B.maxDpr);
-      const floorDpr = forced ? 0.2 : B.minDpr;
-      /** Resolução e teto de quadros para um custo medido (ms por px do buffer) — scene.config › budget. */
-      const plan = (perPx: number, fpsNow: number) => {
-        const css = Math.max(1, canvas.clientWidth * canvas.clientHeight);
-        const at = (ms: number) => Math.sqrt(ms / Math.max(1e-9, perPx * css));
-        const d60 = Math.min(maxDpr, at(B.targetMs / 2));
-        const fast = gq.tier === "high" && d60 >= maxDpr * (fpsNow === OS_SCENE.fps.ambientHigh ? B.keep60 : B.go60);
-        const fps: number = fast ? OS_SCENE.fps.ambientHigh : OS_SCENE.fps.ambient;
-        return { fps, dpr: Math.max(floorDpr, Math.min(maxDpr, fast ? d60 : at(B.targetMs))) };
+      // ---- alvos: o elemento REAL de cada app (o que foi destacado/ativado por último) ----
+      const els = new Map<string, Element>();
+      const lookup = (id: string): Element | null => {
+        const known = els.get(id);
+        if (known?.isConnected && known.getClientRects().length > 0) return known;
+        for (const prefix of ["os-icon-", "os-launch-", "os-dock-"]) {
+          const el = document.getElementById(prefix + id);
+          if (el && el.getClientRects().length > 0) return el;
+        }
+        return null;
       };
-      const perPx0 = e.measure(4) / Math.max(1, canvas.width * canvas.height);
-      // Só desiste numa GPU sem condição nenhuma (40 ms por quadro já na resolução mínima); tela grande não é motivo.
-      if (!forced && perPx0 * canvas.clientWidth * canvas.clientHeight * B.minDpr * B.minDpr > 40) {
-        fail();
+      /** Placa do ícone (não o item com o rótulo), em px CSS relativos ao canvas. */
+      const resolve = (id: string): Rect | null => {
+        const el = lookup(id);
+        if (!el) return null;
+        const b = (el.querySelector(".os-icon, .os-micon") ?? el).getBoundingClientRect();
+        if (b.width === 0 || b.height === 0) return null;
+        const box = canvas.getBoundingClientRect();
+        return { left: b.left - box.left, top: b.top - box.top, right: b.right - box.left, bottom: b.bottom - box.top, blocked: blockedOf(id, el, b) };
+      };
+      /**
+       * Há outro app na mesma fileira entre este e o repouso do personagem? (grade 2 × 3 do desktop: a
+       * primeira coluna.) Medido uma vez por app e por composição — refeito quando o layout muda.
+       */
+      const blocked = new Map<string, boolean>();
+      let blockedFor: unknown = null;
+      const blockedOf = (id: string, el: Element, b: DOMRect): boolean => {
+        const l = layoutRef.current;
+        if (blockedFor !== l) {
+          blocked.clear();
+          blockedFor = l;
+        }
+        const known = blocked.get(id);
+        if (known !== undefined) return known;
+        const box = canvas.getBoundingClientRect();
+        const home = (l?.home.x ?? box.width / 2) + box.left;
+        const cx = b.left + b.width / 2;
+        let hit = false;
+        const group = el.closest("nav");
+        group?.querySelectorAll(APP_SEL).forEach((other) => {
+          if (hit || other === el) return;
+          const o = (other.querySelector(".os-icon, .os-micon") ?? other).getBoundingClientRect();
+          if (o.width === 0) return;
+          const ox = o.left + o.width / 2;
+          const sameRow = Math.min(o.bottom, b.bottom) - Math.max(o.top, b.top) > 0.5 * b.height;
+          if (sameRow && (ox - cx) * (home - cx) > 0 && Math.abs(ox - cx) < Math.abs(home - cx)) hit = true;
+        });
+        blocked.set(id, hit);
+        return hit;
+      };
+      const touchTimers = new Map<Element, number>();
+      /** A ponta do dedo encostou: o ícone responde (anel na cor do tema — styles/os.css › [data-touch]). */
+      const onTouch = (id: string) => {
+        const el = lookup(id);
+        if (!el) return;
+        window.clearTimeout(touchTimers.get(el));
+        el.setAttribute("data-touch", "1");
+        touchTimers.set(el, window.setTimeout(() => {
+          el.removeAttribute("data-touch");
+          touchTimers.delete(el);
+        }, 420));
+      };
+
+      const e = createEngine({ canvas, mood: MOOD_OF[store.getState().prefs.theme], lite, resolve, onTouch });
+      if (!e) return;
+      const B = OS_SCENE.budget;
+      const l0 = layoutRef.current ?? measure(root, mobile);
+      if (l0) e.setLayout(l0);
+      e.setDpr(Math.min(window.devicePixelRatio || 1, mobile ? B.mobileMaxDpr : lite ? B.liteMaxDpr : B.maxDpr));
+
+      // O modelo (GLB) e a compilação dos programas: até terminar — ou se falhar — vale a imagem estática.
+      const ok = await e.load();
+      if (disposed || !ok) {
+        e.dispose();
         return;
       }
-      let { fps: ambientFps, dpr } = plan(perPx0, OS_SCENE.fps.ambient);
-      e.setDpr(dpr);
-      e.fps(ambientFps);
       engineRef.current = e;
-      if (stageRef.current) e.setStage(stageRef.current, canvas.clientWidth, canvas.clientHeight);
+      if (layoutRef.current) e.setLayout(layoutRef.current);
+      // custo real de um quadro nesta GPU → resolução (e teto de quadros) antes de o canvas entrar em cena
+      // com `?quality=` forçado numa GPU por software (testes) a resolução pode descer bem mais: a página não pode travar
+      const forced = gq.reason.startsWith("forçado");
+      const costMs = e.calibrate(forced ? 0.25 : B.minDpr);
+      // GPU sem condição (dezenas de ms por quadro já na resolução mínima): melhor a imagem do que um personagem aos trancos.
+      // `?quality=` forçado (testes) passa por cima.
+      if (costMs > B.giveUpMs && !forced) {
+        engineRef.current = null;
+        e.dispose();
+        return;
+      }
+      const D = e.director!;
 
       const covered = () => {
         const s = store.getState();
         return s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
       };
+      /** Há janela aberta à vista (desktop/tablet): o personagem se recolhe para o lado. */
+      const windowed = () => {
+        const s = store.getState();
+        return s.shell !== "mobile" && s.order.some((id) => s.wins[id].open && !s.wins[id].min);
+      };
       const mark = () => {
-        root.dataset.world = e.world;
+        root.dataset.mood = e.mood;
         const tr = e.trans;
         if (tr) root.dataset.trans = `${tr.from}>${tr.to}`;
         else delete root.dataset.trans;
       };
-      // Quadros só com o fundo à vista (ou durante uma travessia/onda, que sempre terminam). No telefone,
-      // abrir um app cobre a tela: o laço para depois da animação de abertura (a onda aparece por trás dela).
+      // Quadros só com o fundo à vista (ou durante uma troca de tema, que sempre termina). No telefone,
+      // abrir um app cobre a tela: o laço para depois da animação de abertura (o toque aparece por trás dela).
       let stopTimer = 0;
       // `data-run` no fundo diz se o laço está rodando (diagnóstico e testes; nenhum CSS depende dele).
       const syncRun = () => {
         window.clearTimeout(stopTimer);
         if (document.hidden) {
+          D.release();
           e.stop();
           root.dataset.run = "0";
           return;
@@ -189,11 +252,12 @@ export function OsScene() {
         } else
           stopTimer = window.setTimeout(() => {
             if (e.trans || !covered()) return;
+            // coberto no meio de um gesto: o gesto é largado — ao reaparecer, o personagem só volta ao repouso
+            D.release();
             e.stop();
             root.dataset.run = "0";
           }, mobile ? 700 : 0);
       };
-      /** Centro de um elemento em px CSS relativos ao canvas. */
       const centerOf = (el: Element): [number, number] => {
         const box = canvas.getBoundingClientRect();
         const b = el.getBoundingClientRect();
@@ -205,96 +269,47 @@ export function OsScene() {
         return [canvas.clientWidth / 2, canvas.clientHeight];
       };
 
-      // ---- quadro: commit do tema no meio da travessia, calibração, monitor, marcas ----
-      let sceneT = 0;
-      // A primeira calibração roda com o canvas ainda invisível (ele só entra depois dela) e vai direto ao alvo:
-      // a medida do boot pega a GPU fria e erra para baixo. Ela mede o custo marginal (vários quadros) e a
-      // latência fixa da leitura; as seguintes, com a cena à vista, só cronometram o próprio quadro (uma
-      // leitura, sem quadro extra) e descontam essa latência — nada de rajada de quadros travando a tela.
-      let calibAt = 0.8;
-      let calibs = 0;
-      let latency = 0;
-      let timing = false;
-      let slowEma = 0;
-      let cooldown = 3;
+      // ---- quadro: commit do tema no meio da troca, marcas no DOM ----
       let lastTrans = "";
-      let painted = false;
+      let lastPhase = "";
+      let painted = 0;
+      let target: { x: number; y: number } | null = null;
       let lastMove = -1e9;
-      /** Calibração em regime: passos pequenos até o custo-alvo; o teto de quadros pode mudar (com folga para não alternar). */
-      const applyPlan = (per: number) => {
-        const next = plan(per, ambientFps);
-        if (calibs === 0 || next.fps !== ambientFps) {
-          // primeira medida em regime ou mudança de teto: a resolução vai direto para a do plano
-          ambientFps = next.fps;
-          e.fps(ambientFps);
-          dpr = next.dpr;
-          e.setDpr(dpr);
-        } else {
-          const step = Math.max(-0.12, Math.min(0.12, next.dpr - dpr));
-          if (Math.abs(step) > 0.05) {
-            dpr += step;
-            e.setDpr(dpr);
-          }
-        }
-        calibs++;
-        calibAt = sceneT + (calibs < 4 ? 6 : 30);
-      };
-      let cancelPrime = () => {};
-      e.onFrame((eng, dt) => {
-        sceneT += dt;
+      e.onFrame((eng) => {
         const tr = eng.trans;
         if (tr) {
           const st = store.getState();
           const pend = st.themePending;
-          const at = OS_SCENE.commitAt[tr.to];
+          const at = OS_SCENE.commitAt;
           if (pend !== null && ((tr.dir > 0 && tr.p >= at && pend === THEME_OF[tr.to]) || (tr.dir < 0 && tr.p <= at && pend === THEME_OF[tr.from]))) st.commitTheme();
         }
-        const key = tr ? `${tr.from}>${tr.to}` : eng.world;
+        const key = tr ? `${tr.from}>${tr.to}` : eng.mood;
         if (key !== lastTrans) {
           lastTrans = key;
           mark();
           syncRun();
         }
+        const ph = D.debug.phase;
+        if (ph !== lastPhase) {
+          lastPhase = ph;
+          root.dataset.phase = ph;
+        }
         if (target && performance.now() - lastMove > OS_SCENE.parallax.idle * 1000) {
           target = null;
           eng.pointer(null);
         }
-        if (!tr) {
-          // monitor: só o ambiente conta (a travessia é curta e dobrada)
-          slowEma = slowEma * 0.92 + (dt > 1.45 / ambientFps ? 0.08 : 0);
-          cooldown -= dt;
-          if (cooldown <= 0 && slowEma > 0.5 && dpr > B.minDpr + 0.01) {
-            dpr = Math.max(B.minDpr, dpr * 0.82);
-            eng.setDpr(dpr);
-            slowEma = 0;
-            cooldown = 2.5;
-          }
-          if (sceneT >= calibAt && !timing) {
-            if (calibs === 0) {
-              applyPlan(eng.measure(5) / Math.max(1, canvas.width * canvas.height));
-              // latência fixa da leitura, já na resolução escolhida
-              latency = Math.max(0, eng.timeOnce() - eng.measure(4));
-            } else {
-              timing = true;
-              eng.timeNextFrame((ms) => {
-                timing = false;
-                applyPlan(Math.max(0.05, ms - latency) / Math.max(1, canvas.width * canvas.height));
-              });
-            }
-          }
-        }
-        if (!painted && (calibs > 0 || tr)) {
-          painted = true;
+        // o canvas entra depois de dois quadros desenhados (o primeiro ainda compila variantes no driver)
+        if (painted < 3 && ++painted === 3) {
           root.dataset.state = "live";
-          // o outro universo é desenhado uma vez fora da tela quando a página sossegar (geometria na GPU)
-          cancelPrime = onIdle(() => eng.prime(), 3000);
+          // ao entrar em cena o personagem se apresenta (surge, gira, faz a reverência) — só com a área livre
+          if (!windowed() && !covered()) D.intro();
         }
       });
 
       // ---- driver da troca de tema ----
       const driveTheme = (to: OsTheme) => {
         if (disposed || document.hidden || covered()) return false;
-        const handled = e.transition(WORLD_OF[to], toggleOrigin());
+        const handled = e.transition(MOOD_OF[to], toggleOrigin());
         if (handled) {
           mark();
           syncRun();
@@ -304,26 +319,26 @@ export function OsScene() {
 
       const unsub = store.subscribe((s, prev) => {
         syncRun();
-        // tema aplicado sem travessia (sem driver): o universo acompanha
-        if (!e.trans && s.prefs.theme !== prev.prefs.theme && WORLD_OF[s.prefs.theme] !== e.world) {
-          e.setWorld(WORLD_OF[s.prefs.theme]);
+        D.setPresenting(windowed());
+        // tema aplicado sem troca animada (sem driver): a cena acompanha
+        if (!e.trans && s.prefs.theme !== prev.prefs.theme && MOOD_OF[s.prefs.theme] !== e.mood) {
+          e.setMood(MOOD_OF[s.prefs.theme]);
           mark();
         }
       });
       const finishNow = () => {
         const st = store.getState();
         if (st.themePending !== null) st.commitTheme();
-        e.finish(WORLD_OF[store.getState().prefs.theme]);
+        e.finish(MOOD_OF[store.getState().prefs.theme]);
         mark();
       };
-      // aba oculta: a travessia termina na hora e o laço para; ao voltar, ele retoma
+      // aba oculta: a troca termina na hora e o laço para; ao voltar, ele retoma
       const onVis = () => {
         if (document.hidden && e.trans) finishNow();
         syncRun();
       };
 
-      // ---- paralaxe (desktop, ponteiro fino): mouse recente manda; sem ele, deriva automática ----
-      let target: { x: number; y: number } | null = null;
+      // ---- ponteiro (desktop, ponteiro fino): a cabeça acompanha de longe e a câmera anda um pouco ----
       const onMove = (ev: PointerEvent) => {
         if (ev.pointerType !== "mouse") return;
         target = { x: clamp1((ev.clientX / window.innerWidth) * 2 - 1), y: -clamp1((ev.clientY / window.innerHeight) * 2 - 1) };
@@ -335,31 +350,54 @@ export function OsScene() {
         e.pointer(null);
       };
 
-      // ---- reação ao app destacado e onda do clique ----
+      // ---- app destacado (ponteiro ou foco) e app ativado (clique, toque, Enter) ----
       let hovered: Element | null = null;
       const setHover = (el: Element | null) => {
         if (el === hovered) return;
         hovered = el;
         if (el) {
-          const [x, y] = centerOf(el.querySelector(".os-icon, .os-micon") ?? el);
-          e.hover(x, y, true);
-        } else e.hover(0, 0, false);
+          const id = idOf(el);
+          els.set(id, el);
+          D.attend(id);
+        } else D.attend(null);
         syncRun();
       };
-      const onOver = (ev: Event) => setHover((ev.target as Element | null)?.closest?.(HOVER_SEL) ?? null);
-      const onOut = (ev: PointerEvent | FocusEvent) => {
+      const appOf = (ev: Event) => (ev.target as Element | null)?.closest?.(APP_SEL) ?? null;
+      // Mouse: destaque enquanto o ponteiro está sobre o app. Toque não tem hover: o gesto começa ao encostar o
+      // dedo (antes do clique) e o destaque acaba ao soltar. Foco: só o do teclado (`:focus-visible`) — o foco
+      // devolvido ao ícone quando uma janela fecha não deixa o personagem apontando para ele.
+      const onOver = (ev: PointerEvent) => {
+        if (ev.pointerType === "mouse") setHover(appOf(ev));
+      };
+      const onOut = (ev: PointerEvent) => {
+        if (ev.pointerType !== "mouse") return;
         const to = ev.relatedTarget as Element | null;
-        if (hovered && (!to || !hovered.contains(to))) setHover(to?.closest?.(HOVER_SEL) ?? null);
+        if (hovered && (!to || !hovered.contains(to))) setHover(to?.closest?.(APP_SEL) ?? null);
+      };
+      const onDown = (ev: PointerEvent) => {
+        if (ev.pointerType !== "mouse") setHover(appOf(ev));
+      };
+      const onUp = (ev: PointerEvent) => {
+        if (ev.pointerType !== "mouse") setHover(null);
+      };
+      const onFocus = (ev: FocusEvent) => {
+        const el = appOf(ev);
+        if (el?.matches(":focus-visible")) setHover(el);
+      };
+      const onBlur = (ev: FocusEvent) => {
+        if (hovered && hovered === appOf(ev)) setHover(null);
       };
       const onClick = (ev: MouseEvent) => {
-        const el = (ev.target as Element | null)?.closest?.(CLICK_SEL);
+        const el = (ev.target as Element | null)?.closest?.(APP_SEL);
         if (!el) return;
-        const [x, y] = centerOf(el.querySelector(".os-icon, .os-micon") ?? el);
-        e.click(x, y);
+        const id = idOf(el);
+        els.set(id, el);
+        D.activate(id);
         syncRun();
       };
 
       store.getState().setThemeDriver(driveTheme);
+      D.setPresenting(windowed());
       document.addEventListener("visibilitychange", onVis);
       if (gq.fine && !mobile) {
         window.addEventListener("pointermove", onMove, { passive: true });
@@ -367,16 +405,21 @@ export function OsScene() {
       }
       document.addEventListener("pointerover", onOver, { passive: true });
       document.addEventListener("pointerout", onOut, { passive: true });
-      document.addEventListener("focusin", onOver);
-      document.addEventListener("focusout", onOut);
+      document.addEventListener("pointerdown", onDown, { capture: true, passive: true });
+      document.addEventListener("pointerup", onUp, { capture: true, passive: true });
+      document.addEventListener("pointercancel", onUp, { capture: true, passive: true });
+      document.addEventListener("focusin", onFocus);
+      document.addEventListener("focusout", onBlur);
       document.addEventListener("click", onClick, { capture: true, passive: true });
       mark();
       syncRun();
 
-      if (process.env.NODE_ENV !== "production") {
+      // Leitura do estado da cena: em desenvolvimento sempre; em produção só com ?scene-debug (medições — scripts/entity-check.mjs).
+      const expose = process.env.NODE_ENV !== "production" || new URLSearchParams(window.location.search).has("scene-debug");
+      if (expose) {
         (window as unknown as { __mwOsScene?: unknown }).__mwOsScene = {
-          get world() {
-            return e.world;
+          get mood() {
+            return e.mood;
           },
           get trans() {
             return e.trans;
@@ -388,29 +431,31 @@ export function OsScene() {
             return e.dpr;
           },
           get fps() {
-            return ambientFps;
+            return e.fpsNow;
           },
-          get par() {
-            return e.par;
+          get stats() {
+            return { ...e.stats, tris: e.entity?.tris ?? 0, costMs };
           },
-          get hover() {
-            return e.hoverState;
+          /** Estado da coreografia: fase, alvo, mão, ponta do dedo × contato (px), erro. */
+          get entity() {
+            const d = D.debug;
+            return { phase: d.phase, target: d.target, side: d.side, ik: d.ik, short: d.short, tip: d.tip && { ...d.tip }, goal: d.goal && { ...d.goal }, err: d.err, seq: { ...d.seq }, touches: d.touches, body: { ...d.body }, joints: { ...d.joints } };
           },
-          get click() {
-            return e.clickState;
-          },
-          bench: (n = 6, trans = false) => e.measure(n, trans),
-          scene: (w: "tsukuyomi" | "void") => e.worlds[w].scene,
-          setDpr: (v: number) => {
-            dpr = v;
-            e.setDpr(v);
+          resetJoints: () => D.resetJoints(),
+          /** Repete a apresentação (gravações e testes). */
+          intro: () => D.intro(),
+          get layout() {
+            return layoutRef.current;
           },
         };
       }
 
       cleanup = () => {
-        cancelPrime();
         window.clearTimeout(stopTimer);
+        touchTimers.forEach((id, el) => {
+          window.clearTimeout(id);
+          el.removeAttribute("data-touch");
+        });
         unsub();
         const st = store.getState();
         st.setThemeDriver(null);
@@ -421,16 +466,20 @@ export function OsScene() {
         document.documentElement.removeEventListener("pointerleave", onLeave);
         document.removeEventListener("pointerover", onOver);
         document.removeEventListener("pointerout", onOut);
-        document.removeEventListener("focusin", onOver);
-        document.removeEventListener("focusout", onOut);
+        document.removeEventListener("pointerdown", onDown, { capture: true });
+        document.removeEventListener("pointerup", onUp, { capture: true });
+        document.removeEventListener("pointercancel", onUp, { capture: true });
+        document.removeEventListener("focusin", onFocus);
+        document.removeEventListener("focusout", onBlur);
         document.removeEventListener("click", onClick, { capture: true });
         root.dataset.state = "still";
         delete root.dataset.trans;
-        delete root.dataset.world;
+        delete root.dataset.mood;
         delete root.dataset.run;
+        delete root.dataset.phase;
         e.dispose();
         engineRef.current = null;
-        if (process.env.NODE_ENV !== "production") delete (window as unknown as { __mwOsScene?: unknown }).__mwOsScene;
+        if (expose) delete (window as unknown as { __mwOsScene?: unknown }).__mwOsScene;
       };
     }
 
@@ -444,9 +493,15 @@ export function OsScene() {
 
   return (
     <div ref={ref} className="os-wallpaper os-scene" data-state="still" aria-hidden="true" data-no-inspect>
-      {/* Imagem do universo do tema em vigor: fundo CSS (styles/os.css) — só a do tema e do enquadramento em vigor é baixada. */}
+      {/* O personagem em repouso, como imagem: fundo CSS (styles/os.css) — só a do tema em vigor é baixada. */}
       <div className="os-scene__still" />
-      <canvas ref={canvasRef} className="os-scene__canvas" />
+      {/*
+        Um canvas novo a cada vez que o motor é montado (a chave são as dependências do efeito): ao sair, o motor
+        força a perda do contexto WebGL para devolver a memória da GPU na hora, e um canvas guarda o seu contexto
+        para sempre — reaproveitado, o motor seguinte nascia num contexto morto e o personagem só voltava
+        recarregando a página (Ajustes › Reduzir movimento → Seguir o sistema).
+      */}
+      <canvas key={`${shell}:${motion}`} ref={canvasRef} className="os-scene__canvas" />
       {/* Áreas de leitura calmas: véu suave atrás da coluna de apps e do lema (telefone: status e grade). */}
       <div className="os-scene__calm" />
     </div>

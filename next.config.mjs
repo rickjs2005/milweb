@@ -1,6 +1,25 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
+/**
+ * Revisão do modelo 3D do MilWeb OS: o começo do SHA-256 do arquivo, calculado a cada build (e ao subir o
+ * `next dev`). Vai na URL do modelo (scene.config.ts › ENTITY_URL), então código e modelo andam sempre em par:
+ * o navegador nunca junta o código novo com um GLB antigo que ficou no cache — o que deixava o personagem
+ * parado, na imagem estática, para quem já tinha visitado o site.
+ */
+const entityRev = (() => {
+  try {
+    return createHash("sha256").update(readFileSync(new URL("./public/models/entity.glb", import.meta.url))).digest("hex").slice(0, 10);
+  } catch {
+    return "";
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  env: { NEXT_PUBLIC_ENTITY_REV: entityRev },
 
   // As OG images dos cases leem public/og/<slug>.jpg do disco: o /public não
   // entra no filesystem da função por padrão — só com tracing explícito.
@@ -36,6 +55,9 @@ const nextConfig = {
   // segurança do relatório de auditoria.
   async headers() {
     return [
+      // O modelo 3D do MilWeb OS (1,8 MB) não muda a cada deploy: um dia de cache e revalidação em segundo plano.
+      // Seguro porque a URL leva a revisão do arquivo (`entityRev`, acima): modelo novo = endereço novo.
+      { source: "/models/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
       {
         source: "/:path*",
         headers: [

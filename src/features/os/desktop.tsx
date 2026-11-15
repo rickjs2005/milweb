@@ -23,11 +23,11 @@ const HalloweenScene = dynamic(() => import("./halloween/scene").then((m) => m.H
 /**
  * Área de trabalho e tela inicial.
  *
- * Desktop: barra superior, o fundo (scene/os-scene.tsx: Tsukuyomi no
- * Obito, Vazio Ilimitado no Gojo), coluna de aplicativos à esquerda,
- * assinatura pequena numa área livre e a dock. O palco (`.os-stage`) é a
- * caixa invisível no centro em volta da qual a lua/o portal se compõem e o
- * HUD das redes se posiciona.
+ * Desktop: barra superior, o fundo (scene/os-scene.tsx: a entidade — o
+ * personagem 3D que olha para o app destacado e leva a mão até o ícone
+ * ativado), coluna de aplicativos à esquerda, assinatura pequena numa área
+ * livre e a dock. O palco (`.os-stage`) é a caixa invisível no centro em
+ * volta da qual o HUD das redes se posiciona.
  * Desktop largo (≥ 1080 px, registry.ts › DESKTOP_WIDE_MQ): o lema sobe para
  * o alto à esquerda, os aplicativos viram uma grade 2 × 3 logo abaixo, a dock
  * fica só com Buscar, Ajustes e o tema, e as redes viram um grupo compacto no

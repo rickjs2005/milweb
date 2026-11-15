@@ -12,7 +12,7 @@ import { PumpkinFx, type FxVariant } from "../halloween/pumpkin-fx";
  *
  * Só três coisas: a linha de status (marca e hora), o palco (`.os-stage`,
  * irmão no DOM; o CSS o coloca entre a linha de status e a grade — é ali que
- * a lua/o portal do fundo aparecem) e a grade de aplicativos com ícone + nome curto. Nada de
+ * o personagem do fundo flutua) e a grade de aplicativos com ícone + nome curto. Nada de
  * lema visível, descrição ou botões — o h1 da raiz continua no DOM, só que
  * invisível. As redes e o WhatsApp moram na dock (mobile/dock.tsx).
  *
