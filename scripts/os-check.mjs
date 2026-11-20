@@ -108,7 +108,7 @@ if (ONLY.includes("desktop")) {
   check("lema no alto à esquerda (branco no Obito, tinta no Gojo), até duas linhas, ponto no acento, respiro até a grade", home.motto.left <= 40 && home.motto.gapTop >= 8 && home.motto.gapTop <= 60 && home.motto.lines <= 2 && home.motto.color === home.motto.want && home.motto.dot && home.motto.toGrid >= 16 && home.motto.px >= 40, JSON.stringify(home.motto));
   check("dock: só Buscar, Ajustes e o tema, nessa ordem", home.dock === "search,settings,theme", home.dock);
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
-  check("fundo presente como imagem (fallback estático do personagem no tema em vigor, fundo CSS)", await page.evaluate(() => /entity-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage)));
+  check("fundo presente como imagem (fallback estático do personagem no tema em vigor, fundo CSS)", await page.evaluate(() => /materia-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage)));
   check("fundo e palco não interceptam o ponteiro; nenhum olho grande no cenário", await page.evaluate(() => getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && !document.querySelector(".os-eye, .os-eye__still, .os-eye__canvas")));
   check("sem a escultura orbital (preload e arte)", (await page.locator('link[href*="orbital-sculpture"], .os-wallpaper__art').count()) === 0);
   const overlap = await page.evaluate(() => {
@@ -473,7 +473,7 @@ if (ONLY.includes("tablet")) {
       const sign = document.querySelector(".os-sign").getBoundingClientRect();
       return { labels, dock, social: vis(".os-social"), hud: vis(".os-hud"), mottoPx: parseFloat(getComputedStyle(motto).fontSize), corner: Math.round(sign.left) === 24 && innerHeight - sign.bottom > 84, dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === getComputedStyle(motto).color, dots: document.querySelectorAll('.os-icon-btn__state').length };
     });
-    check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Contato", lay.labels === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO", lay.labels);
+    check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Orçamento", lay.labels === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|ORÇAMENTO", lay.labels);
     check("dock completa: os apps, o separador, Buscar e o tema", lay.dock === "profile,projects,studio,lab,services,contact,settings,|,search,theme", lay.dock);
     check("lema pequeno no canto inferior esquerdo, ponto na mesma cor; HUD à vista e sem o grupo compacto de redes", lay.corner && lay.mottoPx <= 21 && lay.dot && lay.hud && !lay.social, JSON.stringify(lay));
     const hud = await page.evaluate(() => {
@@ -564,7 +564,7 @@ if (ONLY.includes("mobile")) {
         heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
         noDesktopBits: !vis(".os-hud") && !vis(".os-social") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
         eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
-        eyeImg: /entity-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
+        eyeImg: /materia-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
         eyeNoPointer: getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none",
         gridAboveDock: grid.bottom <= dock.top + 1,
         dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth,
@@ -1371,7 +1371,7 @@ if (ONLY.includes("theme")) {
       const card = getComputedStyle(document.querySelector(".os-social__icon")).backgroundColor.match(/[\d.]+/g).map(Number);
       return { light: bg[0] > 235 && bg[1] > 235 && bg[2] > 235, darkText: fg[0] < 40 && fg[1] < 40 && fg[2] < 40, cardLight: card[0] > 240 && card[1] > 240 && card[2] > 240, still: getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage };
     });
-    check("Gojo: fundo gelo, texto escuro, placas das redes claras, imagem do personagem no tema claro", look.light && look.darkText && look.cardLight && /entity-light\.webp/.test(look.still), JSON.stringify(look));
+    check("Gojo: fundo gelo, texto escuro, placas das redes claras, imagem do personagem no tema claro", look.light && look.darkText && look.cardLight && /materia-light\.webp/.test(look.still), JSON.stringify(look));
     // áreas de leitura calmas: na margem da grade de apps, em volta do lema e da linha do rodapé, o fundo claro do tema
     const corners = await p.evaluate(async () => {
       const ic = document.querySelector(".os-icons ul").getBoundingClientRect();
@@ -1405,7 +1405,7 @@ if (ONLY.includes("theme")) {
     await settle(p, 900);
     const t1 = await themeOf(p);
     check("clique no olho: Obito aplicado, salvo como escolha, switch marcado, íris vermelha à vista", t1.attr === "obito" && t1.theme === "obito" && t1.auto === false && /"theme":"obito"/.test(t1.saved) && (await toggle.getAttribute("aria-checked")) === "true" && (await p.evaluate(() => getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--obito")).display !== "none" && getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--gojo")).display === "none")), JSON.stringify(t1));
-    const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /entity-dark\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage); });
+    const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /materia-dark\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage); });
     check("Obito: fundo carvão e imagem do personagem no tema escuro", dark);
     const dName = await contrast(p, ".os-social__name", ".os", ".os");
     const dIcon = await contrast(p, ".os-social__icon", ".os-social__icon", ".os");
@@ -1452,7 +1452,7 @@ if (ONLY.includes("theme")) {
     await p.click(".os-dock__theme");
     await settle(p, 80);
     const t = await themeOf(p);
-    check("reduced motion: fundo estático, clique troca na hora (gojo), imagem do personagem no tema claro, íris azul sem piscar, nada pendente", (await p.getAttribute(".os-scene", "data-state")) === "still" && t.attr === "gojo" && t.pending === null && (await p.evaluate(() => /entity-light\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage) && document.querySelector(".os-dock__theme").dataset.iris === "gojo")), JSON.stringify(t));
+    check("reduced motion: fundo estático, clique troca na hora (gojo), imagem do personagem no tema claro, íris azul sem piscar, nada pendente", (await p.getAttribute(".os-scene", "data-state")) === "still" && t.attr === "gojo" && t.pending === null && (await p.evaluate(() => /materia-light\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage) && document.querySelector(".os-dock__theme").dataset.iris === "gojo")), JSON.stringify(t));
     await c.close();
   }
 
@@ -1474,7 +1474,7 @@ if (ONLY.includes("theme")) {
       });
       const cLaunch = await contrast(p, ".os-launch__label", ".os", ".os");
       const cDock = await contrast(p, ".os-mdock__label", ".os-mdock ul", ".os");
-      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`entity-${theme === "gojo" ? "light" : "dark"}\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
+      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`materia-${theme === "gojo" ? "light" : "dark"}\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
       if (w === 390 && theme === "obito") {
         await p.tap(".os-mdock__theme");
         await p.waitForFunction(() => document.documentElement.dataset.osTheme === "gojo", null, { timeout: 4000 }).catch(() => {});

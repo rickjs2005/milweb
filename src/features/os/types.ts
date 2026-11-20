@@ -1,3 +1,4 @@
+import type { MateriaData } from "@/data/materia";
 import type { ProjectGuideData } from "@/data/project-guide";
 import type { Dictionary } from "@/i18n/types";
 import type { Locale } from "@/i18n/config";
@@ -99,6 +100,8 @@ export type OsPayload = {
   nav: { work: string; lab: string; studio: string; services: string; contact: string; profile: string; menu: string; close: string; primary: string; selectLanguage: string; langNames: Record<Locale, string>; sound: { label: string; on: string; off: string } };
   /** URLs públicas localizadas das raízes de cada app. */
   hrefs: { home: string; profile: string; projects: string; studio: string; lab: string; services: string; contact: string };
+  /** Matéria: frases da guia e recomendações por setor (data/materia.ts). */
+  materia: MateriaData;
   /** Perfil profissional (app Perfil / rota /profile). */
   profile: OsProfile;
   projects: OsProject[];

@@ -17,6 +17,7 @@ import { SearchDialog } from "./apps/search";
 import { SimpleShell } from "./simple-shell";
 import { MobileDock } from "./mobile/dock";
 import { OsBoot } from "./boot";
+import { MateriaGuide } from "./materia/guide-panel";
 import { readMark, stampEntry } from "./mobile/history";
 import { readHalloweenNow, useHalloweenActive } from "./halloween/clock";
 
@@ -291,6 +292,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
         <Dock />
         <MobileDock />
         <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+        {/* A conversa com a Matéria fica acima das janelas: continua enquanto o visitante navega pelo OS. */}
+        <MateriaGuide />
       </div>
     </OsCtx.Provider>
   );

@@ -6,7 +6,8 @@ import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DESKTOP_GRID, DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
-import { OsScene } from "./scene/os-scene";
+import { MateriaScene } from "./materia/materia-scene";
+import { MateriaControls } from "./materia/guide-panel";
 import { SocialHud, SocialLinks } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -23,9 +24,9 @@ const HalloweenScene = dynamic(() => import("./halloween/scene").then((m) => m.H
 /**
  * Área de trabalho e tela inicial.
  *
- * Desktop: barra superior, o fundo (scene/os-scene.tsx: a entidade — o
- * personagem 3D que olha para o app destacado e leva a mão até o ícone
- * ativado), coluna de aplicativos à esquerda, assinatura pequena numa área
+ * Desktop: barra superior, o fundo (materia/materia-scene.tsx: Matéria — a
+ * escultura de prata líquida que dobra o tempo com o gesto e vira cérebro na
+ * conversa), coluna de aplicativos à esquerda, assinatura pequena numa área
  * livre e a dock. O palco (`.os-stage`) é a caixa invisível no centro em
  * volta da qual o HUD das redes se posiciona.
  * Desktop largo (≥ 1080 px, registry.ts › DESKTOP_WIDE_MQ): o lema sobe para
@@ -97,7 +98,7 @@ export function Desktop() {
           <PumpkinFxHost />
         </>
       ) : (
-        <OsScene />
+        <MateriaScene />
       )}
 
       {/* Palco: caixa vazia e sem ponteiro no centro — a composição do fundo e o HUD medem por ela. */}
@@ -142,6 +143,9 @@ export function Desktop() {
 
       {/* Tela inicial do telefone: status, grade de ícones (o palco entre os dois mostra o fundo). */}
       <MobileLauncher />
+
+      {/* Matéria: a escultura como controle (arrastar dobra o tempo, tocar abre a conversa) e o botão da conversa. */}
+      {!halloween && <MateriaControls />}
     </div>
   );
 }

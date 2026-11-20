@@ -8,6 +8,7 @@ import { AUTORAL_INDEX, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } fr
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
 import { PROFILE_DATA } from "@/data/profile";
+import { buildMateria } from "@/data/materia";
 import { buildProjectGuide } from "@/data/project-guide";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
@@ -149,6 +150,7 @@ export function buildOsPayload(locale: Locale): OsPayload {
       guide: buildProjectGuide(locale),
       statuses: QUOTE.statuses.map((o) => ({ key: o.key, label: t(o.label) })),
     },
+    materia: buildMateria(locale),
     profile: {
       name: PROFILE_DATA.name,
       title: PROFILE_DATA.title,

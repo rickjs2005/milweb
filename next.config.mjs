@@ -15,11 +15,22 @@ const entityRev = (() => {
   }
 })();
 
+/** Mesma ideia para as moléculas da Matéria (materia/config.ts › MATERIA_URLS). */
+const materiaRev = (() => {
+  try {
+    const h = createHash("sha256");
+    for (const f of ["materia-a.bin", "materia-b.bin"]) h.update(readFileSync(new URL("./public/models/" + f, import.meta.url)));
+    return h.digest("hex").slice(0, 10);
+  } catch {
+    return "";
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
-  env: { NEXT_PUBLIC_ENTITY_REV: entityRev },
+  env: { NEXT_PUBLIC_ENTITY_REV: entityRev, NEXT_PUBLIC_MATERIA_REV: materiaRev },
 
   // As OG images dos cases leem public/og/<slug>.jpg do disco: o /public não
   // entra no filesystem da função por padrão — só com tracing explícito.
@@ -65,7 +76,7 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
         ],
       },
     ];
