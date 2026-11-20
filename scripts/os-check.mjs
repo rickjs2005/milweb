@@ -103,7 +103,7 @@ if (ONLY.includes("desktop")) {
       dock: [...document.querySelectorAll(".os-dock li")].filter((li) => li.getClientRects().length).map((li) => li.dataset.dockSys || li.dataset.dockApp).join(","),
     };
   });
-  check("grade 2 × 3: Projetos | Serviços, Estúdio | Lab, Perfil | Contato (DOM na ordem visual)", home.cols === 2 && home.rows === 3 && home.reading === "projects,services,studio,lab,profile,contact" && home.dom === home.reading && home.labels === "PROJETOS|SERVIÇOS|ESTÚDIO|LAB|PERFIL|CONTATO", JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels }));
+  check("grade 2 × 3: Projetos | Serviços, Estúdio | Lab, Perfil | Contato (DOM na ordem visual)", home.cols === 2 && home.rows === 3 && home.reading === "projects,services,studio,lab,profile,contact" && home.dom === home.reading && home.labels === "PROJETOS|SERVIÇOS|ESTÚDIO|LAB|PERFIL|ORÇAMENTO", JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels }));
   check("ícones de 60–68 px com o nome sempre visível embaixo; Contato com borda no acento do tema", home.plates.every((p) => p >= 60 && p <= 68) && home.contact, `${home.plates.join(",")} · contato ${home.contact}`);
   check("lema no alto à esquerda (branco no Obito, tinta no Gojo), até duas linhas, ponto no acento, respiro até a grade", home.motto.left <= 40 && home.motto.gapTop >= 8 && home.motto.gapTop <= 60 && home.motto.lines <= 2 && home.motto.color === home.motto.want && home.motto.dot && home.motto.toGrid >= 16 && home.motto.px >= 40, JSON.stringify(home.motto));
   check("dock: só Buscar, Ajustes e o tema, nessa ordem", home.dock === "search,settings,theme", home.dock);

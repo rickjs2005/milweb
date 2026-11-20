@@ -77,16 +77,16 @@ export const CONTACT_PAGE = {
   meta: {
     title: { pt: "Contato — começar um projeto", en: "Contact — start a project", es: "Contacto — empezar un proyecto" } as Localized,
     description: {
-      pt: "Fale com a MilWeb: WhatsApp, e-mail ou monte sua mensagem em dois cliques. Orçamento gratuito, resposta direta do Rick.",
-      en: "Talk to MilWeb: WhatsApp, email or compose your message in two clicks. Free quote, direct reply from Rick.",
-      es: "Habla con MilWeb: WhatsApp, correo o arma tu mensaje en dos clics. Presupuesto gratuito, respuesta directa de Rick.",
+      pt: "Veja um projeto parecido com o seu, tire dúvidas e peça ao Rick uma proposta por escrito, por e-mail ou WhatsApp.",
+      en: "Explore relevant work, get answers and request a written proposal from Rick by email or WhatsApp.",
+      es: "Explora proyectos similares, resuelve dudas y pide a Rick una propuesta por escrito por correo o WhatsApp.",
     } as Localized,
   },
   title: { pt: ["COMEÇAR", "UM PROJETO."], en: ["START", "A PROJECT."], es: ["EMPEZAR", "UN PROYECTO."] } as { pt: string[]; en: string[]; es: string[] },
   intro: {
-    pt: "Sem formulário que ninguém preenche. Escolha o que precisa, veja a mensagem e mande no WhatsApp — ou escreva um e-mail.",
-    en: "No form nobody fills in. Pick what you need, see the message and send it on WhatsApp — or write an email.",
-    es: "Sin formularios que nadie llena. Elige lo que necesitas, revisa el mensaje y envíalo por WhatsApp — o escribe un correo.",
+    pt: "Escolha o que você quer que seu cliente faça. Veja um projeto parecido e receba a proposta do Rick por escrito.",
+    en: "Choose what you want your customers to do. Explore a similar project and get a written proposal from Rick.",
+    es: "Elige lo que quieres que hagan tus clientes. Explora un proyecto similar y recibe la propuesta de Rick por escrito.",
   } as Localized,
   channels: { pt: "Canais", en: "Channels", es: "Canales" } as Localized,
   send: { pt: "Enviar no WhatsApp", en: "Send on WhatsApp", es: "Enviar por WhatsApp" } as Localized,

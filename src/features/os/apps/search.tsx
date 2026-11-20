@@ -45,6 +45,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
     if (!n) return [...apps, ...projects.slice(0, 6)];
     const match = (h: Hit) => {
       const hay = h.kind === "project" ? [h.label, h.sub, [...payload.projects, ...payload.authorial].find((p) => p.slug === h.slug)?.stack.join(" ") ?? ""].join(" ") : h.kind === "service" ? `${h.label} ${h.sub}` : h.label;
+      if (h.kind === "app" && h.id === "contact" && norm(payload.nav.contact).includes(n)) return true;
       return norm(hay).includes(n);
     };
     return [...projects.filter(match), ...services.filter(match), ...apps.filter(match)];

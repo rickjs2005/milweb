@@ -1,0 +1,125 @@
+.guide {
+  container-type: inline-size;
+  max-width: 58rem;
+  color: rgb(var(--ink));
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.head { margin-bottom: 1.5rem; }
+.caption {
+  display: block;
+  color: rgb(var(--ink-3));
+  font: .8rem/1.45 var(--font-mono), monospace;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.titleRow, .actions, .goals, .shortcuts, .channels { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.titleRow { justify-content: space-between; gap: .8rem 1rem; margin-top: .55rem; }
+.title {
+  margin: .5rem 0;
+  max-width: 16ch;
+  font-size: clamp(1.95rem, 6cqi, 3.3rem);
+  letter-spacing: -.05em;
+  line-height: .98;
+  text-wrap: balance;
+}
+.title:focus { outline: none; }
+.intro { margin-top: .65rem; max-width: 58ch; color: rgb(var(--ink-2)); }
+.heading { margin: 0 0 .65rem; font-size: 1.15rem; line-height: 1.25; letter-spacing: -.025em; }
+
+.primary, .secondary, .smallButton, .goals button, .shortcuts button, .textLink, .channels a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  font-size: .95rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.primary, .secondary, .smallButton, .goals button {
+  border: 1px solid rgb(var(--ink) / .22);
+  border-radius: .65rem;
+  padding: .6rem 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+.primary, .smallButton, .guide .goals button[aria-pressed="true"] {
+  background: rgb(var(--ink));
+  color: rgb(var(--paper));
+}
+.secondary, .guide .goals button[aria-pressed="false"] { background: rgb(var(--paper)); color: rgb(var(--ink)); }
+.primary:hover, .secondary:hover, .smallButton:not(:disabled):hover, .goals button:hover { box-shadow: inset 0 0 0 1px currentColor; }
+.smallButton:disabled { opacity: .5; cursor: default; }
+.goals { align-items: stretch; }
+.guide .goals button { min-height: 3rem; padding: .5rem .8rem; letter-spacing: normal; font-size: .9rem; }
+
+.example {
+  display: grid;
+  margin: 1.25rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid rgb(var(--ink) / .17);
+  border-radius: .85rem;
+  background: rgb(var(--paper-2));
+}
+.shot { display: block; position: relative; min-width: 0; aspect-ratio: 16 / 9; background: rgb(var(--neutral)); }
+.shot img { object-fit: cover; object-position: center top; }
+.story { min-width: 0; padding: 1.1rem 1.3rem .75rem; }
+.story h3 { margin: .5rem 0; font-size: clamp(1.3rem, 4.3cqi, 2rem); line-height: 1.05; }
+.story > p:not(.caption), .answer > p:not(.caption), .faqList p { color: rgb(var(--ink-2)); }
+.textLink, .shortcuts button, .channels a { text-decoration: underline; text-underline-offset: .2em; text-decoration-color: rgb(var(--ink) / .45); }
+.textLink:hover, .shortcuts button:hover, .channels a:hover { text-decoration-color: currentColor; }
+
+.questions, .handoff, .channels { border-top: 1px solid rgb(var(--ink) / .18); padding-top: 1.15rem; }
+.questions { margin-bottom: 1rem; }
+.ask { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+.guide input, .guide select, .guide textarea {
+  display: block;
+  width: 100%; min-width: 0; min-height: 3rem;
+  background: rgb(var(--paper));
+  border: 1px solid rgb(var(--ink) / .4);
+  border-radius: .5rem;
+  padding: .6rem .8rem;
+  color: rgb(var(--ink));
+  font: 400 1rem/1.45 var(--font-display), system-ui, sans-serif;
+}
+.guide select { appearance: auto; }
+.guide textarea { resize: vertical; }
+.guide input::placeholder, .guide textarea::placeholder { color: rgb(var(--ink-3)); opacity: 1; }
+.shortcuts, .channels { gap: 0 1rem; }
+.shortcuts button { min-height: 2.8rem; text-align: left; }
+.answer { margin: .3rem 0 .75rem; padding: 1rem; background: rgb(var(--paper-2)); border-inline-start: 3px solid rgb(var(--os-signal)); }
+.answerTitle { margin: .35rem 0; font-weight: 700; }
+.faqList { border-top: 1px solid rgb(var(--neutral)); }
+.faqList details { margin-left: .75rem; border-top: 1px solid rgb(var(--neutral)); }
+.faqList summary { min-height: 2.8rem; padding: .65rem 0; cursor: pointer; }
+.faqList p { padding-bottom: .75rem; }
+
+.fields { display: grid; gap: .85rem 1rem; margin: 1rem 0 1.25rem; }
+.fields label { min-width: 0; color: rgb(var(--ink-2)); font-weight: 600; font-size: .95rem; }
+.fields label :is(input, textarea, select) { margin-top: .35rem; }
+.guide .preview {
+  margin: .55rem 0 .85rem;
+  background: rgb(var(--paper-2));
+  letter-spacing: normal;
+  text-transform: none;
+}
+.hint { color: rgb(var(--ink-3)); font-size: .875rem; margin-top: .5rem; }
+.channels { margin: 1.4rem 0 0; max-width: 58rem; }
+.channels a { overflow-wrap: anywhere; }
+.guide :is(a, button, input, select, textarea, summary):focus-visible, .channels a:focus-visible {
+  outline: 2px solid rgb(var(--os-signal));
+  outline-offset: 2px;
+}
+.shot:focus-visible { outline-offset: -3px !important; }
+@container (min-width: 32rem) {
+  .example { grid-template-columns: 43% minmax(0, 1fr); }
+  .shot { aspect-ratio: auto; min-height: 10rem; }
+  .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .full { grid-column: 1 / -1; }
+}
+@container (max-width: 25rem) {
+  .titleRow { align-items: flex-start; flex-direction: column; }
+  .goals { gap: .4rem; }
+  .story { padding: 1rem 1rem .6rem; }
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Reveal } from "@/animations/reveal";
 import { Footer } from "@/components/footer";
 import { QuoteComposer } from "@/components/quote-composer";
+import { proposalLabel } from "@/data/project-guide";
 import { CONTACT_PAGE } from "@/data/studio";
 import { PROFILE, QUOTE, SITE_URL, type Locale, type Localized } from "@/lib/content";
 import { ORG_ID } from "@/lib/inline-scripts";
@@ -55,6 +56,9 @@ export async function ServicePage({ service, locale }: { service: Service; local
             {t(service.title)} <span className="text-ink-3">{t(service.titleHighlight)}</span>
           </h1>
           <p className="t-lead mt-10 max-w-3xl text-ink-2">{t(service.sub)}</p>
+          <Link href={withLocale(locale, "/contact") + "?service=" + encodeURIComponent(service.slug)} className="os-cta mt-6" scroll={false}>
+            {proposalLabel(locale)}
+          </Link>
         </header>
 
         <Reveal as="section" className="grid-12 gap-y-6 py-16 md:py-24">

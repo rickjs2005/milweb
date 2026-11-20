@@ -45,7 +45,10 @@ export function ServicesApp() {
       </section>
 
       <footer className="os-app__footer t-mono">
-        <a href={sv.waHref} target="_blank" rel="noopener noreferrer" className="os-cta">
+        <Link href={payload.hrefs.contact} className="os-cta" scroll={false}>
+          {payload.contact.guide.copy.proposal}
+        </Link>
+        <a href={sv.waHref} target="_blank" rel="noopener noreferrer" className="link-rule">
           {s.services.talk.toUpperCase()} ↗
         </a>
         <Link href={sv.diagnosticHref} className="link-rule" scroll={false}>

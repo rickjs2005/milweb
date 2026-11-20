@@ -8,6 +8,7 @@ import { AUTORAL_INDEX, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } fr
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
 import { PROFILE_DATA } from "@/data/profile";
+import { buildProjectGuide } from "@/data/project-guide";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
 import { DELIVERABLES, LAB, LAB_PAGE, PROFILE, QUOTE, UI, type Localized } from "@/lib/content";
@@ -69,7 +70,6 @@ export function buildOsPayload(locale: Locale): OsPayload {
   // Fora do mural (sem número), mas com case aberto: o dossiê, a janela e a busca os encontram aqui.
   const authorial = AUTORAL_INDEX.map(toOs);
 
-  const opt = (o: { key: string; label: Localized; phrase: Localized }) => ({ key: o.key, label: t(o.label), phrase: t(o.phrase) });
   const wa = (text: string) => `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(text)}`;
 
   return {
@@ -124,7 +124,12 @@ export function buildOsPayload(locale: Locale): OsPayload {
     },
     services: {
       intro: t(SERVICES_PAGE.intro),
-      items: SERVICES.map((s) => ({ slug: s.slug, label: t(s.label), sub: t(s.sub), href: withLocale(locale, `/${s.slug}`) })),
+      items: SERVICES.map((service) => ({
+        slug: service.slug, label: t(service.label), sub: t(service.sub), href: withLocale(locale, `/${service.slug}`),
+        faq: service.faq.map((f) => ({ q: t(f.q), a: t(f.a), timing: !!f.timing })),
+        includes: service.benefits.map((b) => t(b.title)),
+        steps: service.steps.map((step) => t(step.title)),
+      })),
       deliverables: DELIVERABLES.map((x) => ({ title: t(x.title), desc: t(x.desc) })),
       waHref: wa(t(QUOTE.fallback)),
       diagnosticHref: withLocale(locale, "/diagnostico"),
@@ -141,18 +146,8 @@ export function buildOsPayload(locale: Locale): OsPayload {
       cta: t(LAB_PAGE.ctaButton),
       linkedin: PROFILE.linkedin,
       github: PROFILE.github,
-      quote: {
-        typeQuestion: t(QUOTE.typeQuestion),
-        statusQuestion: t(QUOTE.statusQuestion),
-        types: QUOTE.types.map(opt),
-        statuses: QUOTE.statuses.map(opt),
-        greeting: t(QUOTE.greeting),
-        closing: t(QUOTE.closing),
-        joiner: t(QUOTE.joiner),
-        fallback: t(QUOTE.fallback),
-        previewLabel: t(QUOTE.previewLabel),
-        send: t(CONTACT_PAGE.send),
-      },
+      guide: buildProjectGuide(locale),
+      statuses: QUOTE.statuses.map((o) => ({ key: o.key, label: t(o.label) })),
     },
     profile: {
       name: PROFILE_DATA.name,

@@ -1,3 +1,4 @@
+import type { ProjectGuideData } from "@/data/project-guide";
 import type { Dictionary } from "@/i18n/types";
 import type { Locale } from "@/i18n/config";
 
@@ -49,7 +50,12 @@ export type OsProject = {
   focus: string | null;
 };
 
-export type OsService = { slug: string; label: string; sub: string; href: string };
+export type OsService = {
+  slug: string; label: string; sub: string; href: string;
+  faq: { q: string; a: string; timing: boolean }[];
+  includes: string[];
+  steps: string[];
+};
 
 /** Perfil profissional já localizado (data/profile.ts → payload.ts). */
 export type OsProfile = {
@@ -129,18 +135,8 @@ export type OsPayload = {
     cta: string;
     linkedin: string;
     github: string;
-    quote: {
-      typeQuestion: string;
-      statusQuestion: string;
-      types: { key: string; label: string; phrase: string }[];
-      statuses: { key: string; label: string; phrase: string }[];
-      greeting: string;
-      closing: string;
-      joiner: string;
-      fallback: string;
-      previewLabel: string;
-      send: string;
-    };
+    guide: ProjectGuideData;
+    statuses: { key: string; label: string }[];
   };
   /** Sobre (telefone): quem faz, com fatos já localizados; os canais vêm de `contact` e `social`. */
   about: { eyebrow: string; body: string; tagline: string; base: string; focus: string; stack: string[] };

@@ -42,6 +42,7 @@ export type ProjectDetailData = {
   next: { title: string; href: string };
   allHref: string;
   waHref: string;
+  proposalHref: string;
   s: ReturnType<typeof getDict>["os"]["projects"];
   L: { heroAlt: string; client: string; studio: string; status: string; hold: string; holding: string; held: string; again: string; heldMessage: string };
 };
@@ -117,6 +118,7 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
     prev: { title: prev.title, href: withLocale(locale, `/work/${prev.slug}`) },
     next: { title: next.title, href: withLocale(locale, `/work/${next.slug}`) },
     allHref: withLocale(locale, "/work"),
+    proposalHref: withLocale(locale, "/contact") + "?project=" + encodeURIComponent(p.slug),
     waHref: `https://wa.me/${PROFILE.whatsapp}?text=${encodeURIComponent(WA_MESSAGE[locale](p.title))}`,
     s,
     L: { heroAlt: d.caseUi.heroAlt, client: d.caseUi.client, studio: d.caseUi.studio, status: d.caseUi.status, hold: d.caseUi.hold, holding: d.caseUi.holding, held: d.caseUi.held, again: d.caseUi.again, heldMessage: d.caseUi.heldMessage },

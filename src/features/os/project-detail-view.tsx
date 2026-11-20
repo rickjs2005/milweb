@@ -236,9 +236,8 @@ export function ProjectDetailView({ data: p, headingLevel = 1 }: { data: Project
         )}
         {p.note && <p className="os-case__text">{p.note}</p>}
         <p className="os-case__actions">
-          <a href={p.waHref} target="_blank" rel="noopener noreferrer" className="os-cta">
-            {s.similar.toUpperCase()} ↗
-          </a>
+          <Link href={p.proposalHref} className="os-cta" scroll={false}>{s.similar.toUpperCase()}</Link>
+          <a href={p.waHref} target="_blank" rel="noopener noreferrer" className="link-rule t-mono">WhatsApp</a>
           {p.live && (
             <a href={p.live} target="_blank" rel="noopener noreferrer" className="link-rule t-mono">
               {s.visit.toUpperCase()} ↗
