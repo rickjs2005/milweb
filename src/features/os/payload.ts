@@ -8,7 +8,8 @@ import { AUTORAL_INDEX, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } fr
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
 import { PROFILE_DATA } from "@/data/profile";
-import { buildMateria } from "@/data/materia";
+import { buildIdea } from "@/data/idea";
+import { buildCaseIndex, buildMateria } from "@/data/materia";
 import { buildProjectGuide } from "@/data/project-guide";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
@@ -150,7 +151,9 @@ export function buildOsPayload(locale: Locale): OsPayload {
       guide: buildProjectGuide(locale),
       statuses: QUOTE.statuses.map((o) => ({ key: o.key, label: t(o.label) })),
     },
-    materia: buildMateria(locale),
+    // O índice dos cases usa os três idiomas: quem escreve em inglês no site em português acha a mesma referência.
+    materia: buildMateria(locale, buildCaseIndex([...PROJECT_INDEX, ...AUTORAL_INDEX].map((p) => ({ slug: p.slug, head: [p.title, ...Object.values(p.tagline)], body: Object.values(p.problem) })))),
+    idea: buildIdea(locale),
     profile: {
       name: PROFILE_DATA.name,
       title: PROFILE_DATA.title,

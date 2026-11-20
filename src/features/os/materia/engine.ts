@@ -13,7 +13,9 @@ export type Point = { x: number; y: number };
 /** `home`: centro da cabeça em repouso (px CSS). `talk`: centro do cérebro na conversa e a sua escala relativa. */
 export type Layout = { w: number; h: number; k: number; home: Point; talk: { x: number; y: number; k: number }; /** Até onde o busto aparece, em unidades abaixo do centro da cabeça (telefone: a grade de apps). */ floor?: number };
 export type Trans = { from: Mood; to: Mood; p: number; dir: 1 | -1; ox: number; oy: number };
-export type Targets = { talk: boolean; listen: number; speak: number; calm: number; align: number };
+export type Targets = { talk: boolean; listen: number; speak: number; calm: number; align: number; /** O recorte no rosto está aberto. */ portal: boolean; /** A faixa de luz vira a superfície do mar. */ sea: number; /** Onde a figura fica: 0 = repouso, 1 = o lugar da conversa. */ place: number };
+/** A figura na tela agora (px CSS do canvas): centro, px por unidade e quanto o recorte está aberto (0..1). */
+export type Figure = { x: number; y: number; k: number; open: number };
 export type EngineInit = { canvas: HTMLCanvasElement; mood: Mood; lite: boolean; molecules: Molecules; /** Imagem estática: fundo transparente, sem ambiente, buffer preservado. */ still?: boolean };
 
 export type Engine = {
@@ -25,7 +27,8 @@ export type Engine = {
   readonly count: number;
   readonly stats: Readonly<{ ms: number }>;
   /** Leitura para testes e medições: metamorfose (0 busto … 1 cérebro), afastamento entre os dois perfis (rad) e alvos. */
-  readonly debug: Readonly<{ morph: number; split: number; pull: number; lag: number; listen: number; speak: number; calm: number; align: number; tint: number; slit: number }>;
+  readonly debug: Readonly<{ morph: number; split: number; pull: number; lag: number; listen: number; speak: number; calm: number; align: number; tint: number; slit: number; portal: number; sea: number; place: number }>;
+  readonly figure: Readonly<Figure>;
   setLayout(l: Layout): void;
   setDpr(v: number): void;
   setMood(m: Mood): void;
@@ -47,6 +50,9 @@ export type Engine = {
   onFrame(cb: ((e: Engine, dt: number) => void) | null): void;
   dispose(): void;
 };
+
+/** A linha do mar em unidades acima do centro da cabeça: a mesma altura que a prévia desenha dentro do recorte. */
+const SEA_Y = MATERIA.portal.c[1] + (1 - 2 * MATERIA.portal.sea) * MATERIA.portal.r[1] * MATERIA.portal.inset;
 
 const srgb = (hex: string, into: Vector3) => {
   const c = new Color();
@@ -94,6 +100,8 @@ export function createEngine(init: EngineInit): Engine | null {
       uMorph: { value: 0 }, uListen: { value: 0 }, uSpeak: { value: 0 }, uCalm: { value: 0 }, uAlign: { value: 0 }, uSlit: { value: -1 },
       uScale: { value: 1 }, uIntro: { value: init.still ? 1 : 0 }, uFold: { value: 0 }, uFloor: { value: 9 },
       uPull: { value: new Vector2() }, uPullLag: { value: new Vector2() }, uOffset: { value: new Vector3() },
+      uPortal: { value: 0 }, uPortalYaw: { value: MATERIA.portal.yaw }, uPortalC: { value: new Vector2(MATERIA.portal.c[0], MATERIA.portal.c[1]) }, uPortalR: { value: new Vector2(MATERIA.portal.r[0], MATERIA.portal.r[1]) },
+      uSea: { value: 0 }, uSeaY: { value: SEA_Y },
       uMetal: { value: new Vector3() }, uKey: { value: new Vector3() }, uRim: { value: new Vector3() }, uAccent: { value: new Vector3() }, uShade: { value: new Vector3() }, uFade: { value: new Vector3() },
       uLight: { value: 0 }, uBead: { value: MATERIA.bead }, uTintK: { value: 0 }, uStripAz: { value: -1.12 }, uTint: { value: blank },
     },
@@ -117,7 +125,7 @@ export function createEngine(init: EngineInit): Engine | null {
       uBaseA: { value: new Vector3() }, uDeepA: { value: new Vector3() }, uHazeA: { value: new Vector3() }, uAccentA: { value: new Vector3() },
       uBaseB: { value: new Vector3() }, uDeepB: { value: new Vector3() }, uHazeB: { value: new Vector3() }, uAccentB: { value: new Vector3() },
       uLightA: { value: 0 }, uLightB: { value: 0 }, uP: { value: 0 }, uOrigin: { value: new Vector2() }, uHead: { value: new Vector3(0, 0, 300) },
-      uBend: { value: 0 }, uBand: { value: 1 }, uSlit: { value: -1 }, uGrain: { value: 0.014 },
+      uBend: { value: 0 }, uBand: { value: 1 }, uSlit: { value: -1 }, uGrain: { value: 0.014 }, uSea: { value: 0 }, uSeaY: { value: SEA_Y },
     },
   });
   const bgMesh = new Mesh(bgGeo, bgMat);
@@ -140,8 +148,9 @@ export function createEngine(init: EngineInit): Engine | null {
   let disposed = false;
   let frameCb: ((e: Engine, dt: number) => void) | null = null;
   const stats = { ms: 0 };
-  const target: Targets = { talk: false, listen: 0, speak: 0, calm: 0, align: 0 };
-  const now = { morph: 0, listen: 0, speak: 0, calm: 0, align: 0, tint: 0, intro: init.still ? 1 : 0 };
+  const target: Targets = { talk: false, listen: 0, speak: 0, calm: 0, align: 0, portal: false, sea: 0, place: 0 };
+  const now = { morph: 0, listen: 0, speak: 0, calm: 0, align: 0, tint: 0, intro: init.still ? 1 : 0, portal: 0, sea: 0, place: 0 };
+  const fig: Figure = { x: 0, y: 0, k: 300, open: 0 };
   let tintWant = 0;
   let slitAt = -1;
   // dobra do tempo: o gesto de agora e o mesmo gesto `lag` s atrás (linha de atraso)
@@ -198,13 +207,20 @@ export function createEngine(init: EngineInit): Engine | null {
     camera.lookAt(0, 0, 0);
     camera.updateMatrixWorld();
     if (tr) applyMood(tr.from, tr.to, MathUtils.smoothstep(tr.p, 0.3, 0.7));
-    // do repouso (centro da cabeça) à conversa (centro do cérebro), com a escala de cada um
-    const m = ease(now.morph);
+    // do repouso (centro da cabeça) à conversa (centro do cérebro), com a escala de cada um; o recorte pode
+    // acontecer no lugar da conversa (painel aberto) sem a metamorfose
+    const m = Math.max(ease(now.morph), ease(now.place));
     const cx = layout.home.x + (layout.talk.x - layout.home.x) * m;
     const cy = layout.home.y + (layout.talk.y - layout.home.y) * m;
     const scale = 1 + (layout.talk.k - 1) * m;
     u.uOffset.value.set((cx - layout.w / 2) / layout.k, -(cy - layout.h / 2) / layout.k, 0);
     u.uScale.value = scale;
+    fig.x = cx;
+    fig.y = cy;
+    fig.k = layout.k * scale;
+    fig.open = MathUtils.smoothstep(now.portal, 0.42, 1) * (1 - ease(now.morph));
+    u.uPortal.value = now.portal;
+    u.uSea.value = now.sea;
     u.uFloor.value = layout.floor ?? 9;
     u.uPx.value = layout.k * dpr;
     u.uCamZ.value = D;
@@ -215,7 +231,8 @@ export function createEngine(init: EngineInit): Engine | null {
     u.uCalm.value = now.calm;
     u.uAlign.value = now.align;
     u.uIntro.value = now.intro;
-    u.uTintK.value = now.tint;
+    // com o recorte aberto a capa refletida recua: a figura continua prata, a cor fica por conta da ideia
+    u.uTintK.value = now.tint * (1 - 0.6 * now.portal);
     u.uPull.value.set(pullNow.x, pullNow.y);
     u.uPullLag.value.set(pullLag.x, pullLag.y);
     const split = pullNow.x - pullLag.x;
@@ -232,8 +249,9 @@ export function createEngine(init: EngineInit): Engine | null {
       b.uRes.value.set(W, H);
       b.uTime.value = t % MATERIA.timeWrap;
       b.uHead.value.set(cx * k, H - cy * k, layout.k * scale * k);
-      b.uBend.value = (split / MATERIA.fold.yaw) * (1 - m);
-      b.uBand.value = (1 - 0.75 * now.calm) * (1 - 0.6 * m);
+      b.uBend.value = (split / MATERIA.fold.yaw) * (1 - ease(now.morph));
+      b.uBand.value = (1 - 0.75 * now.calm) * (1 - 0.6 * ease(now.morph));
+      b.uSea.value = now.sea;
       b.uSlit.value = slit;
       b.uP.value = tr ? tr.p : 0;
       if (tr) b.uOrigin.value.set(tr.ox * k, H - tr.oy * k);
@@ -266,6 +284,12 @@ export function createEngine(init: EngineInit): Engine | null {
     now.calm += (target.calm - now.calm) * (1 - Math.exp(-dt / 0.6));
     now.align += (target.align - now.align) * (1 - Math.exp(-dt / 0.5));
     now.tint += (tintWant - now.tint) * (1 - Math.exp(-dt / 0.35));
+    // O recorte espera o busto se recompor (vindo do cérebro) e fecha mais depressa do que abre.
+    const P = MATERIA.portal;
+    const opening = target.portal && now.morph < 0.3;
+    now.portal = Math.max(0, Math.min(1, now.portal + (opening ? dt / P.time : -dt / P.close)));
+    now.sea += ((opening && now.portal > 0.35 ? target.sea : 0) - now.sea) * (1 - Math.exp(-dt / 0.45));
+    now.place += (target.place - now.place) * (1 - Math.exp(-dt / 0.4));
     now.intro = Math.min(1, now.intro + dt / 1.7);
     if (slitAt >= 0 && t - slitAt > MATERIA.slit) slitAt = -1;
   };
@@ -273,7 +297,8 @@ export function createEngine(init: EngineInit): Engine | null {
   /** Algo se mexe por causa do visitante (ou ainda está assentando)? */
   const busy = () =>
     !!tr || now.intro < 1 || slitAt >= 0 || !!pullTarget || Math.abs(pullNow.x - pullLag.x) > 0.002 || Math.abs(pullNow.x) > 0.004 ||
-    (now.morph > 0 && now.morph < 1) || now.listen > 0.02 || now.speak > 0.02 || Math.abs(now.tint - tintWant) > 0.01 || Math.abs(now.align - target.align) > 0.01;
+    (now.morph > 0 && now.morph < 1) || now.listen > 0.02 || now.speak > 0.02 || Math.abs(now.tint - tintWant) > 0.01 || Math.abs(now.align - target.align) > 0.01 ||
+    target.portal || now.portal > 0 || now.sea > 0.01 || Math.abs(now.place - target.place) > 0.005;
 
   let slowEma = 0;
   let cooldown = 4;
@@ -344,8 +369,9 @@ export function createEngine(init: EngineInit): Engine | null {
     count: M.count,
     stats,
     get debug() {
-      return { morph: now.morph, split: pullNow.x - pullLag.x, pull: pullNow.x, lag: pullLag.x, listen: now.listen, speak: now.speak, calm: now.calm, align: now.align, tint: now.tint, slit: slitAt < 0 ? -1 : (t - slitAt) / MATERIA.slit };
+      return { morph: now.morph, split: pullNow.x - pullLag.x, pull: pullNow.x, lag: pullLag.x, listen: now.listen, speak: now.speak, calm: now.calm, align: now.align, tint: now.tint, slit: slitAt < 0 ? -1 : (t - slitAt) / MATERIA.slit, portal: now.portal, sea: now.sea, place: now.place };
     },
+    figure: fig,
     setLayout(l) {
       const sized = l.w !== layout.w || l.h !== layout.h;
       layout = l;

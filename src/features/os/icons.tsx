@@ -74,6 +74,14 @@ const GLYPH: Record<IconKind, React.ReactNode> = {
       <path d="M24 18h16" className="os-icon__accent" />
     </>
   ),
+  /* a prévia: uma página vista através de um recorte */
+  idea: (
+    <>
+      <rect x="9" y="11" width="30" height="26" rx="3" />
+      <path d="M9 18h30" />
+      <ellipse cx="24" cy="28" rx="6" ry="5" className="os-icon__accent" />
+    </>
+  ),
   search: (
     <>
       <circle cx="22" cy="22" r="10" />

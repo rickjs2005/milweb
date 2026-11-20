@@ -23,8 +23,8 @@
 }
 @media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
   .os-desktop {
-    --ma-k: min(calc((100dvh - 350px) * .78), 86vw);
-    --ma-x: 50vw; --ma-y: calc(50dvh - 127px - (100dvh - 350px) * .1);
+    --ma-k: min(calc((100dvh - 350px) * .78), 84vw);
+    --ma-x: 50vw; --ma-y: calc(50dvh - 127px - (100dvh - 350px) * .135);
     --ma-tk: 50vw; --ma-tx: 50vw; --ma-ty: 21dvh;
     --ma-vy: var(--ma-y);
   }
@@ -70,8 +70,13 @@ html[data-os-theme="gojo"] .os-materia[data-pose="brain"] .os-scene__still {
   border: 0; border-radius: 46% 46% 40% 40%; background: none; cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent;
 }
 .os-materia-hit:focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 4px; }
-.os-materia-talk {
-  position: fixed; left: var(--ma-vx); top: var(--ma-py); transform: translateX(-50%);
+/* Os dois convites sob a figura: conversar, e a entrada da prévia ("Ver uma ideia para o meu site"). */
+.os-materia-cta { position: fixed; left: var(--ma-vx); top: var(--ma-py); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+/* só os botões recebem o ponteiro: a caixa que os agrupa não pode cobrir um ícone vizinho */
+.os-materia-ui > .os-materia-cta { pointer-events: none; }
+.os-materia-cta > * { pointer-events: auto; }
+.os-materia-ui[data-open="1"] .os-materia-cta > * { pointer-events: none; }
+.os-materia-talk, .os-materia-idea, .os-materia-portal__open {
   display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 20px 0 16px; white-space: nowrap;
   border: 1px solid rgb(var(--os-fg) / .24); border-radius: 999px;
   background: rgb(var(--os-bg) / .74); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
@@ -79,10 +84,47 @@ html[data-os-theme="gojo"] .os-materia[data-pose="brain"] .os-scene__still {
   transition: border-color .25s, background-color .25s, transform .5s var(--os-ease);
 }
 .os-materia-talk:hover { border-color: rgb(var(--os-signal)); background: rgb(var(--os-bg) / .9); }
-.os-materia-talk:focus-visible, .os-materia-bubble:focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
+/* A prévia é o convite mais forte: placa cheia, na cor do texto do tema. */
+.os-materia-idea, .os-materia-portal__open { padding: 0 20px; border-color: rgb(var(--os-fg)); background: rgb(var(--os-fg)); color: rgb(var(--os-bg)); }
+.os-materia-idea:hover, .os-materia-portal__open:hover { background: rgb(var(--os-fg) / .86); }
+.os-materia-portal__open .os-materia-talk__dot { animation: none; box-shadow: none; }
+.os-materia-talk:focus-visible, .os-materia-idea:focus-visible, .os-materia-bubble:focus-visible, .os-materia-portal :is(button):focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
+@media (min-width: 1080px) { .os-materia-cta { flex-direction: row; } }
 .os-materia-talk__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--os-signal)); box-shadow: 0 0 0 0 rgb(var(--os-signal) / .5); animation: os-materia-pulse 2.4s ease-out infinite; }
 @keyframes os-materia-pulse { 0% { box-shadow: 0 0 0 0 rgb(var(--os-signal) / .55); } 70%, 100% { box-shadow: 0 0 0 9px rgb(var(--os-signal) / 0); } }
 html[data-os-event="halloween"] .os-materia-ui { display: none; }
+
+/* ─────────────────────────── O recorte no rosto: a ideia aparece dentro da escultura ───────────────────────────
+   O motor abre o vão na matéria e publica, quadro a quadro, o centro (--cx/--cy), os raios (--rx/--ry) e quanto
+   abriu (--co). O que se vê ali dentro é a primeira dobra da prévia; tocar nela a faz crescer até virar uma janela. */
+.os-materia-portal { position: fixed; inset: 0; z-index: 3; pointer-events: none; --cx: var(--ma-vx); --cy: var(--ma-vy); --rx: 0px; --ry: 0px; --co: 0; }
+.os-materia-cut {
+  position: fixed; left: calc(var(--cx) - var(--rx)); top: calc(var(--cy) - var(--ry)); width: calc(var(--rx) * 2); height: calc(var(--ry) * 2);
+  padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: rgb(var(--os-bg)); cursor: pointer; pointer-events: auto;
+  transform: scale(var(--co)); visibility: hidden; -webkit-tap-highlight-color: transparent;
+}
+.os-materia-portal[data-open="1"] .os-materia-cut { visibility: visible; }
+.os-materia-cut::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22), inset 0 0 26px rgb(0 0 0 / .5); pointer-events: none; }
+.os-materia-cut__page { position: absolute; inset: 0; display: block; pointer-events: none; }
+.os-materia-cut:focus-visible { outline-offset: 6px; }
+.os-materia-portal__bar {
+  position: fixed; left: var(--cx); top: min(calc(var(--cy) + var(--ry) * 3.05), calc(100dvh - var(--os-dock-space) - 62px)); transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; margin: 0; opacity: 0; transition: opacity .35s var(--os-ease);
+}
+.os-materia-portal[data-ready="1"] .os-materia-portal__bar { opacity: 1; }
+.os-materia-portal[data-ready="1"] .os-materia-portal__bar > * { pointer-events: auto; }
+.os-materia-portal__close { min-height: 46px; padding: 0 14px; border: 0; border-radius: 999px; background: rgb(var(--os-bg) / .6); color: rgb(var(--os-fg) / .86); font: 600 12px/1 var(--font-mono), monospace; letter-spacing: .09em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+.os-materia-portal__close:hover { color: rgb(var(--os-fg)); }
+/* Com o recorte aberto, as janelas saem de cena: a escultura fica à vista mesmo com um case aberto. */
+html[data-os-portal] .os-window { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .3s var(--os-ease), visibility 0s linear .3s !important; }
+/* o conteúdo delas também não recebe o ponteiro (há áreas com pointer-events próprio, como o mural de Projetos) */
+html[data-os-portal] .os-window * { pointer-events: none !important; }
+/* A janela da prévia espera atrás do recorte que cresce e aparece quando ele chega. */
+html[data-os-arriving="idea"] .os-window[data-app="idea"] { opacity: 0 !important; }
+.os-materia-flight { position: fixed; z-index: 320; overflow: hidden; border-radius: 50%; pointer-events: none; background: rgb(var(--os-bg)); box-shadow: 0 0 70px rgb(var(--os-signal) / .3); will-change: left, top, width, height, border-radius, opacity; }
+.os-materia-flight > * { position: absolute; inset: 0; display: block; }
+/* A janela da prévia: sem margem interna, e contêiner para as medidas das ideias (apps/idea/idea.module.css). */
+.os-window[data-app="idea"] .os-window__body { padding: 0; overflow: hidden; container-type: size; }
 
 /* ─────────────────────────── A conversa ─────────────────────────── */
 .os-materia-panel {
@@ -169,16 +211,32 @@ html[data-os-event="halloween"] .os-materia-ui { display: none; }
 .os-materia-shard { position: fixed; z-index: 320; pointer-events: none; background: #111 center top / cover no-repeat; will-change: left, top, width, height, clip-path, opacity; box-shadow: 0 0 60px rgb(var(--os-signal) / .35); }
 
 @media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
-  .os-materia-talk { font-size: 11.5px; min-height: 48px; }
+  .os-materia-talk, .os-materia-idea, .os-materia-portal__open { font-size: 11.5px; min-height: 48px; }
+  /* no telefone o botão da conversa fica onde sempre esteve, rente à grade; a entrada da prévia sobe para cima dele */
+  .os-materia-cta { flex-direction: column-reverse; transform: translate(-50%, calc(-100% + 48px)); }
+  .os-materia-portal__bar { top: var(--ma-py); }
+  /* tela estreita: o convite da prévia quebra em duas linhas antes de sair da tela */
+  .os-materia-idea { max-width: calc(100vw - 24px); white-space: normal; text-align: center; line-height: 1.25; padding-block: 6px; }
   .os-materia-panel {
     left: 0; right: 0; bottom: var(--kb, 0px); width: auto; height: min(58dvh, calc(var(--vvh, 100dvh) - 84px));
     border-radius: 20px 20px 0 0; border-width: 1px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .os-materia-bubble { right: 12px; bottom: calc(var(--os-mdock) + 14px); }
+  /* com o recorte aberto a tela inicial é da escultura: a pílula volta quando ele fecha ("Agora não") */
+  html[data-os-portal] .os-materia-bubble { display: none; }
+  /* sobre a prévia, a pílula sobe para a faixa do rótulo: embaixo ficam a referência e o botão do orçamento */
+  .os-materia-bubble[data-over="idea"] { top: calc(env(safe-area-inset-top, 0px) + 64px); bottom: auto; min-height: 44px; padding: 0 14px 0 12px; gap: 9px; box-shadow: 0 8px 22px rgb(0 0 0 / .3); }
+  .os-materia-bubble[data-over="idea"] .os-materia-bubble__text span { display: none; }
   .os-materia-msg { max-width: 94%; }
+}
+/* telefone deitado (ou com o teclado aberto): a figura fica na coluna da direita e os convites cabem nela */
+@media (max-height: 499px) and (max-width: 1079px) {
+  .os-materia-cta { max-width: 46vw; }
+  .os-materia-idea { max-width: 46vw; }
+  .os-materia-talk { max-width: 46vw; white-space: normal; text-align: left; line-height: 1.25; padding-block: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .os-materia-panel, .os-materia-bubble, .os-materia-talk__dot, .os-materia-panel__mic[data-on="1"], .os-materia-msg[data-thinking="1"] i { animation: none !important; }
-  .os-materia-ui, .os-materia-talk { transition: none !important; }
+  .os-materia-ui, .os-materia-talk, .os-materia-idea, .os-materia-portal__bar { transition: none !important; }
 }
 html[data-os-motion="reduce"] :is(.os-materia-panel, .os-materia-bubble, .os-materia-talk__dot, .os-materia-panel__mic[data-on="1"], .os-materia-msg[data-thinking="1"] i) { animation: none !important; }

@@ -943,7 +943,7 @@ if (ONLY.includes("controls")) {
 }
 
 // ----------------------------------------------------------------- projects
-// Projetos como THE BOUNTY COLLECTION: 31 cartazes no mural (um principal, vizinhos em degraus, distantes
+// Projetos como THE BOUNTY COLLECTION: 25 cartazes no mural (um principal, vizinhos em degraus, distantes
 // ocultos e sem imagem), cartaz íntegro (faixa/nome dentro do papel), filtros compactos, Kavita só com o link
 // interno, navegação por setas/Home/End/roda/arraste/fita/"ver todos", hover (inclinação), o voo do dossiê
 // (cartaz se desprende, outros recuam, folha com o cartaz à esquerda e o case ao lado), Esc e "voltar" revertem
@@ -969,10 +969,10 @@ if (ONLY.includes("projects")) {
   const slots = mural.locator(".bounty__slot");
   const activeSlug = () => mural.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug");
   const centered = () => mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); const s = e.closest(".bounty__stage").getBoundingClientRect(); return Math.abs(r.left + r.width / 2 - (s.left + s.width / 2)) < 3; });
-  check("31 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 31 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
+  check("25 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 25 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
   check("cartaz principal: faixa, imagem, nome, identificador, selo e frase", await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => ["bounty__tier", "bounty__img", "bounty__name", "bounty__id", "bounty__seal", "bounty__line"].every((c) => e.querySelector("." + c))));
   check("faixa e nome cabem no papel (sem estourar)", await mural.locator('.bounty__slot[data-active="1"] .bounty__sheet').evaluate((s) => { const r = s.getBoundingClientRect(); return [...s.querySelectorAll(".bounty__tier, .bounty__name, .bounty__line")].every((el) => { const b = el.getBoundingClientRect(); return b.right <= r.right + 1 && el.scrollWidth <= el.clientWidth + 1; }); }));
-  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 7 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 24 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
+  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 7 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 18 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
   check("só os cartazes próximos carregam imagem", (await mural.locator(".bounty__img:not(.bounty__img--empty)").count()) <= 10);
   check("filtros compactos (7) com contagem e ativo marcado", (await mural.locator(".bounty__pill").count()) === 7 && (await mural.locator('.bounty__pill[aria-pressed="true"]').innerText()).includes("TODOS") && (await mural.locator(".bounty__pill").first().evaluate((e) => e.getBoundingClientRect().height <= 30)));
   check("Kavita: só o link interno do case, sem link externo", await mural.locator('.bounty__slot[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
@@ -988,7 +988,7 @@ if (ONLY.includes("projects")) {
   check("setas movem o principal (→ → = 03) e o contador acompanha", (await activeSlug()) === "atelier-vertex" && (await mural.locator(".bounty__count").innerText()).startsWith("03") && (await centered()));
   await page.keyboard.press("End");
   await settle(page, 900);
-  check("End vai ao último (31)", (await activeSlug()) === "imperio-cafe");
+  check("End vai ao último (25)", (await activeSlug()) === "rjs-laticinios");
   await page.keyboard.press("Home");
   await settle(page, 900);
   await page.mouse.move(720, 480);
@@ -1000,7 +1000,7 @@ if (ONLY.includes("projects")) {
   check("fita de posição salta direto (10 = Ace Diving)", (await activeSlug()) === "ace-diving-miami" && /ACE/i.test(await mural.locator('.bounty__tick[aria-current="true"]').getAttribute("aria-label")));
   await mural.locator(".bounty__all-btn").click();
   await settle(page, 400);
-  check("ver todos: grade com os 31", (await mural.locator(".bounty__all-item").count()) === 31);
+  check("ver todos: grade com os 25", (await mural.locator(".bounty__all-item").count()) === 25);
   await mural.locator(".bounty__all-item").nth(13).click();
   await settle(page, 900);
   check("ver todos salta e fecha (14 = Serengeti)", (await activeSlug()) === "serengeti-wildlife-safaris" && (await mural.locator(".bounty__all").count()) === 0);
@@ -1010,7 +1010,7 @@ if (ONLY.includes("projects")) {
   await page.mouse.move(stage.x + stage.w * 0.3, stage.y + stage.h / 2, { steps: 8 });
   await page.mouse.up();
   await settle(page, 900);
-  check("arrastar para a esquerda avança (distância vira passos)", ["as-copas", "age-of-dragons"].includes(await activeSlug()), await activeSlug());
+  check("arrastar para a esquerda avança (distância vira passos)", ["inkvision", "logistics-demo"].includes(await activeSlug()), await activeSlug());
   const act = mural.locator('.bounty__slot[data-active="1"] .bounty__link');
   const ab = await act.boundingBox();
   await page.mouse.move(ab.x + ab.width * 0.75, ab.y + ab.height * 0.3);
@@ -1230,7 +1230,7 @@ if (ONLY.includes("phones")) {
     const allItems = await page.locator(".bounty__all-item").count();
     await page.locator(".bounty__all-item").nth(9).tap();
     await settle(page, 900);
-    check("Ver todos: grade com os 31 e salto direto (10)", allItems === 31 && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "ace-diving-miami");
+    check("Ver todos: grade com os 25 e salto direto (10)", allItems === 25 && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "ace-diving-miami");
 
     // Contato
     await page.locator(".os-window__close").tap();

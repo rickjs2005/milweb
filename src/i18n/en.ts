@@ -76,7 +76,7 @@ export const en: Dictionary = {
   footer: { email: "Email", year: "Brazil" },
   preferred: { eyebrow: "GOOGLE / PREFERRED SOURCES", title: ["KEEP MILWEB", "IN YOUR SOURCES."], cta: "ADD MILWEB", loading: "OPENING GOOGLE…", retry: "TRY AGAIN", aria: "Add MilWeb to Preferred Sources on Google" },
   os: {
-    apps: { profile: "Profile", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Hire Rick", settings: "Settings", search: "Search" },
+    apps: { profile: "Profile", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Hire Rick", settings: "Settings", idea: "Preview", search: "Search" },
     regions: { desktop: "Desktop", icons: "Desktop shortcuts", dock: "Dock", topbar: "System bar", windows: "Open windows", home: "Home screen", appGrid: "Apps" },
     window: { minimize: "Minimize", maximize: "Maximize", restore: "Restore", close: "Close", keys: "With the title bar focused: arrow keys move the window, Shift + arrows resize, Esc closes", resize: "Resize", running: "open", focused: "in front" },
     mobile: { back: "Back", home: "Home", open: "Open", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },

@@ -43,6 +43,13 @@ export const MATERIA = {
   /** Metamorfose busto ↔ cérebro (s) e a fenda de luz que a abre (s). */
   morph: 1.9,
   slit: 0.9,
+  /**
+   * O recorte no rosto ("Ver uma ideia para o meu site"): a cabeça vira de perfil (`yaw`, rad), o arco da nuca
+   * desliza para a frente e a matéria se abre num vão oval — centro `c` e raios `r`, em unidades a partir do
+   * centro da cabeça, como se vê na tela. A interface desenha a ideia dentro dele (um pouco menor: `inset`).
+   * `sea`: na prévia de mergulho, a que altura do vão passa a linha do mar (fração da altura, de cima para baixo).
+   */
+  portal: { time: 1.6, close: 0.7, yaw: -1.47, c: [0.06, 0.1], r: [0.31, 0.37], inset: 0.93, sea: 0.38 },
 } as const;
 
 /** Composição: frações da área do fundo. `k` é quantos px vale uma unidade (a cabeça mede ~1). */
@@ -50,7 +57,8 @@ export const COMPOSE = {
   desktop: { kH: 0.37, kW: 0.25, home: { x: 0.6, y: 0.37 }, talk: { x: 0.5, y: 0.44, k: 1.0 } },
   tablet: { kH: 0.3, kW: 0.4, home: { x: 0.6, y: 0.38 }, talk: { x: 0.52, y: 0.4, k: 0.95 } },
   /** Telefone: rosto e ombros de perto, dentro do palco; na conversa o cérebro sobe para a faixa livre acima da folha. */
-  mobile: { kS: 0.78, kW: 0.86, homeDy: -0.1, talk: { y: 0.21, kW: 0.5 } },
+  /** O rosto sobe um pouco: sob ele ficam os dois convites (a prévia e a conversa), sem cobrir o queixo. */
+  mobile: { kS: 0.78, kW: 0.84, homeDy: -0.135, talk: { y: 0.21, kW: 0.5 } },
 } as const;
 
 /** Cores de tela (sRGB), por tema. */

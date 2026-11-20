@@ -1,3 +1,4 @@
+import type { IdeaData } from "@/data/idea";
 import type { MateriaData } from "@/data/materia";
 import type { ProjectGuideData } from "@/data/project-guide";
 import type { Dictionary } from "@/i18n/types";
@@ -102,6 +103,8 @@ export type OsPayload = {
   hrefs: { home: string; profile: string; projects: string; studio: string; lab: string; services: string; contact: string };
   /** Matéria: frases da guia e recomendações por setor (data/materia.ts). */
   materia: MateriaData;
+  /** Prévia: textos das ideias que a Matéria abre numa janela (data/idea.ts). */
+  idea: IdeaData;
   /** Perfil profissional (app Perfil / rota /profile). */
   profile: OsProfile;
   projects: OsProject[];

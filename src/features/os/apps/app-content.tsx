@@ -10,6 +10,7 @@ import { AboutApp } from "./about";
 import { ContactApp } from "./contact";
 import { SettingsApp } from "./settings";
 import { ProfileApp } from "./profile";
+import { IdeaApp } from "./idea/idea";
 
 /**
  * Raiz de cada app, desenhada a partir da carga do OS (mesma em desktop, celular e modo simples).
@@ -33,5 +34,7 @@ export function AppContent({ id, active, dossier = null, slug = null }: { id: Ap
       return <ContactApp />;
     case "settings":
       return <SettingsApp />;
+    case "idea":
+      return <IdeaApp active={active} />;
   }
 }

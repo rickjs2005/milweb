@@ -12,10 +12,11 @@ attribute vec3 aBrain;
 attribute vec3 aBrainN;
 attribute vec4 aMeta; // semente, dissolução, borda de sulco, região (0..1)
 uniform float uTime, uPx, uCamZ, uSize, uYaw, uMorph, uListen, uSpeak, uCalm, uAlign, uSlit, uScale, uIntro, uFold, uFloor;
-uniform vec2 uPull, uPullLag;
+uniform float uPortal, uPortalYaw, uSeaY;
+uniform vec2 uPull, uPullLag, uPortalC, uPortalR;
 uniform vec3 uOffset;
 varying vec3 vN;
-varying float vShade, vSulcus, vGlow, vGhost, vE;
+varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim;
 
 vec3 ry(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z); }
 vec3 rx(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z); }
@@ -59,9 +60,12 @@ void main() {
   // Perfil: a matéria se alinha em linhas, como texto composto.
   p.y = mix(p.y, (floor(p.y * 44.0) + 0.5) / 44.0, uAlign * (1.0 - e));
 
-  float sway = (1.0 - uCalm) * (1.0 - uFold);
+  // O recorte: primeiro a cabeça vira de perfil, depois a matéria se abre (só no busto).
+  float turn = smoothstep(0.0, 0.55, uPortal) * (1.0 - e);
+  float gap = smoothstep(0.42, 1.0, uPortal) * (1.0 - e);
+  float sway = (1.0 - uCalm) * (1.0 - uFold) * (1.0 - turn);
   // o cérebro se mostra de lado e um pouco de cima: é assim que os hemisférios e os sulcos se leem
-  float yaw = mix(uYaw, -1.02, e) + sin(uTime * 0.21) * 0.045 * sway + e * sin(uTime * 0.17) * 0.14 * (1.0 - uCalm);
+  float yaw = mix(mix(uYaw, uPortalYaw, turn), -1.02, e) + sin(uTime * 0.21) * 0.045 * sway + e * sin(uTime * 0.17) * 0.14 * (1.0 - uCalm);
   p = rx(ry(p, yaw), 0.42 * e);
   n = rx(ry(n, yaw), 0.42 * e);
   // Dissolução: fragmentos finos se soltam para trás e somem; outros tomam o lugar.
@@ -74,9 +78,41 @@ void main() {
   arrive = 1.0 - pow(1.0 - arrive, 3.0);
   p += normalize(p + vec3(0.001)) * (1.0 - arrive) * (0.5 + seed);
 
+  // Ver através do rosto. Tudo é medido como se vê na tela (projeção sobre o plano da figura), para o recorte
+  // coincidir com o elemento que a interface desenha por cima: centro uPortalC e raios uPortalR, em unidades.
+  float rim = 0.0;
+  if (uPortal > 0.001) {
+    float isArc = step(1.5, aMeta.w * 255.0);
+    // O arco da nuca desliza para a frente e vira a moldura do recorte: a ponta que entra na cabeça chega primeiro.
+    float along = clamp((position.y + 1.0) / 1.5, 0.0, 1.0);
+    float slide = clamp(uPortal * 2.1 - 0.9 * (1.0 - along) - 0.2, 0.0, 1.0);
+    slide = slide * slide * (3.0 - 2.0 * slide) * isArc * (1.0 - e);
+    float th = mix(-2.3, 3.6, along) + 0.12 * sin(uTime * 0.5 + seed * 6.2832);
+    float lane = 1.07 + 0.07 * (fract(seed * 17.3) - 0.5);
+    vec3 frame = vec3(uPortalC + uPortalR * lane * vec2(cos(th), sin(th)), 0.5 + 0.06 * (fract(seed * 29.7) - 0.5));
+    p = mix(p, frame, slide);
+    n = normalize(mix(n, vec3(cos(th) * 0.55, sin(th) * 0.55, 0.62), slide));
+    // As demais moléculas que estariam dentro do recorte escorrem para a borda: o vão atravessa a cabeça inteira.
+    float f = uCamZ / (uCamZ - uScale * p.z);
+    vec2 q = ((uOffset.xy + uScale * p.xy) * f - uOffset.xy) / uScale;
+    vec2 d = (q - uPortalC) / uPortalR;
+    float r = length(d);
+    if (r < gap && isArc < 0.5) {
+      vec2 dir = r > 1e-4 ? d / r : vec2(cos(seed * 6.2832), sin(seed * 6.2832));
+      vec2 q2 = uPortalC + dir * uPortalR * gap * (1.0 + 0.045 * fract(seed * 11.0));
+      p.xy = ((q2 * uScale + uOffset.xy) / f - uOffset.xy) / uScale;
+      n = normalize(vec3(dir * 0.62, 0.78));
+      rim = gap;
+    }
+    rim = max(rim, slide * 0.7);
+  }
+  vRim = rim;
+
   vec4 mv = modelViewMatrix * vec4(p * uScale + uOffset, 1.0);
   vN = normalize(normalMatrix * n);
   gl_Position = projectionMatrix * mv;
+  // altura na tela em relação à linha do mar (unidades da figura): abaixo dela a prata fica debaixo d'água
+  vSea = ((mv.y * uCamZ / -mv.z) - uOffset.y) / uScale - uSeaY;
 
   float facing = smoothstep(-0.4, 0.15, vN.z);
   float slit = uSlit < 0.0 ? 0.0 : exp(-pow((p.x - mix(-0.8, 0.8, uSlit)) / 0.05, 2.0));
@@ -93,10 +129,10 @@ void main() {
 
 export const MOLECULE_FRAG = /* glsl */ `
 uniform vec3 uMetal, uKey, uRim, uAccent, uShade, uFade;
-uniform float uLight, uBead, uTintK, uStripAz;
+uniform float uLight, uBead, uTintK, uStripAz, uSea;
 uniform sampler2D uTint;
 varying vec3 vN;
-varying float vShade, vSulcus, vGlow, vGhost, vE;
+varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim;
 
 void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
@@ -130,6 +166,11 @@ void main() {
   // O perfil atrasado: mais frio e mais fraco — o mesmo rosto, em outro instante.
   col = mix(col, (col * 0.62 + uAccent * 0.1) , vGhost * 0.75);
   col += (uAccent * 0.85 + uKey * 0.3) * vGlow;
+  // A borda do recorte pega a luz que vem de dentro.
+  col += uKey * vRim * (0.22 + 0.5 * pow(max(n.z, 0.0), 6.0));
+  // Debaixo da linha do mar a prata esfria e ganha o verde da água.
+  float under = uSea * smoothstep(0.02, -0.3, vSea);
+  col = mix(col, col * vec3(0.5, 0.88, 0.95) + vec3(0.0, 0.06, 0.08), under * 0.62);
   // O que se vê pelos sulcos é o lado de dentro do cérebro: no tema claro ele vira sombra azulada, não o branco do fundo.
   gl_FragColor = vec4(mix(mix(uFade, uShade, 0.82 * vE), col, vShade), 1.0);
 }
@@ -158,6 +199,8 @@ uniform vec3 uHead;    // centro da figura (px, y de baixo) e px por unidade
 uniform float uBend;   // dobra do tempo: diferença entre os dois perfis
 uniform float uBand;   // presença da faixa
 uniform float uSlit;   // fenda (−1 = ausente; 0..1 = varredura)
+uniform float uSea;    // a faixa de luz vira a superfície do mar (0..1)
+uniform float uSeaY;   // altura da linha do mar, em unidades acima do centro da figura
 uniform float uGrain;
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -179,15 +222,23 @@ vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light)
   col += (haze - col) * (n - 0.45) * mix(0.3, 0.18, light);
 
   // A faixa: diagonal suave; atrás da cabeça ela se curva e sai do outro lado em outra altura.
-  vec2 dir = normalize(vec2(1.0, 0.2));
+  // Na prévia de mergulho ela deita, atravessa a tela inteira e vira a superfície do mar.
+  vec2 dir = normalize(vec2(1.0, 0.2 * (1.0 - uSea)));
   float along = dot(q, dir);
   float across = dot(q, vec2(-dir.y, dir.x));
   float lens = exp(-dot(q, q) / 0.42);
-  float s = across - 0.06 - uBend * 0.34 * th(along * 2.6) - (0.05 + 0.5 * abs(uBend)) * lens * sign(uBend + 1e-4);
-  float reach = smoothstep(2.3, 0.6, -along) * smoothstep(3.4, 1.0, along) * uBand;
+  float ripple = uSea * 0.012 * sin(q.x * 5.0 + uTime * 0.9);
+  float s = across - mix(0.06, uSeaY, uSea) - ripple - (1.0 - uSea) * (uBend * 0.34 * th(along * 2.6) + (0.05 + 0.5 * abs(uBend)) * lens * sign(uBend + 1e-4));
+  float reach = mix(smoothstep(2.3, 0.6, -along) * smoothstep(3.4, 1.0, along) * uBand, 1.0, uSea);
+  // Abaixo da linha, a água: turquesa perto da luz, quase preta no fundo, com reflexos que se movem.
+  float fathom = smoothstep(0.0, 2.4, -s);
+  vec3 water = mix(vec3(0.05, 0.42, 0.5), vec3(0.0, 0.035, 0.07), fathom);
+  float caustic = pow(noise(q * vec2(5.0, 2.4) + vec2(uTime * 0.11, uTime * 0.07)), 3.0) * exp(s * 1.6);
+  col = mix(col, water + vec3(0.25, 0.6, 0.6) * caustic * 0.5, uSea * smoothstep(0.0, -0.05, s) * mix(0.93, 0.8, light));
+  vec3 beam = mix(accent, vec3(0.62, 0.95, 0.96), uSea);
   float core = exp(-pow(s / 0.022, 2.0)) * reach;
   float glow = exp(-pow(s / 0.16, 2.0)) * reach;
-  col = mix(col + accent * (core * 0.42 + glow * 0.07) + vec3(core * 0.2), mix(col, accent, glow * 0.12 + core * 0.3) + vec3(core * 0.08), light);
+  col = mix(col + beam * (core * 0.42 + glow * 0.07) + vec3(core * 0.2), mix(col, beam, glow * 0.12 + core * 0.3) + vec3(core * 0.08), light * (1.0 - uSea));
 
   // A fenda que abre a conversa: um fio vertical de luz atravessando o rosto.
   if (uSlit >= 0.0) {

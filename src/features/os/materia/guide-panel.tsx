@@ -2,29 +2,69 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DivePoster } from "../apps/idea/dive";
+import { PracticePoster } from "../apps/idea/practice";
+import { pushOverlay } from "../mobile/history";
 import { useOs, useOsStore } from "../os-shell";
-import { APPS, isAppId } from "../registry";
+import { APPS, DESKTOP_WIDE_MQ, isAppId } from "../registry";
 import type { OsProject } from "../types";
-import { briefNotes, respond } from "./brain";
+import { respond } from "./brain";
 import { guide, stage, useGuide, type GuideAction, type GuideMessage } from "./guide-store";
+import { writeBrief } from "./handoff";
+import { idea, useIdea } from "./idea-store";
 import { canListen, canSpeak, hush, listen, speak, type Listener } from "./voice";
 
 /**
  * A conversa com a Matéria.
  *
  *   MateriaControls  sobre a figura, na área de trabalho: a própria escultura (arraste = dobrar o
- *                    tempo, toque = conversar) e o botão visível "Conversar com a Matéria".
+ *                    tempo, toque = conversar), o botão "Conversar com a Matéria" e a entrada
+ *                    "Ver uma ideia para o meu site"; e o recorte no rosto (MateriaPortal), onde a
+ *                    ideia aparece e de onde ela cresce até virar uma janela do OS.
  *   MateriaGuide     o painel (texto e microfone desde o primeiro momento), a pílula que mantém a
  *                    conversa enquanto o visitante navega, e a travessia até a janela do case.
  *
  * Tudo funciona sem o motor 3D, sem voz e sem rede: as respostas vêm de materia/brain.ts, e as ações
  * só alcançam o que o portfólio cadastra — apps do OS, projetos do catálogo, o currículo e os
- * repositórios do perfil, e o pedido de proposta do Hire Rick.
+ * repositórios do perfil, a prévia (apps/idea) e o pedido de proposta do Hire Rick. Sem motor ou com
+ * movimento reduzido, a prévia abre direto na janela.
  */
-const BRIEF_KEY = "milweb:project-brief";
 const reduced = () => typeof window !== "undefined" && (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.osMotion === "reduce");
 let nextId = 1;
 const stamp = (m: Omit<GuideMessage, "id">): GuideMessage => ({ ...m, id: Date.now() * 100 + (nextId++ % 100) });
+
+/** Um recorte da tela cresce de `from` até a janela de `app` (medida sem a animação de entrada) e some sobre ela. */
+function flyTo(el: HTMLElement, from: { left: number; top: number; width: number; height: number }, app: string, phone: boolean, shape: { from: string; to: string }, done?: () => void) {
+  const since = performance.now();
+  const aim = () => {
+    const win = document.querySelector<HTMLElement>(`.os-window[data-app="${app}"]`);
+    const ready = !!win && win.offsetWidth > 40;
+    if (!ready && performance.now() - since < 450) return void requestAnimationFrame(aim);
+    const layer = win?.offsetParent?.getBoundingClientRect();
+    const to = ready && win && !phone ? { left: (layer?.left ?? 0) + win.offsetLeft, top: (layer?.top ?? 0) + win.offsetTop, width: win.offsetWidth, height: win.offsetHeight } : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+    const box = (r: typeof from) => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+    const anim = el.animate(
+      [
+        { ...box(from), ...shapeOf(shape.from), opacity: 1, offset: 0 },
+        { ...box(to), ...shapeOf(shape.to), opacity: 1, offset: 0.8 },
+        { ...box(to), ...shapeOf(shape.to), opacity: 0, offset: 1 },
+      ],
+      { duration: 820, easing: "cubic-bezier(.7,0,.2,1)", fill: "forwards" },
+    );
+    let ended = false;
+    const end = () => {
+      if (ended) return;
+      ended = true;
+      el.remove();
+      done?.();
+    };
+    anim.onfinish = end;
+    anim.oncancel = end;
+    window.setTimeout(end, 1400);
+  };
+  requestAnimationFrame(aim);
+}
+const shapeOf = (value: string) => (value.startsWith("polygon") ? { clipPath: value } : { borderRadius: value });
 
 function useActions() {
   const { payload, navigate, store } = useOs();
@@ -99,11 +139,56 @@ function useActions() {
     [store],
   );
 
-  /** Só o que o portfólio cadastra: apps do OS, projetos do catálogo, arquivos e endereços do perfil, o pedido de proposta. */
-  return useCallback(
+  /**
+   * A prévia vira uma janela do OS. Vinda do recorte (`from`), a página que se via através do rosto cresce até o
+   * retângulo da janela; sem recorte (movimento reduzido, sem 3D), a janela abre direto.
+   */
+  const openIdea = useCallback(
+    (from?: HTMLElement | null) => {
+      if (!idea.get().kind) return false;
+      const st = store.getState();
+      const phone = st.shell === "mobile";
+      const rect = from?.getBoundingClientRect();
+      const page = from?.querySelector<HTMLElement>(".os-materia-cut__page");
+      const fly = rect && page && rect.width > 20 && !reduced() ? document.createElement("div") : null;
+      if (fly && rect && page) {
+        fly.className = "os-materia-flight";
+        fly.appendChild(page.cloneNode(true));
+        Object.assign(fly.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+        document.body.appendChild(fly);
+        // a janela de verdade espera atrás do recorte que cresce e aparece quando ele chega
+        document.documentElement.dataset.osArriving = "idea";
+        window.setTimeout(() => delete document.documentElement.dataset.osArriving, 640);
+      }
+      // A conversa se recolhe na pílula: a janela é para experimentar, e a Matéria continua a um toque.
+      // Sem recorte a janela abre junto com a resposta: a pílula avisa que há o que ler.
+      guide.set({ portal: null, reflect: null, min: guide.get().open ? true : guide.get().min, unread: guide.get().open && !guide.get().min && !from ? true : guide.get().unread });
+      st.open("idea", { source: "user", mode: "push", openedBy: null });
+      // App sem URL própria no telefone: uma entrada no histórico, para o Voltar fechá-lo.
+      if (phone) pushOverlay("idea");
+      if (fly && rect) flyTo(fly, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, "idea", phone, { from: "50%", to: "14px" });
+      return true;
+    },
+    [store],
+  );
+
+  /** Mostra a prévia preparada: dentro da escultura quando ela está viva; senão, direto na janela. */
+  const presentIdea = useCallback(() => {
+    const st = idea.get();
+    if (!st.kind) return false;
+    if (!stage.ready() || reduced()) return openIdea();
+    const os = store.getState();
+    // No telefone a figura mora na tela inicial: sai do app aberto. A folha da conversa se recolhe onde cobriria a figura.
+    if (os.shell === "mobile" && os.focused) navigate("/", "push", true);
+    guide.set({ portal: st.kind, reflect: st.reference, min: window.matchMedia(DESKTOP_WIDE_MQ).matches ? guide.get().min : true });
+    return true;
+  }, [navigate, openIdea, store]);
+
+  /** Só o que o portfólio cadastra: apps do OS, projetos do catálogo, arquivos e endereços do perfil, a prévia e o pedido de proposta. */
+  const run = useCallback(
     (action: GuideAction): boolean => {
       const phone = store.getState().shell === "mobile";
-      const leave = () => guide.set({ min: phone ? true : guide.get().min, reflect: null });
+      const leave = () => guide.set({ min: phone ? true : guide.get().min, reflect: null, portal: null });
       if (action.kind === "app") {
         const route = isAppId(action.app) ? APPS[action.app].route : null;
         if (!route) return false;
@@ -114,7 +199,7 @@ function useActions() {
       if (action.kind === "project") {
         const project = catalog(action.slug);
         if (!project) return false;
-        if (phone) guide.set({ min: true });
+        guide.set({ portal: null, min: phone ? true : guide.get().min });
         cross(project, () => navigate(`/work/${project.slug}`, "push", true));
         return true;
       }
@@ -123,39 +208,24 @@ function useActions() {
         if (!allowed.includes(action.href)) return false;
         return !!window.open(action.href, "_blank", "noopener");
       }
+      if (action.kind === "idea") return presentIdea();
       if (action.kind === "brief") {
-        const ctx = guide.get().ctx;
-        try {
-          const prev = JSON.parse(localStorage.getItem(BRIEF_KEY) ?? "null") ?? {};
-          const text = (v: unknown) => (typeof v === "string" ? v : "");
-          const old = text(prev.notes);
-          const fresh = briefNotes(ctx, payload.materia.say.briefQuestion).split("\n").filter((line) => line && !old.split("\n").includes(line));
-          const project = catalog(ctx.project)?.slug ?? text(prev.project);
-          const draft = {
-            goalId: project === text(prev.project) ? text(prev.goalId) : "",
-            status: text(prev.status), budget: text(prev.budget), when: text(prev.when),
-            notes: [old.trim(), ...fresh].filter(Boolean).join("\n").slice(0, 1400),
-            project, service: project ? "" : text(prev.service), review: true, at: Date.now(),
-          };
-          localStorage.setItem(BRIEF_KEY, JSON.stringify(draft));
-          window.dispatchEvent(new Event("milweb:brief"));
-        } catch {
-          /* sem armazenamento: o pedido abre vazio e a conversa continua visível para copiar */
-        }
+        writeBrief(payload);
         leave();
         navigate("/contact", "push", true);
         return true;
       }
       return false;
     },
-    [catalog, cross, navigate, payload, store],
+    [catalog, cross, navigate, payload, presentIdea, store],
   );
+  return { run, openIdea };
 }
 
 /** Enviar uma mensagem: responde, guarda o que aprendeu e roda a ação que a resposta pede. */
 function useSend() {
   const { payload, locale, store } = useOs();
-  const run = useActions();
+  const { run } = useActions();
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
 
@@ -166,9 +236,10 @@ function useSend() {
       hush();
       const g = guide.get();
       const route = store.getState().wins.projects.open && store.getState().focused === "projects" ? store.getState().wins.projects.route : null;
-      const here = { project: route?.startsWith("/work/") ? route.slice(6) : null };
+      const here = { project: route?.startsWith("/work/") ? route.slice(6) : null, live: stage.ready() && !reduced() };
       const reply = respond(text, g.ctx, payload, here);
-      guide.set({ messages: [...g.messages, stamp({ from: "you", text })], phase: "thinking", interim: "", ctx: reply.ctx });
+      guide.set({ messages: [...g.messages, stamp({ from: "you", text })], phase: "thinking", interim: "", ctx: reply.ctx, portal: null });
+      if (reply.idea) idea.prepare(reply.idea.kind, reply.ctx.project, reply.idea.priority);
       // Arquivos abrem dentro do gesto de quem escreveu (senão o navegador bloqueia a nova aba); por voz, fica o botão.
       const opened = reply.run?.kind === "file" && !viaVoice ? run(reply.run) : false;
       const quick = reduced();
@@ -179,7 +250,9 @@ function useSend() {
           const settle = () => guide.set((s) => (s.phase === "speaking" ? { phase: "idle" } : {}));
           if (voiced) speak(reply.text, locale, settle);
           else timers.current.push(window.setTimeout(settle, quick ? 0 : Math.min(4200, 900 + reply.text.length * 22)));
-          if (reply.run && !opened && reply.run.kind !== "file") timers.current.push(window.setTimeout(() => run(reply.run!), quick ? 0 : 520));
+          // A prévia aparece depois da resposta: a pessoa lê o que vai ver e então a escultura se abre.
+          const next: GuideAction | undefined = reply.idea ? { kind: "idea", label: "" } : reply.run;
+          if (next && !opened && next.kind !== "file") timers.current.push(window.setTimeout(() => run(next), quick ? 0 : reply.idea ? 700 : 520));
         }, quick ? 0 : 420),
       );
     },
@@ -192,11 +265,73 @@ function openGuide(hello: string, starters: GuideAction[]) {
   guide.set({ open: true, min: false, unread: false, messages: g.messages.length ? g.messages : [stamp({ from: "materia", text: hello, actions: starters })] });
 }
 
-/** Sobre a figura: a escultura (arraste de lado = dobrar o tempo; toque = conversar) e o botão da conversa. */
+/** O recorte no rosto: a ideia aparece ali dentro; tocar nela a faz crescer até virar uma janela do OS. */
+function MateriaPortal() {
+  const { payload } = useOs();
+  const M = payload.materia;
+  const portal = useGuide((s) => s.portal);
+  const direction = useIdea((s) => s.priority);
+  const { openIdea } = useActions();
+  const wrap = useRef<HTMLDivElement>(null);
+  const cut = useRef<HTMLButtonElement>(null);
+
+  // O motor diz, quadro a quadro, onde o recorte está e quanto abriu; aqui só se escrevem variáveis CSS.
+  useEffect(() => {
+    if (!portal) return;
+    stage.cut = (c) => {
+      const el = wrap.current;
+      if (!el) return;
+      if (!c) {
+        el.dataset.open = "0";
+        return;
+      }
+      el.style.setProperty("--cx", `${c.x.toFixed(1)}px`);
+      el.style.setProperty("--cy", `${c.y.toFixed(1)}px`);
+      el.style.setProperty("--rx", `${c.rx.toFixed(1)}px`);
+      el.style.setProperty("--ry", `${c.ry.toFixed(1)}px`);
+      el.style.setProperty("--co", c.open.toFixed(3));
+      el.dataset.open = c.open > 0.02 ? "1" : "0";
+      el.dataset.ready = c.open > 0.92 ? "1" : "0";
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented || (e.target as HTMLElement | null)?.closest?.(".os-materia-panel, input, textarea, dialog[open]")) return;
+      guide.set({ portal: null, reflect: null });
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      stage.cut = null;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [portal]);
+
+  if (!portal) return null;
+  const enter = () => openIdea(cut.current);
+  return (
+    <div ref={wrap} className="os-materia-portal" data-kind={portal} data-open="0" data-ready="0" data-no-inspect>
+      <button ref={cut} type="button" className="os-materia-cut" aria-label={M.ui.portal} onClick={enter}>
+        <span className="os-materia-cut__page" aria-hidden="true">
+          {portal === "dive" ? <DivePoster data={payload.idea.dive} /> : <PracticePoster data={payload.idea.practice} direction={direction} />}
+        </span>
+      </button>
+      <p className="os-materia-portal__bar">
+        <button type="button" className="os-materia-portal__open" onClick={enter}>
+          <span className="os-materia-talk__dot" aria-hidden="true" />
+          {M.ui.portalOpen}
+        </button>
+        <button type="button" className="os-materia-portal__close" onClick={() => guide.set({ portal: null, reflect: null })}>
+          {M.ui.portalClose}
+        </button>
+      </p>
+    </div>
+  );
+}
+
+/** Sobre a figura: a escultura (arraste de lado = dobrar o tempo; toque = conversar), o botão da conversa e a entrada da prévia. */
 export function MateriaControls() {
   const { payload } = useOs();
   const M = payload.materia;
   const open = useGuide((s) => s.open && !s.min);
+  const portal = useGuide((s) => s.portal);
   const drag = useRef<{ id: number; x: number; moved: boolean } | null>(null);
   /** Quando um arraste terminou: o clique que alguns navegadores disparam em seguida não abre a conversa. */
   const dragged = useRef(0);
@@ -208,33 +343,42 @@ export function MateriaControls() {
   const start = () => openGuide(M.say.hello, [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label })));
 
   return (
-    <div className="os-materia-ui" data-open={open ? "1" : "0"} data-no-inspect>
-      <button
-        type="button"
-        className="os-materia-hit"
-        aria-label={M.ui.figure}
-        onPointerDown={(e) => {
-          if (e.pointerType === "mouse") return;
-          drag.current = { id: e.pointerId, x: e.clientX, moved: false };
-        }}
-        onPointerMove={(e) => {
-          const d = drag.current;
-          if (!d || d.id !== e.pointerId) return;
-          const dx = e.clientX - d.x;
-          if (Math.abs(dx) > 10) d.moved = true;
-          if (d.moved) stage.pull?.({ x: Math.max(-1, Math.min(1, dx / 90)), y: 0 });
-        }}
-        onPointerUp={release}
-        onPointerCancel={release}
-        onClick={() => {
-          if (performance.now() - dragged.current > 500) start();
-        }}
-      />
-      <button type="button" className="os-materia-talk" onClick={start}>
-        <span className="os-materia-talk__dot" aria-hidden="true" />
-        {M.ui.talk}
-      </button>
-    </div>
+    <>
+      <div className="os-materia-ui" data-open={open || portal ? "1" : "0"} data-no-inspect>
+        <button
+          type="button"
+          className="os-materia-hit"
+          aria-label={M.ui.figure}
+          onPointerDown={(e) => {
+            if (e.pointerType === "mouse") return;
+            drag.current = { id: e.pointerId, x: e.clientX, moved: false };
+          }}
+          onPointerMove={(e) => {
+            const d = drag.current;
+            if (!d || d.id !== e.pointerId) return;
+            const dx = e.clientX - d.x;
+            if (Math.abs(dx) > 10) d.moved = true;
+            if (d.moved) stage.pull?.({ x: Math.max(-1, Math.min(1, dx / 90)), y: 0 });
+          }}
+          onPointerUp={release}
+          onPointerCancel={release}
+          onClick={() => {
+            if (performance.now() - dragged.current > 500) start();
+          }}
+        />
+        <div className="os-materia-cta">
+          <button type="button" className="os-materia-talk" onClick={start}>
+            <span className="os-materia-talk__dot" aria-hidden="true" />
+            {M.ui.talk}
+          </button>
+          {/* A entrada explícita da prévia: abre a conversa já com o pedido feito. */}
+          <button type="button" className="os-materia-idea" onClick={() => stage.ask?.(M.ui.idea)}>
+            {M.ui.idea}
+          </button>
+        </div>
+      </div>
+      <MateriaPortal />
+    </>
   );
 }
 
@@ -262,23 +406,47 @@ export function MateriaGuide() {
   const interim = useGuide((s) => s.interim);
   const micDenied = useGuide((s) => s.micDenied);
   const unread = useGuide((s) => s.unread);
+  const portal = useGuide((s) => s.portal);
   const focused = useOsStore((s) => s.focused);
   const [value, setValue] = useState("");
   const [notice, setNotice] = useState("");
   const [voiceOk, setVoiceOk] = useState(false);
   const send = useSend();
-  const run = useActions();
+  const { run } = useActions();
   const listener = useRef<Listener | null>(null);
   const log = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const catalog = (slug?: string) => (slug ? [...payload.projects, ...payload.authorial].find((p) => p.slug === slug) : undefined);
+  const starters = (): GuideAction[] => [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label }));
 
-  // Depois de hidratar: retoma a conversa da aba e descobre se o navegador reconhece voz.
+  // Depois de hidratar: retoma a conversa e a prévia da aba e descobre se o navegador reconhece voz.
   useEffect(() => {
     guide.restore();
+    idea.restore();
     setVoiceOk(canListen());
   }, []);
+
+  // "Ver uma ideia para o meu site" (na área de trabalho ou numa prévia vazia): abre a conversa já com o pedido.
+  useEffect(() => {
+    stage.ask = (text) => {
+      guide.set({ open: true, min: false, unread: false });
+      send(text);
+    };
+    return () => {
+      stage.ask = null;
+    };
+  }, [send]);
+
+  // Com o recorte aberto as janelas saem de cena (styles/materia.css) para a escultura ficar à vista.
+  useEffect(() => {
+    const h = document.documentElement;
+    if (portal) h.dataset.osPortal = portal;
+    else delete h.dataset.osPortal;
+    return () => {
+      delete h.dataset.osPortal;
+    };
+  }, [portal]);
 
   const stopListening = useCallback(() => {
     listener.current?.stop();
@@ -288,7 +456,7 @@ export function MateriaGuide() {
   const close = useCallback(() => {
     stopListening();
     hush();
-    guide.set({ open: false, min: false, phase: "idle", reflect: null, interim: "" });
+    guide.set({ open: false, min: false, phase: "idle", reflect: null, portal: null, interim: "" });
     // o foco volta para quem abre a conversa
     requestAnimationFrame(() => document.querySelector<HTMLElement>(".os-materia-bubble, .os-materia-talk")?.focus({ preventScroll: true }));
   }, [stopListening]);
@@ -375,18 +543,12 @@ export function MateriaGuide() {
     run(action);
   };
 
-  // Fora da conversa: sobre a área de trabalho, quem chama é a própria figura e o botão sobre ela. Com um app em
+  // Fora da conversa: sobre a área de trabalho, quem chama é a própria figura e os botões sobre ela. Com um app em
   // primeiro plano eles ficam atrás da janela — a pílula mantém a Matéria a um toque em qualquer tela do OS.
   if (!open && !focused) return null;
   if (!open || min)
     return (
-      <button
-        type="button"
-        className="os-materia-bubble"
-        data-unread={unread ? "1" : "0"}
-        data-no-inspect
-        onClick={() => (open ? guide.set({ min: false, unread: false }) : openGuide(M.say.hello, [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label }))))}
-      >
+      <button type="button" className="os-materia-bubble" data-unread={unread ? "1" : "0"} data-over={focused ?? undefined} data-no-inspect onClick={() => (open ? guide.set({ min: false, unread: false, ...(window.matchMedia(DESKTOP_WIDE_MQ).matches ? {} : { portal: null }) }) : openGuide(M.say.hello, starters()))}>
         <span className="os-materia-talk__dot" aria-hidden="true" />
         <span className="os-materia-bubble__text">
           <strong>{M.ui.name}</strong>
@@ -423,7 +585,7 @@ export function MateriaGuide() {
             {M.ui.stopSpeak}
           </button>
         )}
-        <button type="button" className="os-materia-panel__icon" aria-label={M.ui.restart} title={M.ui.restart} onClick={() => { stopListening(); hush(); guide.reset(); openGuide(M.say.hello, [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label }))); }}>
+        <button type="button" className="os-materia-panel__icon" aria-label={M.ui.restart} title={M.ui.restart} onClick={() => { stopListening(); hush(); guide.reset(); idea.reset(); openGuide(M.say.hello, starters()); }}>
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v2.8h2.8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <button type="button" className="os-materia-panel__icon" aria-label={M.ui.minimize} title={M.ui.minimize} onClick={() => { stopListening(); guide.set({ min: true }); }}>

@@ -60,7 +60,7 @@ export type Dictionary = {
   preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
   /** MilWeb OS — camada de apresentação em janelas (desktop) e tela inicial (celular). */
   os: {
-    apps: { profile: string; projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; search: string };
+    apps: { profile: string; projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; idea: string; search: string };
     regions: { desktop: string; icons: string; dock: string; topbar: string; windows: string; home: string; appGrid: string };
     window: { minimize: string; maximize: string; restore: string; close: string; keys: string; resize: string; running: string; focused: string };
     mobile: { back: string; home: string; open: string; apps: string; message: string };

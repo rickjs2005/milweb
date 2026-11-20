@@ -18,6 +18,8 @@ export type GuideAction =
   | { kind: "file"; href: string; label: string }
   /** Leva o que a pessoa contou para o pedido de proposta (Hire Rick). */
   | { kind: "brief"; label: string }
+  /** Mostra a prévia preparada (idea-store.ts): no recorte do rosto da escultura, ou direto na janela. */
+  | { kind: "idea"; label: string }
   /** Resposta rápida: envia `text` como se a pessoa tivesse escrito. */
   | { kind: "say"; text: string; label: string };
 
@@ -27,11 +29,21 @@ export type GuideMessage = { id: number; from: "you" | "materia"; text: string; 
 export type GuideCtx = {
   role: "recruiter" | "client" | null;
   sector: string | null;
+  /** Ramo dentro do setor, quando tem referência e prévia próprias (mergulho, psicologia). */
+  field: string | null;
+  /** O que a pessoa escolheu como prioridade (a opção do setor: "booking", "approach"…). */
+  goal: string | null;
+  /** "idea": a pessoa pediu para ver uma ideia e a Matéria ainda está entendendo o negócio. */
+  mode: "idea" | null;
+  /** Prévia já preparada nesta conversa. */
+  idea: string | null;
   /** Projeto em pauta (o último recomendado ou o que está aberto). */
   project: string | null;
   shown: string[];
   /** Pergunta que a Matéria fez e ainda espera resposta. */
   asked: string | null;
+  /** As duas leituras em disputa numa pergunta de desempate ("tourism/diving", "store"). */
+  options: string[];
   /** O que a pessoa contou, nas palavras dela, e as respostas às perguntas da Matéria. */
   facts: string[];
   /** Dúvidas que só o Rick responde. */
@@ -48,6 +60,8 @@ export type GuideState = {
   ctx: GuideCtx;
   /** Projeto cuja capa a escultura reflete agora. */
   reflect: string | null;
+  /** A ideia que a escultura mostra agora no recorte do rosto (null = recorte fechado). */
+  portal: "dive" | "practice" | null;
   /** Transcrição parcial enquanto a pessoa fala. */
   interim: string;
   micDenied: boolean;
@@ -55,8 +69,8 @@ export type GuideState = {
 };
 
 const KEY = "milweb:materia";
-export const emptyCtx = (): GuideCtx => ({ role: null, sector: null, project: null, shown: [], asked: null, facts: [], questions: [] });
-const initial = (): GuideState => ({ open: false, min: false, phase: "idle", messages: [], ctx: emptyCtx(), reflect: null, interim: "", micDenied: false, unread: false });
+export const emptyCtx = (): GuideCtx => ({ role: null, sector: null, field: null, goal: null, mode: null, idea: null, project: null, shown: [], asked: null, options: [], facts: [], questions: [] });
+const initial = (): GuideState => ({ open: false, min: false, phase: "idle", messages: [], ctx: emptyCtx(), reflect: null, portal: null, interim: "", micDenied: false, unread: false });
 
 let state: GuideState = initial();
 let restored = false;
@@ -126,6 +140,15 @@ export const stage: {
   pull: ((p: { x: number; y: number } | null) => void) | null;
   /** A escultura está viva (WebGL) e à vista: vale animar a travessia. */
   live: () => boolean;
+  /** O motor está rodando nesta aba (mesmo com uma janela na frente): o recorte no rosto pode acontecer. */
+  ready: () => boolean;
   /** Centro da figura na tela (px da janela) e px por unidade. */
   anchor: () => { x: number; y: number; k: number } | null;
-} = { pull: null, live: () => false, anchor: () => null };
+  /**
+   * O recorte no rosto, quadro a quadro: centro e raios (px da janela) e quanto está aberto (0..1).
+   * Quem desenha a ideia dentro dele (guide-panel.tsx › MateriaPortal) registra aqui; null quando fecha.
+   */
+  cut: ((c: { x: number; y: number; rx: number; ry: number; open: number } | null) => void) | null;
+  /** Abre a conversa e envia `text` como se a pessoa tivesse escrito (a conversa registra; a prévia vazia usa). */
+  ask: ((text: string) => void) | null;
+} = { pull: null, live: () => false, ready: () => false, anchor: () => null, cut: null, ask: null };

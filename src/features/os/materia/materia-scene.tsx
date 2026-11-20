@@ -17,6 +17,9 @@ import { guide, stage, useGuide } from "./guide-store";
  *   dobrar o tempo        o gesto ao lado do rosto separa dois perfis no tempo (engine › pull)
  *   ver o pensamento      a conversa aberta reorganiza as mesmas moléculas num cérebro
  *   atravessar o portfólio a capa do projeto recomendado aparece refletida na prata (engine › tint)
+ *   ver através do rosto   a cabeça vira de perfil, o arco da nuca desliza para a frente e a matéria se abre
+ *                          num recorte: a interface desenha ali dentro a ideia para o site do visitante
+ *                          (guide-panel.tsx › MateriaPortal), e na de mergulho a faixa de luz vira o mar
  *
  * Camada visual pura, ATRÁS da interface: `pointer-events: none`, aria-hidden. O HTML entrega a
  * imagem estática da própria escultura (fundo CSS, posicionada por `--ma-x/--ma-y/--ma-k`): o
@@ -147,7 +150,9 @@ export function MateriaScene() {
       engineRef.current = e;
       if (layoutRef.current) e.setLayout(layoutRef.current);
 
+      // Com o recorte aberto as janelas saem de cena (styles/materia.css › data-os-portal): nada cobre a figura.
       const covered = () => {
+        if (guide.get().portal) return false;
         const s = store.getState();
         return s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
       };
@@ -211,24 +216,34 @@ export function MateriaScene() {
         const s = store.getState();
         const route = s.focused === "projects" ? s.wins.projects.route : null;
         const caseSlug = route?.startsWith("/work/") ? route.slice(6) : null;
+        // O recorte acontece no busto: enquanto ele está aberto, a conversa não segura a pose do cérebro.
+        const talk = g.open && !g.portal;
         e.set({
-          talk: g.open,
-          listen: g.open ? (g.phase === "listening" ? 1 : g.phase === "thinking" ? 0.45 : 0) : 0,
-          speak: g.open && g.phase === "speaking" ? 1 : 0,
+          talk,
+          listen: talk ? (g.phase === "listening" ? 1 : g.phase === "thinking" ? 0.45 : 0) : 0,
+          speak: talk && g.phase === "speaking" ? 1 : 0,
           // Orçamento: a cena se aquieta para a pessoa escrever. Perfil: a matéria se alinha em linhas.
-          calm: s.focused === "contact" ? 1 : s.focused ? 0.35 : 0,
+          calm: g.portal ? 0 : s.focused === "contact" ? 1 : s.focused ? 0.35 : 0,
           align: s.focused === "profile" && !g.open ? 1 : 0,
+          portal: !!g.portal,
+          sea: g.portal === "dive" ? 1 : 0,
+          // com a folha da conversa à vista, o recorte acontece onde o cérebro estava; recolhida, no lugar de repouso
+          place: g.portal && g.open && !g.min ? 1 : 0,
         });
+        if (g.portal) e.pull(null);
         reflect(g.reflect ?? caseSlug);
         if (g.open && !wasOpen) e.slit();
         wasOpen = g.open;
-        root.dataset.pose = g.open ? "brain" : "bust";
+        root.dataset.pose = talk ? "brain" : "bust";
+        if (g.portal) root.dataset.portal = g.portal;
+        else delete root.dataset.portal;
         syncRun();
       };
 
       // ---- quadro: commit do tema no meio da troca, marcas no DOM ----
       let lastTrans = "";
       let painted = 0;
+      let cutOpen = false;
       e.onFrame((eng) => {
         const tr = eng.trans;
         if (tr) {
@@ -245,6 +260,14 @@ export function MateriaScene() {
         }
         // o canvas entra depois de dois quadros desenhados (o primeiro ainda compila variantes no driver)
         if (painted < 3 && ++painted === 3) root.dataset.state = "live";
+        // O recorte, quadro a quadro, para quem desenha a ideia dentro dele: centro e raios em px da janela.
+        const f = eng.figure;
+        if (f.open > 0.001 || cutOpen) {
+          cutOpen = f.open > 0.001;
+          const box = canvas.getBoundingClientRect();
+          const P = MATERIA.portal;
+          stage.cut?.(cutOpen ? { x: box.left + f.x + P.c[0] * f.k, y: box.top + f.y - P.c[1] * f.k, rx: P.r[0] * P.inset * f.k, ry: P.r[1] * P.inset * f.k, open: f.open } : null);
+        }
       });
 
       const driveTheme = (to: OsTheme) => {
@@ -284,7 +307,7 @@ export function MateriaScene() {
         if (ev.pointerType !== "mouse") return;
         const hd = head();
         const over = (ev.target as Element | null)?.closest?.(".os-window, .os-materia-panel, .os-dock, .os-topbar");
-        if (!hd || over || guide.get().open) return e.pull(null);
+        if (!hd || over || guide.get().open || guide.get().portal) return e.pull(null);
         const dx = (ev.clientX - hd.x) / hd.k;
         const dy = (ev.clientY - (hd.y + 0.1 * hd.k)) / hd.k;
         if (Math.hypot(dx, dy) > MATERIA.fold.zone) return e.pull(null);
@@ -292,9 +315,10 @@ export function MateriaScene() {
       };
       const onLeave = () => e.pull(null);
       stage.pull = (p) => {
-        if (!guide.get().open) e.pull(p);
+        if (!guide.get().open && !guide.get().portal) e.pull(p);
       };
       stage.live = () => !disposed && root.dataset.state === "live" && !document.hidden && !covered();
+      stage.ready = () => !disposed && root.dataset.state === "live" && !document.hidden;
       stage.anchor = () => {
         const l = layoutRef.current;
         const box = canvas.getBoundingClientRect();
@@ -343,7 +367,11 @@ export function MateriaScene() {
         unsubGuide();
         stage.pull = null;
         stage.live = () => false;
+        stage.ready = () => false;
         stage.anchor = () => null;
+        stage.cut?.(null);
+        // sem motor não há recorte: a ideia preparada continua a um toque, na conversa
+        if (guide.get().portal) guide.set({ portal: null });
         const st = store.getState();
         st.setThemeDriver(null);
         if (st.themePending !== null) st.commitTheme();
@@ -354,6 +382,7 @@ export function MateriaScene() {
         delete root.dataset.trans;
         delete root.dataset.mood;
         delete root.dataset.run;
+        delete root.dataset.portal;
         e.dispose();
         engineRef.current = null;
         if (expose) delete (window as unknown as { __mwMateria?: unknown }).__mwMateria;

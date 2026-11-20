@@ -225,6 +225,28 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     };
   }, [isOs, shell, theme, motion, hydrated, halloween]);
 
+  // 4a) Telefone: com o teclado virtual aberto, a tela do app termina acima dele (styles/os-mobile.css › --os-kb).
+  // Assim o campo em edição e o resto do formulário rolam dentro da área que a pessoa vê — o pedido de proposta
+  // é revisado sem o teclado cobrir a mensagem. Só vale para um encolhimento do tamanho de um teclado.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (shell !== "mobile" || !vv) return;
+    const h = document.documentElement;
+    const fit = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      if (kb > 120) h.style.setProperty("--os-kb", `${kb.toFixed(0)}px`);
+      else h.style.removeProperty("--os-kb");
+    };
+    fit();
+    vv.addEventListener("resize", fit);
+    vv.addEventListener("scroll", fit);
+    return () => {
+      vv.removeEventListener("resize", fit);
+      vv.removeEventListener("scroll", fit);
+      h.style.removeProperty("--os-kb");
+    };
+  }, [shell]);
+
   // 4b) Sem escolha salva, o tema segue o sistema — inclusive quando ele muda com a página aberta.
   useEffect(() => {
     if (!hydrated || !themeAuto) return;
