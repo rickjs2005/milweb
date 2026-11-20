@@ -7,41 +7,65 @@ import { useOs } from "../os-shell";
 import { GuideQuestions } from "./guide-questions";
 import styles from "./project-guide.module.css";
 
-type Brief = { goalId: string; status: string; budget: string; when: string; notes: string; review: boolean };
+/** `project` and `service` are the case or service page the visitor last came from. */
+type Brief = { goalId: string; status: string; budget: string; when: string; notes: string; project: string; service: string; review: boolean };
+
+const DRAFT_KEY = "milweb:project-brief";
+const DRAFT_DAYS = 30;
+const TEXT = ["goalId", "status", "budget", "when", "notes", "project", "service"] as const;
+
+function parseDraft(raw: string | null): Brief | null {
+  try {
+    const value = JSON.parse(raw ?? "null");
+    if (!value || typeof value.review !== "boolean" || !TEXT.every((k) => typeof value[k] === "string")) return null;
+    if (typeof value.at !== "number" || Date.now() - value.at > DRAFT_DAYS * 864e5) return null;
+    return { goalId: value.goalId, status: value.status, budget: value.budget, when: value.when, notes: value.notes, project: value.project, service: value.service, review: value.review };
+  } catch {
+    return null;
+  }
+}
 
 export function ProjectGuide({ initialProject, initialService }: { initialProject?: OsProject; initialService?: string }) {
   const { payload } = useOs();
   const contact = payload.contact;
   const { copy, goals } = contact.guide;
-  const initialGoal = goals.find((g) => g.project === initialProject?.slug)
-    ?? (initialProject?.tourism ? goals.find((g) => g.id === "bookings") : undefined)
-    ?? goals.find((g) => g.service === initialService && g.id !== "bookings");
-  const key = "milweb:project-brief:" + [payload.locale, initialProject?.slug, initialService].join("/");
-  const [brief, setBrief] = useState<Brief>({ goalId: "", status: "", budget: "", when: "", notes: "", review: false });
+  const linkProject = initialProject?.slug ?? "";
+  const linkService = initialService ?? "";
+  const [brief, setBrief] = useState<Brief>({ goalId: "", status: "", budget: "", when: "", notes: "", project: linkProject, service: linkService, review: false });
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
   const title = useRef<HTMLHeadingElement>(null);
   const preview = useRef<HTMLTextAreaElement>(null);
   const focusOnChange = useRef(false);
+  const pending = useRef("");
 
-  // Keep the draft in this tab when a visitor returns from a case or an email app.
+  // One draft per browser. It follows the visitor from a case to the guide, into the tab a case
+  // opens in, across languages and back from the email app, so nothing has to be typed twice.
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(key);
-      if (raw) {
-        const value = JSON.parse(raw);
-        if (value && ["goalId", "status", "budget", "when", "notes"].every((k) => typeof value[k] === "string") && typeof value.review === "boolean") {
-          setBrief({ goalId: value.goalId, status: value.status, budget: value.budget, when: value.when, notes: value.notes, review: value.review });
-        }
-      }
-    } catch { /* Private browsing can disable storage. */ }
+    let stored: string | null = null;
+    try { stored = localStorage.getItem(DRAFT_KEY); } catch { /* Private browsing can disable storage. */ }
+    const saved = parseDraft(stored);
+    if (saved) {
+      const sameLink = saved.project === linkProject && saved.service === linkService;
+      // Arriving from another case or service is a new intent: keep what was typed, take the reference from the link.
+      setBrief(!(linkProject || linkService) || sameLink ? saved : { ...saved, goalId: "", review: false, project: linkProject, service: linkService });
+    }
     setReady(true);
-  }, [key]);
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== DRAFT_KEY) return;
+      const other = parseDraft(event.newValue);
+      // Each tab keeps its own step. Returning the same object stops two tabs from echoing each other.
+      if (other) setBrief((prev) => (TEXT.every((k) => prev[k] === other[k]) ? prev : { ...other, review: prev.review }));
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [linkProject, linkService]);
 
   useEffect(() => {
     if (!ready) return;
-    try { sessionStorage.setItem(key, JSON.stringify(brief)); } catch { /* The in-memory draft still works. */ }
-  }, [brief, key, ready]);
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...brief, at: Date.now() })); } catch { /* The in-memory draft still works. */ }
+  }, [brief, ready]);
 
   useEffect(() => {
     if (focusOnChange.current) {
@@ -50,9 +74,13 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
     }
   }, [brief.review]);
 
+  const linked = [...payload.projects, ...payload.authorial].find((project) => project.slug === brief.project);
+  const linkedGoal = goals.find((g) => g.project === brief.project)
+    ?? (linked?.tourism ? goals.find((g) => g.id === "bookings") : undefined)
+    ?? goals.find((g) => g.service === brief.service && g.id !== "bookings");
   const chosen = goals.find((g) => g.id === brief.goalId);
-  const goal = chosen ?? initialGoal;
-  const reference = chosen ? undefined : initialProject;
+  const goal = chosen ?? linkedGoal;
+  const reference = chosen ? undefined : linked;
   const matchedSlug = goal?.project ?? goals[0].project;
   const example = reference ?? payload.projects.find((project) => project.slug === matchedSlug);
   const service = payload.services.items.find((item) => item.slug === goal?.service);
@@ -69,6 +97,27 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
   ].filter(Boolean).join("\n");
   const mailQuery = new URLSearchParams({ subject: copy.subject, body: message }).toString().replace(/\+/g, "%20");
   const waQuery = new URLSearchParams({ text: message });
+
+  // The preview grows with the message: on a phone the lines wrap and a fixed row count hid the closing line.
+  useEffect(() => {
+    const box = preview.current;
+    if (!box) return;
+    let width = 0;
+    const fit = () => {
+      box.style.height = "auto";
+      box.style.height = box.scrollHeight + 2 + "px";
+    };
+    fit();
+    const observer = new ResizeObserver(([entry]) => {
+      const next = Math.round(entry.contentRect.width);
+      if (next !== width) {
+        width = next;
+        fit();
+      }
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [message, brief.review]);
 
   const field = (name: "status" | "budget" | "when" | "notes", value: string) => {
     setNotice("");
@@ -134,7 +183,7 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
             <p className={styles.caption}>{contact.location}</p>
             <div className={styles.titleRow}>
               <h2 ref={title} tabIndex={-1} className={styles.title}>{contact.title.join(" ")}</h2>
-              <button type="button" onClick={() => showReview(true)} className={styles.primary}>{copy.proposal}</button>
+              <button type="button" onClick={() => showReview(true, pending.current)} className={styles.primary}>{copy.proposal}</button>
             </div>
             <p className={styles.intro}>{contact.intro}</p>
           </header>
@@ -150,7 +199,8 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
           </fieldset>
           {example && (
             <article className={styles.example} aria-live="polite">
-              <a className={styles.shot} href={example.href} target="_blank" rel="noopener noreferrer" aria-label={copy.case + " · " + example.title + " · " + payload.s.social.external}>
+              {/* The text link below is the keyboard and screen-reader path; the picture is a larger target for touch and mouse. */}
+              <a className={styles.shot} href={example.href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true">
                 <Image src={example.image} alt="" fill sizes="(max-width: 600px) 90vw, 340px" />
               </a>
               <div className={styles.story}>
@@ -161,8 +211,9 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
               </div>
             </article>
           )}
-          <GuideQuestions key={service?.slug ?? "general"} service={service} copy={copy} generalFaq={contact.guide.faq} onForward={(q) => showReview(true, q)} />
-          <button type="button" onClick={() => showReview(true)} className={styles.primary}>{copy.proposal}</button>
+          <GuideQuestions key={service?.slug ?? "general"} service={service} copy={copy} generalFaq={contact.guide.faq}
+            onForward={(question) => showReview(true, question)} onPending={(question) => { pending.current = question; }} />
+          <button type="button" onClick={() => showReview(true, pending.current)} className={styles.primary}>{copy.proposal}</button>
         </>
       )}
     </div>
