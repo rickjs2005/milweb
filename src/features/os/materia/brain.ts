@@ -68,6 +68,8 @@ const RX = {
   hello: /^(oi|ola|hello|hi|hey|hola|bom dia|boa tarde|boa noite|good morning|buenos dias|e ai)\b/,
   /** Ligar o projeto a uma ferramenta de terceiros é escopo: nunca se promete, vai para o Rick. */
   integrate: /\b(integr\w*|sincroniz\w*|sync\w*|conect\w*|connect\w*|compativ\w*|compatib\w*|webhooks?|funciona com|works with)\b/,
+  /** "Tenho um projeto em mente": a conversa começa pelo objetivo. */
+  inMind: /\b(projeto em mente|tenho um projeto|project in mind|have a project|proyecto en mente|tengo un proyecto)\b/,
   idea: /\b(ver uma ideia|uma ideia para|ideia para (o )?(meu|nosso) site|see an idea|an idea for|idea for (my|our) (web ?)?site|ver una idea|una idea para|idea para (mi|nuestro) sitio|previas?|preview|vista previa|abrir a ideia|open the idea|abrir la idea)\b/,
   why: /\b(por ?que (este|esse|essa|esta) (exemplo|projeto|referencia)|why this (example|one|project|reference)|por ?que (este|ese|esta|esa) (ejemplo|proyecto|referencia))\b/,
 };
@@ -78,6 +80,10 @@ const GOAL = {
   sell: /\b(vend\w+ .{0,40}?(online|pela internet|na internet|en linea|por internet)|sell\w* .{0,40}?online|comprar online|buy online|e ?commerce|lojas? (virtual|virtuais|online)|online (store|shop)s?|tiendas? (virtual|online|en linea)|checkout|carrinho|shopping cart)\b/,
   sellVerb: /\b(vendo|vende|vendemos|vender|vendas|sell|sells|selling|vendes)\b/,
   manage: /\b(gerenci\w*|controlar|controle de|organizar|manage|track|gestion\w*|administr\w*)\b/,
+  /** Receber pedidos e orçamentos melhores (não é pedir um orçamento ao Rick: isso é `quote` + `want`). */
+  orders: /\b(pedidos?|encomendas?|orcamentos?|cotac\w*|orders?|quote requests?|quotes?|leads?|inquir\w*|enquir\w*|presupuestos?|cotizac\w*|solicitudes)\b/,
+  /** Apresentar melhor o próprio trabalho. */
+  showcase: /\b(apresent\w* .{0,30}?(trabalho|portfolio|servicos|projetos)|mostrar .{0,30}?(trabalho|portfolio|projetos)|conhec\w* .{0,20}?trabalho|portfolio|showcase|present\w* .{0,30}?work|know my work|show .{0,20}?work|present\w* .{0,30}?trabajo|conocer mi trabajo|mostrar .{0,30}?trabajo|portafolio)\b/,
 };
 /** O que se vende é uma experiência com data marcada: "vender passeios online" é reserva, não vitrine. */
 const SERVICE_NOUN = /\b(tours?|passeios?|viagens?|trips?|pacotes?|packages?|excurs\w*|dives|mergulhos|sessoes|sessions|sesiones|consultas|ingressos|tickets|entradas|experienc\w*|hospedag\w*|diarias|transfers?|inmersiones)\b/;
@@ -192,7 +198,8 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   const profile: GuideAction = { kind: "app", app: "profile", label: M.ui.profile };
   const ideaChip = say(M.ui.idea);
   const whyChip = say(M.ui.why);
-  const starters = [say(M.say.chipRecruiter), say(M.say.chipSite), say(M.say.chipTour), say(M.say.chipHow)];
+  const starters = [say(M.say.chipExplore), say(M.say.chipProject), say(M.say.chipRecruiting)];
+  const goalChips = [say(M.say.goalOrders), say(M.say.goalBook), say(M.say.goalBuy), say(M.say.goalKnow)];
 
   const has = (rx: RegExp) => rx.test(text);
   /** O que a pessoa contou sobre si entra no pedido; um comando ("mostre algo de turismo") não. */
@@ -270,7 +277,8 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
       const code = proof.code[0];
       return {
         text: fill(M.say.skill, { label: shown.label, contribution: shown.contribution, project: proof.name, evidence: proof.evidence.code }),
-        actions: [profile, ...(code ? [{ kind: "file", href: code.url, label: `${M.ui.code} · ${proof.name}` } as GuideAction] : []), cv],
+        // a evidência a um toque: o verso da peça ("como foi feito") quando o projeto está na coleção, e o código
+        actions: [profile, ...(catalog.some((p) => p.slug === proof.slug) ? [{ kind: "made", slug: proof.slug, label: `${M.ui.made} · ${proof.name}` } as GuideAction] : []), ...(code ? [{ kind: "file", href: code.url, label: `${M.ui.code} · ${proof.name}` } as GuideAction] : []), cv],
         ctx: { ...ctx, role: "recruiter", mode: null, asked: null },
         run: profile,
       };
@@ -286,6 +294,9 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   if (has(RX.recruiter)) {
     return { text: M.say.recruiter, actions: [cv, say(M.say.chipBackend), { kind: "app", app: "projects", label: M.ui.projects }], ctx: { ...ctx, role: "recruiter", mode: null, asked: null }, run: profile };
   }
+
+  // ── "tenho um projeto em mente": antes do ramo, o objetivo — o que o visitante de quem pede precisa conseguir fazer
+  if (has(RX.inMind) && !R.sector) return { text: M.say.projectAsk, actions: goalChips, ctx: { ...ctx, role: "client", mode: null, asked: "goal" } };
 
   // ── "por que este exemplo?": os detalhes que não cabem na primeira resposta
   if (has(RX.why)) {
@@ -316,10 +327,10 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
     };
   };
   /** Recomendação de um setor: uma referência, um motivo, uma pergunta. */
-  const recommend = (sector: SectorId, f: FieldId | null, base: GuideCtx, prefix = ""): Reply | null => {
+  const recommend = (sector: SectorId, f: FieldId | null, base: GuideCtx, prefix = "", force?: string): Reply | null => {
     const S = M.sectors[sector];
     const F = f ? M.fields[f] : null;
-    const ref = pickRef(sector, f);
+    const ref = find(force ?? null) ?? pickRef(sector, f);
     if (!ref) return null;
     const { pick, why } = refText(ref);
     const options = Object.values(S.options);
@@ -354,14 +365,23 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
       if (reply) return reply;
       return { text: `${M.say.ideaNone} ${M.say.closeBrief}`, actions: [brief, ...(again ? [openProject(again.slug)] : []), say(M.ui.another)], ctx: { ...ctx, mode: null, asked: "brief" }, card: again?.slug };
     }
-    return { text: M.say.ideaAsk, actions: [say(M.say.chipDive), say(M.say.chipPsy)], ctx: { ...ctx, role: "client", mode: "idea", asked: "business" } };
+    return { text: M.say.ideaAsk, actions: goalChips, ctx: { ...ctx, role: "client", mode: "idea", asked: "business" } };
+  }
+  // ── a resposta à pergunta pelo objetivo: ele conduz a recomendação (e o ramo, quando vem junto, escolhe a referência)
+  const goalAsked = ctx.asked === "goal" || (ctx.mode === "idea" && ctx.asked === "business");
+  const aim = has(GOAL.orders) ? "orders" : has(GOAL.showcase) ? "showcase" : null;
+  if (goalAsked && aim && !(R.sector && R.alt) && !(ctx.mode === "idea" && R.field)) {
+    const lead = aim === "orders" ? M.say.leadOrders : M.say.leadShowcase;
+    const base = { ...ctx, mode: null, facts: told(ctx.facts) };
+    const reply = R.sector ? recommend(R.sector, R.field, base, lead) : aim === "orders" ? recommend("landing", null, base, lead) : recommend("immersive", null, base, lead, "terral");
+    if (reply) return reply;
   }
   // A pessoa pediu uma ideia e agora conta o negócio.
-  if (ctx.mode === "idea" && ctx.asked !== "sector") {
+  if ((ctx.mode === "idea" && ctx.asked !== "sector") || ctx.asked === "goal") {
     if (R.sector && R.alt) return whichOne(ctx);
-    if (R.field && M.fields[R.field]) return presentIdea(R.field, { ...ctx, facts: told(ctx.facts), goal: R.goal === "booking" && M.fields[R.field].sector === "health" ? "booking" : OPTION.approach.test(text) && M.fields[R.field].sector === "health" ? "approach" : null });
+    if (ctx.mode === "idea" && R.field && M.fields[R.field]) return presentIdea(R.field, { ...ctx, facts: told(ctx.facts), goal: R.goal === "booking" && M.fields[R.field].sector === "health" ? "booking" : OPTION.approach.test(text) && M.fields[R.field].sector === "health" ? "approach" : null });
     if (R.sector) {
-      const reply = recommend(R.sector, null, ctx, M.say.ideaNone);
+      const reply = recommend(R.sector, ctx.mode === "idea" ? null : R.field, ctx, ctx.mode === "idea" ? M.say.ideaNone : "");
       if (reply) return reply;
     }
     if (!has(RX.price) && !has(RX.time) && !has(RX.how) && !has(RX.thanks) && !has(RX.no) && tokens.length >= 2) {
@@ -484,7 +504,7 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   }
 
   // ── o resto do portfólio
-  if (has(RX.projects)) return { text: M.say.projectsOpened, actions: [say(M.say.chipTour), say(M.say.chipSite)], ctx: { ...ctx, asked: null }, run: { kind: "app", app: "projects", label: M.ui.projects } };
+  if (has(RX.projects)) return { text: M.say.projectsOpened, actions: [say(M.say.chipProject), say(M.say.chipRecruiting)], ctx: { ...ctx, asked: null }, run: { kind: "app", app: "projects", label: M.ui.projects } };
   if (has(RX.services)) return { text: payload.services.intro, actions: [say(M.say.chipSite), brief], ctx: { ...ctx, asked: null }, run: { kind: "app", app: "services", label: M.ui.open } };
   if (has(RX.contact)) return { text: M.say.brief, actions: [brief], ctx: briefCtx(ctx), run: brief };
   if (has(RX.thanks)) return { text: M.say.thanks, actions: [], ctx: { ...ctx, asked: null } };

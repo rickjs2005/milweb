@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DivePoster } from "../apps/idea/dive";
 import { PracticePoster } from "../apps/idea/practice";
+import { projectsIntent } from "../apps/bounty/intent";
 import { pushOverlay } from "../mobile/history";
 import { useOs, useOsStore } from "../os-shell";
 import { APPS, DESKTOP_WIDE_MQ, isAppId } from "../registry";
@@ -204,6 +205,13 @@ function useActions() {
         cross(project, () => navigate(`/work/${project.slug}`, "push", true));
         return true;
       }
+      if (action.kind === "made") {
+        if (!catalog(action.slug)) return false;
+        leave();
+        projectsIntent.set({ slug: action.slug, face: "made" });
+        navigate("/work", "push", true);
+        return true;
+      }
       if (action.kind === "file") {
         const allowed = [payload.profile.cv.href, payload.profile.links.github, payload.profile.links.linkedin, ...payload.profile.projects.flatMap((p) => p.code.map((c) => c.url))];
         if (!allowed.includes(action.href)) return false;
@@ -336,35 +344,18 @@ export function MateriaControls() {
   const reflect = useGuide((s) => s.reflect);
   const route = useOsStore((s) => (s.focused === "projects" ? s.wins.projects.route : null));
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const start = () => openGuide(M.say.hello, [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label })));
+  const start = () => openGuide(M.say.hello, [M.say.chipExplore, M.say.chipProject, M.say.chipRecruiting].map((label) => ({ kind: "say", text: label, label })));
 
   // O projeto que se vê pela abertura da dobra: o que a conversa recomendou, o case aberto ou o destaque (a mesma regra da cena).
   const catalog = [...payload.projects, ...payload.authorial];
   const wanted = reflect ?? (route?.startsWith("/work/") ? route.slice(6) : null);
   const shown = catalog.find((p) => p.slug === wanted) ?? catalog.find((p) => p.slug === MATERIA.hero.cover) ?? payload.projects.find((p) => p.featured !== null) ?? payload.projects[0];
 
-  /** A dobra se abre até coincidir com a janela do case: ela monta escondida, a abertura cresce até o retângulo dela, e então ela aparece. */
+  /** O clique direto na capa abre o CASE: a janela monta, e as mãos esticam a dobra até ela (materia-scene › stage.go). */
   const explore = () => {
     if (!shown) return;
-    const go = () => navigate(`/work/${shown.slug}`, "push", true);
-    if (!stage.live() || reduced() || !stage.reveal) return go();
-    const html = document.documentElement;
-    html.dataset.osArriving = "projects";
-    go();
-    const phone = store.getState().shell === "mobile";
-    const since = performance.now();
-    const aim = () => {
-      const win = document.querySelector<HTMLElement>('.os-window[data-app="projects"]');
-      const ready = !!win && win.offsetWidth > 40;
-      if (!ready && performance.now() - since < 700) return void requestAnimationFrame(aim);
-      const layer = win?.offsetParent?.getBoundingClientRect();
-      const to = ready && win && !phone ? { left: (layer?.left ?? 0) + win.offsetLeft, top: (layer?.top ?? 0) + win.offsetTop, width: win.offsetWidth, height: win.offsetHeight } : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-      stage.reveal?.(to);
-      window.setTimeout(() => delete html.dataset.osArriving, MATERIA.hero.reveal * 1000 - 60);
-      // com a janela no lugar, a dobra volta ao repouso por trás dela
-      window.setTimeout(() => stage.reveal?.(null), MATERIA.hero.reveal * 1000 + 700);
-    };
-    requestAnimationFrame(aim);
+    navigate(`/work/${shown.slug}`, "push", true);
+    stage.go?.("projects");
   };
   const release = () => {
     if (!drag.current) return;
@@ -456,7 +447,7 @@ export function MateriaGuide() {
   const field = useRef<HTMLInputElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const catalog = (slug?: string) => (slug ? [...payload.projects, ...payload.authorial].find((p) => p.slug === slug) : undefined);
-  const starters = (): GuideAction[] => [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label }));
+  const starters = (): GuideAction[] => [M.say.chipExplore, M.say.chipProject, M.say.chipRecruiting].map((label) => ({ kind: "say", text: label, label }));
 
   // Depois de hidratar: retoma a conversa e a prévia da aba e descobre se o navegador reconhece voz.
   useEffect(() => {

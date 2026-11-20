@@ -13,28 +13,35 @@ const cache = new Map<string, ProjectDetailData>();
  * mesma view da página canônica. Enquanto carrega, mostra o esqueleto com o
  * nome; se falhar, um link para abrir a rota.
  */
-export function ProjectRemote({ slug, locale, name, href, openLabel }: { slug: string; locale: Locale; name: string; href: string; openLabel: string }) {
+export function useProjectDetail(locale: Locale, slug: string) {
   const key = `${locale}/${slug}`;
-  const [data, setData] = useState<ProjectDetailData | null>(() => cache.get(key) ?? null);
-  const [failed, setFailed] = useState(false);
+  const [state, setState] = useState<{ key: string; data: ProjectDetailData | null; failed: boolean }>(() => ({ key, data: cache.get(key) ?? null, failed: false }));
 
   useEffect(() => {
     if (cache.has(key)) {
-      setData(cache.get(key)!);
+      setState({ key, data: cache.get(key)!, failed: false });
       return;
     }
     let alive = true;
+    setState({ key, data: null, failed: false });
     fetch(`/api/os/project/${locale}/${slug}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((json: ProjectDetailData) => {
         cache.set(key, json);
-        if (alive) setData(json);
+        if (alive) setState({ key, data: json, failed: false });
       })
-      .catch(() => alive && setFailed(true));
+      .catch(() => alive && setState({ key, data: null, failed: true }));
     return () => {
       alive = false;
     };
   }, [key, locale, slug]);
+
+  // ao trocar de projeto, o dado do anterior não vale nem por um quadro
+  return state.key === key ? state : { key, data: cache.get(key) ?? null, failed: false };
+}
+
+export function ProjectRemote({ slug, locale, name, href, openLabel }: { slug: string; locale: Locale; name: string; href: string; openLabel: string }) {
+  const { data, failed } = useProjectDetail(locale, slug);
 
   if (data) return <ProjectDetailView data={data} headingLevel={2} />;
   return (

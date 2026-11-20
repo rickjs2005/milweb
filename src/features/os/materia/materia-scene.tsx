@@ -171,10 +171,11 @@ export function MateriaScene() {
 
       // Com o recorte aberto as janelas saem de cena (styles/materia.css › data-os-portal): nada cobre a figura.
       const covered = () => {
-        if (guide.get().portal) return false;
+        if (guide.get().portal || html.dataset.osArriving) return false;
         const s = store.getState();
         return s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
       };
+      const html = document.documentElement;
       const mark = () => {
         root.dataset.mood = e.mood;
         const tr = e.trans;
@@ -253,6 +254,24 @@ export function MateriaScene() {
           img.src = src;
         }
       };
+      let offered: string | null = null;
+      const offer = (slug: string | null) => {
+        if (slug === offered) return;
+        offered = slug;
+        const src = slug ? imageOf(slug) : null;
+        if (!slug || !src) return e.offer(null);
+        const img = images.get(slug) ?? new Image();
+        const ready = () => {
+          if (!disposed && offered === slug) e.offer(img);
+        };
+        if (img.complete && img.naturalWidth > 0) return ready();
+        img.decoding = "async";
+        img.addEventListener("load", ready, { once: true });
+        if (!images.has(slug)) {
+          images.set(slug, img);
+          img.src = src;
+        }
+      };
       // O lema, para o reflexo invertido na aba: a última palavra em vermelho, o ponto final em azul (canais).
       let wordCanvas: HTMLCanvasElement | null = null;
       const drawWord = () => {
@@ -308,8 +327,15 @@ export function MateriaScene() {
         if (g.portal) e.pull(null);
         reflect(g.reflect ?? caseSlug);
         show(g.reflect ?? caseSlug);
+        offer(talk ? g.reflect : null);
+        // Projetos fechou ou foi minimizado: a abertura volta a ser a dobra, e a mão volta para a ponta
+        const pw = s.wins.projects;
+        if (e.debug.opening && !html.dataset.osArriving && (!pw.open || pw.min)) e.reveal(null);
         wasOpen = g.open;
         root.dataset.pose = talk ? "brain" : "bust";
+        // a dobra virou a janela de Projetos: o botão da abertura não vale enquanto ela estiver assim
+        if (e.debug.opening) html.dataset.osFold = "window";
+        else delete html.dataset.osFold;
         if (g.portal) root.dataset.portal = g.portal;
         else delete root.dataset.portal;
         syncRun();
@@ -404,16 +430,113 @@ export function MateriaScene() {
         e.grab(d && l ? { x: d.x / l.hero.k, y: -d.y / l.hero.k } : null);
       };
       stage.hold = (on) => e.hover(on);
-      let revealing = 0;
-      stage.reveal = (r) => {
-        window.clearTimeout(revealing);
-        if (!r) return e.reveal(null);
-        const box = canvas.getBoundingClientRect();
-        e.reveal({ x0: r.left - box.left, y0: r.top - box.top, x1: r.left + r.width - box.left, y1: r.top + r.height - box.top });
-        // a cena continua viva até a abertura chegar à janela, mesmo que o app já cubra a tela (telefone)
-        revealing = window.setTimeout(syncRun, MATERIA.hero.reveal * 1000 + 120);
+      // ---- os destinos: a dobra vira a janela de Projetos; uma ficha na palma vira o Perfil ou o Orçamento ----
+      let arriving: string | null = null;
+      let arrivalTimer = 0;
+      const sheets = new Map<string, HTMLCanvasElement>();
+      /** A ficha que a mão apresenta, desenhada com o que a janela vai mostrar: quem é (perfil) ou o briefing (orçamento). */
+      const sheetOf = (app: "profile" | "contact") => {
+        const ready = sheets.get(app);
+        if (ready) return ready;
+        const c = document.createElement("canvas");
+        c.width = 468;
+        c.height = 600;
+        const g = c.getContext("2d");
+        if (!g) return null;
+        const family = getComputedStyle(root.parentElement?.querySelector(".os-sign__motto") ?? root).fontFamily || "sans-serif";
+        g.fillStyle = "#f4f1ea";
+        g.fillRect(0, 0, c.width, c.height);
+        g.fillStyle = "#16130f";
+        g.fillRect(0, 0, c.width, 10);
+        g.font = "600 15px monospace";
+        g.fillText(payload.brand.mark, 36, 56);
+        g.font = `800 ${app === "profile" ? 44 : 50}px ${family}`;
+        const title = app === "profile" ? payload.profile.name : payload.s.apps.contact;
+        const words = title.split(" ");
+        let line = "";
+        let y = 150;
+        for (const w of words) {
+          if (line && g.measureText(`${line} ${w}`).width > 396) {
+            g.fillText(line, 36, y);
+            y += 52;
+            line = w;
+          } else line = line ? `${line} ${w}` : w;
+        }
+        g.fillText(line, 36, y);
+        g.font = "500 17px monospace";
+        g.fillStyle = "#5a5148";
+        g.fillText((app === "profile" ? payload.profile.title : payload.brand.tagline).slice(0, 40).toUpperCase(), 36, y + 44);
+        g.fillStyle = "#16130f";
+        for (let i = 0; i < 5; i++) g.fillRect(36, y + 96 + i * 44, app === "profile" ? 396 - (i % 3) * 70 : 396, app === "profile" ? 6 : 2);
+        if (app === "profile") {
+          g.fillRect(36, 520, 132, 44);
+          g.fillStyle = "#f4f1ea";
+          g.font = "700 16px monospace";
+          g.fillText("CV · PDF", 52, 548);
+        }
+        sheets.set(app, c);
+        return c;
+      };
+      const settleArrival = () => {
+        window.clearTimeout(arrivalTimer);
+        window.removeEventListener("pointerdown", hurry, true);
+        window.removeEventListener("keydown", hurry, true);
+        if (!arriving) return;
+        arriving = null;
+        delete html.dataset.osArriving;
+        syncRun();
+      };
+      /** O visitante não quer esperar o gesto (um toque, uma tecla): o destino aparece na hora. */
+      const hurry = (ev: Event) => {
+        if (ev instanceof KeyboardEvent && ["Shift", "Control", "Alt", "Meta"].includes(ev.key)) return;
+        e.settle();
+        settleArrival();
+      };
+      stage.go = (app) => {
+        const g = guide.get();
+        const reduce = motion === "reduce" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (disposed || reduce || document.hidden || root.dataset.state !== "live" || g.open || g.portal || e.debug.hero < 0.98) return false;
+        // muda de ideia: o destino anterior aparece na hora e a figura parte de onde está
+        settleArrival();
+        arriving = app;
+        html.dataset.osArriving = app;
         e.start();
         root.dataset.run = "1";
+        const since = performance.now();
+        const aim = () => {
+          if (arriving !== app || disposed) return;
+          const win = document.querySelector<HTMLElement>(`.os-window[data-app="${app}"]`);
+          const ready = !!win && win.offsetWidth > 40;
+          if (!ready && performance.now() - since < 700) return void requestAnimationFrame(aim);
+          const box = canvas.getBoundingClientRect();
+          const layer = win?.offsetParent?.getBoundingClientRect();
+          const wide = ready && win && !mobile;
+          const x0 = (wide ? (layer?.left ?? 0) + win.offsetLeft : 0) - box.left;
+          const y0 = (wide ? (layer?.top ?? 0) + win.offsetTop : 0) - box.top;
+          const rect = { x0, y0, x1: x0 + (wide ? win.offsetWidth : window.innerWidth), y1: y0 + (wide ? win.offsetHeight : window.innerHeight) };
+          const H = MATERIA.hero;
+          let wait = H.sheet.raise + H.sheet.turn + H.sheet.grow * 0.9;
+          if (app === "projects") {
+            // a capa preenche o corpo da janela; a faixa de cima é a barra dela
+            const body = ready ? win.querySelector<HTMLElement>(".os-window__body") : null;
+            const top = body ? body.offsetTop : 0;
+            e.reveal(rect, { x0: rect.x0, y0: rect.y0 + top, x1: rect.x1, y1: rect.y1 });
+            html.dataset.osFold = "window";
+            wait = H.open.reach + H.open.stretch + 0.12;
+          } else e.present(rect, sheetOf(app));
+          window.addEventListener("pointerdown", hurry, true);
+          window.addEventListener("keydown", hurry, true);
+          arrivalTimer = window.setTimeout(settleArrival, (wait * 1000) / e.pace());
+        };
+        requestAnimationFrame(aim);
+        return true;
+      };
+      stage.back = () => {
+        e.reveal(null);
+        delete html.dataset.osFold;
+      };
+      stage.swap = (dir) => {
+        if (!covered()) e.swap(dir);
       };
       stage.live = () => !disposed && root.dataset.state === "live" && !document.hidden && !covered();
       stage.ready = () => !disposed && root.dataset.state === "live" && !document.hidden;
@@ -447,6 +570,7 @@ export function MateriaScene() {
           pull: (p: { x: number; y: number } | null) => e.pull(p),
           grab: (p: { x: number; y: number } | null) => e.grab(p),
           probe: () => e.probe(),
+          pace: (v?: number) => e.pace(v),
           figure: () => ({ ...e.figure }),
           /**
            * Imagens estáticas da própria cena (scripts/materia-still.mjs). `home`: a home inteira, com a dobra aberta,
@@ -481,8 +605,10 @@ export function MateriaScene() {
         unsubGuide();
         stage.grab = null;
         stage.hold = null;
-        stage.reveal = null;
-        window.clearTimeout(revealing);
+        stage.go = null;
+        stage.back = null;
+        stage.swap = null;
+        settleArrival();
         e.grab(null);
         stage.live = () => false;
         stage.ready = () => false;

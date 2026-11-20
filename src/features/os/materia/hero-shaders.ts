@@ -51,10 +51,15 @@ uniform float uFoldK;    // px do buffer por unidade
 uniform float uHero;     // presença da cena (0 na conversa)
 uniform float uHover;    // o visitante está com a ponta: a capa aparece inteira
 uniform vec2 uWave;      // onda ao soltar: (segundos desde que soltou, força)
-uniform float uReveal;   // a abertura cresce até coincidir com a janela do case
-uniform vec4 uWin;       // essa janela (px do buffer: x0, y0, x1, y1)
-uniform sampler2D uCover, uWord, uShadow;
-uniform float uCoverK, uCoverAr, uWordK, uShadowK;
+uniform float uReveal;   // a abertura vira a janela (0 = a dobra em repouso … 1 = o retângulo da janela)
+uniform vec4 uWinQ;      // essa janela em unidades da dobra (esquerda, baixo, direita, alto)
+uniform float uFoldBottom; // onde fica a borda de baixo da abertura em repouso (fora da tela)
+uniform vec4 uCoverRect; // onde a capa fica dentro da janela (px do buffer: x0, y0, x1, y1), como object-fit: cover
+uniform vec3 uChrome;    // a cor da barra da janela (a faixa da abertura que a capa não cobre)
+uniform sampler2D uCover, uWord, uShadow, uCardTex;
+uniform float uCoverK, uCoverAr, uWordK, uShadowK, uCardAr;
+uniform vec4 uCard;      // a ficha que as mãos apresentam: centro (px do buffer) e meia largura / meia altura
+uniform vec4 uCardM;     // giro (rad), quanto está de frente (0 de lado … 1), presença, raio do canto (px)
 
 float shadowAt(vec2 px, vec2 off, float blur) {
   vec2 c = (px + off) / uRes;
@@ -74,17 +79,19 @@ vec3 foldScene(vec2 px, vec3 col, vec3 base, vec3 deep, vec3 accent, float light
   float xr = foldR(d);
   float r = length(q0);
   float ang = atan(q0.y, q0.x);
+  float rev = uReveal;
+  float open1 = uOpen * (1.0 - rev); // o que é da dobra em repouso some quando ela vira a janela
 
   // ── a página: a pressão dos dedos amassa a superfície em volta da ponta
   vec3 page = col;
   if (r < 1.7) {
-    float press = exp(-r / 0.3) * uOpen;
+    float press = exp(-r / 0.3) * open1;
     // pregas: vales estreitos entre cristas largas, de tamanhos diferentes
     float w1 = sin(ang * 5.0 + 0.7), w2 = sin(ang * 9.0 + 2.1), w3 = sin(ang * 17.0 - 0.6);
     float wr = (w1 * abs(w1)) * 0.5 + (w2 * abs(w2)) * 0.32 + w3 * 0.18;
     float crease = wr * press * smoothstep(0.006, 0.08, r);
     // a folha sobe até a ponta: um lado pega a luz, o outro fica na sombra
-    float tent = exp(-r / 0.5) * uOpen * dot(normalize(q0 + 1e-4), vec2(-0.55, 0.83));
+    float tent = exp(-r / 0.5) * open1 * dot(normalize(q0 + 1e-4), vec2(-0.55, 0.83));
     // no claro a ruga é o vale escuro (o branco não tem para onde subir); no escuro, é a crista que pega a luz
     float fold1 = mix(1.3 * crease, (crease > 0.0 ? 0.04 : 0.36) * crease, light);
     page = col * (1.0 + fold1 + mix(0.3, 0.06, light) * tent) - mix(0.0, 0.04, light) * press;
@@ -98,12 +105,12 @@ vec3 foldScene(vec2 px, vec3 col, vec3 base, vec3 deep, vec3 accent, float light
   }
   // sombra de contato ao longo da borda da abertura (a folha tem espessura)
   float lipL = exp(-max(xl - q0.x, 0.0) / 0.035) * step(q0.y, 0.0) * smoothstep(0.0, 0.08, d);
-  page *= 1.0 - mix(0.3, 0.1, light) * lipL * uOpen;
+  page *= 1.0 - mix(0.3, 0.1, light) * lipL * open1;
   // e o fio da folha pega a luz que vem de dentro
-  float rimL = exp(-pow((xl - q0.x) / 0.007, 2.0)) * step(q0.y, 0.0) * smoothstep(0.0, 0.06, d) * uOpen;
+  float rimL = exp(-pow((xl - q0.x) / 0.007, 2.0)) * step(q0.y, 0.0) * smoothstep(0.0, 0.06, d) * open1;
   page += mix(accent * 1.3 + vec3(0.2), vec3(0.04), light) * rimL;
   // no escuro a fenda acende a página em volta: é o carmesim que desenha a abertura sobre o grafite
-  page += (1.0 - light) * accent * 0.2 * exp(-max(xl - q0.x, 0.0) / 0.1) * step(q0.y, 0.0) * smoothstep(0.0, 0.08, d) * uOpen;
+  page += (1.0 - light) * accent * 0.2 * exp(-max(xl - q0.x, 0.0) / 0.1) * step(q0.y, 0.0) * smoothstep(0.0, 0.08, d) * open1;
 
   // ── a fita: o arco da nuca desce por trás do ombro e vira a aba levantada
   vec2 rc = q - vec2(1.6, 0.26);
@@ -163,67 +170,116 @@ vec3 foldScene(vec2 px, vec3 col, vec3 base, vec3 deep, vec3 accent, float light
     outc = mix(outc, metal, inF);
   }
 
-  // ── a abertura: a profundidade escura, a capa de um projeto de verdade e a faixa de luz
-  float sdO = max(max(xl - q0.x, q0.x - xr), q0.y);
-  if (uReveal > 0.0) {
-    vec2 wc2 = 0.5 * (uWin.xy + uWin.zw);
-    vec2 wd = abs(px - wc2) - 0.5 * (uWin.zw - uWin.xy);
-    float sdW = (length(max(wd, 0.0)) + min(max(wd.x, wd.y), 0.0)) / uFoldK;
-    sdO = mix(sdO, sdW, uReveal);
-  }
+  // ── a abertura: a profundidade escura, a capa de um projeto de verdade e a faixa de luz.
+  // Quando o visitante abre Projetos ela vira a janela: o topo sobe da ponta até o alto da janela, os lados se
+  // endireitam e a borda de baixo sobe de fora da tela — cada quina viaja em linha reta até o canto dela.
+  float yTop = uWinQ.w * rev;
+  float dd = max(yTop - q0.y, 0.0);
+  float oxl = mix(foldL(dd), uWinQ.x, rev);
+  float oxr = mix(foldR(dd), uWinQ.z, rev);
+  float oyb = mix(uFoldBottom, uWinQ.y, rev);
+  float sdO = max(max(oxl - q0.x, q0.x - oxr), max(q0.y - yTop, oyb - q0.y));
   float inO = smoothstep(aa, -aa, sdO);
+  // a superfície esticando: o fio da borda acende enquanto as mãos a seguram
+  outc += (accent * 0.9 + vec3(0.35)) * exp(-pow(sdO / 0.008, 2.0)) * rev * (1.0 - smoothstep(0.92, 1.0, rev)) * (1.0 - inO);
   if (inO > 0.001) {
     float depth = clamp(-sdO, 0.0, 1.0);
     vec3 cav = mix(vec3(0.012, 0.014, 0.022), deep * 0.2, 0.3);
-    // a capa fica no fundo: não acompanha a ponta (paralaxe)
-    vec2 cs = vec2(2.3, 2.3 / max(uCoverAr, 0.1));
-    vec2 cuv = (q - vec2(0.28, -0.62) + uGrab * 0.12) / cs + 0.5;
-    if (uReveal > 0.0) cuv = mix(cuv, (px - uWin.xy) / (uWin.zw - uWin.xy), uReveal);
+    // a capa fica no fundo: não acompanha a ponta (paralaxe); na janela, preenche o corpo dela
+    vec2 cs = vec2(1.56, 1.56 / max(uCoverAr, 0.1));
+    vec2 cuv = (q - vec2(0.235, -0.4) + uGrab * 0.12) / cs + 0.5;
+    vec2 rs = max(uCoverRect.zw - uCoverRect.xy, vec2(1.0));
+    vec2 fit = rs.x / rs.y > uCoverAr ? vec2(rs.x, rs.x / uCoverAr) : vec2(rs.y * uCoverAr, rs.y);
+    cuv = mix(cuv, (px - 0.5 * (uCoverRect.xy + uCoverRect.zw)) / fit + 0.5, rev);
     float inC = step(0.0, cuv.x) * step(cuv.x, 1.0) * step(0.0, cuv.y) * step(cuv.y, 1.0);
     // na home, só a parte de cima da capa (a primeira dobra do site), que some na profundidade antes de acabar
-    vec2 suv = vec2(cuv.x, 1.0 - (1.0 - cuv.y) * mix(0.8, 1.0, uReveal));
+    vec2 suv = vec2(cuv.x, 1.0 - (1.0 - cuv.y) * mix(0.8, 1.0, rev));
     vec3 cover = texture2D(uCover, clamp(suv, 0.0, 1.0)).rgb;
-    float seen = uCoverK * inC * mix(mix(mix(0.76, 0.55, light), mix(0.92, 0.78, light), uHover) * smoothstep(0.0, 0.3, cuv.y), 1.0, uReveal);
+    float seen = uCoverK * inC * mix(mix(mix(0.86, 0.8, light), 1.0, uHover) * smoothstep(0.0, 0.22, cuv.y), 1.0, rev);
     cav = mix(cav, cover, seen);
     // a folha faz sombra para dentro: perto das bordas a cavidade é quase preta
     float shade = smoothstep(0.0, mix(0.34, 0.2, uHover), depth);
-    cav *= mix(mix(mix(0.22, 0.12, light), 1.0, shade), 1.0, uReveal);
+    cav *= mix(mix(mix(0.3, 0.22, light), 1.0, shade), 1.0, rev);
     // a faixa de luz: nasce sob os dedos e atravessa a abertura
     float bs = q0.y + 0.13 + 0.16 * q0.x;
-    float reach = smoothstep(0.0, 0.1, depth) * (1.0 - uReveal);
+    float reach = smoothstep(0.0, 0.1, depth) * (1.0 - rev);
     float core = exp(-pow(bs / 0.012, 2.0)) * reach;
     float glow = exp(-pow(bs / 0.11, 2.0)) * reach;
     cav += accent * (core * mix(2.2, 1.5, light) + glow * mix(0.85, 0.5, light)) + vec3(core * 0.6);
     // e a borda livre da aba brilha por dentro
-    cav += accent * exp(-max(xr - q0.x, 0.0) / 0.03) * 0.5 * (1.0 - uReveal) * step(q0.y, 0.0);
+    cav += accent * exp(-max(xr - q0.x, 0.0) / 0.03) * 0.5 * (1.0 - rev) * step(q0.y, 0.0);
+    // a faixa que a capa não cobre é a barra da janela
+    float bar = (1.0 - step(uCoverRect.x, px.x) * step(px.x, uCoverRect.z) * step(uCoverRect.y, px.y) * step(px.y, uCoverRect.w)) * smoothstep(0.7, 1.0, rev);
+    cav = mix(cav, uChrome, bar);
     outc = mix(outc, cav, inO);
   }
   return mix(col, outc, uHero * aboveFloor(px.y));
 }
+
+// A ficha que as mãos apresentam: a do perfil, o briefing do orçamento, a capa do projeto recomendado. Um cartão
+// com sombra, que gira com o punho (de lado → de frente) e cresce até virar a janela.
+vec3 cardLayer(vec2 px, vec3 col, float light) {
+  if (uCardM.z < 0.002) return col;
+  vec2 cp = px - uCard.xy;
+  float cr = cos(uCardM.x), sr = sin(uCardM.x);
+  cp = vec2(cr * cp.x + sr * cp.y, -sr * cp.x + cr * cp.y);
+  float face = max(uCardM.y, 0.05);
+  vec2 hs = uCard.zw * vec2(face, 1.0);
+  vec2 sd2 = abs(cp + vec2(-0.05, 0.07) * uFoldK * face) - hs;
+  float shadow = 1.0 - smoothstep(-0.02 * uFoldK, 0.1 * uFoldK, length(max(sd2, 0.0)) + min(max(sd2.x, sd2.y), 0.0));
+  col *= 1.0 - mix(0.5, 0.26, light) * shadow * uCardM.z;
+  vec2 cd = abs(cp) - hs + uCardM.w;
+  float sdC = length(max(cd, 0.0)) + min(max(cd.x, cd.y), 0.0) - uCardM.w;
+  float inCard = smoothstep(1.2, -1.2, sdC);
+  vec2 tuv = cp / (2.0 * hs);
+  float ar = uCard.z / max(uCard.w, 1.0);
+  tuv *= ar > uCardAr ? vec2(1.0, uCardAr / ar) : vec2(ar / uCardAr, 1.0);
+  vec3 tex = texture2D(uCardTex, clamp(tuv + 0.5, 0.0, 1.0)).rgb * mix(0.5, 1.0, uCardM.y);
+  tex += vec3(0.5) * exp(-pow(sdC / 2.2, 2.0)) * 0.5;
+  return mix(col, tex, inCard * uCardM.z);
+}
 `;
 
 export const FIGURE_VERT = /* glsl */ `
+attribute vec3 aPosB; // a outra forma da mão (nas demais partes, igual a position)
 attribute vec4 aNA;   // normal (xyz) e oclusão
-attribute vec4 aMeta; // caminho da luz (0 dedos … 1 cabeça), quanto segue a mão, dissolução, semente
-uniform vec3 uFigOffset, uGrabF;
-uniform float uFigScale;
-varying vec3 vN, vP, vView;
+attribute vec4 aNB;   // idem, da outra forma
+attribute vec4 aMeta; // caminho da luz (0 dedos … 1 cabeça), dissolução, semente
+attribute vec4 aSkin; // osso A, osso B, peso de A (0..255)
+uniform vec4 uBone[24]; // 8 ossos × 3 linhas (rig.ts)
+uniform float uBoneOff, uShape, uFigScale;
+uniform vec3 uFigOffset;
+varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
 varying float vAo;
 
+vec3 skin(float bone, vec3 p, float w) {
+  int k = int(bone + 0.5) * 3;
+  return vec3(dot(uBone[k].xyz, p) + uBone[k].w * w, dot(uBone[k + 1].xyz, p) + uBone[k + 1].w * w, dot(uBone[k + 2].xyz, p) + uBone[k + 2].w * w);
+}
+
 void main() {
-  vec3 p = position + uGrabF * aMeta.y;
+  vec3 rest = mix(position, aPosB, uShape);
+  vec4 na = mix(aNA, aNB, uShape);
+  // os ossos do braço (2, 3, 4) valem para os dois: o segundo usa os três seguintes
+  float a = aSkin.x + step(1.5, aSkin.x) * uBoneOff;
+  float b = aSkin.y + step(1.5, aSkin.y) * uBoneOff;
+  float w = aSkin.z / 255.0;
+  vec3 p = mix(skin(b, rest, 1.0), skin(a, rest, 1.0), w);
+  vec3 n = normalize(mix(skin(b, na.xyz, 0.0), skin(a, na.xyz, 0.0), w));
   vec4 mv = modelViewMatrix * vec4(p * uFigScale + uFigOffset, 1.0);
-  vN = normalMatrix * aNA.xyz;
-  vAo = aNA.w;
+  vN = normalMatrix * n;
+  vAo = na.w;
   vMeta = aMeta;
-  vP = position;
+  vP = p;
+  vRest = rest;
   vView = -mv.xyz;
   gl_Position = projectionMatrix * mv;
 }
 `;
 
 const FIGURE_CUT = /* glsl */ `
+uniform float uKeep; // até que ponto do caminho da luz a figura fica quando a faixa passa (os braços, na conversa)
 float hash3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.x + p.y) * p.z); }
 float noise3(vec3 p) {
   vec3 i = floor(p), f = fract(p);
@@ -232,29 +288,29 @@ float noise3(vec3 p) {
              mix(mix(hash3(i + vec3(0, 0, 1)), hash3(i + vec3(1, 0, 1)), f.x), mix(hash3(i + vec3(0, 1, 1)), hash3(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
 // O que sobra da superfície: as bordas de ruptura (fixas) e a faixa que percorre o braço na conversa.
-// Devolve a distância até a frente da faixa (> 0: ainda inteira).
+// Devolve a distância até a frente da faixa.
 float figureCut(vec3 p, vec4 meta, float sweep) {
   float ahead = meta.x - sweep;
-  if (meta.z < 0.012 && ahead > 0.1) return ahead; // inteira: nem calcula o ruído
+  if (meta.y < 0.012 && ahead > 0.1) return ahead; // inteira: nem calcula o ruído
   float grain = noise3(p * 8.0) * 0.5 + noise3(p * 21.0) * 0.32 + noise3(p * 55.0) * 0.18;
-  if (meta.z * (0.5 + 1.0 * grain) > 0.6) discard;
+  if (meta.y * (0.5 + 1.0 * grain) > 0.6) discard;
   ahead += 0.07 * (grain - 0.5);
-  if (ahead < 0.0) discard;
+  if (ahead < 0.0 && meta.x > uKeep + 0.08 * (grain - 0.5)) discard;
   return ahead;
 }
 `;
 
 export const FIGURE_FRAG = /* glsl */ `
 uniform float uLight, uSweep;
-uniform vec3 uAccent, uKey, uFade;
+uniform vec3 uAccent, uKey, uFade, uGlowAt;
 uniform vec2 uFloorPx;
-varying vec3 vN, vP, vView;
+varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
 varying float vAo;
 ${STUDIO_LIB}
 ${FIGURE_CUT}
 void main() {
-  float ahead = figureCut(vP, vMeta, uSweep);
+  float ahead = figureCut(vRest, vMeta, uSweep);
   vec3 n = normalize(vN);
   vec3 v = normalize(vView);
   vec3 r = reflect(-v, n);
@@ -265,8 +321,8 @@ void main() {
   col *= 1.0 - mix(0.0, 0.72, uLight) * fres;
   col += (1.0 - uLight) * fres * 0.2 * vAo;
   // a luz da fenda vem de baixo: mais forte perto da ponta da dobra
-  vec2 dn = vP.xy - vec2(0.12, -0.28);
-  float near = exp(-dot(dn, dn) / 0.5);
+  vec2 dn = vP.xy - uGlowAt.xy;
+  float near = exp(-dot(dn, dn) / 0.5) * uGlowAt.z;
   float under = pow(clamp(-r.y - 0.22, 0.0, 1.0), 1.4) * (0.1 + 1.9 * near);
   col = pow(clamp(col, 0.0, 1.0), vec3(0.4545));
   col += uAccent * under * mix(0.95, 0.85, uLight);
@@ -280,13 +336,13 @@ void main() {
 /** A silhueta da figura, para a sombra projetada na página. */
 export const FIGURE_SHADOW_FRAG = /* glsl */ `
 uniform float uSweep;
-varying vec3 vN, vP, vView;
+varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
 varying float vAo;
 ${FIGURE_CUT}
 void main() {
-  figureCut(vP, vMeta, uSweep);
-  // só a mão faz sombra na página; some antes do punho, onde a malha dela termina
-  gl_FragColor = vec4(smoothstep(0.195, 0.1, vMeta.x));
+  figureCut(vRest, vMeta, uSweep);
+  // só as mãos fazem sombra na página; some antes do punho, onde a malha delas termina
+  gl_FragColor = vec4(smoothstep(0.16, 0.09, vMeta.x));
 }
 `;

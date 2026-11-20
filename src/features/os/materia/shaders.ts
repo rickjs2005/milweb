@@ -15,7 +15,7 @@ attribute vec3 aBrainN;
 attribute vec4 aMeta; // semente, dissolução, borda de sulco, região (0..1)
 attribute vec3 aHero;  // home: posição (unidades da figura) ou parâmetros na dobra
 attribute vec4 aHeroN; // home: normal e o tipo (0 nuvem da figura, 1 borda livre da aba, 2 borda da página, 3 rugas)
-uniform float uHeroK, uFigScale, uFoldW;
+uniform float uHeroK, uFigScale, uFoldW, uRevealM;
 uniform vec3 uFigOffset, uGrabF;
 uniform vec2 uTipW;
 uniform float uTime, uPx, uCamZ, uSize, uYaw, uMorph, uListen, uSpeak, uCalm, uAlign, uSlit, uScale, uIntro, uFold, uFloor;
@@ -153,10 +153,11 @@ void main() {
   vShade = (0.1 + 0.9 * facing) * arrive * mix((1.0 - 0.65 * gone * flow) * mix(smoothstep(uFloor, uFloor - 0.34, -p.y), 1.0, e), 1.0, hk);
   float size = uSize * (0.72 + 0.56 * fract(seed * 13.7)) * mix(mix(1.0, 0.5, gone), 1.0, hk) * (0.45 + 0.55 * facing) * mix(1.0, 0.86, e);
   // fragmentos de tamanhos diferentes: poucos grandes, muitos miúdos; na dobra, mais finos
-  size *= mix(1.0, (0.42 + 2.9 * big * big * big * big) * (kind < 0.5 ? 1.0 : kind > 3.5 ? 0.0 : 0.6 * uOpen), hk);
+  // (as gotas da dobra somem quando ela vira a janela)
+  size *= mix(1.0, (0.42 + 2.9 * big * big * big * big) * (kind < 0.5 ? 1.0 : kind > 3.5 ? 0.0 : 0.6 * uOpen * (1.0 - uRevealM)), hk);
   gl_PointSize = max(1.0, size * uScale * uPx * uCamZ / -mv.z);
   // guardadas: fora de cena enquanto a home está inteira (não custam um pixel)
-  if (kind > 3.5 && hk > 0.985) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  if ((kind > 3.5 && hk > 0.985) || (kind > 0.5 && kind < 3.5 && uRevealM > 0.97 && hk > 0.5)) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }
 `;
 
@@ -295,6 +296,7 @@ vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light)
   }
   // Na home, a figura segura uma dobra da própria tela: a página, a abertura e a aba de metal entram aqui.
   if (uHero > 0.001) col = foldScene(px, col, base, deep, accent, light);
+  col = cardLayer(px, col, light);
   col *= 1.0 - mix(0.5, 0.08, light) * smoothstep(0.35, 0.95, length(c * vec2(1.0, 1.3))) * (1.0 - 0.5 * uHero) * live;
   return col;
 }

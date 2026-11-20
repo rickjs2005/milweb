@@ -2,6 +2,7 @@
 // layout podem importar este módulo (nunca um client component).
 import { CASE_STORIES } from "@/data/case-stories";
 import { SELECTED_WORK } from "@/data/work";
+import { PROFILE_DATA } from "@/data/profile";
 import { getProject, NO_EXTERNAL, TOTAL_LABEL } from "@/data/projects";
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
@@ -38,6 +39,13 @@ export type ProjectDetailData = {
   highlights: { label: string; detail: string }[];
   narrative: { label: string; summary: string; text: string }[];
   screens: { src: string; alt: string }[];
+  /**
+   * Os dois lados da peça na coleção. `sample` é o que se experimenta: capítulos com material real do projeto, e o
+   * endereço da experiência completa quando ela está no ar. `made` é o verso: o problema, o que o Rick fez e uma
+   * decisão de implementação — com um lugar para conferir (código ou site) quando existe.
+   */
+  sample: { title: string; chapters: { label: string; text: string; image: string }[]; full: string | null };
+  made: { problem: string; contribution: string; decision: { label: string; text: string }; evidence: { label: string; href: string } | null };
   prev: { title: string; href: string };
   next: { title: string; href: string };
   allHref: string;
@@ -51,6 +59,25 @@ const WA_MESSAGE: Record<Locale, (title: string) => string> = {
   pt: (title) => `Olá Rick! Vi o case "${title}" na MilWeb e quero algo parecido.`,
   en: (title) => `Hi Rick! I saw the "${title}" case on MilWeb and want something similar.`,
   es: (title) => `¡Hola Rick! Vi el caso "${title}" en MilWeb y quiero algo parecido.`,
+};
+
+/** TERRAL: duas fotografias reais do projeto entram na amostra, entre o terreiro e a vitrine — do grão à xícara. */
+const SAMPLE_EXTRA: Record<string, { after: number; items: { label: Localized; text: Localized; image: string }[] }> = {
+  terral: {
+    after: 1,
+    items: [
+      {
+        label: { pt: "TAMBOR", en: "THE DRUM", es: "TAMBOR" },
+        text: { pt: "O grão cai no tambor. É fotografia real da torra: o site usa imagem viva no lugar de ilustração.", en: "The beans drop into the drum. Real roasting photography: the site uses living imagery instead of illustration.", es: "El grano cae en el tambor. Es fotografía real del tostado: el sitio usa imagen viva en lugar de ilustración." },
+        image: "/shots/terral/grao.webp",
+      },
+      {
+        label: { pt: "TORRA", en: "THE ROAST", es: "TUESTE" },
+        text: { pt: "As mãos do torrador revolvem o lote. A narrativa desacelera aqui de propósito: café é sobre esperar o tempo certo.", en: "The roaster's hands turn the batch. The story slows down here on purpose: coffee is about waiting the right amount of time.", es: "Las manos del tostador remueven el lote. La historia se frena aquí a propósito: el café es esperar el tiempo justo." },
+        image: "/shots/terral/torra.webp",
+      },
+    ],
+  },
 };
 
 const CATEGORY: Record<string, Localized> = {
@@ -78,6 +105,28 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
     const hood = story?.hood[i];
     return { label: hood ? t(hood.label) : String(i + 1).padStart(2, "0"), summary: hood ? t(hood.summary) : "", text: t(para) };
   });
+  const highlights = (p.caseStudy?.highlights ?? []).map((h) => ({ label: t(h.label), detail: t(h.detail) }));
+  const live = NO_EXTERNAL.has(p.slug) ? null : (p.live ?? null);
+  const repos = NO_EXTERNAL.has(p.slug) ? [] : (p.repos ?? []);
+
+  // A amostra: os passos da história do case quando ela existe; senão a capa e as telas, com o que cada uma mostra.
+  const chapters: { label: string; text: string; image: string }[] = story
+    ? story.steps.map((st) => ({ label: t(st.label), text: t(st.text), image: st.image }))
+    : [{ label: p.title, text: t(p.tagline), image: hero }, ...screens.slice(0, 4).map((sc, i) => ({ label: highlights[i]?.label ?? String(i + 2).padStart(2, "0"), text: highlights[i]?.detail ?? sc.alt, image: sc.src }))].filter((c) => c.image);
+  const extra = SAMPLE_EXTRA[p.slug];
+  if (extra) chapters.splice(extra.after + 1, 0, ...extra.items.map((x) => ({ label: t(x.label), text: t(x.text), image: x.image })));
+
+  // O verso: a contribuição e a decisão do perfil profissional quando o projeto está lá; senão, do próprio case.
+  const pro = PROFILE_DATA.projects.find((x) => x.slug === p.slug);
+  const hood = story?.hood[0];
+  const decision = pro
+    ? { label: s.decision, text: t(pro.decision) }
+    : hood
+      ? { label: t(hood.label), text: t(hood.summary) || narrative[0]?.text || "" }
+      : highlights[0]
+        ? { label: highlights[0].label, text: highlights[0].detail }
+        : { label: s.stack, text: p.stack.join(" · ") };
+  const evidence = pro?.code[0] ? { label: pro.code[0].label, href: pro.code[0].url } : repos[0] ? { label: repos[0].label, href: repos[0].url } : live ? { label: s.live, href: live } : null;
 
   return {
     slug: p.slug,
@@ -93,8 +142,8 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
     kind: p.clientWork ? "client" : p.live || p.demo ? "demo" : "study",
     status: p.live ? s.live : p.status ? t(p.status) : null,
     // Kavita: sem link externo nem botão de visita (NO_EXTERNAL); o texto de status continua.
-    live: NO_EXTERNAL.has(p.slug) ? null : (p.live ?? null),
-    repos: NO_EXTERNAL.has(p.slug) ? [] : (p.repos ?? []),
+    live,
+    repos,
     stack: p.stack,
     hero,
     problem: t(p.problem),
@@ -112,9 +161,11 @@ export function buildProjectDetail(slug: string, locale: Locale): ProjectDetailD
           result: [t(story.result[0]), t(story.result[1])],
         }
       : null,
-    highlights: (p.caseStudy?.highlights ?? []).map((h) => ({ label: t(h.label), detail: t(h.detail) })),
+    highlights,
     narrative,
     screens,
+    sample: { title: selected ? selected.title[locale].join(" ") : p.title, chapters, full: live },
+    made: { problem: t(p.problem), contribution: pro ? t(pro.contribution) : t(p.result), decision, evidence },
     prev: { title: prev.title, href: withLocale(locale, `/work/${prev.slug}`) },
     next: { title: next.title, href: withLocale(locale, `/work/${next.slug}`) },
     allHref: withLocale(locale, "/work"),

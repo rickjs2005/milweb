@@ -58,36 +58,48 @@ export async function loadMolecules(full: boolean, signal?: AbortSignal): Promis
   return b ? join(a, b) : a;
 }
 
-/** A figura da home, em malha (ver o cabeçalho de assets/materia/build_figure.py). Unidades: a ponta da dobra é a origem. */
-export type FigurePart = { count: number; position: Float32Array; na: Int8Array; meta: Uint8Array; index: Uint16Array };
-export type FigureMesh = { parts: FigurePart[]; /** Onde o polegar e o indicador se encontram. */ pinch: [number, number, number] };
+/**
+ * A figura da home, articulada (ver o cabeçalho de assets/materia/build_figure.py): o corpo (tronco e cabeça,
+ * já na pose da cena), o braço e a mão em repouso — a mão em três formas, a mesma malha. O motor desenha o
+ * braço e a mão duas vezes (rig.ts).
+ */
+export type FigureShape = { position: Float32Array; na: Int8Array };
+export type FigurePart = { count: number; shapes: FigureShape[]; /** caminho da luz, dissolução, semente */ meta: Uint8Array; /** osso A, osso B, peso de A */ skin: Uint8Array; index: Uint16Array };
+export type FigureMesh = { body: FigurePart; arm: FigurePart; hand: FigurePart };
 
 function decodeFigure(buf: ArrayBuffer): FigureMesh {
   const view = new DataView(buf);
-  if (view.getUint32(0, false) !== 0x4d544631) throw new Error("materia: figura em formato desconhecido");
+  if (view.getUint32(0, false) !== 0x4d544632) throw new Error("materia: figura em formato desconhecido");
   const n = view.getUint32(4, true);
-  const center = [view.getFloat32(8, true), view.getFloat32(12, true), view.getFloat32(16, true)];
-  const scale = view.getFloat32(20, true) / 32767;
-  const pinch: [number, number, number] = [view.getFloat32(24, true), view.getFloat32(28, true), view.getFloat32(32, true)];
-  let at = 36;
+  let at = 8;
   const parts: FigurePart[] = [];
   for (let k = 0; k < n; k++) {
     const count = view.getUint32(at, true);
     const indices = view.getUint32(at + 4, true);
-    at += 8;
-    const src = new Int16Array(buf.slice(at, at + count * 6));
-    at += count * 6;
-    const position = new Float32Array(count * 3);
-    for (let i = 0; i < position.length; i++) position[i] = src[i] * scale + center[i % 3];
-    const na = new Int8Array(buf.slice(at, at + count * 4));
-    at += count * 4;
+    const forms = view.getUint32(at + 8, true);
+    const center = [view.getFloat32(at + 12, true), view.getFloat32(at + 16, true), view.getFloat32(at + 20, true)];
+    const scale = view.getFloat32(at + 24, true) / 32767;
+    at += 28;
+    const shapes: FigureShape[] = [];
+    for (let f = 0; f < forms; f++) {
+      const src = new Int16Array(buf.slice(at, at + count * 6));
+      at += count * 6 + ((count * 6) % 4);
+      const position = new Float32Array(count * 3);
+      for (let i = 0; i < position.length; i++) position[i] = src[i] * scale + center[i % 3];
+      const na = new Int8Array(buf.slice(at, at + count * 4));
+      at += count * 4;
+      shapes.push({ position, na });
+    }
     const meta = new Uint8Array(buf.slice(at, at + count * 4));
+    at += count * 4;
+    const skin = new Uint8Array(buf.slice(at, at + count * 4));
     at += count * 4;
     const index = new Uint16Array(buf.slice(at, at + indices * 2));
     at += indices * 2 + ((indices * 2) % 4);
-    parts.push({ count, position, na, meta, index });
+    parts.push({ count, shapes, meta, skin, index });
   }
-  return { parts, pinch };
+  if (parts.length < 3) throw new Error("materia: figura incompleta");
+  return { body: parts[0], arm: parts[1], hand: parts[2] };
 }
 
 /** A malha completa só para GPU com folga; as demais (e o telefone) recebem a versão leve. */

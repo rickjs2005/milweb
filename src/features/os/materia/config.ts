@@ -64,7 +64,13 @@ export const MATERIA = {
    * o gesto (unidades da dobra). `spring`: a mola da ponta — firme enquanto o visitante segura, solta depois
    * (é a sobra dela que corre pelo metal como onda). `reveal`: a abertura cresce até a janela do case (s).
    */
-  hero: { form: 1.15, sweep: 1.3, reach: 0.3, hold: { k: 150, c: 24 }, free: { k: 96, c: 7.5 }, reveal: 0.78, zone: 0.62, follow: 0.7, cover: "ace-diving-miami" },
+  hero: { form: 1.15, sweep: 1.3, reach: 0.3, hold: { k: 150, c: 24 }, free: { k: 96, c: 7.5 }, reveal: 0.78, zone: 0.62, follow: 0.7, cover: "terral",
+    /** Abrir Projetos: a outra mão alcança a borda de baixo, as duas esticam a abertura até a janela, soltam (s). */
+    open: { reach: 0.32, stretch: 0.8, release: 0.34 },
+    /** Apresentar uma ficha (o perfil, o briefing): a mão a ergue, gira o punho e ela cresce até a janela (s). */
+    sheet: { raise: 0.42, turn: 0.3, grow: 0.46 },
+    /** Trocar de projeto na coleção: uma mão apresenta a próxima peça, a outra retira a anterior (s). */
+    swap: 0.75 },
 } as const;
 
 /**

@@ -20,6 +20,8 @@ export type GuideAction =
   | { kind: "brief"; label: string }
   /** Mostra a prévia preparada (idea-store.ts): no recorte do rosto da escultura, ou direto na janela. */
   | { kind: "idea"; label: string }
+  /** Abre a coleção no projeto, já com o verso da peça à vista ("como foi feito"): a evidência para o recrutador. */
+  | { kind: "made"; slug: string; label: string }
   /** Resposta rápida: envia `text` como se a pessoa tivesse escrito. */
   | { kind: "say"; text: string; label: string };
 
@@ -153,6 +155,15 @@ export const stage: {
   grab: ((d: { x: number; y: number } | null) => void) | null;
   /** O visitante está sobre a dobra: a capa aparece inteira. */
   hold: ((on: boolean) => void) | null;
-  /** A abertura da dobra cresce até coincidir com um retângulo da janela (px) — a janela do case; null devolve a dobra. */
-  reveal: ((rect: { left: number; top: number; width: number; height: number } | null) => void) | null;
-} = { live: () => false, ready: () => false, anchor: () => null, cut: null, ask: null, grab: null, hold: null, reveal: null };
+  /**
+   * A Matéria leva o visitante a um destino que acabou de abrir: em Projetos, uma mão firma a ponta da dobra, a outra
+   * apanha a borda de baixo e as duas esticam a abertura até a janela; em Perfil e Orçamento, uma ficha apoiada na
+   * palma cresce até a janela. Devolve false quando a cena não está viva (ou com movimento reduzido): o destino já
+   * está na tela. Chamar de novo, com outro destino, parte da pose em que a figura está.
+   */
+  go: ((app: "projects" | "profile" | "contact") => boolean) | null;
+  /** A janela de Projetos fechou (ou saiu da frente): a abertura volta a ser a dobra. */
+  back: (() => void) | null;
+  /** Trocar de projeto na coleção: uma mão apresenta a próxima peça, a outra retira a anterior. */
+  swap: ((dir: 1 | -1) => void) | null;
+} = { live: () => false, ready: () => false, anchor: () => null, cut: null, ask: null, grab: null, hold: null, go: null, back: null, swap: null };

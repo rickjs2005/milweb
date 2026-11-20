@@ -972,7 +972,9 @@ if (ONLY.includes("projects")) {
   check("25 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 25 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
   check("cartaz principal: faixa, imagem, nome, identificador, selo e frase", await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => ["bounty__tier", "bounty__img", "bounty__name", "bounty__id", "bounty__seal", "bounty__line"].every((c) => e.querySelector("." + c))));
   check("faixa e nome cabem no papel (sem estourar)", await mural.locator('.bounty__slot[data-active="1"] .bounty__sheet').evaluate((s) => { const r = s.getBoundingClientRect(); return [...s.querySelectorAll(".bounty__tier, .bounty__name, .bounty__line")].every((el) => { const b = el.getBoundingClientRect(); return b.right <= r.right + 1 && el.scrollWidth <= el.clientWidth + 1; }); }));
-  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 7 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 18 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
+  check("a coleção abre com o TERRAL (02) em destaque", (await activeSlug()) === "terral" && (await mural.locator(".bounty__count").innerText()).startsWith("02"));
+  // o destaque é o segundo cartaz: um vizinho à esquerda, seis à direita
+  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 8 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 17 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
   check("só os cartazes próximos carregam imagem", (await mural.locator(".bounty__img:not(.bounty__img--empty)").count()) <= 10);
   check("filtros compactos (7) com contagem e ativo marcado", (await mural.locator(".bounty__pill").count()) === 7 && (await mural.locator('.bounty__pill[aria-pressed="true"]').innerText()).includes("TODOS") && (await mural.locator(".bounty__pill").first().evaluate((e) => e.getBoundingClientRect().height <= 30)));
   check("Kavita: só o link interno do case, sem link externo", await mural.locator('.bounty__slot[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
@@ -981,6 +983,9 @@ if (ONLY.includes("projects")) {
 
   // navegação: teclado, roda, fita, ver todos, arraste
   await mural.locator(".bounty__stage").focus();
+  // (a coleção abre no destaque; as contas daqui em diante partem do primeiro cartaz)
+  await page.keyboard.press("Home");
+  await settle(page, 800);
   await page.keyboard.press("ArrowRight");
   await settle(page, 300);
   await page.keyboard.press("ArrowRight");
@@ -1071,7 +1076,7 @@ if (ONLY.includes("projects")) {
   await settle(page, 800);
   check("reduced motion: mural pronto, sem animação", await mural.locator('.bounty__slot[data-active="1"] .bounty__paper').evaluate((e) => ["none", "matrix(1, 0, 0, 1, 0, 0)"].includes(getComputedStyle(e).transform)));
   await mural.locator('.bounty__slot[data-active="1"] .bounty__link').click();
-  await page.waitForURL(/\/projetos\/kavita-drones$/);
+  await page.waitForURL(/\/projetos\/terral$/);
   await settle(page, 500);
   check("reduced motion: dossiê abre direto", (await mural.getAttribute("data-phase")) === "open");
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -1079,7 +1084,7 @@ if (ONLY.includes("projects")) {
   // EN
   await page.goto(`${BASE}/en/work`, { waitUntil: "load" });
   await settle(page, 1500);
-  check("EN: faixa, selo e coleção traduzidos", (await mural.locator('.bounty__slot[data-active="1"] .bounty__tier').innerText()) === "MOST WANTED" && (await mural.locator('.bounty__slot[data-active="1"] .bounty__seal').innerText()) === "CLIENT PROJECT" && (await mural.locator(".bounty__eyebrow").first().innerText()).includes("BOUNTY COLLECTION"));
+  check("EN: faixa, selo e coleção traduzidos", (await mural.locator('.bounty__slot[data-slug="kavita-drones"] .bounty__tier').innerText()) === "MOST WANTED" && (await mural.locator('.bounty__slot[data-slug="kavita-drones"] .bounty__seal').innerText()) === "CLIENT PROJECT" && (await mural.locator(".bounty__eyebrow").first().innerText()).includes("BOUNTY COLLECTION"));
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await shot(page, "p01-mural-en");
   await ctx.close();
@@ -1101,16 +1106,16 @@ if (ONLY.includes("projects")) {
   await mpage.mouse.move(st.x + st.w * 0.25, st.y + st.h / 2, { steps: 8 });
   await mpage.mouse.up();
   await settle(mpage, 900);
-  check("swipe avança um cartaz", (await mact.getAttribute("data-slug")) === "terral");
+  check("swipe avança um cartaz (do destaque, TERRAL, para o seguinte)", (await mact.getAttribute("data-slug")) === "atelier-vertex");
   await mact.locator(".bounty__link").tap();
-  await mpage.waitForURL(/\/projetos\/terral$/);
+  await mpage.waitForURL(/\/projetos\/atelier-vertex$/);
   await settle(mpage, 2000);
   check("toque abre o dossiê: cartaz no topo, case abaixo", (await mm.getAttribute("data-phase")) === "open" && (await mm.locator(".bounty__dossier-slot .bounty__paper").count()) === 1 && (await mm.locator(".bounty__case .os-case").count()) === 1);
   check("botão de voltar não cobre o cartaz", await mm.evaluate((r) => r.querySelector(".bounty__close").getBoundingClientRect().bottom <= r.querySelector(".bounty__dossier-slot").getBoundingClientRect().top + 1));
   await mm.locator(".bounty__close").tap();
   await mpage.waitForURL(/\/projetos$/);
   await settle(mpage, 1400);
-  check("fecha e continua no mesmo cartaz", (await mm.getAttribute("data-phase")) === "closed" && (await mact.getAttribute("data-slug")) === "terral");
+  check("fecha e continua no mesmo cartaz", (await mm.getAttribute("data-phase")) === "closed" && (await mact.getAttribute("data-slug")) === "atelier-vertex");
   check("sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
   await shot(mpage, "p02-mural-mobile");
   await mctx.close();

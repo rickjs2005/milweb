@@ -1,13 +1,16 @@
 /**
  * Matéria — verificação da escultura, da conversa e das prévias, pela interface real.
  *
- *   node scripts/materia-check.mjs [--base http://127.0.0.1:3100] [--only scene,match,mixed,recruiter,client,explore,languages,idea,voice,reduced,loading,mobile,policy] [--software]
+ *   node scripts/materia-check.mjs [--base http://127.0.0.1:3100] [--only scene,hands,entries,match,mixed,recruiter,client,explore,languages,idea,voice,reduced,loading,mobile,policy] [--software]
  *
  * Por padrão usa a GPU real (ANGLE/D3D11) para a cena viva. `--software` força a GPU por software:
  * a cena cai na imagem estática e a conversa precisa funcionar do mesmo jeito (a prévia abre direto).
  *
  * Grupos:
  *   scene      a home: a figura segurando a dobra da tela, o gesto, o projeto por baixo, ver o pensamento
+ *   hands      os dois braços: Projetos pela dobra (as quinas viram os cantos da janela), os dois lados de cada peça
+ *              (experimentar · ver como foi feito), Perfil na palma, troca rápida de destino, link direto e telefone
+ *   entries    as entradas da conversa para qualquer cliente ou recrutador e a recomendação pelo objetivo (PT, EN, ES)
  *   match      a escolha da referência pela frase inteira (mergulho × comércio, desempate, outros setores) em PT, EN e ES
  *   mixed      pedido que mistura intenções: preço + quem a pessoa é + o que ela quer; o pedido só abre quando ela escolhe
  *   recruiter  o caminho curto: Perfil, currículo em PDF, evidência
@@ -34,7 +37,7 @@ const opt = (k, d) => {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1] : d;
 };
 const BASE = opt("--base", "http://127.0.0.1:3100").replace(/\/$/, "");
-const ONLY = opt("--only", "scene,match,mixed,recruiter,client,explore,languages,idea,voice,reduced,loading,mobile,policy").split(",");
+const ONLY = opt("--only", "scene,hands,entries,match,mixed,recruiter,client,explore,languages,idea,voice,reduced,loading,mobile,policy").split(",");
 const SOFTWARE = process.argv.includes("--software");
 const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 const DESK = { viewport: { width: 1440, height: 900 } };
@@ -149,7 +152,7 @@ if (ONLY.includes("scene")) {
   check("“Talk to Matéria” vem ao lado, como ação secundária (placa translúcida, não cheia)", (await page.locator(".os-materia-talk").innerText()).trim().toUpperCase() === "TALK TO MATÉRIA" && tb && tb.x >= ib.x + ib.width && Math.abs(tb.y - ib.y) < 4 && look.idea === 1 && look.talk < 1, JSON.stringify(look));
   check("os atalhos do OS ficam abaixo dos convites, e os dois terços da direita ficam livres para a cena", icons && icons.y >= ib.y + ib.height + 8 && icons.x + icons.width < 1440 * 0.36 && tb.x + tb.width < 1440 * 0.45, icons && `atalhos até x ${Math.round(icons.x + icons.width)}`);
   const fold = page.locator(".os-materia-fold");
-  check("a abertura da dobra é um controle com nome: leva ao projeto de verdade que aparece por baixo", (await fold.getAttribute("aria-label")) === "View the project: Ace Diving Miami" && /ACE DIVING MIAMI/i.test(await fold.innerText()));
+  check("a abertura da dobra é um controle com nome: leva ao projeto de verdade que aparece por baixo", (await fold.getAttribute("aria-label")) === "View the project: TERRAL" && /TERRAL/i.test(await fold.innerText()));
   if (alive) {
     await page.waitForTimeout(2200);
     const st = await engine(page);
@@ -192,12 +195,254 @@ if (ONLY.includes("scene")) {
   await fold.click({ position: { x: 250, y: 200 } });
   let widest = 0;
   if (alive) for (let i = 0; i < 40; i++) { widest = Math.max(widest, (await engine(page)).reveal); await page.waitForTimeout(40); }
-  const opened = await pathIs(page, /\/en\/work\/ace-diving-miami$/, 8000);
-  check("explorar o projeto: a dobra se abre até a janela do case e o case real abre", opened && (!alive || widest > 0.9), alive ? `abertura ${widest.toFixed(2)}` : "direto");
+  const opened = await pathIs(page, /\/en\/work\/terral$/, 8000);
+  check("o clique na capa do TERRAL abre o case dele: as mãos esticam a dobra até a janela", opened && (!alive || widest > 0.9), alive ? `abertura ${widest.toFixed(2)}` : "direto");
   await page.waitForTimeout(1200);
   check("…e a janela do case fica à vista", await page.locator('.os-window[data-app="projects"]').evaluate((el) => getComputedStyle(el).opacity === "1" && el.offsetWidth > 300).catch(() => false));
   check("sem erros de console", errors.length === 0, errors.slice(0, 2).join(" | "));
   await ctx.close();
+}
+
+// ───────────────────────── os dois braços: Projetos pela dobra, os dois lados da peça, Perfil, troca rápida
+if (ONLY.includes("hands")) {
+  const scene = (page) => page.evaluate(() => { const q = window.__mwMateria.state; return { reveal: q.reveal, opening: q.opening, hands: q.hands, sheet: q.sheet, card: q.card, swapping: q.swapping, hero: q.hero, arriving: document.documentElement.dataset.osArriving ?? null }; });
+  const far = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const shown = (page, app) => page.locator(`.os-window[data-app="${app}"]`).evaluate((el) => getComputedStyle(el).opacity === "1" && el.offsetWidth > 300).catch(() => false);
+  const veiled = (page, app) => page.locator(`.os-window[data-app="${app}"]`).evaluate((el) => getComputedStyle(el).opacity === "0").catch(() => false);
+
+  console.log("\n— mãos: Projetos (desktop 1440 × 900)");
+  {
+    const { ctx, page, errors } = await open("/");
+    const alive = await live(page);
+    if (alive) {
+      await page.waitForTimeout(2200);
+      // câmera lenta (só no teste): dá para medir o gesto quadro a quadro
+      await page.evaluate(() => window.__mwMateria.pace(0.3));
+      await page.locator("#os-icon-projects").click();
+      let hidden = false, mid = 0, late = 0, gapA = 0, gapB = 0;
+      const t0 = Date.now();
+      while (Date.now() - t0 < 12000) {
+        const q = await scene(page);
+        if (q.arriving === "projects") hidden ||= await veiled(page, "projects");
+        if (q.opening && q.reveal > 0.08 && q.reveal < 0.92) {
+          mid++;
+          gapA = Math.max(gapA, far(q.hands.a, q.hands.cornerA));
+          if (q.reveal > 0.55) { late++; gapB = Math.max(gapB, far(q.hands.b, q.hands.cornerB)); }
+        }
+        if (q.reveal >= 1 && !q.arriving) break;
+        await page.waitForTimeout(25);
+      }
+      await page.evaluate(() => window.__mwMateria.pace(1));
+      check("clicar em Projetos: a janela espera enquanto as mãos trazem a abertura até ela", hidden && mid >= 4, `${mid} amostras no meio do gesto`);
+      check("uma mão firma a ponta e a leva ao canto de cima: o ponto de contato acompanha a quina", mid >= 4 && gapA < 26, `no máximo ${gapA.toFixed(0)} px da quina`);
+      check("a outra apanha a borda de baixo e leva a outra quina ao canto oposto", late >= 2 && gapB < 26, `no máximo ${gapB.toFixed(0)} px da quina`);
+      await page.waitForTimeout(700);
+      const end = await scene(page);
+      const win = await page.evaluate(() => { const w = document.querySelector('.os-window[data-app="projects"]'); const l = w.offsetParent.getBoundingClientRect(); const c = document.querySelector(".os-scene__canvas").getBoundingClientRect(); return { x0: l.left + w.offsetLeft - c.left, y0: l.top + w.offsetTop - c.top, x1: l.left + w.offsetLeft + w.offsetWidth - c.left, y1: l.top + w.offsetTop + w.offsetHeight - c.top }; });
+      check("no fim, as quinas da abertura são os cantos da janela (a mesma quina, do dedo ao canto)", far(end.hands.cornerA, { x: win.x1, y: win.y0 }) < 3 && far(end.hands.cornerB, { x: win.x0, y: win.y1 }) < 3, JSON.stringify({ a: end.hands.cornerA, b: end.hands.cornerB, win }));
+    } else await page.locator("#os-icon-projects").click();
+    check("Projetos abre a coleção, com o TERRAL em destaque", (await pathIs(page, /\/projetos$/, 8000)) && (await shown(page, "projects")) && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "terral");
+    const all = page.locator(".bounty__all-btn").first();
+    check("“Todos os projetos” está à mão desde o início", (await all.isVisible()) && /TODOS OS PROJETOS/i.test(await all.innerText()));
+    // experimentar: a amostra do TERRAL
+    await page.locator('.bounty__acts [data-act="try"]').click();
+    const loaded = await page.waitForFunction(() => document.querySelectorAll(".bounty__chapter").length >= 6, null, { timeout: 10000 }).then(() => true).catch(() => false);
+    const sample = await page.evaluate(() => ({ labels: [...document.querySelectorAll(".bounty__chapter h3")].map((h) => h.textContent), images: [...document.querySelectorAll(".bounty__chapter img")].map((i) => i.getAttribute("src")) }));
+    check("experimentar o TERRAL: a amostra vai do grão à xícara com material real do projeto", loaded && ["CAPARAÓ", "TERREIRO", "TAMBOR", "TORRA", "VERTENTE"].every((l) => sample.labels.includes(l)) && sample.images.every((src) => src.startsWith("/shots/terral")), sample.labels.join(" · "));
+    await page.locator(".bounty__sample").hover();
+    await page.mouse.wheel(0, 900);
+    const moved = await page.waitForFunction(() => document.querySelector('.bounty__rail li[data-on="1"]') !== document.querySelector(".bounty__rail li"), null, { timeout: 5000 }).then(() => true).catch(() => false);
+    check("…e se percorre com o scroll (ou o dedo): o capítulo muda", moved);
+    await page.locator(".bounty__sample").evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
+    await page.waitForTimeout(900);
+    const full = page.locator('.bounty__chapter--end [data-act="full"]');
+    check("no fim da amostra, a experiência completa do TERRAL fica a um toque (nova aba)", (await full.getAttribute("href")) === "https://terral-cafe.vercel.app" && (await full.getAttribute("target")) === "_blank");
+    // ver como foi feito: a mesma peça vira
+    await page.locator('.bounty__faces [data-face="made"]').click();
+    await page.waitForTimeout(1100);
+    const made = await page.locator(".bounty__made").innerText();
+    const turned = await page.locator(".bounty__flip").evaluate((el) => getComputedStyle(el).transform !== "none");
+    const proof = await page.locator(".bounty__made-proof").getAttribute("href").catch(() => null);
+    check("ver como foi feito: a peça vira e mostra o problema, o que o Rick fez e uma decisão que dá para conferir", turned && /O PROBLEMA/i.test(made) && /O QUE O RICK FEZ/i.test(made) && /MOTOR DE CAPÍTULOS/i.test(made) && proof === "https://terral-cafe.vercel.app", made.replace(/\s+/g, " ").slice(0, 90));
+    // o cliente leva a referência ao orçamento
+    await page.locator('.bounty__face--made [data-act="discuss"]').click();
+    const atContact = await pathIs(page, /\/contato$/, 8000);
+    await page.waitForTimeout(900);
+    const brief = await request(page);
+    check("“Quero discutir algo assim” abre o orçamento já com o TERRAL como referência, para revisar antes de enviar", atContact && /TERRAL/.test(brief.preview) && /Quero discutir algo assim: TERRAL/i.test(brief.notes), brief.notes.replace(/\s+/g, " ").slice(0, 80));
+    // voltar à coleção
+    await page.goBack();
+    await pathIs(page, /\/projetos$/, 8000);
+    await page.locator(".bounty__explore-back").click();
+    await page.waitForTimeout(700);
+    check("voltar à coleção devolve o mural com o TERRAL em foco", (await page.locator(".bounty__explore").count()) === 0 && (await page.locator('.bounty__acts [data-act="try"]').isVisible()) && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "terral");
+    if (alive) {
+      await page.locator(".bounty__arrow").nth(1).click();
+      await page.waitForTimeout(160);
+      check("trocar de projeto: as mãos participam (uma apresenta a próxima peça, a outra retira a anterior)", (await scene(page)).swapping && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) !== "terral");
+    }
+    check("sem erros de console", errors.length === 0, errors.slice(0, 2).join(" | "));
+    await ctx.close();
+  }
+
+  console.log("\n— mãos: Perfil, troca rápida, tecla no meio do gesto");
+  {
+    const { ctx, page } = await open("/en");
+    const alive = await live(page);
+    if (alive) await page.waitForTimeout(2200);
+    await page.locator("#os-icon-profile").click();
+    let carried = false;
+    if (alive) for (let i = 0; i < 30 && !carried; i++) { const q = await scene(page); carried = q.sheet && q.card > 0.5 && q.arriving === "profile" && (await veiled(page, "profile")); await page.waitForTimeout(25); }
+    check("Perfil: a Matéria apresenta a ficha apoiada na palma e ela vira a janela", (!alive || carried) && (await pathIs(page, /\/en\/profile$/, 8000)));
+    await page.waitForTimeout(1500);
+    const cv = page.locator('[data-profile-action="view-cv"]');
+    check("o perfil abre com o currículo em PDF a um clique", (await shown(page, "profile")) && (await cv.isVisible()) && /\.pdf$/.test((await cv.getAttribute("href")) ?? ""));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/");
+    const alive = await live(page);
+    if (alive) await page.waitForTimeout(2200);
+    await page.locator("#os-icon-projects").click();
+    await page.waitForTimeout(alive ? 320 : 100);
+    const before = alive ? await scene(page) : null;
+    await page.locator("#os-icon-profile").click();
+    await page.waitForTimeout(260);
+    const after = alive ? await scene(page) : null;
+    check("mudar de ideia no meio do gesto: a Matéria parte de onde está e segue a última escolha", (await pathIs(page, /\/perfil$/, 8000)) && (!alive || (before.arriving === "projects" && before.opening && after.arriving === "profile" && after.sheet && after.opening)), alive ? `antes: ${before.arriving}, depois: ${after.arriving}` : "sem motor");
+    check("…e a janela que ficou para trás aparece na hora", await page.waitForFunction(() => getComputedStyle(document.querySelector('.os-window[data-app="projects"]')).opacity === "1", null, { timeout: 1500 }).then(() => true).catch(() => false));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/");
+    const alive = await live(page);
+    if (alive) await page.waitForTimeout(2200);
+    await page.locator("#os-icon-projects").focus();
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(220);
+    const waiting = alive ? (await scene(page)).arriving : "projects";
+    await page.keyboard.press("ArrowRight");
+    const now = await page.waitForFunction(() => !document.documentElement.dataset.osArriving && getComputedStyle(document.querySelector('.os-window[data-app="projects"]')).opacity === "1", null, { timeout: 700 }).then(() => true).catch(() => false);
+    check("pelo teclado: Enter abre com o gesto e qualquer tecla seguinte entrega a janela na hora", waiting === "projects" && now);
+    await ctx.close();
+  }
+
+  console.log("\n— mãos: movimento reduzido, link direto e telefone");
+  {
+    const { ctx, page } = await open("/", { reduced: true });
+    await page.locator("#os-icon-projects").click();
+    const direct = await page.waitForFunction(() => !document.documentElement.dataset.osArriving && !!document.querySelector('.os-window[data-app="projects"]') && getComputedStyle(document.querySelector('.os-window[data-app="projects"]')).opacity !== "0", null, { timeout: 900 }).then(() => true).catch(() => false);
+    check("movimento reduzido: Projetos aparece de imediato, com o TERRAL em destaque", direct && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "terral");
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/projetos");
+    check("link direto para /projetos: a coleção já está na tela, sem gesto", (await shown(page, "projects")) && !(await page.evaluate(() => document.documentElement.dataset.osArriving)) && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "terral");
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/", { phone: true });
+    const alive = await live(page, 15000);
+    if (alive) await page.waitForTimeout(1800);
+    await page.locator("#os-launch-projects").tap();
+    let inView = alive ? 0 : 1, both = !alive;
+    if (alive) {
+      const t0 = Date.now();
+      while (Date.now() - t0 < 5000) {
+        const q = await scene(page);
+        if (q.opening && q.reveal > 0.05 && q.reveal < 0.6 && q.hands.a.x > 0 && q.hands.a.x < 390 && q.hands.a.y > 0 && q.hands.a.y < 844) inView++;
+        if (q.opening && q.hands.b.x > -20 && q.hands.b.x < 390 && q.hands.b.y < 844) both = true;
+        if (q.reveal >= 1 && !q.arriving) break;
+        await page.waitForTimeout(25);
+      }
+    }
+    check("telefone: o gesto cabe na tela — a mão que segura a ponta e a que apanha a borda ficam à vista", inView >= 1 && both, `${inView} amostras com a mão à vista`);
+    await page.waitForTimeout(1600);
+    const acts = await page.locator('.bounty__acts [data-act="try"]').boundingBox();
+    const allBtn = await page.locator(".bounty__all-btn").first().boundingBox();
+    check("telefone: “Experimentar”, “Ver como foi feito” e “Todos os projetos” ficam ao alcance do polegar", !!acts && !!allBtn && acts.y > 844 * 0.45 && acts.y + acts.height < 844 && acts.height >= 44 && allBtn.y > 844 * 0.45 && allBtn.y + allBtn.height <= 844, acts && `ações em y ${Math.round(acts.y)}, todos em y ${allBtn && Math.round(allBtn.y)}`);
+    await page.locator('.bounty__acts [data-act="made"]').tap();
+    await page.waitForTimeout(1300);
+    const discuss = await page.locator('.bounty__face--made [data-act="discuss"]').boundingBox();
+    check("telefone: o verso da peça cabe na tela e a ação do cliente tem alvo ≥ 44 px", !!discuss && discuss.height >= 44 && discuss.x >= 0 && discuss.x + discuss.width <= 390);
+    await ctx.close();
+  }
+}
+
+// ───────────────────────── as entradas da conversa servem a qualquer cliente ou recrutador
+if (ONLY.includes("entries")) {
+  console.log("\n— entradas da conversa e objetivo declarado");
+  {
+    const { ctx, page, errors } = await open("/");
+    await talk(page);
+    await page.waitForTimeout(400);
+    const first = await chips(page);
+    check("a conversa abre com “Explorar projetos”, “Tenho um projeto em mente” e “Estou recrutando” — sem profissões de exemplo", first.join("|") === "Explorar projetos|Tenho um projeto em mente|Estou recrutando", first.join(" | "));
+    const a = await pick(page, /Tenho um projeto em mente/);
+    const goals = await chips(page);
+    check("“Tenho um projeto em mente” devolve a pergunta pelo objetivo, com saídas que são objetivos", /O que você gostaria que seus visitantes conseguissem fazer\?/.test(a) && goals.length === 4 && !goals.some((c) => /mergulho|psic/i.test(c)), `${a} · ${goals.join(" | ")}`);
+    const b = await say(page, "Tenho uma distribuidora e quero receber pedidos mais completos");
+    check("um setor sem demonstração dedicada (distribuidora): a recomendação sai do objetivo e de uma referência real do catálogo", /pedidos mais completos/i.test(b) && /Kavita Drones/.test(b) && (await card(page)) === "Kavita Drones" && b.trim().endsWith("?"), b.slice(0, 110));
+    check("…e a conversa e as escolhas chegam ao pedido de proposta por escrito", await (async () => {
+      await page.waitForTimeout(1500);
+      await reopen(page);
+      await say(page, "Quero pedir uma proposta");
+      await pathIs(page, /\/contato$/, 8000);
+      await page.waitForTimeout(900);
+      const r = await request(page);
+      return /distribuidora/i.test(r.notes) && /Kavita Drones/i.test(r.preview);
+    })());
+    check("sem erros de console", errors.length === 0, errors.slice(0, 2).join(" | "));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/");
+    await page.locator(".os-materia-idea").click();
+    await page.waitForSelector(".os-materia-panel", { state: "visible" });
+    await page.waitForTimeout(1500);
+    const ask = (await replies(page)).at(-1) ?? "";
+    check("“Ver uma ideia para o meu site” vai direto a uma pergunta útil", /O que você gostaria que seus visitantes conseguissem fazer\?/.test(ask), ask);
+    const c = await say(page, "Sou fotógrafo e quero apresentar melhor meu trabalho");
+    check("profissional independente que quer apresentar melhor o trabalho recebe o TERRAL como referência", /apresentar melhor o seu trabalho/i.test(c) && /TERRAL/.test(c) && (await card(page)) === "TERRAL", c.slice(0, 110));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/", {});
+    await talk(page);
+    const d = await pick(page, /Explorar projetos/);
+    check("“Explorar projetos” abre a coleção e diz o que dá para fazer nela", /TERRAL em destaque/i.test(d) && (await pathIs(page, /\/projetos$/, 8000)), d.slice(0, 90));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/en", { locale: "en-US" });
+    await talk(page);
+    await page.waitForTimeout(400);
+    const first = await chips(page);
+    const r1 = await pick(page, /I'm recruiting/);
+    check("EN: recrutador entra por “I'm recruiting” e chega ao Perfil", first.join("|") === "Explore projects|I have a project in mind|I'm recruiting" && /senior full-stack software engineer/i.test(r1) && (await pathIs(page, /\/en\/profile$/, 8000)), r1.slice(0, 80));
+    await page.waitForTimeout(1200);
+    await reopen(page);
+    const r2 = await say(page, "Do you have experience with APIs?");
+    const acts = await chips(page);
+    check("EN: pediu evidência de experiência com APIs — a resposta aponta o projeto e oferece “See how it was made”", /Backend & APIs/i.test(r2) && acts.some((c) => /See how it was made/i.test(c)) && acts.some((c) => /See the code/i.test(c)), acts.join(" | "));
+    await chip(page, /See how it was made/).click();
+    const onWork = await pathIs(page, /\/en\/work$/, 8000);
+    const face = await page.waitForFunction(() => document.querySelector(".bounty__explore")?.getAttribute("data-face") === "made", null, { timeout: 6000 }).then(() => true).catch(() => false);
+    await page.waitForTimeout(1200);
+    const made = face ? await page.locator(".bounty__face--made").innerText() : "";
+    check("…e esse lado da peça é a entrada do recrutador: problema, o que o Rick fez, decisão e código", onWork && face && /THE PROBLEM/i.test(made) && /WHAT RICK DID/i.test(made) && /IMPLEMENTATION DECISION/i.test(made) && (await page.locator(".bounty__made-proof").getAttribute("href").catch(() => "") ?? "").includes("github.com"), made.replace(/\s+/g, " ").slice(0, 90));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open("/es", { locale: "es-ES" });
+    await talk(page);
+    await page.waitForTimeout(400);
+    const first = await chips(page);
+    const e1 = await pick(page, /Tengo un proyecto en mente/);
+    const e2 = await say(page, "Quiero recibir pedidos más completos");
+    check("ES: as mesmas entradas, a pergunta pelo objetivo e a recomendação a partir dele", first.join("|") === "Explorar proyectos|Tengo un proyecto en mente|Estoy reclutando" && /tus visitantes pudieran hacer\?/.test(e1) && /pedidos más completos/i.test(e2) && /Kavita Drones/.test(e2), e2.slice(0, 90));
+    await ctx.close();
+  }
 }
 
 // ───────────────────────── a referência sai da frase inteira: ramo, objetivo e o que os cases publicam
@@ -554,7 +799,8 @@ if (ONLY.includes("idea")) {
     await page.waitForSelector(".os-materia-panel", { state: "visible", timeout: 8000 });
     await page.waitForFunction(() => document.querySelectorAll('.os-materia-msg[data-from="materia"]:not([data-thinking]) > p').length > 0, null, { timeout: 8000 });
     const ask = (await replies(page)).at(-1);
-    check("“See an idea for my site” abre a conversa pedindo o negócio, por texto ou voz", /Tell me what your business does/i.test(ask) && (await page.locator("#os-materia-input").isVisible()) && (await page.locator(".os-materia-panel__mic").isVisible()), ask.slice(0, 60));
+    const first = await chips(page);
+    check("“See an idea for my site” abre a conversa perguntando pelo objetivo, por texto ou voz, sem destacar profissões", /What would you like your visitors to be able to do\?/i.test(ask) && first.length >= 3 && !first.some((c) => /dive|psycholog/i.test(c)) && (await page.locator("#os-materia-input").isVisible()) && (await page.locator(".os-materia-panel__mic").isVisible()), `${ask.slice(0, 60)} · ${first.join(" | ")}`);
     const r = await say(page, "I run a dive shop in Miami. I need a website for scuba bookings.");
     check("para mergulho não há pergunta: a resposta já apresenta a ideia e diz que é um conceito com o Ace Diving como referência", /Ace Diving Miami/.test(r) && /concept, not a finished site/i.test(r) && !r.trim().endsWith("?"), r.slice(0, 80));
     if (alive) {
@@ -759,7 +1005,7 @@ if (ONLY.includes("idea")) {
     await restart(page);
     await answer(page, () => page.locator("#os-materia-input").fill("Ver una idea para mi sitio").then(() => page.locator("#os-materia-input").press("Enter")));
     const c = await say(page, "Tengo un despacho de abogados");
-    check("ES: negócio sem prévia interativa → diz o que as prévias cobrem e recomenda uma referência", /cubren centros de buceo y consultas de psicología/i.test(c) && /Kavita Institucional/.test(c), c.slice(0, 110));
+    check("ES: negócio sem prévia interativa → diz que mostra a referência mais próxima e recomenda uma", /referencia más cercana del catálogo/i.test(c) && /Kavita Institucional/.test(c), c.slice(0, 110));
     check("sem erros de console", errors.length === 0, errors.slice(0, 2).join(" | "));
     await ctx.close();
   }

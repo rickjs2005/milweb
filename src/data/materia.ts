@@ -23,6 +23,7 @@ const ui = {
   talk: l("Conversar com a Matéria", "Talk to Matéria", "Hablar con Matéria"),
   idea: l("Ver uma ideia para o meu site", "See an idea for my site", "Ver una idea para mi sitio"),
   explore: l("Ver o projeto", "View the project", "Ver el proyecto"),
+  made: l("Ver como foi feito", "See how it was made", "Ver cómo se hizo"),
   role: l("Guia do portfólio", "Portfolio guide", "Guía del portafolio"),
   placeholder: l("Escreva para a Matéria", "Write to Matéria", "Escribe a Matéria"),
   send: l("Enviar", "Send", "Enviar"),
@@ -78,8 +79,26 @@ const say = {
   chipCompany: l("Empresa", "Company", "Empresa"),
   chipSystem: l("Sistema interno", "Internal system", "Sistema interno"),
   chipBackend: l("Você tem experiência com backend?", "Do you have backend experience?", "¿Tienes experiencia con backend?"),
-  chipDive: l("Tenho uma operadora de mergulho", "I run a dive shop", "Tengo un centro de buceo"),
-  chipPsy: l("Sou psicóloga", "I'm a psychologist", "Soy psicóloga"),
+  /** As três entradas da conversa (além de escrever livremente). */
+  chipExplore: l("Explorar projetos", "Explore projects", "Explorar proyectos"),
+  chipProject: l("Tenho um projeto em mente", "I have a project in mind", "Tengo un proyecto en mente"),
+  chipRecruiting: l("Estou recrutando", "I'm recruiting", "Estoy reclutando"),
+  /** Objetivos, não profissões: o que o visitante de quem pede precisa conseguir fazer. */
+  goalOrders: l("Pedir orçamento ou fazer um pedido", "Request a quote or place an order", "Pedir presupuesto o hacer un pedido"),
+  goalBook: l("Agendar ou reservar", "Book or schedule", "Agendar o reservar"),
+  goalBuy: l("Comprar pelo site", "Buy on the site", "Comprar en el sitio"),
+  goalKnow: l("Conhecer meu trabalho", "Get to know my work", "Conocer mi trabajo"),
+  projectAsk: l("Boa. O que você gostaria que seus visitantes conseguissem fazer?", "Good. What would you like your visitors to be able to do?", "Bien. ¿Qué te gustaría que tus visitantes pudieran hacer?"),
+  leadOrders: l(
+    "Para receber pedidos mais completos, o site conduz a pessoa por perguntas curtas em vez de um formulário aberto: é como o pedido de proposta deste portfólio funciona.",
+    "To receive more complete requests, the site walks the person through short questions instead of an open form: it is how the proposal request in this portfolio works.",
+    "Para recibir pedidos más completos, el sitio guía a la persona con preguntas cortas en lugar de un formulario abierto: así funciona la solicitud de propuesta de este portafolio.",
+  ),
+  leadShowcase: l(
+    "Para apresentar melhor o seu trabalho, a página conta uma história em vez de listar serviços.",
+    "To present your work better, the page tells a story instead of listing services.",
+    "Para presentar mejor tu trabajo, la página cuenta una historia en lugar de listar servicios.",
+  ),
   recruiter: l(
     "O Rick é engenheiro de software full-stack sênior: Python e React, backends escaláveis e aplicações com LLMs e agentes de IA, com experiência em fintech. Abri o Perfil, com a experiência, as competências e os projetos técnicos.",
     "Rick is a senior full-stack software engineer: Python and React, scalable backends and applications built on LLMs and AI agents, with fintech experience. I opened the Profile, with his experience, skills and technical projects.",
@@ -128,15 +147,15 @@ const say = {
   fallback: l("Ainda não sei responder isso com o que está publicado aqui. Posso mostrar um projeto, abrir o Perfil ou levar sua pergunta ao Rick.", "I cannot answer that yet from what is published here. I can show a project, open the Profile or take your question to Rick.", "Todavía no sé responder eso con lo que está publicado aquí. Puedo mostrar un proyecto, abrir el Perfil o llevar tu pregunta a Rick."),
   later: l("Tudo bem. Continuo por aqui quando você quiser.", "No problem. I am here whenever you want.", "Sin problema. Aquí estaré cuando quieras."),
   thanks: l("Fico por aqui. É só chamar.", "I will be right here. Just call.", "Aquí estaré. Solo llama."),
-  projectsOpened: l("Abri o mural com todos os projetos. Se disser o seu ramo, eu aponto o mais próximo.", "I opened the board with every project. Tell me your field and I will point to the closest one.", "Abrí el mural con todos los proyectos. Dime tu rubro y señalo el más cercano."),
+  projectsOpened: l(
+    "Abri a coleção, com o TERRAL em destaque. Em cada projeto você pode experimentar uma amostra ou ver como foi feito.",
+    "I opened the collection, with TERRAL featured. For each project you can try a sample or see how it was made.",
+    "Abrí la colección, con TERRAL destacado. En cada proyecto puedes probar una muestra o ver cómo se hizo.",
+  ),
   briefQuestion: l("Dúvida", "Question", "Duda"),
   briefPriority: l("Prioridade", "Priority", "Prioridad"),
   /** "Ver uma ideia para o meu site": a pessoa conta o negócio e a ideia aparece dentro da escultura. */
-  ideaAsk: l(
-    "Conte o que o seu negócio faz e o que o site precisa resolver. Eu mostro uma ideia para você experimentar.",
-    "Tell me what your business does and what the site should solve. I will show you an idea you can try.",
-    "Cuéntame qué hace tu negocio y qué debe resolver el sitio. Te muestro una idea para que la pruebes.",
-  ),
+  ideaAsk: l("O que você gostaria que seus visitantes conseguissem fazer?", "What would you like your visitors to be able to do?", "¿Qué te gustaría que tus visitantes pudieran hacer?"),
   ideaPortal: l(
     "Olhe para a escultura: abri um recorte no rosto com {idea}. Toque nele para experimentar.",
     "Look at the sculpture: I opened a cut through the face with {idea}. Tap it to try it.",
@@ -144,9 +163,9 @@ const say = {
   ),
   ideaDirect: l("Abri {idea} numa janela para você experimentar.", "I opened {idea} in a window for you to try.", "Abrí {idea} en una ventana para que la pruebes."),
   ideaNone: l(
-    "Por enquanto, as prévias interativas cobrem operadoras de mergulho e consultórios de psicologia.",
-    "For now, the interactive previews cover dive operators and psychology practices.",
-    "Por ahora, las vistas previas interactivas cubren centros de buceo y consultas de psicología.",
+    "Ainda não tenho uma prévia interativa pronta para esse caso; mostro a referência mais próxima do catálogo.",
+    "I do not have an interactive preview ready for this case yet; here is the closest reference in the catalogue.",
+    "Todavía no tengo una vista previa interactiva para este caso; te muestro la referencia más cercana del catálogo.",
   ),
 };
 

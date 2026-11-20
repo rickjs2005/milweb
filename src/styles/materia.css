@@ -98,8 +98,12 @@ html[data-os-theme="gojo"] .os-materia[data-pose="brain"] .os-scene__still {
 .os-materia-fold:focus-visible .os-materia-fold__tag { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
 /* A ponta da dobra, para o dedo: só este círculo segura o toque (o resto da tela continua rolando). */
 .os-materia-tip { --tip: clamp(56px, calc(var(--mh-k) * .43), 92px); position: fixed; z-index: 1; left: calc(var(--mh-vx) - var(--tip) / 2); top: calc(var(--mh-vy) - var(--tip) / 2); width: var(--tip); height: var(--tip); border-radius: 50%; touch-action: none; cursor: grab; -webkit-tap-highlight-color: transparent; }
-/* A janela do case espera escondida enquanto a abertura cresce até ela. */
-html[data-os-arriving="projects"] .os-window[data-app="projects"] { opacity: 0 !important; }
+/* Enquanto um destino chega pelas mãos da Matéria, o que é da dobra em repouso (a etiqueta, a alça) e a pílula da conversa saem de cena. */
+html[data-os-arriving] :is(.os-materia-fold, .os-materia-tip, .os-materia-bubble), html[data-os-fold="window"] :is(.os-materia-fold, .os-materia-tip) { opacity: 0 !important; pointer-events: none !important; }
+/* A janela de destino espera escondida enquanto as mãos da Matéria a trazem (a dobra que estica, a ficha na palma);
+   quando chega, aparece sem salto. Um toque ou uma tecla no meio do gesto a mostram na hora (materia-scene › hurry). */
+html[data-os-arriving="projects"] .os-window[data-app="projects"], html[data-os-arriving="profile"] .os-window[data-app="profile"], html[data-os-arriving="contact"] .os-window[data-app="contact"] { opacity: 0 !important; }
+.os-window:is([data-app="projects"], [data-app="profile"], [data-app="contact"]) { transition: opacity .24s var(--os-ease); }
 /* Os dois convites: a prévia ("Ver uma ideia para o meu site") é a ação principal; conversar, a secundária.
    Desktop largo: na coluna do lema, logo abaixo dele. Tablet: no alto, ao lado da coluna de apps. Telefone: sob a cena. */
 .os-materia-cta { position: fixed; z-index: 2; left: 112px; top: calc(var(--os-top) + 18px); display: flex; flex-direction: row; align-items: center; gap: 8px; }
@@ -259,6 +263,9 @@ html[data-os-arriving="idea"] .os-window[data-app="idea"] { opacity: 0 !importan
   /* sobre a prévia, a pílula sobe para a faixa do rótulo: embaixo ficam a referência e o botão do orçamento */
   .os-materia-bubble[data-over="idea"] { top: calc(env(safe-area-inset-top, 0px) + 64px); bottom: auto; min-height: 44px; padding: 0 14px 0 12px; gap: 9px; box-shadow: 0 8px 22px rgb(0 0 0 / .3); }
   .os-materia-bubble[data-over="idea"] .os-materia-bubble__text span { display: none; }
+  /* sobre Projetos, compacta e rente ao pé: as ações da peça em foco ficam livres logo acima */
+  .os-materia-bubble[data-over="projects"] { bottom: 64px; min-height: 44px; padding: 0 14px 0 12px; gap: 9px; box-shadow: 0 8px 22px rgb(0 0 0 / .3); }
+  .os-materia-bubble[data-over="projects"] .os-materia-bubble__text span { display: none; }
   .os-materia-msg { max-width: 94%; }
 }
 /* telefone deitado (ou com o teclado aberto): a figura fica na coluna da direita e os convites cabem nela */

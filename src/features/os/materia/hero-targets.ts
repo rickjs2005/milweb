@@ -18,18 +18,18 @@ export function heroTargets(M: Molecules, F: FigureMesh): { pos: Float32Array; n
   };
 
   // de onde a matéria se solta: os vértices em dissolução, pesados por quanto se desfazem
-  const from: { part: number; i: number }[] = [];
+  const P = F.body;
+  const where = P.shapes[0];
+  const from: number[] = [];
   const cum: number[] = [];
   let total = 0;
-  F.parts.forEach((part, k) => {
-    for (let i = 0; i < part.count; i++) {
-      const dis = part.meta[i * 4 + 2] / 255;
-      if (dis < 0.1) continue;
-      total += Math.pow(dis, 1.2);
-      from.push({ part: k, i });
-      cum.push(total);
-    }
-  });
+  for (let i = 0; i < P.count; i++) {
+    const dis = P.meta[i * 4 + 1] / 255;
+    if (dis < 0.1) continue;
+    total += Math.pow(dis, 1.2);
+    from.push(i);
+    cum.push(total);
+  }
   const pick = () => {
     const x = rand() * total;
     let lo = 0;
@@ -51,21 +51,20 @@ export function heroTargets(M: Molecules, F: FigureMesh): { pos: Float32Array; n
     const q = m * 4;
     if ((r < 0.27 || r >= 0.31) && from.length > 0) {
       const hidden = r >= 0.31;
-      const { part, i } = pick();
-      const P = F.parts[part];
-      const dis = P.meta[i * 4 + 2] / 255;
-      const nx = P.na[i * 4] / 127;
-      const ny = P.na[i * 4 + 1] / 127;
-      const nz = P.na[i * 4 + 2] / 127;
-      const y = P.position[i * 3 + 1];
+      const i = pick();
+      const dis = P.meta[i * 4 + 1] / 255;
+      const nx = where.na[i * 4] / 127;
+      const ny = where.na[i * 4 + 1] / 127;
+      const nz = where.na[i * 4 + 2] / 127;
+      const y = where.position[i * 3 + 1];
       // a cabeça se desfaz para trás e para cima; o ombro e o tronco, para fora do quadro
       const drift = y > 0.15 ? [0.72 + 0.5 * nx, 0.28 + 0.5 * ny, -0.3 + 0.4 * nz] : [0.55 + 0.4 * nx, -0.42 + 0.4 * ny, 0.1 + 0.4 * nz];
       const t = hidden ? rand() * 0.06 : Math.pow(rand(), 2.1) * (0.05 + 0.85 * dis);
       const jx = (rand() - 0.5) * 0.12 * t;
       const jy = (rand() - 0.5) * 0.3 * t;
-      pos[o] = P.position[i * 3] + nx * 0.008 + drift[0] * t + jx;
+      pos[o] = where.position[i * 3] + nx * 0.008 + drift[0] * t + jx;
       pos[o + 1] = y + ny * 0.008 + drift[1] * t + jy;
-      pos[o + 2] = P.position[i * 3 + 2] + nz * 0.008 + drift[2] * t;
+      pos[o + 2] = where.position[i * 3 + 2] + nz * 0.008 + drift[2] * t;
       nrm[q] = nx;
       nrm[q + 1] = ny;
       nrm[q + 2] = nz;
