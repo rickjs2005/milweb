@@ -428,9 +428,11 @@ if (ONLY.includes("entries")) {
     await chip(page, /See how it was made/).click();
     const onWork = await pathIs(page, /\/en\/work$/, 8000);
     const face = await page.waitForFunction(() => document.querySelector(".bounty__explore")?.getAttribute("data-face") === "made", null, { timeout: 6000 }).then(() => true).catch(() => false);
-    await page.waitForTimeout(1200);
+    // o verso se preenche quando o dado do projeto chega (um JSON estático, buscado uma vez por sessão)
+    await page.waitForSelector(".bounty__made", { timeout: 10000 }).catch(() => undefined);
+    await page.waitForTimeout(900);
     const made = face ? await page.locator(".bounty__face--made").innerText() : "";
-    check("…e esse lado da peça é a entrada do recrutador: problema, o que o Rick fez, decisão e código", onWork && face && /THE PROBLEM/i.test(made) && /WHAT RICK DID/i.test(made) && /IMPLEMENTATION DECISION/i.test(made) && (await page.locator(".bounty__made-proof").getAttribute("href").catch(() => "") ?? "").includes("github.com"), made.replace(/\s+/g, " ").slice(0, 90));
+    check("…e esse lado da peça é a entrada do recrutador: problema, o que o Rick fez, decisão e código", onWork && face && /THE PROBLEM/i.test(made) && /WHAT RICK DID/i.test(made) && /IMPLEMENTATION DECISION/i.test(made) && (await page.locator(".bounty__made-proof").getAttribute("href").catch(() => "") ?? "").includes("github.com"), `rota ${onWork ? "ok" : "não"}, verso ${face ? "ok" : "não"} · ${made.replace(/\s+/g, " ").slice(0, 70)}`);
     await ctx.close();
   }
   {
