@@ -22,7 +22,7 @@ const ui = {
   name: l("Matéria", "Matéria", "Matéria"),
   talk: l("Conversar com a Matéria", "Talk to Matéria", "Hablar con Matéria"),
   idea: l("Ver uma ideia para o meu site", "See an idea for my site", "Ver una idea para mi sitio"),
-  figure: l("Matéria, a escultura: abrir a conversa. Arraste de lado para dobrar o tempo.", "Matéria, the sculpture: open the conversation. Drag sideways to bend time.", "Matéria, la escultura: abrir la conversación. Arrastra hacia un lado para doblar el tiempo."),
+  explore: l("Ver o projeto", "View the project", "Ver el proyecto"),
   role: l("Guia do portfólio", "Portfolio guide", "Guía del portafolio"),
   placeholder: l("Escreva para a Matéria", "Write to Matéria", "Escribe a Matéria"),
   send: l("Enviar", "Send", "Enviar"),

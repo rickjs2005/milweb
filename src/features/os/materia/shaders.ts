@@ -1,3 +1,5 @@
+import { FOLD_LIB, FOLD_SCENE, STUDIO_LIB } from "./hero-shaders";
+
 /**
  * Shaders da Matéria. Cores saem prontas para a tela (sRGB): nenhum material passa por tone mapping.
  *
@@ -11,15 +13,21 @@ attribute vec3 aNormal;
 attribute vec3 aBrain;
 attribute vec3 aBrainN;
 attribute vec4 aMeta; // semente, dissolução, borda de sulco, região (0..1)
+attribute vec3 aHero;  // home: posição (unidades da figura) ou parâmetros na dobra
+attribute vec4 aHeroN; // home: normal e o tipo (0 nuvem da figura, 1 borda livre da aba, 2 borda da página, 3 rugas)
+uniform float uHeroK, uFigScale, uFoldW;
+uniform vec3 uFigOffset, uGrabF;
+uniform vec2 uTipW;
 uniform float uTime, uPx, uCamZ, uSize, uYaw, uMorph, uListen, uSpeak, uCalm, uAlign, uSlit, uScale, uIntro, uFold, uFloor;
 uniform float uPortal, uPortalYaw, uSeaY;
 uniform vec2 uPull, uPullLag, uPortalC, uPortalR;
 uniform vec3 uOffset;
 varying vec3 vN;
-varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim;
+varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim, vHk;
 
 vec3 ry(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z); }
 vec3 rx(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z); }
+${FOLD_LIB}
 
 void main() {
   float seed = aMeta.x;
@@ -108,7 +116,28 @@ void main() {
   }
   vRim = rim;
 
-  vec4 mv = modelViewMatrix * vec4(p * uScale + uOffset, 1.0);
+  // A home: as moléculas ficam onde a matéria se rompe — atrás da cabeça, na borda do ombro e ao longo da dobra.
+  vec3 world = p * uScale + uOffset;
+  float hk = uHeroK * (1.0 - e);
+  float kind = aHeroN.w;
+  float big = fract(seed * 23.7);
+  if (hk > 0.001) {
+    vec3 hw;
+    vec3 hn = aHeroN.xyz;
+    if (kind < 0.5) {
+      float bob = sin(uTime * 0.6 + seed * 40.0);
+      hw = (aHero + vec3(0.012, 0.01, 0.0) * bob * (1.0 - uCalm)) * uFigScale + uFigOffset;
+    } else {
+      vec2 q0 = kind < 1.5 ? vec2(foldR(aHero.x) + aHero.y, -aHero.x) : kind < 2.5 ? vec2(foldL(aHero.x) + aHero.y, -aHero.x) : aHero.x * vec2(cos(aHero.y), sin(aHero.y));
+      q0 += uGrab * foldW(q0);
+      hw = vec3(uTipW + q0 * uFoldW, aHero.z * uFoldW);
+    }
+    world = mix(world, hw, hk);
+    n = normalize(mix(n, hn, hk));
+  }
+  vHk = hk;
+
+  vec4 mv = modelViewMatrix * vec4(world, 1.0);
   vN = normalize(normalMatrix * n);
   gl_Position = projectionMatrix * mv;
   // altura na tela em relação à linha do mar (unidades da figura): abaixo dela a prata fica debaixo d'água
@@ -121,9 +150,13 @@ void main() {
   vGhost = late * uFold * (1.0 - e);
   vGlow = slit * 1.5 + e * (uListen * max(wIn, 0.0) * 0.3 + uSpeak * pow(wOut, 6.0) * (0.2 + aMeta.z) * 1.1);
   // telefone: o busto se apaga antes da grade de aplicativos (uFloor, em unidades abaixo do centro da cabeça)
-  vShade = (0.1 + 0.9 * facing) * arrive * (1.0 - 0.65 * gone * flow) * mix(smoothstep(uFloor, uFloor - 0.34, -p.y), 1.0, e);
-  float size = uSize * (0.72 + 0.56 * fract(seed * 13.7)) * mix(1.0, 0.5, gone) * (0.45 + 0.55 * facing) * mix(1.0, 0.86, e);
+  vShade = (0.1 + 0.9 * facing) * arrive * mix((1.0 - 0.65 * gone * flow) * mix(smoothstep(uFloor, uFloor - 0.34, -p.y), 1.0, e), 1.0, hk);
+  float size = uSize * (0.72 + 0.56 * fract(seed * 13.7)) * mix(mix(1.0, 0.5, gone), 1.0, hk) * (0.45 + 0.55 * facing) * mix(1.0, 0.86, e);
+  // fragmentos de tamanhos diferentes: poucos grandes, muitos miúdos; na dobra, mais finos
+  size *= mix(1.0, (0.42 + 2.9 * big * big * big * big) * (kind < 0.5 ? 1.0 : kind > 3.5 ? 0.0 : 0.6 * uOpen), hk);
   gl_PointSize = max(1.0, size * uScale * uPx * uCamZ / -mv.z);
+  // guardadas: fora de cena enquanto a home está inteira (não custam um pixel)
+  if (kind > 3.5 && hk > 0.985) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }
 `;
 
@@ -131,8 +164,10 @@ export const MOLECULE_FRAG = /* glsl */ `
 uniform vec3 uMetal, uKey, uRim, uAccent, uShade, uFade;
 uniform float uLight, uBead, uTintK, uStripAz, uSea;
 uniform sampler2D uTint;
+uniform vec2 uFloorPx;
 varying vec3 vN;
-varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim;
+varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim, vHk;
+${STUDIO_LIB}
 
 void main() {
   vec2 c = gl_PointCoord * 2.0 - 1.0;
@@ -156,6 +191,12 @@ void main() {
   vec3 col = mix(uShade, uMetal, min(body, 1.25)) + uKey * strip * mix(1.7, 1.0, uLight) + uRim * rim * mix(1.1, 0.7, uLight);
   // Tema claro: a borda de cada molécula deixa passar o fundo, como vidro.
   col = mix(col, uFade, uLight * fres * 0.6);
+  // Na home as moléculas são gotas do mesmo mercúrio da figura: o estúdio inteiro refletido em cada uma.
+  if (vHk > 0.001) {
+    vec3 drop = pow(clamp(studio(rr, uLight) * (1.0 - mix(0.0, 0.55, uLight) * fres), 0.0, 1.0), vec3(0.4545));
+    drop += uAccent * pow(clamp(-rr.y - 0.3, 0.0, 1.0), 1.5) * 0.5;
+    col = mix(col, drop, vHk);
+  }
 
   // Reflexo da capa de um projeto na prata.
   vec3 cover = texture2D(uTint, vec2(0.5) + n.xy * vec2(0.47, 0.47)).rgb;
@@ -172,7 +213,8 @@ void main() {
   float under = uSea * smoothstep(0.02, -0.3, vSea);
   col = mix(col, col * vec3(0.5, 0.88, 0.95) + vec3(0.0, 0.06, 0.08), under * 0.62);
   // O que se vê pelos sulcos é o lado de dentro do cérebro: no tema claro ele vira sombra azulada, não o branco do fundo.
-  gl_FragColor = vec4(mix(mix(uFade, uShade, 0.82 * vE), col, vShade), 1.0);
+  float shade = mix(vShade, 1.0, vHk * step(0.5, vShade + 0.5)) * mix(1.0, smoothstep(uFloorPx.x, uFloorPx.y, gl_FragCoord.y), vHk);
+  gl_FragColor = vec4(mix(mix(uFade, uShade, 0.82 * vE), col, shade), 1.0);
 }
 `;
 
@@ -202,6 +244,7 @@ uniform float uSlit;   // fenda (−1 = ausente; 0..1 = varredura)
 uniform float uSea;    // a faixa de luz vira a superfície do mar (0..1)
 uniform float uSeaY;   // altura da linha do mar, em unidades acima do centro da figura
 uniform float uGrain;
+uniform float uFlat;   // imagem estática: a página lisa, na cor exata do tema (sem névoa, vinheta nem grão)
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float noise(vec2 p) {
@@ -210,16 +253,20 @@ float noise(vec2 p) {
   return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
 }
 float th(float x) { float e = exp(2.0 * clamp(x, -8.0, 8.0)); return (e - 1.0) / (e + 1.0); }
+${STUDIO_LIB}
+${FOLD_LIB}
+${FOLD_SCENE}
 
 vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light) {
   float k = uHead.z;
   vec2 c = (px - uRes * 0.5) / max(uRes.x, uRes.y);
-  vec3 col = mix(base, deep, smoothstep(0.15, 0.8, length(c * vec2(1.0, 1.25))));
+  float live = 1.0 - uFlat;
+  vec3 col = mix(base, deep, smoothstep(0.15, 0.8, length(c * vec2(1.0, 1.25))) * live);
   vec2 q = (px - uHead.xy) / k; // unidades do modelo, origem no centro da figura
   vec2 hq = q * vec2(0.72, 0.56) + vec2(0.0, 0.2);
-  col = mix(col, mix(haze, vec3(1.0), light), exp(-dot(hq, hq) * 1.2) * mix(0.55, 0.8, light));
+  col = mix(col, mix(haze, vec3(1.0), light), exp(-dot(hq, hq) * 1.2) * mix(0.55, 0.8, light) * (1.0 - 0.75 * uHero) * live);
   float n = noise(px / (1.8 * k) + vec2(uTime * 0.012, -uTime * 0.008)) * 0.6 + noise(px / (0.7 * k) - vec2(uTime * 0.02, 0.0)) * 0.4;
-  col += (haze - col) * (n - 0.45) * mix(0.3, 0.18, light);
+  col += (haze - col) * (n - 0.45) * mix(0.3, 0.18, light) * live;
 
   // A faixa: diagonal suave; atrás da cabeça ela se curva e sai do outro lado em outra altura.
   // Na prévia de mergulho ela deita, atravessa a tela inteira e vira a superfície do mar.
@@ -246,7 +293,9 @@ vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light)
     float line = exp(-pow(sx / 0.012, 2.0)) * smoothstep(1.9, 0.3, abs(q.y + 0.2));
     col = mix(col + (accent * 0.7 + vec3(0.5)) * line, mix(col, accent, line * 0.75), light);
   }
-  col *= 1.0 - mix(0.5, 0.08, light) * smoothstep(0.35, 0.95, length(c * vec2(1.0, 1.3)));
+  // Na home, a figura segura uma dobra da própria tela: a página, a abertura e a aba de metal entram aqui.
+  if (uHero > 0.001) col = foldScene(px, col, base, deep, accent, light);
+  col *= 1.0 - mix(0.5, 0.08, light) * smoothstep(0.35, 0.95, length(c * vec2(1.0, 1.3))) * (1.0 - 0.5 * uHero) * live;
   return col;
 }
 
@@ -263,7 +312,7 @@ void main() {
     col = mix(col, next, m);
     col += mix(uAccentB, vec3(1.0), 0.4) * exp(-pow((d - front) / (0.018 * far), 2.0)) * 0.5 * step(0.001, uP) * step(uP, 0.999);
   }
-  col += (hash(px + fract(uTime) * 61.0) - 0.5) * uGrain;
+  col += (hash(px + fract(uTime) * 61.0) - 0.5) * uGrain * (1.0 - uFlat);
   gl_FragColor = vec4(col, 1.0);
 }
 `;

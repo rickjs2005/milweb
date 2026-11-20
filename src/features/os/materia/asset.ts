@@ -1,4 +1,4 @@
-import { MATERIA_URLS } from "./config";
+import { FIGURE_URLS, MATERIA_URLS } from "./config";
 
 /** Moléculas decodificadas (ver o cabeçalho de assets/materia/build_materia.py). */
 export type Molecules = { count: number; bust: Float32Array; brain: Float32Array; normal: Float32Array; brainNormal: Float32Array; meta: Uint8Array };
@@ -56,4 +56,44 @@ export async function loadMolecules(full: boolean, signal?: AbortSignal): Promis
   if (!full) return first;
   const [a, b] = await Promise.all([first, get(MATERIA_URLS.b).catch(() => null)]);
   return b ? join(a, b) : a;
+}
+
+/** A figura da home, em malha (ver o cabeçalho de assets/materia/build_figure.py). Unidades: a ponta da dobra é a origem. */
+export type FigurePart = { count: number; position: Float32Array; na: Int8Array; meta: Uint8Array; index: Uint16Array };
+export type FigureMesh = { parts: FigurePart[]; /** Onde o polegar e o indicador se encontram. */ pinch: [number, number, number] };
+
+function decodeFigure(buf: ArrayBuffer): FigureMesh {
+  const view = new DataView(buf);
+  if (view.getUint32(0, false) !== 0x4d544631) throw new Error("materia: figura em formato desconhecido");
+  const n = view.getUint32(4, true);
+  const center = [view.getFloat32(8, true), view.getFloat32(12, true), view.getFloat32(16, true)];
+  const scale = view.getFloat32(20, true) / 32767;
+  const pinch: [number, number, number] = [view.getFloat32(24, true), view.getFloat32(28, true), view.getFloat32(32, true)];
+  let at = 36;
+  const parts: FigurePart[] = [];
+  for (let k = 0; k < n; k++) {
+    const count = view.getUint32(at, true);
+    const indices = view.getUint32(at + 4, true);
+    at += 8;
+    const src = new Int16Array(buf.slice(at, at + count * 6));
+    at += count * 6;
+    const position = new Float32Array(count * 3);
+    for (let i = 0; i < position.length; i++) position[i] = src[i] * scale + center[i % 3];
+    const na = new Int8Array(buf.slice(at, at + count * 4));
+    at += count * 4;
+    const meta = new Uint8Array(buf.slice(at, at + count * 4));
+    at += count * 4;
+    const index = new Uint16Array(buf.slice(at, at + indices * 2));
+    at += indices * 2 + ((indices * 2) % 4);
+    parts.push({ count, position, na, meta, index });
+  }
+  return { parts, pinch };
+}
+
+/** A malha completa só para GPU com folga; as demais (e o telefone) recebem a versão leve. */
+export async function loadFigure(full: boolean, signal?: AbortSignal): Promise<FigureMesh> {
+  const url = full ? FIGURE_URLS.full : FIGURE_URLS.lite;
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`materia: ${res.status} em ${url}`);
+  return decodeFigure(await res.arrayBuffer());
 }

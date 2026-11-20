@@ -136,8 +136,6 @@ export function useGuide<T>(selector: (s: GuideState) => T): T {
  * cena só existe depois de carregar. Quem tem a cena registra os ganchos; sem cena, não acontece nada.
  */
 export const stage: {
-  /** Gesto ao lado do rosto (−1..1) ou null ao soltar. */
-  pull: ((p: { x: number; y: number } | null) => void) | null;
   /** A escultura está viva (WebGL) e à vista: vale animar a travessia. */
   live: () => boolean;
   /** O motor está rodando nesta aba (mesmo com uma janela na frente): o recorte no rosto pode acontecer. */
@@ -151,4 +149,10 @@ export const stage: {
   cut: ((c: { x: number; y: number; rx: number; ry: number; open: number } | null) => void) | null;
   /** Abre a conversa e envia `text` como se a pessoa tivesse escrito (a conversa registra; a prévia vazia usa). */
   ask: ((text: string) => void) | null;
-} = { pull: null, live: () => false, ready: () => false, anchor: () => null, cut: null, ask: null };
+  /** A ponta da dobra segue o gesto (px da janela a partir de onde o dedo pousou); null solta. */
+  grab: ((d: { x: number; y: number } | null) => void) | null;
+  /** O visitante está sobre a dobra: a capa aparece inteira. */
+  hold: ((on: boolean) => void) | null;
+  /** A abertura da dobra cresce até coincidir com um retângulo da janela (px) — a janela do case; null devolve a dobra. */
+  reveal: ((rect: { left: number; top: number; width: number; height: number } | null) => void) | null;
+} = { live: () => false, ready: () => false, anchor: () => null, cut: null, ask: null, grab: null, hold: null, reveal: null };

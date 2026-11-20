@@ -1030,7 +1030,14 @@ details[open] .os-case__plus { transform: rotate(45deg); }
     --app: clamp(46px, 8.3vh, 68px);                 /* placa dos ícones */
     --cell: calc(var(--app) + 36px);                 /* célula quadrada: placa + rótulo de uma linha + respiros */
     --cgap: clamp(4px, 1.3vh, 14px);                 /* o mesmo respiro entre linhas e entre colunas */
+    --hcta: calc(var(--hy) + var(--hs) * 2 + var(--hgap) * .55);  /* lema → os dois convites da Matéria (styles/materia.css) */
   }
+  /* janela baixa: lema, respiros e placas encolhem um pouco mais, para os convites da Matéria caberem entre o lema e a grade */
+  @media (max-height: 680px) {
+    .os-desktop { --hs: clamp(30px, min(4vw, 6.3vh), 88px); --hgap: clamp(14px, 3.6vh, 56px); --app: clamp(46px, 7.6vh, 68px); }
+  }
+  /* o palco (a régua da cena) fica nos dois terços da direita: é ali que a figura segura a dobra da tela */
+  .os-stage { left: 68%; }
   /* lema: branco no Obito, tinta do tema no Gojo; forte; o ponto final no acento do tema */
   .os-sign { inset: 0; max-width: none; pointer-events: none; }
   .os-sign__motto {
@@ -1042,8 +1049,9 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   /* a linha da assinatura fica sozinha onde estava, como rodapé */
   .os-sign__line { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); margin: 0; pointer-events: auto; }
 
-  /* aplicativos: grade 2 × 3 logo abaixo das duas linhas do lema; a placa da 1ª coluna alinha com o lema */
-  .os-icons { left: calc(var(--hx) - (var(--cell) - var(--app)) / 2); top: calc(var(--hy) + var(--hs) * 2 + var(--hgap)); bottom: auto; }
+  /* aplicativos: grade 2 × 3 abaixo dos convites da Matéria (que ficam sob o lema); a placa da 1ª coluna alinha com o lema.
+     Duas colunas: as janelas abrem à direita delas, e os dois terços da direita são da cena — a figura e a dobra da tela. */
+  .os-icons { left: calc(var(--hx) - (var(--cell) - var(--app)) / 2); top: calc(var(--hcta) + 46px + var(--hgap) * .6); bottom: auto; }
   .os-icons ul {
     grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: none; grid-auto-rows: auto;
     gap: var(--cgap); height: auto;

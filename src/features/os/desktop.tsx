@@ -25,12 +25,13 @@ const HalloweenScene = dynamic(() => import("./halloween/scene").then((m) => m.H
  * Área de trabalho e tela inicial.
  *
  * Desktop: barra superior, o fundo (materia/materia-scene.tsx: Matéria — a
- * escultura de prata líquida que dobra o tempo com o gesto e vira cérebro na
+ * figura de mercúrio que segura uma dobra da própria tela e vira cérebro na
  * conversa), coluna de aplicativos à esquerda, assinatura pequena numa área
  * livre e a dock. O palco (`.os-stage`) é a caixa invisível no centro em
  * volta da qual o HUD das redes se posiciona.
  * Desktop largo (≥ 1080 px, registry.ts › DESKTOP_WIDE_MQ): o lema sobe para
- * o alto à esquerda, os aplicativos viram uma grade 2 × 3 logo abaixo, a dock
+ * o alto à esquerda, com os dois convites da Matéria logo abaixo e os
+ * aplicativos numa grade 2 × 3 sob eles (os dois terços da direita são da cena), a dock
  * fica só com Buscar, Ajustes e o tema, e as redes viram um grupo compacto no
  * canto inferior direito (com o WhatsApp). Tablet: tudo como acima.
  * Telefone: o mesmo DOM, com o launcher (mobile/launcher.tsx) no lugar da
@@ -144,7 +145,7 @@ export function Desktop() {
       {/* Tela inicial do telefone: status, grade de ícones (o palco entre os dois mostra o fundo). */}
       <MobileLauncher />
 
-      {/* Matéria: a escultura como controle (arrastar dobra o tempo, tocar abre a conversa) e o botão da conversa. */}
+      {/* Matéria: os dois convites (a prévia e a conversa), a abertura da dobra (leva ao case) e a ponta que se arrasta. */}
       {!halloween && <MateriaControls />}
     </div>
   );

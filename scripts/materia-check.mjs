@@ -7,7 +7,7 @@
  * a cena cai na imagem estática e a conversa precisa funcionar do mesmo jeito (a prévia abre direto).
  *
  * Grupos:
- *   scene      a escultura, dobrar o tempo, ver o pensamento
+ *   scene      a home: a figura segurando a dobra da tela, o gesto, o projeto por baixo, ver o pensamento
  *   match      a escolha da referência pela frase inteira (mergulho × comércio, desempate, outros setores) em PT, EN e ES
  *   mixed      pedido que mistura intenções: preço + quem a pessoa é + o que ela quer; o pedido só abre quando ela escolhe
  *   recruiter  o caminho curto: Perfil, currículo em PDF, evidência
@@ -129,50 +129,73 @@ const IDEA = '.os-window[data-app="idea"]';
 const engine = (page) => page.evaluate(() => window.__mwMateria?.state ?? null);
 const MONEY = /(R\$|US\$|USD|\$\s?\d|\d+\s?(reais|dólares|dolares|dollars|euros))/i;
 
-// ───────────────────────── cena: repouso, dobrar o tempo, ver o pensamento
+// ───────────────────────── cena: a figura segura a dobra da tela; o gesto, o projeto por baixo, ver o pensamento
 if (ONLY.includes("scene")) {
   console.log("\n— cena (desktop 1440 × 900)");
   const { ctx, page, errors } = await open("/en");
   const alive = await live(page);
-  check("a escultura entra viva com GPU real (ou fica a imagem com --software)", alive || SOFTWARE, alive ? "WebGL" : "imagem estática");
-  const hit = page.locator(".os-materia-hit");
-  check("a figura é um controle com nome acessível e o botão “Talk to Matéria” está visível", (await hit.getAttribute("aria-label"))?.includes("Matéria") && (await page.locator(".os-materia-talk").innerText()).trim().toUpperCase() === "TALK TO MATÉRIA");
-  const ideaBtn = page.locator(".os-materia-idea");
-  const ib = await ideaBtn.boundingBox();
-  const tb = await page.locator(".os-materia-talk").boundingBox();
-  check("a entrada explícita “See an idea for my site” está na home, ao lado da conversa, com alvo ≥ 44 px", (await ideaBtn.innerText()).trim().toUpperCase() === "SEE AN IDEA FOR MY SITE" && ib && tb && ib.height >= 44 && ib.x >= tb.x + tb.width && Math.abs(ib.y - tb.y) < 4, ib && `${Math.round(ib.width)}×${Math.round(ib.height)}`);
+  check("a cena entra viva com GPU real (ou fica a imagem com --software)", alive || SOFTWARE, alive ? "WebGL" : "imagem estática");
+  const box = (sel) => page.locator(sel).first().boundingBox();
+  const ib = await box(".os-materia-idea");
+  const tb = await box(".os-materia-talk");
+  const motto = await box(".os-sign__motto");
+  const icons = await box(".os-icons");
+  const ideaText = (await page.locator(".os-materia-idea").innerText()).trim().toUpperCase();
+  check("“See an idea for my site” fica logo abaixo do lema, no terço esquerdo, com alvo ≥ 44 px", ideaText === "SEE AN IDEA FOR MY SITE" && ib && motto && ib.height >= 44 && ib.y >= motto.y + motto.height && ib.y - (motto.y + motto.height) < 90 && Math.abs(ib.x - motto.x) < 6 && ib.x + ib.width < 1440 * 0.45, ib && `${Math.round(ib.width)}×${Math.round(ib.height)} em (${Math.round(ib.x)}, ${Math.round(ib.y)})`);
+  const look = await page.evaluate(() => {
+    const alpha = (sel) => { const m = getComputedStyle(document.querySelector(sel)).backgroundColor.match(/[\d.]+/g).map(Number); return m.length > 3 ? m[3] : 1; };
+    return { idea: alpha(".os-materia-idea"), talk: alpha(".os-materia-talk") };
+  });
+  check("“Talk to Matéria” vem ao lado, como ação secundária (placa translúcida, não cheia)", (await page.locator(".os-materia-talk").innerText()).trim().toUpperCase() === "TALK TO MATÉRIA" && tb && tb.x >= ib.x + ib.width && Math.abs(tb.y - ib.y) < 4 && look.idea === 1 && look.talk < 1, JSON.stringify(look));
+  check("os atalhos do OS ficam abaixo dos convites, e os dois terços da direita ficam livres para a cena", icons && icons.y >= ib.y + ib.height + 8 && icons.x + icons.width < 1440 * 0.36 && tb.x + tb.width < 1440 * 0.45, icons && `atalhos até x ${Math.round(icons.x + icons.width)}`);
+  const fold = page.locator(".os-materia-fold");
+  check("a abertura da dobra é um controle com nome: leva ao projeto de verdade que aparece por baixo", (await fold.getAttribute("aria-label")) === "View the project: Ace Diving Miami" && /ACE DIVING MIAMI/i.test(await fold.innerText()));
   if (alive) {
     await page.waitForTimeout(2200);
     const st = await engine(page);
-    check("52 mil moléculas no desktop, quadro dentro do orçamento", st.count === 52000 && st.costMs < 45, `${st.count} · calibração ${st.costMs.toFixed(1)} ms · dpr ${st.dpr.toFixed(2)}`);
-    // dobrar o tempo: o ponteiro vai e volta ao lado do rosto
-    const l = st.layout;
-    let on = true;
-    const mover = (async () => { for (let i = 0; on; i++) { await page.mouse.move(l.home.x + Math.sin(i * 0.42) * 0.95 * l.k, l.home.y + 46); await page.waitForTimeout(24); } })();
-    let peak = 0;
-    for (let i = 0; i < 40; i++) { peak = Math.max(peak, Math.abs((await engine(page)).split)); await page.waitForTimeout(30); }
-    on = false;
-    await mover;
-    check("dobrar o tempo: os dois perfis se separam com o gesto", peak > 0.25, `afastamento máximo ${(peak * 180 / Math.PI).toFixed(0)}°`);
-    await page.mouse.move(40, 700);
-    const left = Date.now();
-    const joined = await page.waitForFunction(() => { const s = window.__mwMateria.state; return Math.abs(s.split) < 0.01 && Math.abs(s.pull) < 0.02; }, null, { timeout: 5000, polling: 50 }).then(() => true).catch(() => false);
-    check("ao soltar, os dois perfis voltam a se encaixar", joined, joined ? `em ${((Date.now() - left) / 1000).toFixed(1)} s` : "ainda separados depois de 5 s");
+    check("figura em malha e 52 mil moléculas, quadro dentro do orçamento", st.count === 52000 && st.costMs < 70, `${st.count} · calibração ${st.costMs.toFixed(1)} ms · dpr ${st.dpr.toFixed(2)}`);
+    check("a home é a cena inteira: figura formada, dobra aberta, capa do projeto e lema prontos para o reflexo", st.hero === 1 && st.morph === 0 && st.cover && st.word, JSON.stringify({ hero: st.hero, cover: st.cover, word: st.word }));
+    const still = await page.waitForFunction(() => window.__mwMateria.state.fps === 0, null, { timeout: 8000, polling: 100 }).then(() => true).catch(() => false);
+    check("parada, a cena não redesenha (o quadro continua na tela sem gastar a GPU)", still);
+    // o gesto: perto da ponta, a mão acompanha o cursor
+    const tip = () => page.evaluate(() => { const g = window.__mwMateria.figure(); const b = document.querySelector(".os-scene__canvas").getBoundingClientRect(); return { x: b.left + g.tx, y: b.top + g.ty, k: g.fk }; });
+    const f = await tip();
+    await page.mouse.move(f.x - 320, f.y - 220);
+    await page.mouse.move(f.x + 50, f.y - 70, { steps: 10 });
+    await page.waitForTimeout(700);
+    const held = await engine(page);
+    const f2 = await tip();
+    check("perto da ponta, a mão acompanha o cursor e a capa aparece inteira", held.held && held.grabX > 0.04 && held.grabY > 0.06 && held.hover > 0.8, `deslocamento (${held.grabX.toFixed(2)}, ${held.grabY.toFixed(2)})`);
+    check("…e a ponta da dobra sai do lugar junto com a pinça", f2.x - f.x > 10 && f.y - f2.y > 14, `${Math.round(f2.x - f.x)} px à direita, ${Math.round(f.y - f2.y)} px acima`);
+    await page.mouse.move(f.x + 430, f.y - 330, { steps: 2 });
+    await page.waitForTimeout(160);
+    const free = await engine(page);
+    check("ao soltar, a tensão corre pelo metal como onda", !free.held && free.wave > 0.2, `onda ${free.wave.toFixed(2)}`);
+    const rest = await page.waitForFunction(() => { const q = window.__mwMateria.state; return Math.abs(q.grabX) + Math.abs(q.grabY) < 0.004 && q.wave === 0; }, null, { timeout: 6000, polling: 50 }).then(() => true).catch(() => false);
+    check("…e a dobra volta ao repouso", rest);
   }
   await talk(page);
   check("texto e microfone disponíveis desde o primeiro momento", (await page.locator("#os-materia-input").isVisible()) && (await page.locator(".os-materia-panel__mic").isVisible()) && (await page.locator(".os-materia-panel__send").isVisible()));
   check("a conversa abre com a pose do cérebro", (await page.locator(".os-materia").getAttribute("data-pose")) === "brain");
   if (alive) {
-    await page.waitForTimeout(700);
-    const mid = (await engine(page)).morph;
-    await page.waitForTimeout(2200);
-    const end = (await engine(page)).morph;
-    check("ver o pensamento: as moléculas se reorganizam em cérebro (transição visível, depois completa)", mid > 0.05 && mid < 0.95 && end > 0.99, `meio ${mid.toFixed(2)} → fim ${end.toFixed(2)}`);
+    await page.waitForTimeout(600);
+    const mid = await engine(page);
+    await page.waitForTimeout(2400);
+    const end = await engine(page);
+    check("ver o pensamento: a faixa de luz desfaz a figura pelo braço e as moléculas viram o cérebro", mid.hero > 0.05 && mid.hero < 0.95 && mid.morph > 0.05 && mid.morph < 0.95 && end.hero === 0 && end.morph > 0.99, `meio: figura ${mid.hero.toFixed(2)}, cérebro ${mid.morph.toFixed(2)} → fim: ${end.hero.toFixed(2)}, ${end.morph.toFixed(2)}`);
   }
   await page.locator(".os-materia-panel").press("Escape");
-  await page.waitForTimeout(alive ? 2400 : 300);
-  const back = alive ? (await engine(page)).morph : 0;
-  check("fechar a conversa recompõe a escultura", (await page.locator(".os-materia").getAttribute("data-pose")) === "bust" && back < 0.01, `metamorfose ${back.toFixed(2)}`);
+  await page.waitForTimeout(alive ? 2600 : 300);
+  const back = alive ? await engine(page) : { morph: 0, hero: 1 };
+  check("fechar a conversa recompõe a figura e a dobra", (await page.locator(".os-materia").getAttribute("data-pose")) === "bust" && back.morph < 0.01 && back.hero === 1, `cérebro ${back.morph.toFixed(2)}, figura ${back.hero.toFixed(2)}`);
+  // explorar: a abertura cresce até coincidir com a janela do case
+  await fold.click({ position: { x: 250, y: 200 } });
+  let widest = 0;
+  if (alive) for (let i = 0; i < 40; i++) { widest = Math.max(widest, (await engine(page)).reveal); await page.waitForTimeout(40); }
+  const opened = await pathIs(page, /\/en\/work\/ace-diving-miami$/, 8000);
+  check("explorar o projeto: a dobra se abre até a janela do case e o case real abre", opened && (!alive || widest > 0.9), alive ? `abertura ${widest.toFixed(2)}` : "direto");
+  await page.waitForTimeout(1200);
+  check("…e a janela do case fica à vista", await page.locator('.os-window[data-app="projects"]').evaluate((el) => getComputedStyle(el).opacity === "1" && el.offsetWidth > 300).catch(() => false));
   check("sem erros de console", errors.length === 0, errors.slice(0, 2).join(" | "));
   await ctx.close();
 }
@@ -829,10 +852,10 @@ if (ONLY.includes("reduced")) {
   const { ctx, page, errors } = await open("/", { reduced: true });
   await page.waitForTimeout(1500);
   const bg = () => page.evaluate(() => getComputedStyle(document.querySelector(".os-materia .os-scene__still")).backgroundImage);
-  check("a escultura fica na imagem estática (sem motor)", (await page.locator(".os-materia").getAttribute("data-state")) === "still" && /materia-dark\.webp/.test(await bg()));
-  const img = await ctx.request.get(`${BASE}/art/materia-dark.webp`);
+  check("a escultura fica na imagem estática (sem motor)", (await page.locator(".os-materia").getAttribute("data-state")) === "still" && /materia-home-dark\.webp/.test(await bg()));
+  const img = await ctx.request.get(`${BASE}/art/materia-home-dark.webp`);
   const img2 = await ctx.request.get(`${BASE}/art/materia-brain-light.webp`);
-  check("as imagens estáticas existem (busto e cérebro)", img.ok() && img2.ok(), `${img.status()} / ${img2.status()}`);
+  check("as imagens estáticas existem (a home com a dobra aberta e o cérebro)", img.ok() && img2.ok(), `${img.status()} / ${img2.status()}`);
   await talk(page);
   check("na conversa, a pose estática do cérebro", /materia-brain-dark\.webp/.test(await bg()));
   const t0 = Date.now();
@@ -900,25 +923,27 @@ if (ONLY.includes("mobile")) {
   const ideaPill = await box(".os-materia-idea");
   const grid = await box(".os-launcher__apps");
   check("o botão da conversa aparece inteiro, acima da grade de apps, com alvo ≥ 44 px", pill && grid && pill.x >= 0 && pill.x + pill.width <= 390 && pill.y + pill.height <= grid.y + 2 && pill.height >= 44, pill && `${Math.round(pill.width)}×${Math.round(pill.height)} em y ${Math.round(pill.y)}`);
-  check("a entrada da prévia aparece inteira logo acima dele, com alvo ≥ 44 px, sem encostar", ideaPill && ideaPill.x >= 0 && ideaPill.x + ideaPill.width <= 390 && ideaPill.height >= 44 && ideaPill.y + ideaPill.height <= pill.y - 4, ideaPill && `${Math.round(ideaPill.width)}×${Math.round(ideaPill.height)} em y ${Math.round(ideaPill.y)}`);
+  check("a entrada da prévia aparece inteira ao lado dele (à esquerda: é a ação principal), com alvo ≥ 44 px, sem encostar", ideaPill && ideaPill.x >= 0 && ideaPill.height >= 44 && ideaPill.x + ideaPill.width <= pill.x - 4 && Math.abs(ideaPill.y - pill.y) < 4 && ideaPill.y + ideaPill.height <= grid.y + 2, ideaPill && `${Math.round(ideaPill.width)}×${Math.round(ideaPill.height)} em (${Math.round(ideaPill.x)}, ${Math.round(ideaPill.y)})`);
   if (alive) {
+    await page.waitForTimeout(1500);
     const st = await engine(page);
-    const chin = st.layout.home.y + 0.56 * st.layout.k;
-    check("os convites ficam abaixo do queixo da escultura", ideaPill.y >= chin - 6, `queixo em y ${Math.round(chin)}, convite em y ${Math.round(ideaPill.y)}`);
-    // arraste curto sobre a escultura: dobra o tempo sem abrir a conversa e sem rolar a página
-    const hit = await box(".os-materia-hit");
-    const cx = hit.x + hit.width / 2, cy = hit.y + hit.height * 0.3;
+    const hero = st.layout.hero;
+    const handle = await box(".os-materia-tip");
+    check("a ponta da dobra fica à vista, acima dos convites, com a sua área de toque", handle && Math.abs(handle.x + handle.width / 2 - hero.x) < 3 && hero.y < ideaPill.y - 30 && handle.width >= 88 && hero.x > 40, `ponta em (${Math.round(hero.x)}, ${Math.round(hero.y)}), convites em y ${Math.round(ideaPill.y)}`);
+    // arrastar a ponta com o dedo: a dobra acompanha, sem abrir a conversa
     const cdp = await ctx.newCDPSession(page);
-    const touch = (type, x) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y: cy }] });
-    await touch("touchStart", cx - 60);
-    let peak = 0;
-    for (let i = 0; i <= 12; i++) { await touch("touchMove", cx - 60 + i * 12); await page.waitForTimeout(22); peak = Math.max(peak, Math.abs((await engine(page)).split)); }
-    await page.waitForTimeout(120);
-    peak = Math.max(peak, Math.abs((await engine(page)).split));
-    await touch("touchEnd", 0);
-    await page.waitForTimeout(300);
-    check("arraste curto sobre a escultura dobra o tempo e não abre a conversa", peak > 0.15 && (await page.locator(".os-materia-panel").count()) === 0, `afastamento ${(peak * 180 / Math.PI).toFixed(0)}°`);
-    check("a figura deixa a rolagem vertical passar (touch-action: pan-y)", (await page.locator(".os-materia-hit").evaluate((el) => getComputedStyle(el).touchAction)) === "pan-y");
+    const touch = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y, id: 1 }] });
+    await touch("touchStart", hero.x, hero.y);
+    for (let i = 1; i <= 8; i++) { await touch("touchMove", hero.x + i * 5, hero.y - i * 7); await page.waitForTimeout(40); }
+    await page.waitForTimeout(450);
+    const held = await engine(page);
+    await touch("touchEnd", 0, 0);
+    await page.waitForTimeout(200);
+    const free = await engine(page);
+    check("arrastar a ponta com o dedo puxa a dobra, solta a onda e não abre a conversa", held.held && held.grabX > 0.05 && held.grabY > 0.08 && !free.held && free.wave > 0.2 && (await page.locator(".os-materia-panel").count()) === 0, `deslocamento (${held.grabX.toFixed(2)}, ${held.grabY.toFixed(2)}), onda ${free.wave.toFixed(2)}`);
+    const touchy = await page.evaluate(() => ({ tip: getComputedStyle(document.querySelector(".os-materia-tip")).touchAction, fold: getComputedStyle(document.querySelector(".os-materia-fold")).touchAction, scene: getComputedStyle(document.querySelector(".os-materia")).pointerEvents }));
+    check("só a ponta segura o toque: a abertura e o resto da cena deixam a tela rolar", touchy.tip === "none" && touchy.fold !== "none" && touchy.scene === "none", JSON.stringify(touchy));
+    await page.waitForTimeout(1600);
   }
   await page.locator(".os-materia-talk").tap();
   await page.waitForSelector(".os-materia-panel", { state: "visible" });

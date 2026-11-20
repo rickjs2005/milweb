@@ -6,25 +6,28 @@ import { getQuality, probeGpu } from "@/lib/quality";
 import { useOs, useOsStore } from "../os-shell";
 import { DESKTOP_WIDE_MQ } from "../registry";
 import type { OsTheme } from "../theme";
-import { COMPOSE, MATERIA, MATERIA_STILL, MOOD_OF, THEME_OF, type Mood } from "./config";
+import { COMPOSE, HERO_STILL, MATERIA, MATERIA_STILL, MOOD_OF, THEME_OF, type Mood } from "./config";
 import type { Engine, Layout } from "./engine";
 import { guide, stage, useGuide } from "./guide-store";
 
 /**
- * O fundo do MilWeb OS — Matéria: um busto de prata líquida, feito de moléculas, suspenso atrás da
- * interface. Três coisas acontecem aqui e o visitante consegue repetir todas:
+ * O fundo do MilWeb OS — Matéria: uma figura de mercúrio segurando uma dobra da própria tela entre o polegar
+ * e o indicador. A mão está perto de quem olha, o rosto aparece de perfil mais atrás, e por baixo da folha
+ * levantada há uma profundidade escura com a capa de um projeto de verdade. O visitante consegue repetir tudo:
  *
- *   dobrar o tempo        o gesto ao lado do rosto separa dois perfis no tempo (engine › pull)
- *   ver o pensamento      a conversa aberta reorganiza as mesmas moléculas num cérebro
- *   atravessar o portfólio a capa do projeto recomendado aparece refletida na prata (engine › tint)
- *   ver através do rosto   a cabeça vira de perfil, o arco da nuca desliza para a frente e a matéria se abre
- *                          num recorte: a interface desenha ali dentro a ideia para o site do visitante
- *                          (guide-panel.tsx › MateriaPortal), e na de mergulho a faixa de luz vira o mar
+ *   puxar a dobra          perto da ponta a mão acompanha o cursor (ou o dedo, numa área só dela); a folha
+ *                          encurva, o reflexo do lema desliza e, ao soltar, a tensão corre pelo metal (engine › grab)
+ *   explorar o projeto     a abertura cresce até coincidir com a janela do case (engine › reveal)
+ *   ver o pensamento       a conversa aberta faz a faixa de luz percorrer o braço até a cabeça; a figura se
+ *                          desfaz e as mesmas moléculas se reorganizam num cérebro
+ *   ver através do rosto   no recorte ("Ver uma ideia para o meu site") a matéria vira o busto de moléculas, a
+ *                          cabeça fica de perfil e a interface desenha a ideia dentro do vão
+ *                          (guide-panel.tsx › MateriaPortal); na de mergulho a faixa de luz vira o mar
  *
- * Camada visual pura, ATRÁS da interface: `pointer-events: none`, aria-hidden. O HTML entrega a
- * imagem estática da própria escultura (fundo CSS, posicionada por `--ma-x/--ma-y/--ma-k`): o
- * primeiro quadro já é o certo, e quem tem movimento reduzido, WebGL ausente, GPU sem condição ou
- * falha ao baixar as moléculas fica com ela — busto em repouso, cérebro na conversa. A navegação e a
+ * Camada visual pura, ATRÁS da interface: `pointer-events: none`, aria-hidden. O HTML entrega a imagem
+ * estática da própria cena, com a dobra aberta (fundo CSS, posicionada por `--mh-x/--mh-y/--mh-k`): o
+ * primeiro quadro já é o certo, e quem tem movimento reduzido, WebGL ausente, GPU sem condição ou falha ao
+ * baixar a malha e as moléculas fica com ela — a cena em repouso, o cérebro na conversa. A navegação e a
  * conversa nunca dependem do motor.
  *
  * UM laço: o ticker do GSAP (dentro do motor). A cena também é o driver da troca de tema do store.
@@ -46,11 +49,19 @@ function measure(root: HTMLElement, mobile: boolean): Layout | null {
     const k = Math.min(C.kS * sh, C.kW * w);
     const home = { x: cx, y: cy + C.homeDy * sh };
     const bottom = s && s.height > 0 ? s.bottom - box.top : h * 0.62;
-    return { w, h, k, home, talk: { x: w / 2, y: C.talk.y * h, k: (C.talk.kW * w) / k }, floor: (bottom - 6 - home.y) / k };
+    // a home no telefone: a câmera chega perto — os dedos e a dobra em primeiro plano, o perfil atrás
+    // (medida pelo palco: no telefone deitado ele é a coluna da direita, e a grade de apps fica com a esquerda)
+    const top = s && s.height > 0 ? s.top - box.top : h * 0.1;
+    const sw = s && s.width > 0 ? s.width : w;
+    const sl = s && s.width > 0 ? s.left - box.left : 0;
+    const hero = { x: sl + C.hero.x * sw, y: top + C.hero.y * sh, k: Math.min(C.hero.kS * sh, C.hero.kW * sw) };
+    return { w, h, k, home, talk: { x: w / 2, y: C.talk.y * h, k: (C.talk.kW * w) / k }, floor: (bottom - 6 - home.y) / k, hero, heroFloor: bottom - 4 };
   }
   const C = window.matchMedia(DESKTOP_WIDE_MQ).matches ? COMPOSE.desktop : COMPOSE.tablet;
   const k = Math.min(C.kH * h, C.kW * w);
-  return { w, h, k, home: { x: C.home.x * w, y: C.home.y * h }, talk: { x: C.talk.x * w, y: C.talk.y * h, k: C.talk.k } };
+  // a figura da home fica ancorada na borda direita: o ombro sai do quadro em qualquer largura
+  const hk = Math.min(C.hero.kH * h, C.hero.kW * w);
+  return { w, h, k, home: { x: C.home.x * w, y: C.home.y * h }, talk: { x: C.talk.x * w, y: C.talk.y * h, k: C.talk.k }, hero: { x: w - C.hero.right * hk, y: C.hero.y * h, k: hk } };
 }
 
 export function MateriaScene() {
@@ -80,11 +91,18 @@ export function MateriaScene() {
         el?.style.setProperty("--ma-tx", `${l.talk.x.toFixed(1)}px`);
         el?.style.setProperty("--ma-ty", `${l.talk.y.toFixed(1)}px`);
         el?.style.setProperty("--ma-tk", `${(l.k * l.talk.k).toFixed(1)}px`);
+        el?.style.setProperty("--mh-x", `${l.hero.x.toFixed(1)}px`);
+        el?.style.setProperty("--mh-y", `${l.hero.y.toFixed(1)}px`);
+        el?.style.setProperty("--mh-k", `${l.hero.k.toFixed(1)}px`);
+        if (l.heroFloor !== undefined) el?.style.setProperty("--mh-floor", `${l.heroFloor.toFixed(1)}px`);
+        else el?.style.removeProperty("--mh-floor");
       }
       const box = root.getBoundingClientRect();
       const stageBox = mobile ? host?.querySelector(".os-stage")?.getBoundingClientRect() : null;
       host?.style.setProperty("--ma-vx", `${(box.left + l.home.x).toFixed(1)}px`);
       host?.style.setProperty("--ma-vy", `${(box.top + l.home.y).toFixed(1)}px`);
+      host?.style.setProperty("--mh-vx", `${(box.left + l.hero.x).toFixed(1)}px`);
+      host?.style.setProperty("--mh-vy", `${(box.top + l.hero.y).toFixed(1)}px`);
       host?.style.setProperty("--ma-py", `${(stageBox && stageBox.height > 0 ? stageBox.bottom - 60 : Math.min(box.top + l.home.y + 1.02 * l.k, box.bottom - 150)).toFixed(1)}px`);
       engineRef.current?.setLayout(l);
     };
@@ -99,7 +117,7 @@ export function MateriaScene() {
       ro.disconnect();
       wide.removeEventListener("change", apply);
       layoutRef.current = null;
-      for (const el of [root, host]) ["--ma-x", "--ma-y", "--ma-k", "--ma-tx", "--ma-ty", "--ma-tk", "--ma-vx", "--ma-vy", "--ma-py"].forEach((k) => el?.style.removeProperty(k));
+      for (const el of [root, host]) ["--ma-x", "--ma-y", "--ma-k", "--ma-tx", "--ma-ty", "--ma-tk", "--ma-vx", "--ma-vy", "--ma-py", "--mh-x", "--mh-y", "--mh-k", "--mh-vx", "--mh-vy", "--mh-floor"].forEach((k) => el?.style.removeProperty(k));
     };
   }, [shell]);
 
@@ -122,14 +140,15 @@ export function MateriaScene() {
       const gq = probeGpu();
       if (!gq.webgl) return;
       const lite = mobile || gq.tier !== "high";
-      const [{ createEngine }, { loadMolecules }] = await Promise.all([import("./engine"), import("./asset")]);
-      // As moléculas: até chegarem — ou se falharem — vale a imagem estática.
-      const molecules = await loadMolecules(gq.tier === "high", abort.signal).catch((err: unknown) => {
+      const [{ createEngine }, { loadMolecules, loadFigure }] = await Promise.all([import("./engine"), import("./asset")]);
+      // As moléculas e a malha da figura: até chegarem — ou se falharem — vale a imagem estática.
+      const assets = await Promise.all([loadMolecules(gq.tier === "high", abort.signal), loadFigure(!lite, abort.signal)]).catch((err: unknown) => {
         if (!disposed) console.warn("[milweb] Matéria indisponível:", err instanceof Error ? err.message : err);
         return null;
       });
-      if (disposed || !molecules) return;
-      const e = createEngine({ canvas, mood: MOOD_OF[store.getState().prefs.theme], lite, molecules });
+      if (disposed || !assets) return;
+      const [molecules, figure] = assets;
+      const e = createEngine({ canvas, mood: MOOD_OF[store.getState().prefs.theme], lite, molecules, figure });
       if (!e) return;
       const B = MATERIA.budget;
       const l0 = layoutRef.current ?? measure(root, mobile);
@@ -210,6 +229,62 @@ export function MateriaScene() {
           img.src = src;
         }
       };
+      // A capa que se vê pela abertura da dobra: o projeto que a conversa recomendou, o case aberto ou o destaque.
+      const featured = (payload.projects.find((p) => p.slug === MATERIA.hero.cover) ?? payload.projects.find((p) => p.featured !== null) ?? payload.projects[0])?.slug ?? null;
+      let shown: string | null = null;
+      let coverImage: HTMLImageElement | null = null;
+      const show = (slug: string | null) => {
+        const next = slug && imageOf(slug) ? slug : featured;
+        if (next === shown || !next) return;
+        shown = next;
+        const src = imageOf(next);
+        if (!src) return;
+        const img = images.get(next) ?? new Image();
+        const ready = () => {
+          if (disposed || shown !== next) return;
+          coverImage = img;
+          e.cover(img);
+        };
+        if (img.complete && img.naturalWidth > 0) return ready();
+        img.decoding = "async";
+        img.addEventListener("load", ready, { once: true });
+        if (!images.has(next)) {
+          images.set(next, img);
+          img.src = src;
+        }
+      };
+      // O lema, para o reflexo invertido na aba: a última palavra em vermelho, o ponto final em azul (canais).
+      let wordCanvas: HTMLCanvasElement | null = null;
+      const drawWord = () => {
+        const motto = payload.s.sign.motto.trim();
+        const dot = motto.endsWith(".");
+        const text = (dot ? motto.slice(0, -1) : motto).trim().split(/\s+/).pop() ?? "";
+        const c = document.createElement("canvas");
+        c.width = 1024;
+        c.height = 256;
+        const g = c.getContext("2d");
+        if (!g || !text) return;
+        const family = getComputedStyle(root.parentElement?.querySelector(".os-sign__motto") ?? root).fontFamily || "sans-serif";
+        g.fillStyle = "#000";
+        g.fillRect(0, 0, c.width, c.height);
+        let size = 196;
+        g.font = `800 ${size}px ${family}`;
+        const full = g.measureText(text + (dot ? "." : "")).width;
+        if (full > 960) size = Math.floor((size * 960) / full);
+        g.font = `800 ${size}px ${family}`;
+        const wText = g.measureText(text).width;
+        const x0 = (c.width - g.measureText(text + (dot ? "." : "")).width) / 2;
+        g.textBaseline = "alphabetic";
+        g.fillStyle = "#f00";
+        g.fillText(text, x0, 186);
+        if (dot) {
+          g.fillStyle = "#00f";
+          g.fillText(".", x0 + wText, 186);
+        }
+        wordCanvas = c;
+        e.word(c);
+      };
+      void document.fonts.ready.then(() => !disposed && drawWord());
       let wasOpen = guide.get().open;
       const syncTargets = () => {
         const g = guide.get();
@@ -232,7 +307,7 @@ export function MateriaScene() {
         });
         if (g.portal) e.pull(null);
         reflect(g.reflect ?? caseSlug);
-        if (g.open && !wasOpen) e.slit();
+        show(g.reflect ?? caseSlug);
         wasOpen = g.open;
         root.dataset.pose = talk ? "brain" : "bust";
         if (g.portal) root.dataset.portal = g.portal;
@@ -297,25 +372,48 @@ export function MateriaScene() {
         syncRun();
       };
 
-      // ---- dobrar o tempo: o ponteiro ao lado do rosto (desktop) ou um arraste curto sobre a figura (telefone) ----
-      const head = () => {
-        const l = layoutRef.current;
-        const box = canvas.getBoundingClientRect();
-        return l ? { x: box.left + l.home.x, y: box.top + l.home.y, k: l.k } : null;
+      // ---- a dobra: perto da ponta (ou sobre a abertura) a mão acompanha o cursor; no telefone, o arraste da ponta ----
+      const overFold = (dx: number, dy: number) => {
+        if (dy > 0.02 || dy < -1.6) return false;
+        const d = -dy;
+        return dx > -0.22 * Math.pow(d, 0.62) * (1 + 0.3 * d) && dx < 0.82 * d + 0.4 * d * d;
       };
       const onMove = (ev: PointerEvent) => {
         if (ev.pointerType !== "mouse") return;
-        const hd = head();
-        const over = (ev.target as Element | null)?.closest?.(".os-window, .os-materia-panel, .os-dock, .os-topbar");
-        if (!hd || over || guide.get().open || guide.get().portal) return e.pull(null);
-        const dx = (ev.clientX - hd.x) / hd.k;
-        const dy = (ev.clientY - (hd.y + 0.1 * hd.k)) / hd.k;
-        if (Math.hypot(dx, dy) > MATERIA.fold.zone) return e.pull(null);
-        e.pull({ x: clamp1(dx / 1.05), y: clamp1(dy / 1.2) });
+        const l = layoutRef.current;
+        const g = guide.get();
+        const over = (ev.target as Element | null)?.closest?.(".os-window, .os-materia-panel, .os-dock, .os-topbar, .os-icons, .os-materia-cta, .os-social, .os-sign__line");
+        if (!l || over || g.open || g.portal) {
+          e.grab(null);
+          e.hover(false);
+          return;
+        }
+        const box = canvas.getBoundingClientRect();
+        const dx = (ev.clientX - box.left - l.hero.x) / l.hero.k;
+        const dy = -(ev.clientY - box.top - l.hero.y) / l.hero.k;
+        const near = Math.hypot(dx, dy + 0.1) < MATERIA.hero.zone;
+        e.hover(near || overFold(dx, dy));
+        e.grab(near ? { x: dx * MATERIA.hero.follow, y: dy * MATERIA.hero.follow } : null);
       };
-      const onLeave = () => e.pull(null);
-      stage.pull = (p) => {
-        if (!guide.get().open && !guide.get().portal) e.pull(p);
+      const onLeave = () => {
+        e.grab(null);
+        e.hover(false);
+      };
+      stage.grab = (d) => {
+        const l = layoutRef.current;
+        e.grab(d && l ? { x: d.x / l.hero.k, y: -d.y / l.hero.k } : null);
+      };
+      stage.hold = (on) => e.hover(on);
+      let revealing = 0;
+      stage.reveal = (r) => {
+        window.clearTimeout(revealing);
+        if (!r) return e.reveal(null);
+        const box = canvas.getBoundingClientRect();
+        e.reveal({ x0: r.left - box.left, y0: r.top - box.top, x1: r.left + r.width - box.left, y1: r.top + r.height - box.top });
+        // a cena continua viva até a abertura chegar à janela, mesmo que o app já cubra a tela (telefone)
+        revealing = window.setTimeout(syncRun, MATERIA.hero.reveal * 1000 + 120);
+        e.start();
+        root.dataset.run = "1";
       };
       stage.live = () => !disposed && root.dataset.state === "live" && !document.hidden && !covered();
       stage.ready = () => !disposed && root.dataset.state === "live" && !document.hidden;
@@ -323,8 +421,11 @@ export function MateriaScene() {
         const l = layoutRef.current;
         const box = canvas.getBoundingClientRect();
         if (!l) return null;
-        const open = guide.get().open;
-        return { x: box.left + (open ? l.talk.x : l.home.x), y: box.top + (open ? l.talk.y : l.home.y), k: open ? l.k * l.talk.k : l.k };
+        const g = guide.get();
+        if (g.open) return { x: box.left + l.talk.x, y: box.top + l.talk.y, k: l.k * l.talk.k };
+        // na home, o que se solta sai de dentro da abertura da dobra; no recorte, do busto
+        if (g.portal) return { x: box.left + l.home.x, y: box.top + l.home.y, k: l.k };
+        return { x: box.left + l.hero.x + 0.2 * l.hero.k, y: box.top + l.hero.y + 0.5 * l.hero.k, k: l.hero.k };
       };
 
       store.getState().setThemeDriver(driveTheme);
@@ -344,17 +445,30 @@ export function MateriaScene() {
             return { ...e.debug, mood: e.mood, frames: e.frames, dpr: e.dpr, fps: e.fpsNow, count: e.count, ms: e.stats.ms, costMs, layout: layoutRef.current };
           },
           pull: (p: { x: number; y: number } | null) => e.pull(p),
-          /** Imagem estática da própria escultura (scripts/materia-still.mjs): WebP com fundo transparente. */
-          async still(mood: Mood, morph: number) {
-            const S = MATERIA_STILL;
+          grab: (p: { x: number; y: number } | null) => e.grab(p),
+          probe: () => e.probe(),
+          figure: () => ({ ...e.figure }),
+          /**
+           * Imagens estáticas da própria cena (scripts/materia-still.mjs). `home`: a home inteira, com a dobra aberta,
+           * sobre a página lisa na cor do tema. `brain`: o cérebro sobre transparente.
+           */
+          async still(mood: Mood, kind: "home" | "brain") {
             const c = document.createElement("canvas");
-            const still = createEngine({ canvas: c, mood, lite: false, molecules, still: true });
+            const brain = kind === "brain";
+            const still = createEngine({ canvas: c, mood, lite: false, molecules, figure, still: true, scene: !brain });
             if (!still) return null;
-            still.setLayout({ w: S.w, h: S.h, k: S.k, home: { x: S.cx, y: S.cy }, talk: { x: S.cx, y: S.cy, k: 1 } });
+            const S = MATERIA_STILL;
+            const Hs = HERO_STILL;
+            if (brain) still.setLayout({ w: S.w, h: S.h, k: S.k, home: { x: S.cx, y: S.cy }, talk: { x: S.cx, y: S.cy, k: 1 }, hero: { x: S.cx, y: S.cy, k: S.k } });
+            else still.setLayout({ w: Hs.w, h: Hs.h, k: Hs.k, home: { x: Hs.x, y: Hs.y }, talk: { x: Hs.x, y: Hs.y, k: 1 }, hero: { x: Hs.x, y: Hs.y, k: Hs.k } });
             still.setDpr(1);
+            if (!brain) {
+              if (coverImage) still.cover(coverImage);
+              if (wordCanvas) still.word(wordCanvas);
+            }
             await still.compile();
-            still.still(mood, morph);
-            const url = c.toDataURL("image/webp", 0.86);
+            still.still(mood, brain ? 1 : 0);
+            const url = c.toDataURL("image/webp", 0.9);
             still.dispose();
             return url;
           },
@@ -365,7 +479,11 @@ export function MateriaScene() {
         window.clearTimeout(stopTimer);
         unsubOs();
         unsubGuide();
-        stage.pull = null;
+        stage.grab = null;
+        stage.hold = null;
+        stage.reveal = null;
+        window.clearTimeout(revealing);
+        e.grab(null);
         stage.live = () => false;
         stage.ready = () => false;
         stage.anchor = () => null;

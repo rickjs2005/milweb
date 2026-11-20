@@ -9,6 +9,7 @@ import { useOs, useOsStore } from "../os-shell";
 import { APPS, DESKTOP_WIDE_MQ, isAppId } from "../registry";
 import type { OsProject } from "../types";
 import { respond } from "./brain";
+import { MATERIA } from "./config";
 import { guide, stage, useGuide, type GuideAction, type GuideMessage } from "./guide-store";
 import { writeBrief } from "./handoff";
 import { idea, useIdea } from "./idea-store";
@@ -17,10 +18,10 @@ import { canListen, canSpeak, hush, listen, speak, type Listener } from "./voice
 /**
  * A conversa com a Matéria.
  *
- *   MateriaControls  sobre a figura, na área de trabalho: a própria escultura (arraste = dobrar o
- *                    tempo, toque = conversar), o botão "Conversar com a Matéria" e a entrada
- *                    "Ver uma ideia para o meu site"; e o recorte no rosto (MateriaPortal), onde a
- *                    ideia aparece e de onde ela cresce até virar uma janela do OS.
+ *   MateriaControls  na área de trabalho: a entrada "Ver uma ideia para o meu site" (ação principal) e
+ *                    "Conversar com a Matéria"; a abertura da dobra, que leva ao case do projeto que
+ *                    aparece por baixo; a ponta da dobra, que se arrasta com o dedo; e o recorte no
+ *                    rosto (MateriaPortal), onde a ideia aparece e de onde cresce até virar janela.
  *   MateriaGuide     o painel (texto e microfone desde o primeiro momento), a pílula que mantém a
  *                    conversa enquanto o visitante navega, e a travessia até a janela do case.
  *
@@ -328,54 +329,91 @@ function MateriaPortal() {
 
 /** Sobre a figura: a escultura (arraste de lado = dobrar o tempo; toque = conversar), o botão da conversa e a entrada da prévia. */
 export function MateriaControls() {
-  const { payload } = useOs();
+  const { payload, navigate, store } = useOs();
   const M = payload.materia;
   const open = useGuide((s) => s.open && !s.min);
   const portal = useGuide((s) => s.portal);
-  const drag = useRef<{ id: number; x: number; moved: boolean } | null>(null);
-  /** Quando um arraste terminou: o clique que alguns navegadores disparam em seguida não abre a conversa. */
-  const dragged = useRef(0);
-  const release = () => {
-    if (drag.current?.moved) dragged.current = performance.now();
-    drag.current = null;
-    stage.pull?.(null);
-  };
+  const reflect = useGuide((s) => s.reflect);
+  const route = useOsStore((s) => (s.focused === "projects" ? s.wins.projects.route : null));
+  const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const start = () => openGuide(M.say.hello, [M.say.chipRecruiter, M.say.chipSite, M.say.chipTour, M.say.chipHow].map((label) => ({ kind: "say", text: label, label })));
+
+  // O projeto que se vê pela abertura da dobra: o que a conversa recomendou, o case aberto ou o destaque (a mesma regra da cena).
+  const catalog = [...payload.projects, ...payload.authorial];
+  const wanted = reflect ?? (route?.startsWith("/work/") ? route.slice(6) : null);
+  const shown = catalog.find((p) => p.slug === wanted) ?? catalog.find((p) => p.slug === MATERIA.hero.cover) ?? payload.projects.find((p) => p.featured !== null) ?? payload.projects[0];
+
+  /** A dobra se abre até coincidir com a janela do case: ela monta escondida, a abertura cresce até o retângulo dela, e então ela aparece. */
+  const explore = () => {
+    if (!shown) return;
+    const go = () => navigate(`/work/${shown.slug}`, "push", true);
+    if (!stage.live() || reduced() || !stage.reveal) return go();
+    const html = document.documentElement;
+    html.dataset.osArriving = "projects";
+    go();
+    const phone = store.getState().shell === "mobile";
+    const since = performance.now();
+    const aim = () => {
+      const win = document.querySelector<HTMLElement>('.os-window[data-app="projects"]');
+      const ready = !!win && win.offsetWidth > 40;
+      if (!ready && performance.now() - since < 700) return void requestAnimationFrame(aim);
+      const layer = win?.offsetParent?.getBoundingClientRect();
+      const to = ready && win && !phone ? { left: (layer?.left ?? 0) + win.offsetLeft, top: (layer?.top ?? 0) + win.offsetTop, width: win.offsetWidth, height: win.offsetHeight } : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+      stage.reveal?.(to);
+      window.setTimeout(() => delete html.dataset.osArriving, MATERIA.hero.reveal * 1000 - 60);
+      // com a janela no lugar, a dobra volta ao repouso por trás dela
+      window.setTimeout(() => stage.reveal?.(null), MATERIA.hero.reveal * 1000 + 700);
+    };
+    requestAnimationFrame(aim);
+  };
+  const release = () => {
+    if (!drag.current) return;
+    drag.current = null;
+    stage.grab?.(null);
+    stage.hold?.(false);
+  };
 
   return (
     <>
       <div className="os-materia-ui" data-open={open || portal ? "1" : "0"} data-no-inspect>
-        <button
-          type="button"
-          className="os-materia-hit"
-          aria-label={M.ui.figure}
-          onPointerDown={(e) => {
-            if (e.pointerType === "mouse") return;
-            drag.current = { id: e.pointerId, x: e.clientX, moved: false };
-          }}
-          onPointerMove={(e) => {
-            const d = drag.current;
-            if (!d || d.id !== e.pointerId) return;
-            const dx = e.clientX - d.x;
-            if (Math.abs(dx) > 10) d.moved = true;
-            if (d.moved) stage.pull?.({ x: Math.max(-1, Math.min(1, dx / 90)), y: 0 });
-          }}
-          onPointerUp={release}
-          onPointerCancel={release}
-          onClick={() => {
-            if (performance.now() - dragged.current > 500) start();
-          }}
-        />
         <div className="os-materia-cta">
-          <button type="button" className="os-materia-talk" onClick={start}>
-            <span className="os-materia-talk__dot" aria-hidden="true" />
-            {M.ui.talk}
-          </button>
           {/* A entrada explícita da prévia: abre a conversa já com o pedido feito. */}
           <button type="button" className="os-materia-idea" onClick={() => stage.ask?.(M.ui.idea)}>
             {M.ui.idea}
           </button>
+          <button type="button" className="os-materia-talk" onClick={start}>
+            <span className="os-materia-talk__dot" aria-hidden="true" />
+            {M.ui.talk}
+          </button>
         </div>
+        {/* A abertura da dobra: o que aparece por baixo é a capa de um projeto de verdade, e ela leva ao case. */}
+        {shown && (
+          <button type="button" className="os-materia-fold" aria-label={`${M.ui.explore}: ${shown.title}`} onClick={explore} onFocus={() => stage.hold?.(true)} onBlur={() => stage.hold?.(false)}>
+            <span className="os-materia-fold__tag">
+              <span>{shown.title}</span>
+              <span aria-hidden="true">↗</span>
+            </span>
+          </button>
+        )}
+        {/* A ponta da dobra, para o dedo: só esta área segura o toque — o resto da tela rola como sempre. */}
+        <span
+          className="os-materia-tip"
+          aria-hidden="true"
+          onPointerDown={(e) => {
+            if (e.pointerType === "mouse") return;
+            drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+            stage.hold?.(true);
+          }}
+          onPointerMove={(e) => {
+            const d = drag.current;
+            if (!d || d.id !== e.pointerId) return;
+            stage.grab?.({ x: e.clientX - d.x, y: e.clientY - d.y });
+          }}
+          onPointerUp={release}
+          onPointerCancel={release}
+          onLostPointerCapture={release}
+        />
       </div>
       <MateriaPortal />
     </>
