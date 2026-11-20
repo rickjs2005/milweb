@@ -364,7 +364,10 @@ if (ONLY.includes("hands")) {
     await page.locator('.bounty__acts [data-act="made"]').tap();
     await page.waitForTimeout(1300);
     const discuss = await page.locator('.bounty__face--made [data-act="discuss"]').boundingBox();
-    check("telefone: o verso da peça cabe na tela e a ação do cliente tem alvo ≥ 44 px", !!discuss && discuss.height >= 44 && discuss.x >= 0 && discuss.x + discuss.width <= 390);
+    // nada pode passar da borda direita: a barra (voltar + os dois lados), a peça e cada parágrafo do verso
+    const fit = await page.evaluate(() => { const right = (sel) => Math.max(0, ...[...document.querySelectorAll(sel)].map((el) => el.getBoundingClientRect().right)); const tabs = [...document.querySelectorAll(".bounty__faces button")]; const back = document.querySelector(".bounty__explore-back").getBoundingClientRect(); return { bar: Math.round(right(".bounty__faces")), piece: Math.round(right(".bounty__piece")), text: Math.round(right(".bounty__made dd, .bounty__made-stack li")), tabs: Math.round(Math.min(...tabs.map((b) => b.getBoundingClientRect().height))), cut: tabs.some((b) => b.scrollWidth > b.clientWidth + 1), back: Math.round(Math.min(back.width, back.height)) }; });
+    check("telefone: o verso da peça cabe na tela (barra, peça e texto dentro dos 390 px) e a ação do cliente tem alvo ≥ 44 px", !!discuss && discuss.height >= 44 && discuss.x >= 0 && discuss.x + discuss.width <= 390 && fit.bar <= 390 && fit.piece <= 390 && fit.text <= 390 && !fit.cut, JSON.stringify(fit));
+    check("telefone: voltar e os dois lados da peça têm alvo ≥ 44 px", fit.tabs >= 44 && fit.back >= 44, `lados ${fit.tabs} px, voltar ${fit.back} px`);
     await ctx.close();
   }
 }

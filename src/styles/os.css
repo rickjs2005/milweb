@@ -828,7 +828,7 @@ html[data-os-motion="reduce"] .os-showcase__shot[data-kind="still"]:hover .os-pr
 .bounty:not([data-phase="closed"]) .bounty__acts, .bounty[data-face] .bounty__acts { opacity: 0; pointer-events: none; }
 
 .bounty__explore {
-  position: absolute; inset: 0; z-index: 7; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 10px; padding: 12px 14px 14px;
+  position: absolute; inset: 0; z-index: 7; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 10px; padding: 12px 14px 14px;
   background: rgb(var(--os-bg) / .9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: bounty-rise .45s var(--ease-out-expo) both;
 }
 .bounty__explore-bar { display: flex; align-items: center; gap: 12px; min-height: 40px; }
@@ -888,6 +888,14 @@ html[data-os-motion="reduce"] .os-showcase__shot[data-kind="still"]:hover .os-pr
   .bounty[data-mobile="1"] .bounty__acts { bottom: 122px; }
   .bounty[data-mobile="1"] .bounty__explore { padding-bottom: 116px; }
   .bounty__acts .bounty__btn { min-height: 44px; padding: 0 14px; font-size: 10.5px; }
+}
+/* estreito (telefone): a barra cabe na largura — voltar vira só a seta (o nome continua para leitores de tela) e os dois lados dividem o resto */
+@container (max-width: 520px) {
+  .bounty__explore-bar { gap: 10px; }
+  .bounty__explore-back { position: relative; flex: none; justify-content: center; width: 44px; min-height: 44px; padding: 0; font-size: 14px; letter-spacing: 0; }
+  .bounty__explore-back-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .bounty__faces { flex: 1; min-width: 0; }
+  .bounty__faces button { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; }
 }
 @media (prefers-reduced-motion: reduce) {
   .bounty__flip, .bounty__chapter img, .bounty__chapter-text, .bounty__explore, .bounty[data-arrive] .bounty__backdrop, .bounty[data-arrive] > * { transition: none !important; animation: none !important; }

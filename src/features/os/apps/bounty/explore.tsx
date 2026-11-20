@@ -53,7 +53,7 @@ export function ProjectExplore({ project, face, onFace, onClose }: { project: Os
     <section className="bounty__explore" data-face={face} aria-label={`${project.title} · ${face === "try" ? P.tryIt : P.madeTitle}`}>
       <header className="bounty__explore-bar">
         <button ref={backRef} type="button" className="bounty__explore-back t-mono" onClick={onClose}>
-          <span aria-hidden="true">←</span> {P.backToCollection}
+          <span aria-hidden="true">←</span> <span className="bounty__explore-back-label">{P.backToCollection}</span>
         </button>
         <p className="bounty__explore-name t-mono">
           <span className="tnum">{project.n}</span> · {project.title}
