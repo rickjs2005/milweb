@@ -8,6 +8,7 @@ import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
 import { MateriaScene } from "./materia/materia-scene";
 import { MateriaControls } from "./materia/guide-panel";
+import { stage } from "./materia/guide-store";
 import { SocialHud, SocialLinks } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -179,6 +180,8 @@ function DesktopApps() {
                 href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"}
                 className="os-icon-btn"
                 onClick={(e) => launch(e, id)}
+                onPointerEnter={() => stage.warm?.(id)}
+                onFocus={() => stage.warm?.(id)}
                 data-open={w.open ? "1" : "0"}
                 data-min={w.open && w.min ? "1" : "0"}
                 data-focused={focused === id ? "1" : "0"}
@@ -188,6 +191,9 @@ function DesktopApps() {
                   {halloween && <PumpkinFx variant={VARIANT_OF[id] ?? "a"} />}
                 </AppGlyph>
                 <span className="os-icon-btn__label">{s.apps[id]}</span>
+                {/* no desktop largo os dois destinos em destaque são botões com o convite inteiro (styles/os.css) */}
+                {id === "projects" && <span className="os-icon-btn__cta">{payload.materia.ui.goProjects}</span>}
+                {id === "profile" && <span className="os-icon-btn__cta">{payload.materia.ui.goProfile}</span>}
                 {state && <span className="os-icon-btn__state"> · {state}</span>}
               </a>
             </li>

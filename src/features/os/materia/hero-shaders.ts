@@ -1,13 +1,15 @@
 /**
- * Shaders da cena da home: a figura de mercúrio que segura uma dobra da própria tela.
+ * Shaders da cena da home: a Matéria é uma escultura de mármore num ateliê.
  *
- *   STUDIO_LIB   o que o metal reflete (a figura e a aba da dobra usam o mesmo estúdio)
- *   FOLD_LIB     a geometria da dobra, em unidades a partir da ponta (q = (px − ponta) / k, y para cima)
- *   FOLD_SCENE   a página, as rugas da pressão dos dedos, a abertura (capa do projeto e a faixa de luz),
- *                a aba de metal polido com o reflexo invertido do lema e a sombra da mão — entra no
- *                shader do ambiente (shaders.ts › BACKDROP_FRAG)
- *   FIGURE_*     a malha contínua (rosto, braço, mão): cromo, luz da fenda por baixo, a faixa que percorre
- *                o braço quando a conversa abre, e a dissolução nas bordas de ruptura
+ *   STUDIO_LIB   o que a prata reflete (as moléculas da conversa e os grãos)
+ *   ATELIER      o fundo: a parede de carvão (ou de gesso) com a luz lateral e a sombra que a figura projeta —
+ *                entra no shader do ambiente (shaders.ts › BACKDROP_FRAG)
+ *   FIGURE_*     a pedra: as esculturas (corpo, panejamento, adereços, bloco) e os braços articulados. Luz
+ *                principal rasante com a sombra e a oclusão que vêm do arquivo, veios, marcas de ponteiro onde a
+ *                pedra ainda é bruta, e a frente de formação — a figura nasce de baixo para cima
+ *   GRAIN_*      os grãos da transformação: saem da superfície que se desfaz e assentam na que se forma
+ *   SILVER_*     os grãos de prata do repouso: sobem contra a gravidade e completam o trecho que falta no punho
+ *   PASSAGE_*    a abertura por onde a página do destino aparece: a borda erguida, a espessura e a sombra
  */
 export const STUDIO_LIB = /* glsl */ `
 vec3 studio(vec3 r, float light) {
@@ -15,13 +17,9 @@ vec3 studio(vec3 r, float light) {
   float el = r.y;
   float sky = clamp(0.5 + 0.5 * el, 0.0, 1.0);
   float base = mix(0.018, 0.05, light) + mix(0.12, 0.2, light) * sky * sky;
-  // faixa larga de luz, por cima e à frente: testa, nariz, maçã do rosto, nós dos dedos
   float top = smoothstep(0.24, 0.5, el) * smoothstep(0.98, 0.76, el) * smoothstep(2.3, 1.3, abs(az + 0.7));
-  // caixa de luz frontal, larga e suave: dá corpo ao que olha para a câmera (maçã do rosto, dorso da mão, antebraço)
   float front = exp(-pow((az - 0.3) / 0.8, 2.0) - pow((el - 0.02) / 0.5, 2.0));
-  // parede de luz à esquerda (o rebate da página): tira o perfil da sombra
   float wall = exp(-pow((az + 1.85) / 0.62, 2.0)) * smoothstep(-0.8, -0.15, el) * smoothstep(0.8, 0.25, el);
-  // reflexo comprido e vertical (os membros) e o recorte por trás, que solta a silhueta do fundo escuro
   float strip = exp(-pow((az - 0.82) / 0.11, 2.0)) * smoothstep(1.0, 0.5, abs(el));
   float kick = exp(-pow((az + 2.25) / 0.3, 2.0)) * smoothstep(0.95, 0.35, abs(el + 0.05));
   float page = clamp(-r.z - 0.2, 0.0, 1.0);
@@ -30,213 +28,62 @@ vec3 studio(vec3 r, float light) {
 }
 `;
 
-export const FOLD_LIB = /* glsl */ `
-uniform vec2 uGrab;   // quanto a ponta saiu do repouso (unidades)
-uniform float uOpen;  // 0 = a tela assentada … 1 = a dobra aberta
-uniform vec2 uFloorPx; // telefone: a cena se apaga antes da grade de apps (px do buffer: onde some, onde já está inteira)
-float aboveFloor(float y) { return smoothstep(uFloorPx.x, uFloorPx.y, y); }
-// borda da página (à esquerda da abertura), borda livre da aba (à direita) e o vinco onde a aba volta à página
-float foldL(float d) { return -uOpen * 0.22 * pow(d, 0.62) * (1.0 + 0.3 * d); }
-float foldR(float d) { return uOpen * (0.82 * d + 0.4 * d * d); }
-float foldRi(float x) { float o = max(uOpen, 1e-3); return (-0.82 + sqrt(0.6724 + 1.6 * max(x, 0.0) / o)) / 0.8; }
-float foldU(float x) { return -uOpen * (0.03 * x + 0.1 * x * x); }
-// quanto um ponto da tela acompanha a ponta
-float foldW(vec2 q) { return exp(-dot(q, q) / 0.9); }
+/** A direção da luz principal (a mesma da sombra calculada no Blender: assets/materia/sculpt/stage.py › KEY). */
+export const KEY_LIGHT = [-0.62, 0.56, 0.55] as const;
+
+const NOISE3 = /* glsl */ `
+float hash3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.x + p.y) * p.z); }
+float noise3(vec3 p) {
+  vec3 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash3(i), hash3(i + vec3(1, 0, 0)), f.x), mix(hash3(i + vec3(0, 1, 0)), hash3(i + vec3(1, 1, 0)), f.x), f.y),
+             mix(mix(hash3(i + vec3(0, 0, 1)), hash3(i + vec3(1, 0, 1)), f.x), mix(hash3(i + vec3(0, 1, 1)), hash3(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
 `;
 
-/** Entra em BACKDROP_FRAG, depois de `hash`/`noise` e de STUDIO_LIB + FOLD_LIB. */
-export const FOLD_SCENE = /* glsl */ `
-uniform vec2 uTip;       // a ponta da dobra em repouso (px do buffer, y de baixo)
-uniform float uFoldK;    // px do buffer por unidade
-uniform float uHero;     // presença da cena (0 na conversa)
-uniform float uHover;    // o visitante está com a ponta: a capa aparece inteira
-uniform vec2 uWave;      // onda ao soltar: (segundos desde que soltou, força)
-uniform float uReveal;   // a abertura vira a janela (0 = a dobra em repouso … 1 = o retângulo da janela)
-uniform vec4 uWinQ;      // essa janela em unidades da dobra (esquerda, baixo, direita, alto)
-uniform float uFoldBottom; // onde fica a borda de baixo da abertura em repouso (fora da tela)
-uniform vec4 uCoverRect; // onde a capa fica dentro da janela (px do buffer: x0, y0, x1, y1), como object-fit: cover
-uniform vec3 uChrome;    // a cor da barra da janela (a faixa da abertura que a capa não cobre)
-uniform sampler2D uCover, uWord, uShadow, uCardTex;
-uniform float uCoverK, uCoverAr, uWordK, uShadowK, uCardAr;
-uniform vec4 uCard;      // a ficha que as mãos apresentam: centro (px do buffer) e meia largura / meia altura
-uniform vec4 uCardM;     // giro (rad), quanto está de frente (0 de lado … 1), presença, raio do canto (px)
-
-float shadowAt(vec2 px, vec2 off, float blur) {
-  vec2 c = (px + off) / uRes;
-  vec2 b = vec2(blur) / uRes;
-  float s = texture2D(uShadow, c).r * 0.2;
-  s += (texture2D(uShadow, c + b * vec2(1.0, 0.25)).r + texture2D(uShadow, c + b * vec2(-0.85, 0.55)).r + texture2D(uShadow, c + b * vec2(0.3, -1.0)).r + texture2D(uShadow, c + b * vec2(-0.45, -0.8)).r) * 0.13;
-  s += (texture2D(uShadow, c + b * vec2(2.0, -0.9)).r + texture2D(uShadow, c + b * vec2(-1.9, -0.4)).r + texture2D(uShadow, c + b * vec2(0.5, 2.0)).r + texture2D(uShadow, c + b * vec2(-1.0, -2.0)).r) * 0.07;
-  return s * uShadowK;
-}
-
-vec3 foldScene(vec2 px, vec3 col, vec3 base, vec3 deep, vec3 accent, float light) {
-  vec2 q = (px - uTip) / uFoldK;
-  vec2 q0 = q - uGrab * foldW(q - uGrab * foldW(q));
-  float aa = 1.4 / uFoldK;
-  float d = max(-q0.y, 0.0);
-  float xl = foldL(d);
-  float xr = foldR(d);
-  float r = length(q0);
-  float ang = atan(q0.y, q0.x);
-  float rev = uReveal;
-  float open1 = uOpen * (1.0 - rev); // o que é da dobra em repouso some quando ela vira a janela
-
-  // ── a página: a pressão dos dedos amassa a superfície em volta da ponta
-  vec3 page = col;
-  if (r < 1.7) {
-    float press = exp(-r / 0.3) * open1;
-    // pregas: vales estreitos entre cristas largas, de tamanhos diferentes
-    float w1 = sin(ang * 5.0 + 0.7), w2 = sin(ang * 9.0 + 2.1), w3 = sin(ang * 17.0 - 0.6);
-    float wr = (w1 * abs(w1)) * 0.5 + (w2 * abs(w2)) * 0.32 + w3 * 0.18;
-    float crease = wr * press * smoothstep(0.006, 0.08, r);
-    // a folha sobe até a ponta: um lado pega a luz, o outro fica na sombra
-    float tent = exp(-r / 0.5) * open1 * dot(normalize(q0 + 1e-4), vec2(-0.55, 0.83));
-    // no claro a ruga é o vale escuro (o branco não tem para onde subir); no escuro, é a crista que pega a luz
-    float fold1 = mix(1.3 * crease, (crease > 0.0 ? 0.04 : 0.36) * crease, light);
-    page = col * (1.0 + fold1 + mix(0.3, 0.06, light) * tent) - mix(0.0, 0.04, light) * press;
-    page += mix(vec3(0.04), vec3(0.0), light) * press;
-    // no escuro a página é grafite: uma poça de luz atrás da mão, para a sombra dela ter onde cair
-    vec2 pool = q - vec2(0.35, 0.12);
-    page += (1.0 - light) * vec3(0.085, 0.088, 0.1) * exp(-dot(pool, pool) / 1.1) * uOpen;
-    // a sombra da mão, projetada no plano de trás
-    float sh = shadowAt(px, vec2(0.16, 0.07) * uFoldK, 0.07 * uFoldK);
-    page = mix(page, mix(deep * 0.3, vec3(0.2, 0.25, 0.36), light), sh * mix(0.8, 0.5, light) * uHero);
+/** O mármore: cor, veios e a luz do ateliê. Devolve cor de tela. `shadow` e `ao` vêm do arquivo (1 = luz plena). */
+const MARBLE = /* glsl */ `
+uniform float uLight;
+uniform vec3 uKeyDir;
+vec3 hash33(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+vec3 marble(vec3 rest, float warp, vec3 n, vec3 v, float ao, float shadow, float rough) {
+  // veios finos, que atravessam a peça em diagonal, e manchas largas de tom (warp: ruído por vértice)
+  float line = rest.x * 0.9 + rest.y * 1.6 + rest.z * 0.7;
+  float vein = pow(1.0 - abs(sin(line * 2.4 + warp * 5.2)), 9.0) * (0.4 + 0.6 * warp);
+  vec3 albedo = mix(vec3(0.95, 0.925, 0.88), vec3(0.86, 0.845, 0.82), 0.5 + 0.5 * sin(line * 0.7 + warp * 3.0));
+  albedo = mix(albedo, vec3(0.6, 0.6, 0.63), vein * 0.34);
+  // pedra bruta: mais escura e fosca, lavrada em facetas (os golpes do ponteiro) e com grão fino
+  if (rough > 0.02) {
+    vec3 q1 = vec3(dot(rest, vec3(0.8, 0.36, -0.48)), dot(rest, vec3(-0.6, 0.48, -0.64)), dot(rest, vec3(0.0, 0.8, 0.6))) * 3.7 + warp * 2.6;
+    vec3 q2 = vec3(dot(rest, vec3(0.36, 0.8, 0.48)), dot(rest, vec3(0.48, -0.6, 0.64)), dot(rest, vec3(0.8, 0.0, -0.6))) * 8.9 - warp * 3.1;
+    vec3 f1 = fract(q1) - 0.5, f2 = fract(q2) - 0.5;
+    // dentro de cada faceta a normal é uma só; perto da aresta ela cede (a quina do golpe)
+    float e1 = 1.0 - smoothstep(0.3, 0.5, max(abs(f1.x), max(abs(f1.y), abs(f1.z))));
+    vec3 facet = (hash33(floor(q1)) - 0.5) * (0.5 + 0.5 * e1) * 0.8 + (hash33(floor(q2)) - 0.5) * 0.42;
+    n = normalize(n + facet * rough);
+    albedo *= 1.0 - 0.1 * (1.0 - e1) * rough;
+    albedo *= mix(1.0, 0.8, rough);
   }
-  // sombra de contato ao longo da borda da abertura (a folha tem espessura)
-  float lipL = exp(-max(xl - q0.x, 0.0) / 0.035) * step(q0.y, 0.0) * smoothstep(0.0, 0.08, d);
-  page *= 1.0 - mix(0.3, 0.1, light) * lipL * open1;
-  // e o fio da folha pega a luz que vem de dentro
-  float rimL = exp(-pow((xl - q0.x) / 0.007, 2.0)) * step(q0.y, 0.0) * smoothstep(0.0, 0.06, d) * open1;
-  page += mix(accent * 1.3 + vec3(0.2), vec3(0.04), light) * rimL;
-  // no escuro a fenda acende a página em volta: é o carmesim que desenha a abertura sobre o grafite
-  page += (1.0 - light) * accent * 0.2 * exp(-max(xl - q0.x, 0.0) / 0.1) * step(q0.y, 0.0) * smoothstep(0.0, 0.08, d) * open1;
-
-  // ── a fita: o arco da nuca desce por trás do ombro e vira a aba levantada
-  vec2 rc = q - vec2(1.6, 0.26);
-  float rr = length(rc);
-  float ra = atan(rc.y, rc.x);
-  float rw = 0.034 + 0.03 * smoothstep(1.3, -1.2, ra);
-  float rs = (rr - 0.66) / rw;
-  float ribbon = abs(rr - 0.66) > 0.08 ? 0.0 : smoothstep(1.0 + aa / rw, 1.0 - aa / rw, abs(rs)) * smoothstep(1.5, 1.15, ra) * smoothstep(-1.75, -1.3, ra) * uOpen;
-  if (ribbon > 0.001) {
-    vec3 rn = normalize(vec3(normalize(rc) * rs * 0.85, sqrt(max(1.0 - 0.7 * rs * rs, 0.05))));
-    vec3 rcol = pow(clamp(studio(reflect(vec3(0.0, 0.0, -1.0), rn), light), 0.0, 1.0), vec3(0.4545));
-    page = mix(page, rcol, ribbon);
-  }
-
-  // ── a aba: o avesso da página é metal polido, encurvado
-  float yu = foldU(max(q0.x, 0.0));
-  float dr = foldRi(q0.x);
-  float v = clamp((yu - q0.y) / max(yu + dr, 1e-3), 0.0, 1.0);
-  float sdF = max(max(q0.y - yu, xr - q0.x), -q0.x);
-  float inF = smoothstep(aa, -aa, sdF) * (1.0 - uReveal);
-  vec3 outc = page;
-  if (inF > 0.001) {
-    float u = length(q0);
-    // a onda que percorre o metal quando a ponta é solta
-    float wave = uWave.y * sin(u * 16.0 - uWave.x * 22.0) * exp(-uWave.x * 2.4) * smoothstep(0.0, 0.25, u);
-    float phi = mix(-1.05, 0.95, pow(v, 0.85)) + 0.16 * sin(u * 2.4 + 0.6) + wave * 0.9 + uGrab.x * 0.5;
-    vec2 across = normalize(vec2(-0.5, -1.0));
-    vec3 n = normalize(vec3(across * sin(phi) + vec2(0.3, -0.1) * (0.4 - u * 0.12), cos(phi)));
-    vec3 rf = reflect(vec3(0.0, 0.0, -1.0), n);
-    vec3 metal = studio(rf, light);
-    metal *= mix(1.05, 1.2, light);
-    // os reflexos compridos que correm pela aba: uma faixa clara e outra escura
-    float lane = v - 0.05 * sin(u * 2.6 + 0.4);
-    metal += mix(0.32, 0.5, light) * exp(-pow((lane - 0.4) / 0.13, 2.0));
-    metal *= 1.0 - mix(0.3, 0.34, light) * exp(-pow((lane - 0.7) / 0.07, 2.0));
-    metal = pow(clamp(metal, 0.0, 1.0), vec3(0.4545));
-    metal = mix(metal, vec3(0.9, 0.925, 0.96), light * 0.2);
-    // o reflexo invertido do lema: desliza com o ângulo da folha
-    vec2 wc = (q0 - vec2(1.06, -0.6) - uGrab * vec2(-0.55, 0.35) - vec2(wave * 0.05, 0.0));
-    float ca = cos(3.42), sa = sin(3.42);
-    wc = vec2(ca * wc.x - sa * wc.y, sa * wc.x + ca * wc.y);
-    wc.y *= 1.0 + 0.5 * (v - 0.5);
-    wc.x += 0.22 * wc.y * wc.y;
-    vec2 wuv = wc / vec2(1.0, 0.25) + 0.5;
-    if (uWordK > 0.0 && wuv.x > 0.0 && wuv.x < 1.0 && wuv.y > 0.0 && wuv.y < 1.0) {
-      vec2 wb = vec2(0.006, 0.02);
-      vec4 w = (texture2D(uWord, wuv) * 2.0 + texture2D(uWord, wuv + wb) + texture2D(uWord, wuv - wb) + texture2D(uWord, wuv + wb * vec2(1.0, -1.0)) + texture2D(uWord, wuv - wb * vec2(1.0, -1.0))) / 6.0;
-      float soft = smoothstep(0.05, 0.3, v) * smoothstep(1.0, 0.8, v);
-      metal = mix(metal, mix(vec3(0.93, 0.95, 0.98), vec3(0.07, 0.08, 0.11), light), w.r * 0.56 * soft * uWordK);
-      metal = mix(metal, accent, w.b * 0.75 * soft * uWordK);
-    }
-    // sob o braço a aba escurece; na borda livre ela pega a luz que vem de dentro
-    metal *= mix(0.42, 1.0, smoothstep(0.0, 0.3, v));
-    if (r < 1.3) metal *= 1.0 - 0.5 * shadowAt(px, vec2(0.05, 0.08) * uFoldK, 0.05 * uFoldK) * uHero;
-    float edge = exp(-(1.0 - v) / 0.035);
-    metal += (accent * 0.9 + vec3(0.25)) * edge * mix(0.55, 0.45, light);
-    outc = mix(outc, metal, inF);
-  }
-
-  // ── a abertura: a profundidade escura, a capa de um projeto de verdade e a faixa de luz.
-  // Quando o visitante abre Projetos ela vira a janela: o topo sobe da ponta até o alto da janela, os lados se
-  // endireitam e a borda de baixo sobe de fora da tela — cada quina viaja em linha reta até o canto dela.
-  float yTop = uWinQ.w * rev;
-  float dd = max(yTop - q0.y, 0.0);
-  float oxl = mix(foldL(dd), uWinQ.x, rev);
-  float oxr = mix(foldR(dd), uWinQ.z, rev);
-  float oyb = mix(uFoldBottom, uWinQ.y, rev);
-  float sdO = max(max(oxl - q0.x, q0.x - oxr), max(q0.y - yTop, oyb - q0.y));
-  float inO = smoothstep(aa, -aa, sdO);
-  // a superfície esticando: o fio da borda acende enquanto as mãos a seguram
-  outc += (accent * 0.9 + vec3(0.35)) * exp(-pow(sdO / 0.008, 2.0)) * rev * (1.0 - smoothstep(0.92, 1.0, rev)) * (1.0 - inO);
-  if (inO > 0.001) {
-    float depth = clamp(-sdO, 0.0, 1.0);
-    vec3 cav = mix(vec3(0.012, 0.014, 0.022), deep * 0.2, 0.3);
-    // a capa fica no fundo: não acompanha a ponta (paralaxe); na janela, preenche o corpo dela
-    vec2 cs = vec2(1.56, 1.56 / max(uCoverAr, 0.1));
-    vec2 cuv = (q - vec2(0.235, -0.4) + uGrab * 0.12) / cs + 0.5;
-    vec2 rs = max(uCoverRect.zw - uCoverRect.xy, vec2(1.0));
-    vec2 fit = rs.x / rs.y > uCoverAr ? vec2(rs.x, rs.x / uCoverAr) : vec2(rs.y * uCoverAr, rs.y);
-    cuv = mix(cuv, (px - 0.5 * (uCoverRect.xy + uCoverRect.zw)) / fit + 0.5, rev);
-    float inC = step(0.0, cuv.x) * step(cuv.x, 1.0) * step(0.0, cuv.y) * step(cuv.y, 1.0);
-    // na home, só a parte de cima da capa (a primeira dobra do site), que some na profundidade antes de acabar
-    vec2 suv = vec2(cuv.x, 1.0 - (1.0 - cuv.y) * mix(0.8, 1.0, rev));
-    vec3 cover = texture2D(uCover, clamp(suv, 0.0, 1.0)).rgb;
-    float seen = uCoverK * inC * mix(mix(mix(0.86, 0.8, light), 1.0, uHover) * smoothstep(0.0, 0.22, cuv.y), 1.0, rev);
-    cav = mix(cav, cover, seen);
-    // a folha faz sombra para dentro: perto das bordas a cavidade é quase preta
-    float shade = smoothstep(0.0, mix(0.34, 0.2, uHover), depth);
-    cav *= mix(mix(mix(0.3, 0.22, light), 1.0, shade), 1.0, rev);
-    // a faixa de luz: nasce sob os dedos e atravessa a abertura
-    float bs = q0.y + 0.13 + 0.16 * q0.x;
-    float reach = smoothstep(0.0, 0.1, depth) * (1.0 - rev);
-    float core = exp(-pow(bs / 0.012, 2.0)) * reach;
-    float glow = exp(-pow(bs / 0.11, 2.0)) * reach;
-    cav += accent * (core * mix(2.2, 1.5, light) + glow * mix(0.85, 0.5, light)) + vec3(core * 0.6);
-    // e a borda livre da aba brilha por dentro
-    cav += accent * exp(-max(xr - q0.x, 0.0) / 0.03) * 0.5 * (1.0 - rev) * step(q0.y, 0.0);
-    // a faixa que a capa não cobre é a barra da janela
-    float bar = (1.0 - step(uCoverRect.x, px.x) * step(px.x, uCoverRect.z) * step(uCoverRect.y, px.y) * step(px.y, uCoverRect.w)) * smoothstep(0.7, 1.0, rev);
-    cav = mix(cav, uChrome, bar);
-    outc = mix(outc, cav, inO);
-  }
-  return mix(col, outc, uHero * aboveFloor(px.y));
-}
-
-// A ficha que as mãos apresentam: a do perfil, o briefing do orçamento, a capa do projeto recomendado. Um cartão
-// com sombra, que gira com o punho (de lado → de frente) e cresce até virar a janela.
-vec3 cardLayer(vec2 px, vec3 col, float light) {
-  if (uCardM.z < 0.002) return col;
-  vec2 cp = px - uCard.xy;
-  float cr = cos(uCardM.x), sr = sin(uCardM.x);
-  cp = vec2(cr * cp.x + sr * cp.y, -sr * cp.x + cr * cp.y);
-  float face = max(uCardM.y, 0.05);
-  vec2 hs = uCard.zw * vec2(face, 1.0);
-  vec2 sd2 = abs(cp + vec2(-0.05, 0.07) * uFoldK * face) - hs;
-  float shadow = 1.0 - smoothstep(-0.02 * uFoldK, 0.1 * uFoldK, length(max(sd2, 0.0)) + min(max(sd2.x, sd2.y), 0.0));
-  col *= 1.0 - mix(0.5, 0.26, light) * shadow * uCardM.z;
-  vec2 cd = abs(cp) - hs + uCardM.w;
-  float sdC = length(max(cd, 0.0)) + min(max(cd.x, cd.y), 0.0) - uCardM.w;
-  float inCard = smoothstep(1.2, -1.2, sdC);
-  vec2 tuv = cp / (2.0 * hs);
-  float ar = uCard.z / max(uCard.w, 1.0);
-  tuv *= ar > uCardAr ? vec2(1.0, uCardAr / ar) : vec2(ar / uCardAr, 1.0);
-  vec3 tex = texture2D(uCardTex, clamp(tuv + 0.5, 0.0, 1.0)).rgb * mix(0.5, 1.0, uCardM.y);
-  tex += vec3(0.5) * exp(-pow(sdC / 2.2, 2.0)) * 0.5;
-  return mix(col, tex, inCard * uCardM.z);
+  float nl = dot(n, uKeyDir);
+  float wrap = clamp((nl + 0.22) / 1.22, 0.0, 1.0);
+  float lit = wrap * mix(1.0, shadow, 0.88);
+  // a luz que atravessa a pedra: a borda da sombra fica morna, não preta
+  float sss = (1.0 - lit) * smoothstep(-0.55, 0.3, nl) * 0.16;
+  vec3 keyCol = mix(vec3(1.0, 0.955, 0.89), vec3(1.0, 0.985, 0.96), uLight);
+  vec3 fillCol = mix(vec3(0.3, 0.34, 0.42), vec3(0.62, 0.68, 0.78), uLight);
+  float amb = mix(0.045, 0.34, uLight);
+  float fill = (0.5 + 0.5 * dot(n, vec3(0.776, -0.166, 0.609))) * mix(0.1, 0.3, uLight);
+  float occ = mix(0.42, 1.0, ao) * ao;
+  vec3 col = albedo * (keyCol * (lit * mix(1.18, 0.82, uLight) + sss * vec3(1.0, 0.72, 0.5)) + fillCol * fill * occ + vec3(amb) * occ);
+  // brilho baixo de pedra polida e o recorte por trás, que solta a silhueta do carvão
+  vec3 h = normalize(uKeyDir + v);
+  col += keyCol * pow(max(dot(n, h), 0.0), 34.0) * 0.16 * (1.0 - rough) * mix(1.0, shadow, 0.9);
+  float fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
+  float rim = fres * smoothstep(-0.1, 0.6, dot(n, vec3(0.795, 0.348, -0.497)));
+  col += mix(vec3(0.5, 0.56, 0.68) * 0.5, vec3(0.0), uLight) * rim * occ;
+  // no gesso, a borda escurece um pouco: é a sombra que desenha o volume
+  col *= 1.0 - uLight * 0.2 * fres;
+  return pow(clamp(col, 0.0, 1.0), vec3(0.4545));
 }
 `;
 
@@ -244,14 +91,15 @@ export const FIGURE_VERT = /* glsl */ `
 attribute vec3 aPosB; // a outra forma da mão (nas demais partes, igual a position)
 attribute vec4 aNA;   // normal (xyz) e oclusão
 attribute vec4 aNB;   // idem, da outra forma
-attribute vec4 aMeta; // caminho da luz (0 dedos … 1 cabeça), dissolução, semente
-attribute vec4 aSkin; // osso A, osso B, peso de A (0..255)
-uniform vec4 uBone[24]; // 8 ossos × 3 linhas (rig.ts)
-uniform float uBoneOff, uShape, uFigScale;
-uniform vec3 uFigOffset;
+attribute vec4 aMeta; // escultura: região, ordem de formação, sombra, pedra bruta · braço: caminho (0 dedos … 0,5 ombro)
+attribute vec4 aSkin; // osso A, osso B, peso de A (0..255), semente
+uniform vec4 uBone[39]; // 13 ossos × 3 linhas (rig.ts)
+uniform float uBoneOff, uShape;
+uniform vec4 uFigT;   // onde a figura fica na cena: deslocamento (xyz) e escala
 varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
-varying float vAo;
+varying float vAo, vSeed, vWarp;
+${NOISE3}
 
 vec3 skin(float bone, vec3 p, float w) {
   int k = int(bone + 0.5) * 3;
@@ -261,16 +109,18 @@ vec3 skin(float bone, vec3 p, float w) {
 void main() {
   vec3 rest = mix(position, aPosB, uShape);
   vec4 na = mix(aNA, aNB, uShape);
-  // os ossos do braço (2, 3, 4) valem para os dois: o segundo usa os três seguintes
+  // os ossos do braço no arquivo (2, 3, 4) viram os do braço A ou do B
   float a = aSkin.x + step(1.5, aSkin.x) * uBoneOff;
   float b = aSkin.y + step(1.5, aSkin.y) * uBoneOff;
   float w = aSkin.z / 255.0;
   vec3 p = mix(skin(b, rest, 1.0), skin(a, rest, 1.0), w);
   vec3 n = normalize(mix(skin(b, na.xyz, 0.0), skin(a, na.xyz, 0.0), w));
-  vec4 mv = modelViewMatrix * vec4(p * uFigScale + uFigOffset, 1.0);
+  vec4 mv = modelViewMatrix * vec4(p * uFigT.w + uFigT.xyz, 1.0);
   vN = normalMatrix * n;
   vAo = na.w;
   vMeta = aMeta;
+  vSeed = aSkin.w / 255.0;
+  vWarp = noise3(rest * 1.9);
   vP = p;
   vRest = rest;
   vView = -mv.xyz;
@@ -278,71 +128,340 @@ void main() {
 }
 `;
 
+/** O que existe da pedra agora. Devolve a distância até a frente de formação (para acendê-la). */
 const FIGURE_CUT = /* glsl */ `
-uniform float uKeep; // até que ponto do caminho da luz a figura fica quando a faixa passa (os braços, na conversa)
-float hash3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.x + p.y) * p.z); }
-float noise3(vec3 p) {
-  vec3 i = floor(p), f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(hash3(i), hash3(i + vec3(1, 0, 0)), f.x), mix(hash3(i + vec3(0, 1, 0)), hash3(i + vec3(1, 1, 0)), f.x), f.y),
-             mix(mix(hash3(i + vec3(0, 0, 1)), hash3(i + vec3(1, 0, 1)), f.x), mix(hash3(i + vec3(0, 1, 1)), hash3(i + vec3(1, 1, 1)), f.x), f.y), f.z);
-}
-// O que sobra da superfície: as bordas de ruptura (fixas) e a faixa que percorre o braço na conversa.
-// Devolve a distância até a frente da faixa.
-float figureCut(vec3 p, vec4 meta, float sweep) {
-  float ahead = meta.x - sweep;
-  if (meta.y < 0.012 && ahead > 0.1) return ahead; // inteira: nem calcula o ruído
-  float grain = noise3(p * 8.0) * 0.5 + noise3(p * 21.0) * 0.32 + noise3(p * 55.0) * 0.18;
-  if (meta.y * (0.5 + 1.0 * grain) > 0.6) discard;
-  ahead += 0.07 * (grain - 0.5);
-  if (ahead < 0.0 && meta.x > uKeep + 0.08 * (grain - 0.5)) discard;
+uniform float uVis;   // quanto da figura está formado (0 nada … 1 inteira)
+uniform float uArm;   // 1 = braço (o caminho vai dos dedos ao ombro)
+uniform vec3 uGap;    // braço: o trecho que falta, em x de repouso (de, até), e a presença dele
+float figureCut(vec3 rest, vec4 meta, float seed) {
+  if (uArm > 0.5) {
+    // o trecho que falta entre o antebraço e o punho: a borda é de pedra quebrada
+    float near = uGap.z > 0.0 ? min(abs(rest.x - uGap.x), abs(rest.x - uGap.y)) : 1.0;
+    bool inside = uGap.z > 0.0 && rest.x > uGap.x - 0.05 && rest.x < uGap.y + 0.05;
+    if (uVis > 0.999 && !inside) return 1.0; // inteiro e longe do trecho: nem calcula o ruído
+    float grain = noise3(rest * 6.0) * 0.6 + noise3(rest * 19.0) * 0.4;
+    // forma primeiro os dedos: a frente sobe da ponta até o ombro
+    float ahead = uVis * 0.66 - meta.x - 0.06 * (grain - 0.5);
+    if (ahead < 0.0) discard;
+    if (inside) {
+      float edge = 0.07 * (grain - 0.5);
+      if (rest.x > uGap.x + edge && rest.x < uGap.y + edge) discard;
+      ahead = min(ahead, near * 2.2 + (1.0 - uGap.z));
+    }
+    return ahead;
+  }
+  if (uVis > 0.999) return 1.0;
+  float grain = noise3(rest * 6.0) * 0.6 + noise3(rest * 19.0) * 0.4;
+  float ahead = uVis * 1.16 - 0.08 - meta.y - 0.1 * (grain - 0.5) - 0.05 * (seed - 0.5);
+  if (ahead < 0.0) discard;
   return ahead;
 }
 `;
 
 export const FIGURE_FRAG = /* glsl */ `
-uniform float uLight, uSweep;
-uniform vec3 uAccent, uKey, uFade, uGlowAt;
 uniform vec2 uFloorPx;
+uniform vec3 uFade, uKey;
+uniform float uGlow; // a frente de formação acende (0 em repouso)
+uniform float uSil;  // prova de silhueta: a pedra sai em preto
 varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
-varying float vAo;
-${STUDIO_LIB}
+varying float vAo, vSeed, vWarp;
+${NOISE3}
 ${FIGURE_CUT}
+${MARBLE}
 void main() {
-  float ahead = figureCut(vRest, vMeta, uSweep);
+  float ahead = figureCut(vRest, vMeta, vSeed);
+  if (uSil > 0.5) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
   vec3 n = normalize(vN);
   vec3 v = normalize(vView);
-  vec3 r = reflect(-v, n);
-  vec3 col = studio(r, uLight);
-  float fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
-  col *= 0.28 + 0.72 * vAo;
-  // tema claro: a borda escurece e a silhueta se solta do branco; no escuro, é o recorte de luz que a desenha
-  col *= 1.0 - mix(0.0, 0.72, uLight) * fres;
-  col += (1.0 - uLight) * fres * 0.2 * vAo;
-  // a luz da fenda vem de baixo: mais forte perto da ponta da dobra
-  vec2 dn = vP.xy - uGlowAt.xy;
-  float near = exp(-dot(dn, dn) / 0.5) * uGlowAt.z;
-  float under = pow(clamp(-r.y - 0.22, 0.0, 1.0), 1.4) * (0.1 + 1.9 * near);
-  col = pow(clamp(col, 0.0, 1.0), vec3(0.4545));
-  col += uAccent * under * mix(0.95, 0.85, uLight);
-  // a faixa de luz que percorre o braço e a borda de ruptura acesa
-  float band = exp(-pow(ahead / 0.03, 2.0)) * step(-0.04, uSweep);
-  col += (uKey * 0.8 + uAccent * 0.7) * band * 1.5;
+  float arm = step(0.5, uArm);
+  vec3 col = marble(vRest, vWarp, n, v, clamp(vAo, 0.0, 1.0), mix(vMeta.z, 1.0, arm), mix(vMeta.w, 0.0, arm));
+  // a frente de formação: uma linha de prata onde a pedra acabou de assentar
+  float band = exp(-pow(ahead / 0.02, 2.0)) * uGlow;
+  col += uKey * band * 0.9;
   gl_FragColor = vec4(mix(uFade, col, smoothstep(uFloorPx.x, uFloorPx.y, gl_FragCoord.y)), 1.0);
 }
 `;
 
-/** A silhueta da figura, para a sombra projetada na página. */
+/** A silhueta da figura, para a sombra projetada na parede do ateliê. */
 export const FIGURE_SHADOW_FRAG = /* glsl */ `
-uniform float uSweep;
 varying vec3 vN, vP, vRest, vView;
 varying vec4 vMeta;
-varying float vAo;
+varying float vAo, vSeed, vWarp;
+${NOISE3}
 ${FIGURE_CUT}
 void main() {
-  figureCut(vRest, vMeta, uSweep);
-  // só as mãos fazem sombra na página; some antes do punho, onde a malha delas termina
-  gl_FragColor = vec4(smoothstep(0.16, 0.09, vMeta.x));
+  figureCut(vRest, vMeta, vSeed);
+  gl_FragColor = vec4(1.0);
+}
+`;
+
+/**
+ * Os grãos da transformação. Cada grão sabe onde estava na figura que se desfaz (`position`, ordem `aMeta.x`)
+ * e onde vai assentar na que se forma (`aTo`, ordem `aMeta.w`): parte quando a frente de dissolução passa por
+ * ele (de cima para baixo) e chega antes de a frente de formação alcançar o lugar dele (de baixo para cima).
+ */
+export const GRAIN_VERT = /* glsl */ `
+attribute vec3 aTo;
+attribute vec4 aNF;   // normal de origem (xyz) e região
+attribute vec4 aNT;   // normal de destino
+attribute vec4 aMeta; // ordem de origem, semente, luz, ordem de destino
+uniform vec4 uFromT, uToT; // onde cada figura fica: deslocamento e escala
+uniform float uShift;      // 0 = a figura de origem inteira … 1 = a de destino inteira
+uniform float uPx, uCamZ, uSize, uTime;
+uniform vec2 uFloorPx;
+varying vec3 vN;
+varying float vLight, vFly, vSeed;
+
+void main() {
+  float seed = aMeta.y;
+  // parte quando a pedra de origem se desfaz ali; chega um pouco antes de a de destino se formar ali
+  float leave = 0.5 * (1.0 - aMeta.x) + 0.06 * (seed - 0.5);
+  float land = 0.44 + 0.5 * aMeta.w + 0.05 * (fract(seed * 7.3) - 0.5);
+  float u = clamp((uShift - leave) / max(land - leave, 0.08), 0.0, 1.0);
+  float e = u * u * (3.0 - 2.0 * u);
+  vec3 a = position * uFromT.w + uFromT.xyz;
+  vec3 b = aTo * uToT.w + uToT.xyz;
+  vec3 p = mix(a, b, e);
+  // o caminho: um arco que sobe (contra a gravidade) e se abre para quem olha, com um giro próprio
+  float arc = sin(3.14159265 * u);
+  float turn = 6.2832 * fract(seed * 13.7) + uTime * 0.6;
+  float amp = (0.1 + 0.26 * fract(seed * 5.1)) * (0.5 + 0.5 * uToT.w);
+  p += vec3(cos(turn) * 0.6, 0.55 + 0.45 * sin(turn * 0.7), 0.5 + 0.5 * sin(turn)) * arc * amp;
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_Position = projectionMatrix * mv;
+  vN = normalize(normalMatrix * mix(aNF.xyz, aNT.xyz, e));
+  vLight = aMeta.z;
+  vFly = arc;
+  vSeed = seed;
+  float size = uSize * (0.55 + 1.5 * pow(fract(seed * 23.7), 3.0)) * mix(uFromT.w, uToT.w, e);
+  gl_PointSize = max(1.0, size * uPx * uCamZ / -mv.z);
+  // fora do voo o grão é a própria pedra: não se desenha
+  if (u <= 0.001 || u >= 0.999 || uShift <= 0.0 || uShift >= 1.0) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+}
+`;
+
+export const GRAIN_FRAG = /* glsl */ `
+uniform float uLight;
+uniform vec3 uKeyDir, uFade;
+uniform vec2 uFloorPx;
+varying vec3 vN;
+varying float vLight, vFly, vSeed;
+${STUDIO_LIB}
+void main() {
+  vec2 c = gl_PointCoord * 2.0 - 1.0;
+  float r2 = dot(c, c);
+  if (r2 > 1.0) discard;
+  vec3 bead = vec3(c.x, -c.y, sqrt(1.0 - r2));
+  vec3 n = normalize(vN + bead * 0.9);
+  // pó de mármore que, no ar, pega a luz como prata
+  float lit = clamp((dot(n, uKeyDir) + 0.25) / 1.25, 0.0, 1.0);
+  vec3 stone = vec3(0.93, 0.9, 0.86) * (mix(0.1, 0.42, uLight) + lit * mix(1.05, 0.7, uLight)) * (0.45 + 0.55 * vLight);
+  vec3 silver = pow(clamp(studio(reflect(vec3(0.0, 0.0, -1.0), n), uLight), 0.0, 1.0), vec3(0.4545));
+  float glint = step(0.72, fract(vSeed * 9.7)) * vFly;
+  vec3 col = mix(pow(clamp(stone, 0.0, 1.0), vec3(0.4545)), silver * 1.25, glint);
+  col = mix(col, col * 0.55, uLight * (1.0 - bead.z) * 0.6);
+  gl_FragColor = vec4(mix(uFade, col, smoothstep(uFloorPx.x, uFloorPx.y, gl_FragCoord.y)), 1.0);
+}
+`;
+
+/**
+ * Os grãos de prata do repouso: uns moram no trecho que falta entre o antebraço e o punho (e o completam);
+ * outros sobem devagar de baixo, contra a gravidade, até lá. `aSeed` são quatro números ao acaso por grão.
+ */
+export const SILVER_VERT = /* glsl */ `
+attribute vec4 aSeed;
+uniform vec4 uGapM[3]; // o osso do antebraço (3 linhas)
+uniform vec4 uFigT;
+uniform vec3 uGap;     // o trecho que falta (de, até) e a presença
+uniform float uPx, uCamZ, uSize, uTime, uStir;
+uniform vec2 uFloorPx;
+varying vec3 vN;
+varying float vK;
+
+vec3 bone(vec3 p) { return vec3(dot(uGapM[0].xyz, p) + uGapM[0].w, dot(uGapM[1].xyz, p) + uGapM[1].w, dot(uGapM[2].xyz, p) + uGapM[2].w); }
+
+void main() {
+  // o lugar de cada grão dentro do trecho: um cilindro do tamanho do antebraço, mais cheio no miolo
+  float along = mix(uGap.x - 0.03, uGap.y + 0.03, aSeed.x);
+  float ang = 6.2832 * aSeed.y + uTime * (0.25 + 0.5 * aSeed.w) * (0.4 + uStir);
+  float rad = 0.115 * sqrt(aSeed.z) * (1.0 + 0.16 * sin(uTime * 0.9 + aSeed.w * 30.0));
+  vec3 home = bone(vec3(along, rad * cos(ang), rad * sin(ang)));
+  vec3 p = home * uFigT.w + uFigT.xyz;
+  float k = 1.0;
+  if (aSeed.w > 0.56) {
+    // os que sobem: nascem embaixo, espalhados, e fazem o caminho em espiral até o trecho
+    float t = fract(aSeed.x * 3.0 + uTime * (0.045 + 0.05 * aSeed.y) * (1.0 + uStir));
+    float e = t * t * (3.0 - 2.0 * t);
+    vec3 from = p + vec3((aSeed.y - 0.5) * 1.3, -2.6 - 1.4 * aSeed.z, (aSeed.z - 0.5) * 0.9) * uFigT.w;
+    float sw = (1.0 - e) * 0.3 * uFigT.w;
+    p = mix(from, p, e) + vec3(cos(t * 9.0 + aSeed.y * 6.2832), 0.0, sin(t * 9.0 + aSeed.y * 6.2832)) * sw;
+    k = smoothstep(0.0, 0.12, t) * smoothstep(1.0, 0.9, t);
+  }
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_Position = projectionMatrix * mv;
+  vN = normalize(vec3(cos(ang), sin(ang) * 0.6, 0.7));
+  vK = k * uGap.z;
+  gl_PointSize = max(1.0, uSize * (0.5 + 1.7 * pow(aSeed.z, 3.0)) * uFigT.w * uPx * uCamZ / -mv.z);
+  if (vK < 0.01) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+}
+`;
+
+export const SILVER_FRAG = /* glsl */ `
+uniform float uLight;
+uniform vec3 uFade;
+uniform vec2 uFloorPx;
+varying vec3 vN;
+varying float vK;
+${STUDIO_LIB}
+void main() {
+  vec2 c = gl_PointCoord * 2.0 - 1.0;
+  float r2 = dot(c, c);
+  if (r2 > 1.0) discard;
+  vec3 n = normalize(vN * 0.5 + vec3(c.x, -c.y, sqrt(1.0 - r2)));
+  // prata: o reflexo do ateliê e um brilho próprio — é ela que completa a pedra
+  vec3 col = pow(clamp(studio(reflect(vec3(0.0, 0.0, -1.0), n), uLight) * 1.6 + 0.3 * pow(max(n.z, 0.0), 3.0), 0.0, 1.0), vec3(0.4545));
+  col = mix(col, col * vec3(0.42, 0.48, 0.6), uLight * 0.6);
+  gl_FragColor = vec4(mix(uFade, col, vK * smoothstep(uFloorPx.x, uFloorPx.y, gl_FragCoord.y)), 1.0);
+}
+`;
+
+/**
+ * Entra em BACKDROP_FRAG, depois de `hash`/`noise`: a parede do ateliê e a luz lateral. O motor desenha o ambiente
+ * num alvo à parte só quando ele muda (engine.ts › bgRT); a sombra da escultura entra depois, em WALL_FRAG.
+ */
+export const ATELIER = /* glsl */ `
+uniform float uHero;     // presença da escultura (0 na conversa)
+uniform vec4 uFigBox;    // onde a figura está: centro (px do buffer) e meia altura (px); w livre
+uniform vec2 uFloorPx;
+float aboveFloor(float y) { return smoothstep(uFloorPx.x, uFloorPx.y, y); }
+
+vec3 atelier(vec2 px, vec3 col, vec3 base, vec3 deep, float light) {
+  float k = max(uFigBox.z, 1.0);
+  vec2 q = (px - uFigBox.xy) / k; // em meias alturas da figura, a partir do centro dela
+  // fora da luz a parede volta à cor do sistema: a cena não tem moldura
+  float reach = exp(-pow(length(q * vec2(0.5, 0.56)), 2.6)) * smoothstep(2.05, 1.35, abs(q.x)) * smoothstep(1.24, 1.04, abs(q.y)) * uHero;
+  if (reach < 0.003) return col;
+  // a luz entra pela esquerda, do alto, e lava a parede atrás da figura; o resto fica no carvão
+  vec2 lp = (q - vec2(-0.35, 0.3)) * vec2(0.62, 0.74);
+  float pool = exp(-dot(lp, lp) * 0.9);
+  float shaft = exp(-pow((q.y + 0.52 * q.x - 0.35) / 0.9, 2.0)) * smoothstep(1.6, -0.4, q.x);
+  float tex = noise(px / (0.03 * k)) * 0.6 + noise(px / (0.3 * k)) * 0.4;
+  vec3 wall = mix(vec3(0.075, 0.07, 0.066), vec3(0.905, 0.895, 0.875), light);
+  vec3 lit = mix(vec3(0.2, 0.185, 0.165), vec3(0.985, 0.98, 0.965), light);
+  vec3 room = mix(wall, lit, clamp(pool * 0.85 + shaft * 0.22, 0.0, 1.0));
+  room *= 1.0 + (tex - 0.5) * mix(0.16, 0.035, light);
+  // o chão: uma faixa mais clara sob a figura, que some para os lados
+  float ground = smoothstep(-0.78, -0.98, q.y) * exp(-pow(q.x / 1.5, 2.0));
+  room = mix(room, room * mix(1.5, 0.94, light), ground * 0.45);
+  return mix(col, room, reach);
+}
+`;
+
+/**
+ * O ambiente guardado vai para a tela com a sombra que a escultura projeta na parede (a silhueta dela, em um quarto
+ * da resolução): cai para a direita e para baixo, larga e macia. Só perto da figura — longe dela é uma leitura só.
+ */
+export const WALL_VERT = /* glsl */ `
+void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }
+`;
+export const WALL_FRAG = /* glsl */ `
+precision highp float;
+uniform sampler2D uBg, uShadow;
+uniform vec2 uRes;
+uniform vec4 uFigBox;
+uniform vec2 uFloorPx;
+uniform float uHero, uLight, uGrain, uTime;
+float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+void main() {
+  vec2 px = gl_FragCoord.xy;
+  vec3 col = texture2D(uBg, px / uRes).rgb;
+  float k = max(uFigBox.z, 1.0);
+  vec2 q = (px - uFigBox.xy) / k;
+  if (uHero > 0.01 && abs(q.x) < 1.9 && abs(q.y) < 1.2) {
+    vec2 c = (px + vec2(-0.2, 0.11) * k) / uRes;
+    vec2 b = vec2(0.07 * k) / uRes;
+    float s = texture2D(uShadow, c).r * 0.28;
+    s += (texture2D(uShadow, c + b * vec2(1.0, 0.25)).r + texture2D(uShadow, c + b * vec2(-0.85, 0.55)).r + texture2D(uShadow, c + b * vec2(0.3, -1.0)).r + texture2D(uShadow, c + b * vec2(-0.45, -0.8)).r) * 0.18;
+    float fade = smoothstep(1.9, 1.5, abs(q.x)) * smoothstep(1.2, 1.0, abs(q.y)) * smoothstep(uFloorPx.x, uFloorPx.y, px.y) * uHero;
+    col = mix(col, mix(col * 0.36, col * vec3(0.7, 0.72, 0.78), uLight), clamp(s, 0.0, 1.0) * mix(0.8, 0.72, uLight) * fade);
+  }
+  col += (hash(px + fract(uTime) * 61.0) - 0.5) * uGrain;
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+/**
+ * A passagem: o contorno (em px do buffer) por onde a página do destino aparece. A interface recorta a janela
+ * de verdade com o MESMO contorno (materia-scene.tsx); aqui fica o que é pedra — a borda erguida, com espessura
+ * e dobras, a sombra em volta e o escuro de dentro onde a janela ainda não chegou.
+ */
+export const PASSAGE_VERT = /* glsl */ `
+void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }
+`;
+
+export const PASSAGE_FRAG = /* glsl */ `
+precision highp float;
+uniform vec2 uPoly[16];
+uniform int uPolyN;      // 0 = círculo (uCircle)
+uniform vec3 uCircle;    // centro (px) e raio
+uniform float uK;        // px do buffer por unidade da figura
+uniform float uAmt;      // presença (0..1)
+uniform float uFlap;     // altura da borda erguida, em unidades (0 = só a espessura)
+uniform float uLight;
+uniform vec3 uStone;     // a cor do material da borda (pedra escura, papel, mármore)
+uniform vec3 uVoid;
+
+float sd(vec2 p) {
+  if (uPolyN == 0) return length(p - uCircle.xy) - uCircle.z;
+  float d = dot(p - uPoly[0], p - uPoly[0]);
+  float s = 1.0;
+  vec2 pj = uPoly[0];
+  for (int i = 0; i < 16; i++) { if (i == uPolyN - 1) pj = uPoly[i]; }
+  for (int i = 0; i < 16; i++) {
+    if (i >= uPolyN) break;
+    vec2 pi = uPoly[i];
+    vec2 e = pj - pi;
+    vec2 w = p - pi;
+    vec2 b = w - e * clamp(dot(w, e) / max(dot(e, e), 1e-6), 0.0, 1.0);
+    d = min(d, dot(b, b));
+    bvec3 c = bvec3(p.y >= pi.y, p.y < pj.y, e.x * w.y > e.y * w.x);
+    if (all(c) || all(not(c))) s = -s;
+    pj = pi;
+  }
+  return s * sqrt(d);
+}
+
+void main() {
+  vec2 px = gl_FragCoord.xy;
+  float d = sd(px);
+  float aa = 1.2;
+  vec2 g = vec2(sd(px + vec2(2.0, 0.0)) - d, sd(px + vec2(0.0, 2.0)) - d);
+  vec2 n = normalize(g + 1e-5);
+  // a borda de cima é a que as mãos erguem: ali a pedra sobe como tecido; nos outros lados fica só a espessura
+  float up = smoothstep(0.25, 0.9, n.y);
+  float thick = (0.045 + uFlap * up) * uK;
+  float t = d / max(thick, 1.0);
+  vec3 col = vec3(0.0);
+  float a = 0.0;
+  if (d < 0.0) {
+    // o escuro de dentro (onde a janela já chegou, ela cobre isto)
+    float depth = clamp(-d / (0.5 * uK), 0.0, 1.0);
+    col = uVoid * mix(0.45, 1.0, depth);
+    a = 1.0;
+  } else if (t < 1.0) {
+    // a borda: um rolo de pedra com dobras, mais claro no fio e sombreado no alto
+    float fold = 0.5 + 0.5 * sin(px.x / (0.16 * uK) + 2.2 * sin(px.x / (0.5 * uK)));
+    float roll = sin(3.14159265 * pow(t, 0.7));
+    vec3 c = uStone * (0.5 + 0.6 * roll) * mix(1.0, 0.72 + 0.4 * fold, up * smoothstep(0.1, 0.6, t));
+    c += vec3(0.5) * exp(-pow(t / 0.07, 2.0)) * mix(0.8, 0.35, uLight);
+    col = c;
+    a = smoothstep(1.0, 1.0 - aa / max(thick, 1.0) - 0.12 * up, t);
+  }
+  // a sombra que a borda erguida projeta em volta
+  float sh = exp(-max(d - thick * 0.6, 0.0) / (0.2 * uK)) * step(0.0, d) * mix(0.55, 0.3, uLight);
+  col = mix(vec3(0.0), col, a);
+  float alpha = max(a, sh * (1.0 - a));
+  gl_FragColor = vec4(col * uAmt, alpha * uAmt);
 }
 `;

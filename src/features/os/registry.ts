@@ -52,10 +52,11 @@ export const ICON_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "ser
 /** Ordem da grade da tela inicial do telefone (4 colunas; a busca entra como oitavo item no launcher). */
 export const MOBILE_GRID: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 /**
- * Grade da área de trabalho no desktop largo (DESKTOP_WIDE_MQ): duas colunas × três linhas, lida por linha —
- * Projetos | Serviços, Estúdio | Lab, Perfil | Contato. No tablet continua a coluna de ICON_ORDER.
+ * A navegação da primeira tela no desktop largo (DESKTOP_WIDE_MQ), na ordem em que se lê: os dois destinos em
+ * destaque — Projetos e Perfil, desenhados como botões — e os demais agrupados logo abaixo. No tablet continua a
+ * coluna de ICON_ORDER.
  */
-export const DESKTOP_GRID: AppId[] = ["projects", "services", "studio", "lab", "profile", "contact"];
+export const DESKTOP_GRID: AppId[] = ["projects", "profile", "services", "studio", "lab", "contact"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou

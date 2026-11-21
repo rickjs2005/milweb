@@ -59,13 +59,13 @@ export async function loadMolecules(full: boolean, signal?: AbortSignal): Promis
 }
 
 /**
- * A figura da home, articulada (ver o cabeçalho de assets/materia/build_figure.py): o corpo (tronco e cabeça,
- * já na pose da cena), o braço e a mão em repouso — a mão em três formas, a mesma malha. O motor desenha o
- * braço e a mão duas vezes (rig.ts).
+ * Os braços das esculturas (ver o cabeçalho de assets/materia/build_figure.py): o braço e a mão em repouso — a
+ * mão em três formas, a mesma malha. O motor desenha os dois duas vezes, o direito e o esquerdo de cada figura
+ * (rig.ts); o corpo de cada figura vem de sculpt.ts.
  */
 export type FigureShape = { position: Float32Array; na: Int8Array };
 export type FigurePart = { count: number; shapes: FigureShape[]; /** caminho da luz, dissolução, semente */ meta: Uint8Array; /** osso A, osso B, peso de A */ skin: Uint8Array; index: Uint16Array };
-export type FigureMesh = { body: FigurePart; arm: FigurePart; hand: FigurePart };
+export type FigureMesh = { arm: FigurePart; hand: FigurePart };
 
 function decodeFigure(buf: ArrayBuffer): FigureMesh {
   const view = new DataView(buf);
@@ -98,8 +98,9 @@ function decodeFigure(buf: ArrayBuffer): FigureMesh {
     at += indices * 2 + ((indices * 2) % 4);
     parts.push({ count, shapes, meta, skin, index });
   }
-  if (parts.length < 3) throw new Error("materia: figura incompleta");
-  return { body: parts[0], arm: parts[1], hand: parts[2] };
+  if (parts.length < 2) throw new Error("materia: figura incompleta");
+  // as duas últimas partes são o braço e a mão (arquivos antigos traziam antes delas um corpo, que já não se usa)
+  return { arm: parts[parts.length - 2], hand: parts[parts.length - 1] };
 }
 
 /** A malha completa só para GPU com folga; as demais (e o telefone) recebem a versão leve. */

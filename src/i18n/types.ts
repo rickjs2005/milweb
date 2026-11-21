@@ -76,7 +76,7 @@ export type Dictionary = {
       numbers: string; kind: string; year: string; status: string; of: string; count: string; empty: string; interactive: string;
       /** Mural de cartazes (THE BOUNTY COLLECTION): faixa do cartaz, selo por tipo, navegação e dossiê. */
       dossier: string; rank: string; collection: string; missions: string; wall: string; position: string; hint: string; swipe: string; viewAll: string; backToCollection: string;
-      tryIt: string; made: string; madeTitle: string; sample: string; sampleHint: string; problem: string; contribution: string; decision: string; verify: string; discuss: string; full: string;
+      tryIt: string; visitSite: string; made: string; madeTitle: string; sample: string; sampleHint: string; problem: string; contribution: string; decision: string; verify: string; discuss: string; full: string;
       tier: { wanted: string; most: string; special: string };
       seal: { client: string; demo: string; experiment: string; webgl: string; product: string };
     };

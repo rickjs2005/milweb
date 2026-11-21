@@ -1,4 +1,4 @@
-import { FOLD_LIB, FOLD_SCENE, STUDIO_LIB } from "./hero-shaders";
+import { ATELIER, STUDIO_LIB } from "./hero-shaders";
 
 /**
  * Shaders da Matéria. Cores saem prontas para a tela (sRGB): nenhum material passa por tone mapping.
@@ -13,11 +13,10 @@ attribute vec3 aNormal;
 attribute vec3 aBrain;
 attribute vec3 aBrainN;
 attribute vec4 aMeta; // semente, dissolução, borda de sulco, região (0..1)
-attribute vec3 aHero;  // home: posição (unidades da figura) ou parâmetros na dobra
-attribute vec4 aHeroN; // home: normal e o tipo (0 nuvem da figura, 1 borda livre da aba, 2 borda da página, 3 rugas)
-uniform float uHeroK, uFigScale, uFoldW, uRevealM;
-uniform vec3 uFigOffset, uGrabF;
-uniform vec2 uTipW;
+attribute vec3 aHero;  // com a escultura inteira: onde a molécula espera, na superfície dela (unidades da figura)
+attribute vec4 aHeroN; // a normal ali e o tipo (4 = guardada)
+uniform float uHeroK;
+uniform vec4 uFigT;    // onde a escultura fica: deslocamento e escala
 uniform float uTime, uPx, uCamZ, uSize, uYaw, uMorph, uListen, uSpeak, uCalm, uAlign, uSlit, uScale, uIntro, uFold, uFloor;
 uniform float uPortal, uPortalYaw, uSeaY;
 uniform vec2 uPull, uPullLag, uPortalC, uPortalR;
@@ -27,7 +26,6 @@ varying float vShade, vSulcus, vGlow, vGhost, vE, vSea, vRim, vHk;
 
 vec3 ry(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z); }
 vec3 rx(vec3 p, float a) { float c = cos(a), s = sin(a); return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z); }
-${FOLD_LIB}
 
 void main() {
   float seed = aMeta.x;
@@ -122,18 +120,8 @@ void main() {
   float kind = aHeroN.w;
   float big = fract(seed * 23.7);
   if (hk > 0.001) {
-    vec3 hw;
-    vec3 hn = aHeroN.xyz;
-    if (kind < 0.5) {
-      float bob = sin(uTime * 0.6 + seed * 40.0);
-      hw = (aHero + vec3(0.012, 0.01, 0.0) * bob * (1.0 - uCalm)) * uFigScale + uFigOffset;
-    } else {
-      vec2 q0 = kind < 1.5 ? vec2(foldR(aHero.x) + aHero.y, -aHero.x) : kind < 2.5 ? vec2(foldL(aHero.x) + aHero.y, -aHero.x) : aHero.x * vec2(cos(aHero.y), sin(aHero.y));
-      q0 += uGrab * foldW(q0);
-      hw = vec3(uTipW + q0 * uFoldW, aHero.z * uFoldW);
-    }
-    world = mix(world, hw, hk);
-    n = normalize(mix(n, hn, hk));
+    world = mix(world, aHero * uFigT.w + uFigT.xyz, hk);
+    n = normalize(mix(n, aHeroN.xyz, hk));
   }
   vHk = hk;
 
@@ -152,12 +140,11 @@ void main() {
   // telefone: o busto se apaga antes da grade de aplicativos (uFloor, em unidades abaixo do centro da cabeça)
   vShade = (0.1 + 0.9 * facing) * arrive * mix((1.0 - 0.65 * gone * flow) * mix(smoothstep(uFloor, uFloor - 0.34, -p.y), 1.0, e), 1.0, hk);
   float size = uSize * (0.72 + 0.56 * fract(seed * 13.7)) * mix(mix(1.0, 0.5, gone), 1.0, hk) * (0.45 + 0.55 * facing) * mix(1.0, 0.86, e);
-  // fragmentos de tamanhos diferentes: poucos grandes, muitos miúdos; na dobra, mais finos
-  // (as gotas da dobra somem quando ela vira a janela)
-  size *= mix(1.0, (0.42 + 2.9 * big * big * big * big) * (kind < 0.5 ? 1.0 : kind > 3.5 ? 0.0 : 0.6 * uOpen * (1.0 - uRevealM)), hk);
-  gl_PointSize = max(1.0, size * uScale * uPx * uCamZ / -mv.z);
-  // guardadas: fora de cena enquanto a home está inteira (não custam um pixel)
-  if ((kind > 3.5 && hk > 0.985) || (kind > 0.5 && kind < 3.5 && uRevealM > 0.97 && hk > 0.5)) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  // saindo da pedra: fragmentos de tamanhos diferentes, poucos grandes e muitos miúdos
+  size *= mix(1.0, 0.5 + 1.6 * big * big * big * big, hk);
+  gl_PointSize = max(1.0, size * mix(uScale, uFigT.w * 2.4, hk) * uPx * uCamZ / -mv.z);
+  // guardadas: fora de cena enquanto a escultura está inteira (não custam um pixel)
+  if (kind > 3.5 && hk > 0.985) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }
 `;
 
@@ -255,8 +242,7 @@ float noise(vec2 p) {
 }
 float th(float x) { float e = exp(2.0 * clamp(x, -8.0, 8.0)); return (e - 1.0) / (e + 1.0); }
 ${STUDIO_LIB}
-${FOLD_LIB}
-${FOLD_SCENE}
+${ATELIER}
 
 vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light) {
   float k = uHead.z;
@@ -294,9 +280,8 @@ vec3 ambient(vec2 px, vec3 base, vec3 deep, vec3 haze, vec3 accent, float light)
     float line = exp(-pow(sx / 0.012, 2.0)) * smoothstep(1.9, 0.3, abs(q.y + 0.2));
     col = mix(col + (accent * 0.7 + vec3(0.5)) * line, mix(col, accent, line * 0.75), light);
   }
-  // Na home, a figura segura uma dobra da própria tela: a página, a abertura e a aba de metal entram aqui.
-  if (uHero > 0.001) col = foldScene(px, col, base, deep, accent, light);
-  col = cardLayer(px, col, light);
+  // Com a escultura em cena, o fundo é o ateliê: a parede, a luz lateral e a sombra dela.
+  if (uHero > 0.001) col = mix(col, atelier(px, col, base, deep, light), aboveFloor(px.y));
   col *= 1.0 - mix(0.5, 0.08, light) * smoothstep(0.35, 0.95, length(c * vec2(1.0, 1.3))) * (1.0 - 0.5 * uHero) * live;
   return col;
 }
@@ -314,7 +299,6 @@ void main() {
     col = mix(col, next, m);
     col += mix(uAccentB, vec3(1.0), 0.4) * exp(-pow((d - front) / (0.018 * far), 2.0)) * 0.5 * step(0.001, uP) * step(uP, 0.999);
   }
-  col += (hash(px + fract(uTime) * 61.0) - 0.5) * uGrain * (1.0 - uFlat);
   gl_FragColor = vec4(col, 1.0);
 }
 `;

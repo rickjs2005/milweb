@@ -5,7 +5,6 @@ import { APPS } from "../../registry";
 import { useOs, useOsStore } from "../../os-shell";
 import type { OsProject } from "../../types";
 import { MATERIA } from "../../materia/config";
-import { stage as materia } from "../../materia/guide-store";
 import { ProjectExplore, type Face } from "./explore";
 import { projectsIntent, useProjectsIntent } from "./intent";
 import { Poster, posterSeal } from "./poster";
@@ -128,10 +127,9 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
     (i: number) => {
       if (!list.length) return;
       const next = Math.max(0, Math.min(list.length - 1, i));
-      if (list[next].slug !== activeSlug) materia.swap?.(next > active ? 1 : -1);
       setActiveSlug(list[next].slug);
     },
-    [list, active, activeSlug],
+    [list],
   );
 
   // A Matéria (ou o perfil) pede um projeto já com um dos lados aberto: "ver como foi feito" é a entrada do recrutador.
@@ -501,6 +499,12 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
           <button type="button" className="bounty__btn bounty__btn--ghost" data-act="made" onClick={() => setFace("made")}>
             {P.made}
           </button>
+          {/* o site no ar, em um gesto (só quando o projeto tem endereço público que respondeu na última conferência) */}
+          {current.visit && (
+            <a className="bounty__btn bounty__btn--ghost" data-act="visit" href={current.visit} target="_blank" rel="noopener noreferrer">
+              {P.visitSite} <span aria-hidden="true">↗</span>
+            </a>
+          )}
         </div>
       )}
 

@@ -26,6 +26,8 @@ export type OsProject = {
   client: string | null;
   clientWork: boolean;
   live: string | null;
+  /** O endereço público para o botão "Visitar site" da coleção: o mesmo de `live`, quando respondeu na última conferência (data/projects.ts › LIVE_DOWN). */
+  visit: string | null;
   /** Captura principal (public/shots). */
   image: string;
   tagline: string;

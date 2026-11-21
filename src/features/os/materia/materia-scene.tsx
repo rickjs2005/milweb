@@ -6,33 +6,36 @@ import { getQuality, probeGpu } from "@/lib/quality";
 import { useOs, useOsStore } from "../os-shell";
 import { DESKTOP_WIDE_MQ } from "../registry";
 import type { OsTheme } from "../theme";
-import { COMPOSE, HERO_STILL, MATERIA, MATERIA_STILL, MOOD_OF, THEME_OF, type Mood } from "./config";
+import type { ActId } from "./acts";
+import { COMPOSE, FRAMES, HERO_STILL, MATERIA, MATERIA_STILL, MOOD_OF, THEME_OF, type Mood } from "./config";
 import type { Engine, Layout } from "./engine";
-import { guide, stage, useGuide } from "./guide-store";
+import { guide, landOn, stage, useGuide } from "./guide-store";
+import { domPassage } from "./passage";
+import { SCULPT_OF, loadSculpt, type SculptId } from "./sculpt";
 
 /**
- * O fundo do MilWeb OS — Matéria: uma figura de mercúrio segurando uma dobra da própria tela entre o polegar
- * e o indicador. A mão está perto de quem olha, o rosto aparece de perfil mais atrás, e por baixo da folha
- * levantada há uma profundidade escura com a capa de um projeto de verdade. O visitante consegue repetir tudo:
+ * O fundo do MilWeb OS — Matéria: uma escultura de mármore num ateliê. Em repouso ela sustenta o peso sobre
+ * uma perna, um ombro ainda preso ao bloco bruto, e grãos de prata completam o trecho que falta no punho. Cada
+ * destino do sistema tem a sua figura; quando o visitante escolhe um, a pedra se desfaz, os grãos percorrem
+ * trajetos curtos e a nova figura se forma, faz o gesto dela e abre a PASSAGEM — o contorno por onde a página
+ * de verdade aparece:
  *
- *   puxar a dobra          perto da ponta a mão acompanha o cursor (ou o dedo, numa área só dela); a folha
- *                          encurva, o reflexo do lema desliza e, ao soltar, a tensão corre pelo metal (engine › grab)
- *   explorar o projeto     a abertura cresce até coincidir com a janela do case (engine › reveal)
- *   ver o pensamento       a conversa aberta faz a faixa de luz percorrer o braço até a cabeça; a figura se
- *                          desfaz e as mesmas moléculas se reorganizam num cérebro
- *   ver através do rosto   no recorte ("Ver uma ideia para o meu site") a matéria vira o busto de moléculas, a
- *                          cabeça fica de perfil e a interface desenha a ideia dentro do vão
- *                          (guide-panel.tsx › MateriaPortal); na de mergulho a faixa de luz vira o mar
+ *   Projetos  a Curadora ergue a pele mineral da página      Estúdio   o Gravador puxa a folha da prensa
+ *   Perfil    o Arquivista desliza a folha do fólio          Lab       a Inventora gira o giroscópio
+ *   Serviços  a Arquiteta abre o compasso                    Orçamento a Mensageira rompe o lacre do envelope
  *
- * Camada visual pura, ATRÁS da interface: `pointer-events: none`, aria-hidden. O HTML entrega a imagem
- * estática da própria cena, com a dobra aberta (fundo CSS, posicionada por `--mh-x/--mh-y/--mh-k`): o
- * primeiro quadro já é o certo, e quem tem movimento reduzido, WebGL ausente, GPU sem condição ou falha ao
- * baixar a malha e as moléculas fica com ela — a cena em repouso, o cérebro na conversa. A navegação e a
- * conversa nunca dependem do motor.
+ * A janela do destino já está aberta desde o clique (rota, dados, foco); enquanto o gesto dura ela é recortada
+ * pelo contorno que o motor publica quadro a quadro (engine › passage, passage.ts › domPassage), e quando as mãos
+ * soltam o contorno segue sozinho até as coordenadas reais dela. Um toque ou uma tecla no meio entregam tudo
+ * na hora; uma segunda escolha interrompe a primeira.
+ *
+ * Camada visual pura, ATRÁS da interface: `pointer-events: none`, aria-hidden. O HTML entrega a imagem estática
+ * da própria cena (fundo CSS, posicionada por `--mh-x/--mh-y/--mh-h`): o primeiro quadro já é o certo, e quem tem
+ * movimento reduzido, WebGL ausente, GPU sem condição ou falha ao baixar os arquivos fica com ela — e com a
+ * página do destino imediatamente. A navegação e a conversa nunca dependem do motor.
  *
  * UM laço: o ticker do GSAP (dentro do motor). A cena também é o driver da troca de tema do store.
  */
-const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
 
 /** Composição a partir da área do fundo e do palco (`.os-stage`), em px CSS relativos ao fundo. */
 function measure(root: HTMLElement, mobile: boolean): Layout | null {
@@ -49,26 +52,23 @@ function measure(root: HTMLElement, mobile: boolean): Layout | null {
     const k = Math.min(C.kS * sh, C.kW * w);
     const home = { x: cx, y: cy + C.homeDy * sh };
     const bottom = s && s.height > 0 ? s.bottom - box.top : h * 0.62;
-    // a home no telefone: a câmera chega perto — os dedos e a dobra em primeiro plano, o perfil atrás
-    // (medida pelo palco: no telefone deitado ele é a coluna da direita, e a grade de apps fica com a esquerda)
+    // a escultura ocupa o palco (no telefone deitado ele é a coluna da direita, e a grade de apps fica com a esquerda)
     const top = s && s.height > 0 ? s.top - box.top : h * 0.1;
     const sw = s && s.width > 0 ? s.width : w;
     const sl = s && s.width > 0 ? s.left - box.left : 0;
-    const hero = { x: sl + C.hero.x * sw, y: top + C.hero.y * sh, k: Math.min(C.hero.kS * sh, C.hero.kW * sw) };
+    const hero = { x: sl + C.hero.x * sw, y: top + C.hero.y * sh, h: Math.min(C.hero.h * sh, C.hero.wMax * sw) };
     return { w, h, k, home, talk: { x: w / 2, y: C.talk.y * h, k: (C.talk.kW * w) / k }, floor: (bottom - 6 - home.y) / k, hero, heroFloor: bottom - 4 };
   }
   const C = window.matchMedia(DESKTOP_WIDE_MQ).matches ? COMPOSE.desktop : COMPOSE.tablet;
   const k = Math.min(C.kH * h, C.kW * w);
-  // a figura da home fica ancorada na borda direita: o ombro sai do quadro em qualquer largura
-  const hk = Math.min(C.hero.kH * h, C.hero.kW * w);
-  return { w, h, k, home: { x: C.home.x * w, y: C.home.y * h }, talk: { x: C.talk.x * w, y: C.talk.y * h, k: C.talk.k }, hero: { x: w - C.hero.right * hk, y: C.hero.y * h, k: hk } };
+  return { w, h, k, home: { x: C.home.x * w, y: C.home.y * h }, talk: { x: C.talk.x * w, y: C.talk.y * h, k: C.talk.k }, hero: { x: C.hero.x * w, y: C.hero.y * h, h: Math.min(C.hero.h * h, C.hero.wMax * w) } };
 }
 
 export function MateriaScene() {
   const { store, payload } = useOs();
   const shell = useOsStore((s) => s.shell);
   const motion = useOsStore((s) => s.prefs.motion);
-  const talking = useGuide((s) => s.open);
+  const talking = useGuide((s) => s.open && !s.min);
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const layoutRef = useRef<Layout | null>(null);
@@ -93,7 +93,7 @@ export function MateriaScene() {
         el?.style.setProperty("--ma-tk", `${(l.k * l.talk.k).toFixed(1)}px`);
         el?.style.setProperty("--mh-x", `${l.hero.x.toFixed(1)}px`);
         el?.style.setProperty("--mh-y", `${l.hero.y.toFixed(1)}px`);
-        el?.style.setProperty("--mh-k", `${l.hero.k.toFixed(1)}px`);
+        el?.style.setProperty("--mh-h", `${l.hero.h.toFixed(1)}px`);
         if (l.heroFloor !== undefined) el?.style.setProperty("--mh-floor", `${l.heroFloor.toFixed(1)}px`);
         else el?.style.removeProperty("--mh-floor");
       }
@@ -101,8 +101,6 @@ export function MateriaScene() {
       const stageBox = mobile ? host?.querySelector(".os-stage")?.getBoundingClientRect() : null;
       host?.style.setProperty("--ma-vx", `${(box.left + l.home.x).toFixed(1)}px`);
       host?.style.setProperty("--ma-vy", `${(box.top + l.home.y).toFixed(1)}px`);
-      host?.style.setProperty("--mh-vx", `${(box.left + l.hero.x).toFixed(1)}px`);
-      host?.style.setProperty("--mh-vy", `${(box.top + l.hero.y).toFixed(1)}px`);
       host?.style.setProperty("--ma-py", `${(stageBox && stageBox.height > 0 ? stageBox.bottom - 60 : Math.min(box.top + l.home.y + 1.02 * l.k, box.bottom - 150)).toFixed(1)}px`);
       engineRef.current?.setLayout(l);
     };
@@ -117,7 +115,7 @@ export function MateriaScene() {
       ro.disconnect();
       wide.removeEventListener("change", apply);
       layoutRef.current = null;
-      for (const el of [root, host]) ["--ma-x", "--ma-y", "--ma-k", "--ma-tx", "--ma-ty", "--ma-tk", "--ma-vx", "--ma-vy", "--ma-py", "--mh-x", "--mh-y", "--mh-k", "--mh-vx", "--mh-vy", "--mh-floor"].forEach((k) => el?.style.removeProperty(k));
+      for (const el of [root, host]) ["--ma-x", "--ma-y", "--ma-k", "--ma-tx", "--ma-ty", "--ma-tk", "--ma-vx", "--ma-vy", "--ma-py", "--mh-x", "--mh-y", "--mh-h", "--mh-floor"].forEach((k) => el?.style.removeProperty(k));
     };
   }, [shell]);
 
@@ -141,14 +139,14 @@ export function MateriaScene() {
       if (!gq.webgl) return;
       const lite = mobile || gq.tier !== "high";
       const [{ createEngine }, { loadMolecules, loadFigure }] = await Promise.all([import("./engine"), import("./asset")]);
-      // As moléculas e a malha da figura: até chegarem — ou se falharem — vale a imagem estática.
-      const assets = await Promise.all([loadMolecules(gq.tier === "high", abort.signal), loadFigure(!lite, abort.signal)]).catch((err: unknown) => {
+      // A figura em repouso, os braços e as moléculas: até chegarem — ou se falharem — vale a imagem estática.
+      const assets = await Promise.all([loadMolecules(gq.tier === "high", abort.signal), loadFigure(!lite, abort.signal), loadSculpt("rest", lite, abort.signal)]).catch((err: unknown) => {
         if (!disposed) console.warn("[milweb] Matéria indisponível:", err instanceof Error ? err.message : err);
         return null;
       });
       if (disposed || !assets) return;
-      const [molecules, figure] = assets;
-      const e = createEngine({ canvas, mood: MOOD_OF[store.getState().prefs.theme], lite, molecules, figure });
+      const [molecules, figure, rest] = assets;
+      const e = createEngine({ canvas, mood: MOOD_OF[store.getState().prefs.theme], lite, molecules, figure, rest });
       if (!e) return;
       const B = MATERIA.budget;
       const l0 = layoutRef.current ?? measure(root, mobile);
@@ -169,13 +167,46 @@ export function MateriaScene() {
       engineRef.current = e;
       if (layoutRef.current) e.setLayout(layoutRef.current);
 
+      // ---- as outras figuras chegam sob demanda: a do destino pedido agora, e adiantadas as duas de destaque ----
+      const loading = new Map<SculptId, Promise<boolean>>();
+      const need = (id: SculptId): Promise<boolean> => {
+        if (e.has(id)) return Promise.resolve(true);
+        let p = loading.get(id);
+        if (!p) {
+          p = loadSculpt(id, lite, abort.signal)
+            .then((s) => {
+              if (disposed) return false;
+              e.addSculpt(s);
+              return true;
+            })
+            .catch(() => {
+              loading.delete(id);
+              return false;
+            });
+          loading.set(id, p);
+        }
+        return p;
+      };
+      // As duas figuras de destaque vêm adiantadas, com a página já parada — menos para quem pediu economia de dados ou
+      // está numa rede lenta: aí cada figura só é baixada quando o destino é apontado, tocado ou pedido.
+      const net = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+      const thrifty = !!net && (net.saveData === true || /(^|-)2g$|^3g$/.test(net.effectiveType ?? ""));
+      const warm = onIdle(() => {
+        if (disposed || thrifty) return;
+        void need("projects").then(() => !disposed && need("profile"));
+      }, 2400);
+      stage.warm = (app) => {
+        const id = SCULPT_OF[app];
+        if (id) void need(id);
+      };
+
+      const html = document.documentElement;
       // Com o recorte aberto as janelas saem de cena (styles/materia.css › data-os-portal): nada cobre a figura.
       const covered = () => {
         if (guide.get().portal || html.dataset.osArriving) return false;
         const s = store.getState();
         return s.shell === "mobile" ? s.focused !== null : s.order.some((id) => s.wins[id].open && !s.wins[id].min && s.wins[id].max);
       };
-      const html = document.documentElement;
       const mark = () => {
         root.dataset.mood = e.mood;
         const tr = e.trans;
@@ -230,88 +261,110 @@ export function MateriaScene() {
           img.src = src;
         }
       };
-      // A capa que se vê pela abertura da dobra: o projeto que a conversa recomendou, o case aberto ou o destaque.
-      const featured = (payload.projects.find((p) => p.slug === MATERIA.hero.cover) ?? payload.projects.find((p) => p.featured !== null) ?? payload.projects[0])?.slug ?? null;
-      let shown: string | null = null;
-      let coverImage: HTMLImageElement | null = null;
-      const show = (slug: string | null) => {
-        const next = slug && imageOf(slug) ? slug : featured;
-        if (next === shown || !next) return;
-        shown = next;
-        const src = imageOf(next);
-        if (!src) return;
-        const img = images.get(next) ?? new Image();
-        const ready = () => {
-          if (disposed || shown !== next) return;
-          coverImage = img;
-          e.cover(img);
+
+      // ---- os destinos: a figura de cada um faz o gesto e a página aparece pela passagem ----
+      let arriving: ActId | null = null;
+      let arrivingEl: HTMLElement | null = null;
+      let arrivingFocus: string | null = null;
+      let arrivalTimer = 0;
+      const clearClip = (el: HTMLElement | null) => {
+        if (!el) return;
+        delete el.dataset.arriving;
+        el.style.removeProperty("--mp-tf");
+        el.style.removeProperty("--mp-clip");
+      };
+      /** O destino está entregue: a janela inteira, no lugar, com o foco no que foi pedido. */
+      const settleArrival = () => {
+        window.clearTimeout(arrivalTimer);
+        window.removeEventListener("pointerdown", hurry, true);
+        window.removeEventListener("keydown", hurry, true);
+        if (!arriving) return;
+        const el = arrivingEl;
+        const focus = arrivingFocus;
+        arriving = null;
+        arrivingEl = null;
+        arrivingFocus = null;
+        // a janela já está no lugar: tirar o recorte não pode virar um deslize (a transição de `transform` dela fica fora por um quadro)
+        if (el) {
+          el.style.transition = "none";
+          requestAnimationFrame(() => el.style.removeProperty("transition"));
+        }
+        clearClip(el);
+        delete html.dataset.osArriving;
+        if (focus && el) landOn(el, focus);
+        syncRun();
+      };
+      /** O visitante não quer esperar o gesto (um toque, uma tecla): o destino aparece na hora. */
+      const hurry = (ev: Event) => {
+        if (ev instanceof KeyboardEvent && ["Shift", "Control", "Alt", "Meta"].includes(ev.key)) return;
+        e.settle();
+        settleArrival();
+      };
+      const rectOf = (win: HTMLElement) => {
+        const box = canvas.getBoundingClientRect();
+        const layer = win.offsetParent?.getBoundingClientRect();
+        const x0 = (layer?.left ?? 0) + win.offsetLeft - box.left;
+        const y0 = (layer?.top ?? 0) + win.offsetTop - box.top;
+        return { x0, y0, x1: x0 + win.offsetWidth, y1: y0 + win.offsetHeight };
+      };
+      stage.go = (app, opts) => {
+        const id = SCULPT_OF[app];
+        const g = guide.get();
+        const reduce = motion === "reduce" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (disposed || !id || reduce || document.hidden || root.dataset.state !== "live" || g.portal) return false;
+        // a janela já estava na tela (o visitante só voltou a ela): não há o que entregar de novo — quem chama cuida do foco
+        if (arriving !== app && document.querySelector(`.os-window[data-app="${app}"]`)) return false;
+        // a figura do destino ainda não chegou do servidor: a página vai na frente (e a figura fica pronta para a próxima)
+        if (!e.has(id)) {
+          void need(id);
+          return false;
+        }
+        // muda de ideia: o destino anterior aparece inteiro na hora e a figura parte de onde está
+        settleArrival();
+        // a conversa se recolhe quando cobriria a cena: o gesto é para ser visto
+        if (g.open && !g.min) guide.set({ min: true, unread: true });
+        arriving = app;
+        arrivingFocus = opts?.focus ?? null;
+        html.dataset.osArriving = app;
+        e.become(id);
+        e.start();
+        root.dataset.run = "1";
+        const since = performance.now();
+        const aim = () => {
+          if (arriving !== app || disposed) return;
+          const win = document.querySelector<HTMLElement>(`.os-window[data-app="${app}"]`);
+          const ready = !!win && win.offsetWidth > 40;
+          if (!ready) {
+            if (performance.now() - since < 900) return void requestAnimationFrame(aim);
+            return settleArrival();
+          }
+          arrivingEl = win;
+          win.dataset.arriving = "1";
+          win.style.setProperty("--mp-clip", "inset(50%)");
+          e.act(app, rectOf(win));
+          window.addEventListener("pointerdown", hurry, true);
+          window.addEventListener("keydown", hurry, true);
+          // rede de segurança: o destino nunca fica preso ao gesto
+          arrivalTimer = window.setTimeout(settleArrival, 3200 / e.pace());
         };
-        if (img.complete && img.naturalWidth > 0) return ready();
-        img.decoding = "async";
-        img.addEventListener("load", ready, { once: true });
-        if (!images.has(next)) {
-          images.set(next, img);
-          img.src = src;
-        }
+        requestAnimationFrame(aim);
+        return true;
       };
-      let offered: string | null = null;
-      const offer = (slug: string | null) => {
-        if (slug === offered) return;
-        offered = slug;
-        const src = slug ? imageOf(slug) : null;
-        if (!slug || !src) return e.offer(null);
-        const img = images.get(slug) ?? new Image();
-        const ready = () => {
-          if (!disposed && offered === slug) e.offer(img);
-        };
-        if (img.complete && img.naturalWidth > 0) return ready();
-        img.decoding = "async";
-        img.addEventListener("load", ready, { once: true });
-        if (!images.has(slug)) {
-          images.set(slug, img);
-          img.src = src;
-        }
+
+      /** A figura que a cena deve mostrar: a do app em primeiro plano; sem janela, a Matéria em repouso. */
+      const wanted = (): SculptId => {
+        const s = store.getState();
+        const f = s.focused;
+        const id = f && s.wins[f].open && !s.wins[f].min ? SCULPT_OF[f] : undefined;
+        return id ?? "rest";
       };
-      // O lema, para o reflexo invertido na aba: a última palavra em vermelho, o ponto final em azul (canais).
-      let wordCanvas: HTMLCanvasElement | null = null;
-      const drawWord = () => {
-        const motto = payload.s.sign.motto.trim();
-        const dot = motto.endsWith(".");
-        const text = (dot ? motto.slice(0, -1) : motto).trim().split(/\s+/).pop() ?? "";
-        const c = document.createElement("canvas");
-        c.width = 1024;
-        c.height = 256;
-        const g = c.getContext("2d");
-        if (!g || !text) return;
-        const family = getComputedStyle(root.parentElement?.querySelector(".os-sign__motto") ?? root).fontFamily || "sans-serif";
-        g.fillStyle = "#000";
-        g.fillRect(0, 0, c.width, c.height);
-        let size = 196;
-        g.font = `800 ${size}px ${family}`;
-        const full = g.measureText(text + (dot ? "." : "")).width;
-        if (full > 960) size = Math.floor((size * 960) / full);
-        g.font = `800 ${size}px ${family}`;
-        const wText = g.measureText(text).width;
-        const x0 = (c.width - g.measureText(text + (dot ? "." : "")).width) / 2;
-        g.textBaseline = "alphabetic";
-        g.fillStyle = "#f00";
-        g.fillText(text, x0, 186);
-        if (dot) {
-          g.fillStyle = "#00f";
-          g.fillText(".", x0 + wText, 186);
-        }
-        wordCanvas = c;
-        e.word(c);
-      };
-      void document.fonts.ready.then(() => !disposed && drawWord());
-      let wasOpen = guide.get().open;
       const syncTargets = () => {
         const g = guide.get();
         const s = store.getState();
         const route = s.focused === "projects" ? s.wins.projects.route : null;
         const caseSlug = route?.startsWith("/work/") ? route.slice(6) : null;
-        // O recorte acontece no busto: enquanto ele está aberto, a conversa não segura a pose do cérebro.
-        const talk = g.open && !g.portal;
+        // A conversa aberta (e não recolhida) é o cérebro; o recorte acontece no busto.
+        const talk = g.open && !g.min && !g.portal;
         e.set({
           talk,
           listen: talk ? (g.phase === "listening" ? 1 : g.phase === "thinking" ? 0.45 : 0) : 0,
@@ -326,22 +379,24 @@ export function MateriaScene() {
         });
         if (g.portal) e.pull(null);
         reflect(g.reflect ?? caseSlug);
-        show(g.reflect ?? caseSlug);
-        offer(talk ? g.reflect : null);
-        // Projetos fechou ou foi minimizado: a abertura volta a ser a dobra, e a mão volta para a ponta
-        const pw = s.wins.projects;
-        if (e.debug.opening && !html.dataset.osArriving && (!pw.open || pw.min)) e.reveal(null);
-        wasOpen = g.open;
+        // sem gesto em curso, a escultura acompanha a janela em primeiro plano (e volta ao repouso sem nenhuma)
+        if (!arriving) {
+          const want = wanted();
+          if (e.debug.char !== want) {
+            if (e.has(want)) {
+              if (want === "rest" || e.debug.act) e.retire();
+              e.become(want);
+            } else void need(want).then((ok) => ok && !disposed && !arriving && wanted() === want && e.become(want));
+          }
+        }
         root.dataset.pose = talk ? "brain" : "bust";
-        // a dobra virou a janela de Projetos: o botão da abertura não vale enquanto ela estiver assim
-        if (e.debug.opening) html.dataset.osFold = "window";
-        else delete html.dataset.osFold;
+        root.dataset.char = e.debug.char;
         if (g.portal) root.dataset.portal = g.portal;
         else delete root.dataset.portal;
         syncRun();
       };
 
-      // ---- quadro: commit do tema no meio da troca, marcas no DOM ----
+      // ---- quadro: commit do tema no meio da troca, a passagem, marcas no DOM ----
       let lastTrans = "";
       let painted = 0;
       let cutOpen = false;
@@ -361,13 +416,23 @@ export function MateriaScene() {
         }
         // o canvas entra depois de dois quadros desenhados (o primeiro ainda compila variantes no driver)
         if (painted < 3 && ++painted === 3) root.dataset.state = "live";
-        // O recorte, quadro a quadro, para quem desenha a ideia dentro dele: centro e raios em px da janela.
+        // A passagem: a janela de verdade, recortada pelo contorno que as mãos seguram.
+        const P = eng.passage;
+        if (arriving && arrivingEl && P && P.app === arriving) {
+          if (P.done) settleArrival();
+          else {
+            const d = domPassage(P.rect, P, P.q, P.focal);
+            arrivingEl.style.setProperty("--mp-tf", d.transform);
+            arrivingEl.style.setProperty("--mp-clip", d.clip);
+          }
+        }
+        // O recorte no rosto do busto, quadro a quadro, para quem desenha a ideia dentro dele: centro e raios em px da janela.
         const f = eng.figure;
         if (f.open > 0.001 || cutOpen) {
           cutOpen = f.open > 0.001;
           const box = canvas.getBoundingClientRect();
-          const P = MATERIA.portal;
-          stage.cut?.(cutOpen ? { x: box.left + f.x + P.c[0] * f.k, y: box.top + f.y - P.c[1] * f.k, rx: P.r[0] * P.inset * f.k, ry: P.r[1] * P.inset * f.k, open: f.open } : null);
+          const Pt = MATERIA.portal;
+          stage.cut?.(cutOpen ? { x: box.left + f.x + Pt.c[0] * f.k, y: box.top + f.y - Pt.c[1] * f.k, rx: Pt.r[0] * Pt.inset * f.k, ry: Pt.r[1] * Pt.inset * f.k, open: f.open } : null);
         }
       });
 
@@ -395,149 +460,19 @@ export function MateriaScene() {
           e.finish(MOOD_OF[store.getState().prefs.theme]);
           mark();
         }
+        if (document.hidden && arriving) hurry(new Event("visibilitychange"));
         syncRun();
+      };
+      // o ponteiro perto da cena mantém vivos os grãos de prata (uma vez a cada meio segundo, no máximo)
+      let stirred = 0;
+      const onMove = () => {
+        const nowMs = performance.now();
+        if (nowMs - stirred < 500) return;
+        stirred = nowMs;
+        e.stir();
+        if (root.dataset.run === "1") e.start();
       };
 
-      // ---- a dobra: perto da ponta (ou sobre a abertura) a mão acompanha o cursor; no telefone, o arraste da ponta ----
-      const overFold = (dx: number, dy: number) => {
-        if (dy > 0.02 || dy < -1.6) return false;
-        const d = -dy;
-        return dx > -0.22 * Math.pow(d, 0.62) * (1 + 0.3 * d) && dx < 0.82 * d + 0.4 * d * d;
-      };
-      const onMove = (ev: PointerEvent) => {
-        if (ev.pointerType !== "mouse") return;
-        const l = layoutRef.current;
-        const g = guide.get();
-        const over = (ev.target as Element | null)?.closest?.(".os-window, .os-materia-panel, .os-dock, .os-topbar, .os-icons, .os-materia-cta, .os-social, .os-sign__line");
-        if (!l || over || g.open || g.portal) {
-          e.grab(null);
-          e.hover(false);
-          return;
-        }
-        const box = canvas.getBoundingClientRect();
-        const dx = (ev.clientX - box.left - l.hero.x) / l.hero.k;
-        const dy = -(ev.clientY - box.top - l.hero.y) / l.hero.k;
-        const near = Math.hypot(dx, dy + 0.1) < MATERIA.hero.zone;
-        e.hover(near || overFold(dx, dy));
-        e.grab(near ? { x: dx * MATERIA.hero.follow, y: dy * MATERIA.hero.follow } : null);
-      };
-      const onLeave = () => {
-        e.grab(null);
-        e.hover(false);
-      };
-      stage.grab = (d) => {
-        const l = layoutRef.current;
-        e.grab(d && l ? { x: d.x / l.hero.k, y: -d.y / l.hero.k } : null);
-      };
-      stage.hold = (on) => e.hover(on);
-      // ---- os destinos: a dobra vira a janela de Projetos; uma ficha na palma vira o Perfil ou o Orçamento ----
-      let arriving: string | null = null;
-      let arrivalTimer = 0;
-      const sheets = new Map<string, HTMLCanvasElement>();
-      /** A ficha que a mão apresenta, desenhada com o que a janela vai mostrar: quem é (perfil) ou o briefing (orçamento). */
-      const sheetOf = (app: "profile" | "contact") => {
-        const ready = sheets.get(app);
-        if (ready) return ready;
-        const c = document.createElement("canvas");
-        c.width = 468;
-        c.height = 600;
-        const g = c.getContext("2d");
-        if (!g) return null;
-        const family = getComputedStyle(root.parentElement?.querySelector(".os-sign__motto") ?? root).fontFamily || "sans-serif";
-        g.fillStyle = "#f4f1ea";
-        g.fillRect(0, 0, c.width, c.height);
-        g.fillStyle = "#16130f";
-        g.fillRect(0, 0, c.width, 10);
-        g.font = "600 15px monospace";
-        g.fillText(payload.brand.mark, 36, 56);
-        g.font = `800 ${app === "profile" ? 44 : 50}px ${family}`;
-        const title = app === "profile" ? payload.profile.name : payload.s.apps.contact;
-        const words = title.split(" ");
-        let line = "";
-        let y = 150;
-        for (const w of words) {
-          if (line && g.measureText(`${line} ${w}`).width > 396) {
-            g.fillText(line, 36, y);
-            y += 52;
-            line = w;
-          } else line = line ? `${line} ${w}` : w;
-        }
-        g.fillText(line, 36, y);
-        g.font = "500 17px monospace";
-        g.fillStyle = "#5a5148";
-        g.fillText((app === "profile" ? payload.profile.title : payload.brand.tagline).slice(0, 40).toUpperCase(), 36, y + 44);
-        g.fillStyle = "#16130f";
-        for (let i = 0; i < 5; i++) g.fillRect(36, y + 96 + i * 44, app === "profile" ? 396 - (i % 3) * 70 : 396, app === "profile" ? 6 : 2);
-        if (app === "profile") {
-          g.fillRect(36, 520, 132, 44);
-          g.fillStyle = "#f4f1ea";
-          g.font = "700 16px monospace";
-          g.fillText("CV · PDF", 52, 548);
-        }
-        sheets.set(app, c);
-        return c;
-      };
-      const settleArrival = () => {
-        window.clearTimeout(arrivalTimer);
-        window.removeEventListener("pointerdown", hurry, true);
-        window.removeEventListener("keydown", hurry, true);
-        if (!arriving) return;
-        arriving = null;
-        delete html.dataset.osArriving;
-        syncRun();
-      };
-      /** O visitante não quer esperar o gesto (um toque, uma tecla): o destino aparece na hora. */
-      const hurry = (ev: Event) => {
-        if (ev instanceof KeyboardEvent && ["Shift", "Control", "Alt", "Meta"].includes(ev.key)) return;
-        e.settle();
-        settleArrival();
-      };
-      stage.go = (app) => {
-        const g = guide.get();
-        const reduce = motion === "reduce" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        if (disposed || reduce || document.hidden || root.dataset.state !== "live" || g.open || g.portal || e.debug.hero < 0.98) return false;
-        // muda de ideia: o destino anterior aparece na hora e a figura parte de onde está
-        settleArrival();
-        arriving = app;
-        html.dataset.osArriving = app;
-        e.start();
-        root.dataset.run = "1";
-        const since = performance.now();
-        const aim = () => {
-          if (arriving !== app || disposed) return;
-          const win = document.querySelector<HTMLElement>(`.os-window[data-app="${app}"]`);
-          const ready = !!win && win.offsetWidth > 40;
-          if (!ready && performance.now() - since < 700) return void requestAnimationFrame(aim);
-          const box = canvas.getBoundingClientRect();
-          const layer = win?.offsetParent?.getBoundingClientRect();
-          const wide = ready && win && !mobile;
-          const x0 = (wide ? (layer?.left ?? 0) + win.offsetLeft : 0) - box.left;
-          const y0 = (wide ? (layer?.top ?? 0) + win.offsetTop : 0) - box.top;
-          const rect = { x0, y0, x1: x0 + (wide ? win.offsetWidth : window.innerWidth), y1: y0 + (wide ? win.offsetHeight : window.innerHeight) };
-          const H = MATERIA.hero;
-          let wait = H.sheet.raise + H.sheet.turn + H.sheet.grow * 0.9;
-          if (app === "projects") {
-            // a capa preenche o corpo da janela; a faixa de cima é a barra dela
-            const body = ready ? win.querySelector<HTMLElement>(".os-window__body") : null;
-            const top = body ? body.offsetTop : 0;
-            e.reveal(rect, { x0: rect.x0, y0: rect.y0 + top, x1: rect.x1, y1: rect.y1 });
-            html.dataset.osFold = "window";
-            wait = H.open.reach + H.open.stretch + 0.12;
-          } else e.present(rect, sheetOf(app));
-          window.addEventListener("pointerdown", hurry, true);
-          window.addEventListener("keydown", hurry, true);
-          arrivalTimer = window.setTimeout(settleArrival, (wait * 1000) / e.pace());
-        };
-        requestAnimationFrame(aim);
-        return true;
-      };
-      stage.back = () => {
-        e.reveal(null);
-        delete html.dataset.osFold;
-      };
-      stage.swap = (dir) => {
-        if (!covered()) e.swap(dir);
-      };
       stage.live = () => !disposed && root.dataset.state === "live" && !document.hidden && !covered();
       stage.ready = () => !disposed && root.dataset.state === "live" && !document.hidden;
       stage.anchor = () => {
@@ -545,18 +480,15 @@ export function MateriaScene() {
         const box = canvas.getBoundingClientRect();
         if (!l) return null;
         const g = guide.get();
-        if (g.open) return { x: box.left + l.talk.x, y: box.top + l.talk.y, k: l.k * l.talk.k };
-        // na home, o que se solta sai de dentro da abertura da dobra; no recorte, do busto
+        if (g.open && !g.min) return { x: box.left + l.talk.x, y: box.top + l.talk.y, k: l.k * l.talk.k };
         if (g.portal) return { x: box.left + l.home.x, y: box.top + l.home.y, k: l.k };
-        return { x: box.left + l.hero.x + 0.2 * l.hero.k, y: box.top + l.hero.y + 0.5 * l.hero.k, k: l.hero.k };
+        return { x: box.left + l.hero.x, y: box.top + l.hero.y, k: l.hero.h / (2 * FRAMES.rest.half) };
       };
 
       store.getState().setThemeDriver(driveTheme);
       document.addEventListener("visibilitychange", onVis);
-      if (gq.fine && !mobile) {
-        window.addEventListener("pointermove", onMove, { passive: true });
-        document.documentElement.addEventListener("pointerleave", onLeave);
-      }
+      window.addEventListener("pointermove", onMove, { passive: true });
+      window.addEventListener("pointerdown", onMove, { passive: true });
       mark();
       syncTargets();
 
@@ -565,34 +497,36 @@ export function MateriaScene() {
       if (expose) {
         (window as unknown as { __mwMateria?: unknown }).__mwMateria = {
           get state() {
-            return { ...e.debug, mood: e.mood, frames: e.frames, dpr: e.dpr, fps: e.fpsNow, count: e.count, ms: e.stats.ms, costMs, layout: layoutRef.current };
+            return { ...e.debug, mood: e.mood, frames: e.frames, dpr: e.dpr, fps: e.fpsNow, count: e.count, ms: e.stats.ms, costMs, layout: layoutRef.current, arriving, passage: e.passage ? { app: e.passage.app, q: e.passage.q, done: e.passage.done, points: e.passage.poly?.length ?? 0, circle: !!e.passage.circle } : null };
           },
           pull: (p: { x: number; y: number } | null) => e.pull(p),
-          grab: (p: { x: number; y: number } | null) => e.grab(p),
           probe: () => e.probe(),
           pace: (v?: number) => e.pace(v),
           figure: () => ({ ...e.figure }),
+          need: (id: SculptId) => need(id),
+          become: (id: SculptId) => e.become(id),
           /**
-           * Imagens estáticas da própria cena (scripts/materia-still.mjs). `home`: a home inteira, com a dobra aberta,
-           * sobre a página lisa na cor do tema. `brain`: o cérebro sobre transparente.
+           * Imagens estáticas da própria cena (scripts/materia-still.mjs). `home`: a escultura em repouso sobre a parede
+           * lisa na cor do tema. `brain`: o cérebro sobre transparente. Uma figura (`projects`, `profile`…): o instante
+           * decisivo do gesto dela, no mesmo enquadramento.
            */
-          async still(mood: Mood, kind: "home" | "brain") {
+          async still(mood: Mood, kind: "home" | "brain" | SculptId, opts?: { silhouette?: boolean }) {
             const c = document.createElement("canvas");
             const brain = kind === "brain";
-            const still = createEngine({ canvas: c, mood, lite: false, molecules, figure, still: true, scene: !brain });
+            const id: SculptId = kind === "home" || brain ? "rest" : kind;
+            if (id !== "rest" && !(await need(id))) return null;
+            const data = id === "rest" ? rest : await loadSculpt(id, lite);
+            const still = createEngine({ canvas: c, mood, lite: false, molecules, figure, rest, still: true, scene: !brain, silhouette: !!opts?.silhouette });
             if (!still) return null;
+            if (id !== "rest") still.addSculpt(data);
             const S = MATERIA_STILL;
             const Hs = HERO_STILL;
-            if (brain) still.setLayout({ w: S.w, h: S.h, k: S.k, home: { x: S.cx, y: S.cy }, talk: { x: S.cx, y: S.cy, k: 1 }, hero: { x: S.cx, y: S.cy, k: S.k } });
-            else still.setLayout({ w: Hs.w, h: Hs.h, k: Hs.k, home: { x: Hs.x, y: Hs.y }, talk: { x: Hs.x, y: Hs.y, k: 1 }, hero: { x: Hs.x, y: Hs.y, k: Hs.k } });
+            if (brain) still.setLayout({ w: S.w, h: S.h, k: S.k, home: { x: S.cx, y: S.cy }, talk: { x: S.cx, y: S.cy, k: 1 }, hero: { x: S.cx, y: S.cy, h: S.h } });
+            else still.setLayout({ w: Hs.w, h: Hs.h, k: Hs.fh / 2.7, home: { x: Hs.x, y: Hs.y }, talk: { x: Hs.x, y: Hs.y, k: 1 }, hero: { x: Hs.x, y: Hs.y, h: Hs.fh } });
             still.setDpr(1);
-            if (!brain) {
-              if (coverImage) still.cover(coverImage);
-              if (wordCanvas) still.word(wordCanvas);
-            }
             await still.compile();
-            still.still(mood, brain ? 1 : 0);
-            const url = c.toDataURL("image/webp", 0.9);
+            still.still(mood, brain ? 1 : 0, id, id === "rest" ? undefined : [1, 0.62]);
+            const url = opts?.silhouette ? c.toDataURL("image/png") : c.toDataURL("image/webp", 0.92);
             still.dispose();
             return url;
           },
@@ -601,15 +535,12 @@ export function MateriaScene() {
 
       cleanup = () => {
         window.clearTimeout(stopTimer);
+        warm();
         unsubOs();
         unsubGuide();
-        stage.grab = null;
-        stage.hold = null;
         stage.go = null;
-        stage.back = null;
-        stage.swap = null;
+        stage.warm = null;
         settleArrival();
-        e.grab(null);
         stage.live = () => false;
         stage.ready = () => false;
         stage.anchor = () => null;
@@ -621,12 +552,13 @@ export function MateriaScene() {
         if (st.themePending !== null) st.commitTheme();
         document.removeEventListener("visibilitychange", onVis);
         window.removeEventListener("pointermove", onMove);
-        document.documentElement.removeEventListener("pointerleave", onLeave);
+        window.removeEventListener("pointerdown", onMove);
         root.dataset.state = "still";
         delete root.dataset.trans;
         delete root.dataset.mood;
         delete root.dataset.run;
         delete root.dataset.portal;
+        delete root.dataset.char;
         e.dispose();
         engineRef.current = null;
         if (expose) delete (window as unknown as { __mwMateria?: unknown }).__mwMateria;
@@ -644,7 +576,7 @@ export function MateriaScene() {
 
   return (
     <div ref={ref} className="os-wallpaper os-scene os-materia" data-state="still" data-pose={talking ? "brain" : "bust"} aria-hidden="true" data-no-inspect>
-      {/* A escultura como imagem (fundo CSS, styles/materia.css): busto em repouso, cérebro na conversa — só a do tema em vigor é baixada. */}
+      {/* A escultura como imagem (fundo CSS, styles/materia.css): em repouso, e o cérebro na conversa — só a do tema em vigor é baixada. */}
       <div className="os-scene__still" />
       {/* Um canvas novo a cada montagem do motor: ao sair ele força a perda do contexto WebGL, e um canvas guarda o seu para sempre. */}
       <canvas key={`${shell}:${motion}`} ref={canvasRef} className="os-scene__canvas" />

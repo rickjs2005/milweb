@@ -21,6 +21,11 @@ const l = (pt: string, en: string, es: string): L => ({ pt, en, es });
 const ui = {
   name: l("Matéria", "Matéria", "Matéria"),
   talk: l("Conversar com a Matéria", "Talk to Matéria", "Hablar con Matéria"),
+  /** Os dois destinos em destaque na primeira tela. */
+  goProjects: l("Ver projetos", "See the work", "Ver proyectos"),
+  goProfile: l("Perfil e currículo", "Profile and résumé", "Perfil y currículum"),
+  /** O grupo dos demais destinos. */
+  more: l("Mais", "More", "Más"),
   idea: l("Ver uma ideia para o meu site", "See an idea for my site", "Ver una idea para mi sitio"),
   explore: l("Ver o projeto", "View the project", "Ver el proyecto"),
   made: l("Ver como foi feito", "See how it was made", "Ver cómo se hizo"),
@@ -80,7 +85,9 @@ const say = {
   chipSystem: l("Sistema interno", "Internal system", "Sistema interno"),
   chipBackend: l("Você tem experiência com backend?", "Do you have backend experience?", "¿Tienes experiencia con backend?"),
   /** As três entradas da conversa (além de escrever livremente). */
-  chipExplore: l("Explorar projetos", "Explore projects", "Explorar proyectos"),
+  chipExplore: l("Ver os sites", "See the sites", "Ver los sitios"),
+  chipCv: l("Ver o currículo", "See the résumé", "Ver el currículum"),
+  chipQuote: l("Quero um orçamento", "I want a quote", "Quiero un presupuesto"),
   chipProject: l("Tenho um projeto em mente", "I have a project in mind", "Tengo un proyecto en mente"),
   chipRecruiting: l("Estou recrutando", "I'm recruiting", "Estoy reclutando"),
   /** Objetivos, não profissões: o que o visitante de quem pede precisa conseguir fazer. */

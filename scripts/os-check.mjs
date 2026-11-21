@@ -84,7 +84,7 @@ if (ONLY.includes("desktop")) {
   // desktop largo (≥ 1080 px): lema no alto, os convites da Matéria e a grade 2 × 3 sob ele (o DOM segue a ordem visual, para o Tab), dock só com o sistema
   const home = await page.evaluate(() => {
     const items = [...document.querySelectorAll('.os-icons li[data-desktop="1"]')].filter((li) => li.getClientRects().length);
-    const box = items.map((li) => { const b = li.querySelector(".os-icon-btn").getBoundingClientRect(); return { id: li.dataset.app, x: Math.round(b.left), y: Math.round(b.top), plate: li.querySelector(".os-icon").offsetWidth }; }); // offsetWidth: a flutuação gira a placa e infla o retângulo
+    const box = items.map((li) => { const b = li.querySelector(".os-icon-btn").getBoundingClientRect(); const cta = li.querySelector(".os-icon-btn__cta"); const shown = cta && cta.getClientRects().length ? cta : li.querySelector(".os-icon-btn__label"); return { id: li.dataset.app, x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), plate: li.querySelector(".os-icon").offsetWidth, text: shown.innerText.trim() }; }); // offsetWidth: a flutuação gira a placa e infla o retângulo
     const m = document.querySelector(".os-sign__motto"), mb = m.getBoundingClientRect(), top = document.querySelector(".os-topbar").getBoundingClientRect(), gb = document.querySelector(".os-icons ul").getBoundingClientRect();
     const rg = document.createRange();
     rg.selectNodeContents(m);
@@ -97,14 +97,16 @@ if (ONLY.includes("desktop")) {
       cols: new Set(box.map((b) => b.x)).size,
       rows: new Set(box.map((b) => b.y)).size,
       plates: box.map((b) => b.plate),
-      labels: items.map((li) => li.querySelector(".os-icon-btn__label").innerText).join("|"),
-      contact: getComputedStyle(document.querySelector('.os-icons li[data-app="contact"] .os-icon')).boxShadow.includes(sig) && !getComputedStyle(document.querySelector('.os-icons li[data-app="lab"] .os-icon')).boxShadow.includes(sig),
+      labels: box.map((b) => b.text).join("|"),
+      featured: box.slice(0, 2).map((b) => `${b.w}x${b.h}`),
+      // os quatro agrupados são navegação: nenhum disputa o destaque com os dois de cima (nem Orçamento ganha a borda no acento)
+      contact: ["services", "studio", "lab", "contact"].every((a) => !getComputedStyle(document.querySelector(`.os-icons li[data-app="${a}"] .os-icon`)).boxShadow.includes(sig)),
       motto: { left: Math.round(mb.left), gapTop: Math.round(mb.top - top.bottom), lines: new Set([...rg.getClientRects()].map((r) => Math.round(r.top))).size, color: getComputedStyle(m).color, want: document.documentElement.dataset.osTheme === "gojo" ? `rgb(${triple("--os-fg")})` : "rgb(255, 255, 255)", dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === `rgb(${sig})`, toGrid: Math.round(gb.top - mb.bottom), px: parseFloat(getComputedStyle(m).fontSize) },
       dock: [...document.querySelectorAll(".os-dock li")].filter((li) => li.getClientRects().length).map((li) => li.dataset.dockSys || li.dataset.dockApp).join(","),
     };
   });
-  check("grade 2 × 3: Projetos | Serviços, Estúdio | Lab, Perfil | Contato (DOM na ordem visual)", home.cols === 2 && home.rows === 3 && home.reading === "projects,services,studio,lab,profile,contact" && home.dom === home.reading && home.labels === "PROJETOS|SERVIÇOS|ESTÚDIO|LAB|PERFIL|ORÇAMENTO", JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels }));
-  check("ícones de 60–68 px com o nome sempre visível embaixo; Contato com borda no acento do tema", home.plates.every((p) => p >= 60 && p <= 68) && home.contact, `${home.plates.join(",")} · contato ${home.contact}`);
+  check("navegação da primeira tela: dois destaques empilhados (Ver projetos, Perfil e currículo) e os demais em 2 × 2 — Serviços | Estúdio, Lab | Orçamento (DOM na ordem visual)", home.cols === 2 && home.rows === 4 && home.reading === "projects,profile,services,studio,lab,contact" && home.dom === home.reading && home.labels === "VER PROJETOS|PERFIL E CURRÍCULO|SERVIÇOS|ESTÚDIO|LAB|ORÇAMENTO" && home.featured.every((f) => Number(f.split("x")[1]) >= 44) && home.featured[0] === home.featured[1], JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels, featured: home.featured }));
+  check("os quatro destinos agrupados têm placas de 46–64 px com o nome sempre visível embaixo; nenhum disputa o destaque (sem borda no acento)", home.plates.slice(2).every((p) => p >= 46 && p <= 64) && home.contact, `${home.plates.join(",")} · sem acento ${home.contact}`);
   check("lema no alto à esquerda (branco no Obito, tinta no Gojo), até duas linhas, ponto no acento, respiro até a grade", home.motto.left <= 40 && home.motto.gapTop >= 8 && home.motto.gapTop <= 60 && home.motto.lines <= 2 && home.motto.color === home.motto.want && home.motto.dot && home.motto.toGrid >= 16 && home.motto.px >= 40, JSON.stringify(home.motto));
   check("dock: só Buscar, Ajustes e o tema, nessa ordem", home.dock === "search,settings,theme", home.dock);
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
@@ -564,7 +566,8 @@ if (ONLY.includes("mobile")) {
         heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
         noDesktopBits: !vis(".os-hud") && !vis(".os-social") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
         eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
-        eyeImg: /materia-home-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
+        // o telefone recebe a mesma imagem na metade do tamanho (-s)
+        eyeImg: /materia-home-(dark|light)-s\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
         eyeNoPointer: getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none",
         gridAboveDock: grid.bottom <= dock.top + 1,
         dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth,
@@ -1479,7 +1482,7 @@ if (ONLY.includes("theme")) {
       });
       const cLaunch = await contrast(p, ".os-launch__label", ".os", ".os");
       const cDock = await contrast(p, ".os-mdock__label", ".os-mdock ul", ".os");
-      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`materia-home-${theme === "gojo" ? "light" : "dark"}\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
+      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`materia-home-${theme === "gojo" ? "light" : "dark"}-s\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
       if (w === 390 && theme === "obito") {
         await p.tap(".os-mdock__theme");
         await p.waitForFunction(() => document.documentElement.dataset.osTheme === "gojo", null, { timeout: 4000 }).catch(() => {});
@@ -1809,7 +1812,7 @@ if (ONLY.includes("profile")) {
     const errs = errorsOf(p);
     await p.goto(`${BASE}/`, { waitUntil: "load" });
     await settle(p, 1200);
-    check("ícone Perfil (pessoa) na grade, 3ª linha à esquerda, e fora da dock", (await p.locator("#os-icon-profile .os-icon[data-kind='profile']").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 0 && (await p.evaluate(() => { const r = (id) => document.querySelector(`#os-icon-${id}`).getBoundingClientRect(); return Math.round(r("profile").left) === Math.round(r("projects").left) && r("profile").top > r("studio").top && r("studio").top > r("projects").top; })));
+    check("Perfil é o segundo destaque: logo abaixo de Ver projetos, acima dos destinos agrupados, e fora da dock", (await p.locator("#os-icon-profile .os-icon[data-kind='profile']").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 0 && (await p.evaluate(() => { const r = (id) => document.querySelector(`#os-icon-${id}`).getBoundingClientRect(); return Math.round(r("profile").left) === Math.round(r("projects").left) && r("profile").top > r("projects").top && r("studio").top > r("profile").top && /currículo/i.test(document.querySelector("#os-icon-profile").innerText); })));
     await openProfile(p);
     check("ícone abre a janela Perfil e a URL vira /perfil", (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").count()) === 1);
     await settle(p, 900);

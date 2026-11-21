@@ -15,11 +15,12 @@ const entityRev = (() => {
   }
 })();
 
-/** Mesma ideia para as moléculas e a malha da figura da Matéria (materia/config.ts › MATERIA_URLS e FIGURE_URLS). */
+/** Mesma ideia para as moléculas, os braços e as esculturas da Matéria (materia/config.ts › MATERIA_URLS e FIGURE_URLS; materia/sculpt.ts). */
 const materiaRev = (() => {
   try {
     const h = createHash("sha256");
-    for (const f of ["materia-a.bin", "materia-b.bin", "materia-figure.bin", "materia-figure-lite.bin"]) h.update(readFileSync(new URL("./public/models/" + f, import.meta.url)));
+    const sculpts = ["rest", "projects", "profile", "services", "studio", "lab", "contact"].flatMap((id) => [`sculpt-${id}.bin`, `sculpt-${id}-lite.bin`]);
+    for (const f of ["materia-a.bin", "materia-b.bin", "materia-figure.bin", "materia-figure-lite.bin", ...sculpts]) h.update(readFileSync(new URL("./public/models/" + f, import.meta.url)));
     return h.digest("hex").slice(0, 10);
   } catch {
     return "";

@@ -41,7 +41,7 @@ function near(tokens: string[], words: string[]): boolean {
 const RX = {
   cv: /\b(curriculo|curriculum|cv|resume|pdf|hoja de vida)\b/,
   recruiter: /\b(recrut\w*|recruit\w*|reclut\w*|hiring|headhunter\w*|rh|talent\w*|vagas?|contratando|tech lead|engineering manager|seleccion de personal|full time|tempo integral|clt|job opening|open position|open role|emprego|puesto de trabajo)\b/,
-  skillAsk: /\b(experiencia\w*|experience\w*|sabe|conhece|trabalha com|trabalhou com|worked with|works with|knows?|skills?|competenc\w*|habilidad\w*|stack|tecnolog\w*|technolog\w*|domina)\b/,
+  skillAsk: /\b(experiencia\w*|experience\w*|sabe|conhece|trabalha com|trabalhou com|worked with|works with|knows?|skills?|competenc\w*|habilidad\w*|stack|tecnolog\w*|technolog\w*|domina|o que (ele|o rick|voce) (ja )?(fez|faz|construiu|entregou)|what (he|rick|you) (did|has done|have done|built|has built|shipped)|(lo )?que (el |rick )?(hizo|ha hecho|construyo))\b/,
   backend: /\b(backend|back end|apis?|servidor\w*|servers?|banco de dados|database\w*|python|django|fastapi|node|nodejs|filas|queues|microservic\w*|postgres\w*|sql)\b/,
   ai: /\b(ia|ai|llms?|agentes?|agents?|inteligencia artificial|artificial intelligence|machine learning|automac\w*|automat\w*)\b/,
   motion: /\b(frontend|front end|interfaces?|motion|animac\w*|animat\w*|webgl|react|next|nextjs|three|gsap|ux|ui)\b/,
@@ -68,6 +68,8 @@ const RX = {
   hello: /^(oi|ola|hello|hi|hey|hola|bom dia|boa tarde|boa noite|good morning|buenos dias|e ai)\b/,
   /** Ligar o projeto a uma ferramenta de terceiros é escopo: nunca se promete, vai para o Rick. */
   integrate: /\b(integr\w*|sincroniz\w*|sync\w*|conect\w*|connect\w*|compativ\w*|compatib\w*|webhooks?|funciona com|works with)\b/,
+  /** "Mostra os seus sites", "ver os sites": a coleção, pela mão da Curadora. */
+  browse: /\b((ver|mostr\w*|me mostr\w*|quero ver|abr\w*) (os |as |seus |teus |todos os )?(sites|projetos|trabalhos|cases)|(seus|teus) (sites|projetos|trabalhos)|sites (dele|do rick|que (ele|voce|o rick) (fez|criou|ja fez))|(see|show me|show|open|browse) (the |your |his |all the )?(sites|websites|work|projects|portfolio)|(your|his) (sites|websites)|(ver|muestr\w*|muestrame|quiero ver|abr\w*) (los |sus |tus |todos los )?(sitios|proyectos|trabajos)|(sus|tus) (sitios|proyectos))\b/,
   /** "Tenho um projeto em mente": a conversa começa pelo objetivo. */
   inMind: /\b(projeto em mente|tenho um projeto|project in mind|have a project|proyecto en mente|tengo un proyecto)\b/,
   idea: /\b(ver uma ideia|uma ideia para|ideia para (o )?(meu|nosso) site|see an idea|an idea for|idea for (my|our) (web ?)?site|ver una idea|una idea para|idea para (mi|nuestro) sitio|previas?|preview|vista previa|abrir a ideia|open the idea|abrir la idea)\b/,
@@ -198,7 +200,9 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   const profile: GuideAction = { kind: "app", app: "profile", label: M.ui.profile };
   const ideaChip = say(M.ui.idea);
   const whyChip = say(M.ui.why);
-  const starters = [say(M.say.chipExplore), say(M.say.chipProject), say(M.say.chipRecruiting)];
+  // as sugestões que abrem a conversa: quem veio ver os sites, o currículo ou pedir um orçamento
+  const starters = [say(M.say.chipExplore), say(M.say.chipCv), say(M.say.chipQuote)];
+  const openProjects: GuideAction = { kind: "app", app: "projects", label: M.ui.projects };
   const goalChips = [say(M.say.goalOrders), say(M.say.goalBook), say(M.say.goalBuy), say(M.say.goalKnow)];
 
   const has = (rx: RegExp) => rx.test(text);
@@ -280,7 +284,7 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
         // a evidência a um toque: o verso da peça ("como foi feito") quando o projeto está na coleção, e o código
         actions: [profile, ...(catalog.some((p) => p.slug === proof.slug) ? [{ kind: "made", slug: proof.slug, label: `${M.ui.made} · ${proof.name}` } as GuideAction] : []), ...(code ? [{ kind: "file", href: code.url, label: `${M.ui.code} · ${proof.name}` } as GuideAction] : []), cv],
         ctx: { ...ctx, role: "recruiter", mode: null, asked: null },
-        run: profile,
+        run: { ...profile, focus: `![role="tab"][data-track="${skill}"]` },
       };
     }
   }
@@ -294,6 +298,9 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   if (has(RX.recruiter)) {
     return { text: M.say.recruiter, actions: [cv, say(M.say.chipBackend), { kind: "app", app: "projects", label: M.ui.projects }], ctx: { ...ctx, role: "recruiter", mode: null, asked: null }, run: profile };
   }
+
+  // ── "mostra os seus sites": a coleção abre (com o TERRAL em destaque) — o mesmo destino do clique em "Ver projetos"
+  if (has(RX.browse) && !R.sector && !RX.personal.test(text.replace(/\b(quero ver|i want to see|quiero ver)\b/, ""))) return { text: M.say.projectsOpened, actions: [say(M.say.chipProject), say(M.say.chipCv)], ctx: { ...ctx, mode: null, asked: null }, run: openProjects };
 
   // ── "tenho um projeto em mente": antes do ramo, o objetivo — o que o visitante de quem pede precisa conseguir fazer
   if (has(RX.inMind) && !R.sector) return { text: M.say.projectAsk, actions: goalChips, ctx: { ...ctx, role: "client", mode: null, asked: "goal" } };
@@ -370,14 +377,14 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
   // ── a resposta à pergunta pelo objetivo: ele conduz a recomendação (e o ramo, quando vem junto, escolhe a referência)
   const goalAsked = ctx.asked === "goal" || (ctx.mode === "idea" && ctx.asked === "business");
   const aim = has(GOAL.orders) ? "orders" : has(GOAL.showcase) ? "showcase" : null;
-  if (goalAsked && aim && !(R.sector && R.alt) && !(ctx.mode === "idea" && R.field)) {
+  if (goalAsked && aim && !has(RX.integrate) && !(R.sector && R.alt) && !(ctx.mode === "idea" && R.field)) {
     const lead = aim === "orders" ? M.say.leadOrders : M.say.leadShowcase;
     const base = { ...ctx, mode: null, facts: told(ctx.facts) };
     const reply = R.sector ? recommend(R.sector, R.field, base, lead) : aim === "orders" ? recommend("landing", null, base, lead) : recommend("immersive", null, base, lead, "terral");
     if (reply) return reply;
   }
   // A pessoa pediu uma ideia e agora conta o negócio.
-  if ((ctx.mode === "idea" && ctx.asked !== "sector") || ctx.asked === "goal") {
+  if (((ctx.mode === "idea" && ctx.asked !== "sector") || ctx.asked === "goal") && !has(RX.integrate)) {
     if (R.sector && R.alt) return whichOne(ctx);
     if (ctx.mode === "idea" && R.field && M.fields[R.field]) return presentIdea(R.field, { ...ctx, facts: told(ctx.facts), goal: R.goal === "booking" && M.fields[R.field].sector === "health" ? "booking" : OPTION.approach.test(text) && M.fields[R.field].sector === "health" ? "approach" : null });
     if (R.sector) {
@@ -497,14 +504,11 @@ export function respond(input: string, ctx: GuideCtx, payload: OsPayload, here: 
       };
     }
   }
-  // ── quer um site, mas falta saber para quê: uma pergunta curta
-  if (wantsSite) {
-    const chips = [M.say.chipHealth, M.say.chipTourism, M.say.chipStore, M.say.chipCompany, M.say.chipSystem].map((label) => say(label));
-    return { text: M.say.whichBusiness, actions: chips, ctx: { ...ctx, role: "client", asked: null, facts: told(ctx.facts) } };
-  }
+  // ── quer um site, mas falta saber para quê: a pergunta é o objetivo — a resposta leva a algo real que o Rick já fez
+  if (wantsSite) return { text: M.say.projectAsk, actions: goalChips, ctx: { ...ctx, role: "client", mode: null, asked: "goal", facts: told(ctx.facts) } };
 
   // ── o resto do portfólio
-  if (has(RX.projects)) return { text: M.say.projectsOpened, actions: [say(M.say.chipProject), say(M.say.chipRecruiting)], ctx: { ...ctx, asked: null }, run: { kind: "app", app: "projects", label: M.ui.projects } };
+  if (has(RX.projects)) return { text: M.say.projectsOpened, actions: [say(M.say.chipProject), say(M.say.chipCv)], ctx: { ...ctx, asked: null }, run: openProjects };
   if (has(RX.services)) return { text: payload.services.intro, actions: [say(M.say.chipSite), brief], ctx: { ...ctx, asked: null }, run: { kind: "app", app: "services", label: M.ui.open } };
   if (has(RX.contact)) return { text: M.say.brief, actions: [brief], ctx: briefCtx(ctx), run: brief };
   if (has(RX.thanks)) return { text: M.say.thanks, actions: [], ctx: { ...ctx, asked: null } };

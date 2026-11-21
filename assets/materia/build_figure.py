@@ -1,7 +1,8 @@
 """
-MATÉRIA — a figura da home, articulada: tronco e cabeça, e um braço (ombro → cotovelo → punho → mão) que
-o motor usa duas vezes — o que segura a ponta da dobra e, espelhado, o que abre a coleção, apoia a ficha
-do perfil e traz as peças para a cena.
+MATÉRIA — os braços das esculturas: um braço (ombro → cotovelo → punho → mão) que o motor usa duas vezes,
+o direito (espelhado) e o esquerdo de cada figura, articulados por rig.ts. O corpo de cada figura é esculpido à
+parte, já na pose (assets/materia/sculpt); a cabeça e o tronco definidos aqui servem de base para elas e para a
+prévia (`--preview`), e não vão mais para o arquivo.
 
 Superfície contínua (malha), esculpida por distância assinada com numpy:
 
@@ -656,6 +657,7 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     for name, hb, ha, hh in (("materia-figure.bin", 0.015, 0.02, 0.0115), ("materia-figure-lite.bin", 0.021, 0.027, 0.0155)):
         cut = 0.3
-        parts = [build_body(hb), build_arm(ha, cut), build_hand(hh, cut)]
+        # o corpo de cada figura vem das esculturas (assets/materia/sculpt); daqui saem só o braço e a mão
+        parts = [build_arm(ha, cut), build_hand(hh, cut)]
         size = write(os.path.join(OUT, name), parts)
         print(name, " + ".join(f"{len(d['shapes'][0][0])} vértices / {len(d['t'])} faces" for d in parts), f"· {size / 1024:.0f} KB")

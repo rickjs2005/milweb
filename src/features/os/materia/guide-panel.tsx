@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DivePoster } from "../apps/idea/dive";
 import { PracticePoster } from "../apps/idea/practice";
 import { projectsIntent } from "../apps/bounty/intent";
+import { useLaunch } from "../launch";
 import { pushOverlay } from "../mobile/history";
 import { useOs, useOsStore } from "../os-shell";
 import { APPS, DESKTOP_WIDE_MQ, isAppId } from "../registry";
 import type { OsProject } from "../types";
 import { respond } from "./brain";
-import { MATERIA } from "./config";
-import { guide, stage, useGuide, type GuideAction, type GuideMessage } from "./guide-store";
+import { arrive, guide, stage, useGuide, type GuideAction, type GuideMessage } from "./guide-store";
 import { writeBrief } from "./handoff";
 import { idea, useIdea } from "./idea-store";
 import { canListen, canSpeak, hush, listen, speak, type Listener } from "./voice";
@@ -19,12 +19,15 @@ import { canListen, canSpeak, hush, listen, speak, type Listener } from "./voice
 /**
  * A conversa com a Matéria.
  *
- *   MateriaControls  na área de trabalho: a entrada "Ver uma ideia para o meu site" (ação principal) e
- *                    "Conversar com a Matéria"; a abertura da dobra, que leva ao case do projeto que
- *                    aparece por baixo; a ponta da dobra, que se arrasta com o dedo; e o recorte no
- *                    rosto (MateriaPortal), onde a ideia aparece e de onde cresce até virar janela.
- *   MateriaGuide     o painel (texto e microfone desde o primeiro momento), a pílula que mantém a
- *                    conversa enquanto o visitante navega, e a travessia até a janela do case.
+ *   MateriaControls  na primeira tela: os dois destinos em destaque ("Ver projetos" e "Perfil e
+ *                    currículo") onde a grade de aplicativos não os mostra como botões, a entrada
+ *                    discreta "Conversar com a Matéria", e o recorte no rosto (MateriaPortal), onde a
+ *                    ideia aparece e de onde cresce até virar janela.
+ *   MateriaGuide     o painel (texto e microfone desde o primeiro momento) e a pílula que mantém a
+ *                    conversa enquanto o visitante navega.
+ *
+ * Um destino pedido na conversa abre pelo MESMO caminho do clique no lançador e da busca
+ * (guide-store.ts › arrive): a janela abre na hora, a escultura vira a figura dele e faz o gesto.
  *
  * Tudo funciona sem o motor 3D, sem voz e sem rede: as respostas vêm de materia/brain.ts, e as ações
  * só alcançam o que o portfólio cadastra — apps do OS, projetos do catálogo, o currículo e os
@@ -71,75 +74,7 @@ const shapeOf = (value: string) => (value.startsWith("polygon") ? { clipPath: va
 function useActions() {
   const { payload, navigate, store } = useOs();
   const catalog = useCallback((slug: string | null) => (slug ? [...payload.projects, ...payload.authorial].find((p) => p.slug === slug) : undefined), [payload]);
-
-  /** A capa aparece refletida na prata; um fragmento se solta com um recorte dela e cresce até a janela real do case. */
-  const cross = useCallback(
-    (project: OsProject, go: () => void) => {
-      guide.set({ reflect: project.slug });
-      const anchor = stage.anchor();
-      if (!stage.live() || reduced() || !anchor) return go();
-      const img = new window.Image();
-      img.src = project.image;
-      const started = performance.now();
-      let gone = false;
-      const open = () => {
-        if (gone) return;
-        gone = true;
-        go();
-      };
-      // A abertura nunca espera: sem a imagem pronta em 650 ms, a janela abre sem o fragmento.
-      const fallback = window.setTimeout(open, 900);
-      const launch = () => {
-        if (gone) return;
-        window.clearTimeout(fallback);
-        const size = Math.max(84, anchor.k * 0.42);
-        const el = document.createElement("div");
-        el.className = "os-materia-shard";
-        el.style.backgroundImage = `url("${project.image}")`;
-        const from = { left: anchor.x - size / 2, top: anchor.y - size / 2, width: size, height: size };
-        const shard = "polygon(18% 6%, 92% 0%, 100% 78%, 34% 100%, 0% 42%)";
-        Object.assign(el.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, clipPath: shard, opacity: "0.2" });
-        document.body.appendChild(el);
-        open();
-        // A janela real do case monta nos quadros seguintes: o fragmento espera por ela (no máximo 450 ms) e cresce
-        // até coincidir com o retângulo dela — medido sem a animação de entrada. No telefone o case ocupa a tela.
-        const phone = store.getState().shell === "mobile";
-        const since = performance.now();
-        const aim = () => {
-          const win = document.querySelector<HTMLElement>('.os-window[data-app="projects"]');
-          const ready = !!win && win.offsetWidth > 40;
-          if (!ready && performance.now() - since < 450) return void requestAnimationFrame(aim);
-          const layer = win?.offsetParent?.getBoundingClientRect();
-          const to = ready && win && !phone ? { left: (layer?.left ?? 0) + win.offsetLeft, top: (layer?.top ?? 0) + win.offsetTop, width: win.offsetWidth, height: win.offsetHeight } : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
-          const full = "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%)";
-          const anim = el.animate(
-            [
-              { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, clipPath: shard, opacity: 0.2, offset: 0 },
-              { clipPath: "polygon(12% 8%, 96% 2%, 98% 86%, 22% 100%, 2% 38%)", opacity: 1, offset: 0.18 },
-              { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, clipPath: full, opacity: 1, offset: 0.82 },
-              { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, clipPath: full, opacity: 0, offset: 1 },
-            ],
-            { duration: 860, easing: "cubic-bezier(.7,0,.2,1)", fill: "forwards" },
-          );
-          const done = () => el.remove();
-          anim.onfinish = done;
-          anim.oncancel = done;
-          window.setTimeout(done, 1400);
-        };
-        requestAnimationFrame(aim);
-      };
-      const ready = () => window.setTimeout(launch, Math.max(0, 620 - (performance.now() - started)));
-      if (img.complete && img.naturalWidth > 0) ready();
-      else {
-        img.onload = ready;
-        img.onerror = open;
-        window.setTimeout(() => {
-          if (!img.complete) open();
-        }, 650);
-      }
-    },
-    [store],
-  );
+  const cvLink = '[data-profile-action="view-cv"]';
 
   /**
    * A prévia vira uma janela do OS. Vinda do recorte (`from`), a página que se via através do rosto cresce até o
@@ -186,9 +121,12 @@ function useActions() {
     return true;
   }, [navigate, openIdea, store]);
 
-  /** Só o que o portfólio cadastra: apps do OS, projetos do catálogo, arquivos e endereços do perfil, a prévia e o pedido de proposta. */
+  /**
+   * Só o que o portfólio cadastra: apps do OS, projetos do catálogo, arquivos e endereços do perfil, a prévia e o
+   * pedido de proposta. `focus`: o que recebe o foco quando o destino chega (um seletor dentro da janela).
+   */
   const run = useCallback(
-    (action: GuideAction): boolean => {
+    (action: GuideAction, focus?: string): boolean => {
       const phone = store.getState().shell === "mobile";
       const leave = () => guide.set({ min: phone ? true : guide.get().min, reflect: null, portal: null });
       if (action.kind === "app") {
@@ -196,13 +134,15 @@ function useActions() {
         if (!route) return false;
         leave();
         navigate(route, "push", true);
+        arrive(action.app, focus ?? action.focus);
         return true;
       }
       if (action.kind === "project") {
         const project = catalog(action.slug);
         if (!project) return false;
-        guide.set({ portal: null, min: phone ? true : guide.get().min });
-        cross(project, () => navigate(`/work/${project.slug}`, "push", true));
+        guide.set({ portal: null, reflect: project.slug, min: phone ? true : guide.get().min });
+        navigate(`/work/${project.slug}`, "push", true);
+        arrive("projects");
         return true;
       }
       if (action.kind === "made") {
@@ -210,6 +150,7 @@ function useActions() {
         leave();
         projectsIntent.set({ slug: action.slug, face: "made" });
         navigate("/work", "push", true);
+        arrive("projects");
         return true;
       }
       if (action.kind === "file") {
@@ -222,19 +163,22 @@ function useActions() {
         writeBrief(payload);
         leave();
         navigate("/contact", "push", true);
+        arrive("contact");
         return true;
       }
       return false;
     },
-    [catalog, cross, navigate, payload, presentIdea, store],
+    [catalog, navigate, payload, presentIdea, store],
   );
-  return { run, openIdea };
+  /** O currículo quando o navegador não deixa abrir a nova aba (pedido por voz): o Perfil, com o link do PDF já em foco. */
+  const showCv = useCallback(() => run({ kind: "app", app: "profile", label: "" }, cvLink), [run]);
+  return { run, openIdea, showCv, cv: payload.profile.cv.href };
 }
 
 /** Enviar uma mensagem: responde, guarda o que aprendeu e roda a ação que a resposta pede. */
 function useSend() {
   const { payload, locale, store } = useOs();
-  const { run } = useActions();
+  const { run, showCv, cv } = useActions();
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
 
@@ -262,10 +206,12 @@ function useSend() {
           // A prévia aparece depois da resposta: a pessoa lê o que vai ver e então a escultura se abre.
           const next: GuideAction | undefined = reply.idea ? { kind: "idea", label: "" } : reply.run;
           if (next && !opened && next.kind !== "file") timers.current.push(window.setTimeout(() => run(next), quick ? 0 : reply.idea ? 700 : 520));
+          // O currículo pedido por voz (ou com a nova aba barrada): o documento fica a um Enter — o Perfil abre com o link do PDF em foco.
+          else if (next && !opened && next.kind === "file" && next.href === cv) timers.current.push(window.setTimeout(showCv, quick ? 0 : 520));
         }, quick ? 0 : 420),
       );
     },
-    [locale, payload, run, store],
+    [cv, locale, payload, run, showCv, store],
   );
 }
 
@@ -335,76 +281,36 @@ function MateriaPortal() {
   );
 }
 
-/** Sobre a figura: a escultura (arraste de lado = dobrar o tempo; toque = conversar), o botão da conversa e a entrada da prévia. */
+/** As sugestões que abrem a conversa: servem a quem veio ver os sites, o currículo ou pedir um orçamento. */
+const startersOf = (say: { chipExplore: string; chipCv: string; chipQuote: string }): GuideAction[] => [say.chipExplore, say.chipCv, say.chipQuote].map((label) => ({ kind: "say", text: label, label }));
+
+/**
+ * Na primeira tela: "Ver projetos" e "Perfil e currículo" (no telefone e no tablet; no desktop largo são os dois
+ * primeiros itens da navegação, desenhados como botões — styles/os.css), a entrada discreta da conversa e o recorte.
+ */
 export function MateriaControls() {
-  const { payload, navigate, store } = useOs();
+  const { payload } = useOs();
   const M = payload.materia;
   const open = useGuide((s) => s.open && !s.min);
   const portal = useGuide((s) => s.portal);
-  const reflect = useGuide((s) => s.reflect);
-  const route = useOsStore((s) => (s.focused === "projects" ? s.wins.projects.route : null));
-  const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const start = () => openGuide(M.say.hello, [M.say.chipExplore, M.say.chipProject, M.say.chipRecruiting].map((label) => ({ kind: "say", text: label, label })));
-
-  // O projeto que se vê pela abertura da dobra: o que a conversa recomendou, o case aberto ou o destaque (a mesma regra da cena).
-  const catalog = [...payload.projects, ...payload.authorial];
-  const wanted = reflect ?? (route?.startsWith("/work/") ? route.slice(6) : null);
-  const shown = catalog.find((p) => p.slug === wanted) ?? catalog.find((p) => p.slug === MATERIA.hero.cover) ?? payload.projects.find((p) => p.featured !== null) ?? payload.projects[0];
-
-  /** O clique direto na capa abre o CASE: a janela monta, e as mãos esticam a dobra até ela (materia-scene › stage.go). */
-  const explore = () => {
-    if (!shown) return;
-    navigate(`/work/${shown.slug}`, "push", true);
-    stage.go?.("projects");
-  };
-  const release = () => {
-    if (!drag.current) return;
-    drag.current = null;
-    stage.grab?.(null);
-    stage.hold?.(false);
-  };
+  const launch = useLaunch();
+  const start = () => openGuide(M.say.hello, startersOf(M.say));
 
   return (
     <>
       <div className="os-materia-ui" data-open={open || portal ? "1" : "0"} data-no-inspect>
         <div className="os-materia-cta">
-          {/* A entrada explícita da prévia: abre a conversa já com o pedido feito. */}
-          <button type="button" className="os-materia-idea" onClick={() => stage.ask?.(M.ui.idea)}>
-            {M.ui.idea}
-          </button>
+          <a className="os-materia-go" data-app="projects" href={payload.hrefs.projects} onClick={(e) => launch(e, "projects")} onPointerEnter={() => stage.warm?.("projects")} onFocus={() => stage.warm?.("projects")}>
+            {M.ui.goProjects}
+          </a>
+          <a className="os-materia-go" data-app="profile" href={payload.hrefs.profile} onClick={(e) => launch(e, "profile")} onPointerEnter={() => stage.warm?.("profile")} onFocus={() => stage.warm?.("profile")}>
+            {M.ui.goProfile}
+          </a>
           <button type="button" className="os-materia-talk" onClick={start}>
             <span className="os-materia-talk__dot" aria-hidden="true" />
             {M.ui.talk}
           </button>
         </div>
-        {/* A abertura da dobra: o que aparece por baixo é a capa de um projeto de verdade, e ela leva ao case. */}
-        {shown && (
-          <button type="button" className="os-materia-fold" aria-label={`${M.ui.explore}: ${shown.title}`} onClick={explore} onFocus={() => stage.hold?.(true)} onBlur={() => stage.hold?.(false)}>
-            <span className="os-materia-fold__tag">
-              <span>{shown.title}</span>
-              <span aria-hidden="true">↗</span>
-            </span>
-          </button>
-        )}
-        {/* A ponta da dobra, para o dedo: só esta área segura o toque — o resto da tela rola como sempre. */}
-        <span
-          className="os-materia-tip"
-          aria-hidden="true"
-          onPointerDown={(e) => {
-            if (e.pointerType === "mouse") return;
-            drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
-            e.currentTarget.setPointerCapture?.(e.pointerId);
-            stage.hold?.(true);
-          }}
-          onPointerMove={(e) => {
-            const d = drag.current;
-            if (!d || d.id !== e.pointerId) return;
-            stage.grab?.({ x: e.clientX - d.x, y: e.clientY - d.y });
-          }}
-          onPointerUp={release}
-          onPointerCancel={release}
-          onLostPointerCapture={release}
-        />
       </div>
       <MateriaPortal />
     </>
@@ -447,7 +353,7 @@ export function MateriaGuide() {
   const field = useRef<HTMLInputElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const catalog = (slug?: string) => (slug ? [...payload.projects, ...payload.authorial].find((p) => p.slug === slug) : undefined);
-  const starters = (): GuideAction[] => [M.say.chipExplore, M.say.chipProject, M.say.chipRecruiting].map((label) => ({ kind: "say", text: label, label }));
+  const starters = (): GuideAction[] => startersOf(M.say);
 
   // Depois de hidratar: retoma a conversa e a prévia da aba e descobre se o navegador reconhece voz.
   useEffect(() => {

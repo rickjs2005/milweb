@@ -226,6 +226,8 @@ html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
 }
 /* estado da janela no nome acessível do ícone: só no desktop largo (bloco no fim), onde a dock não traz os apps */
 .os-icon-btn__state { display: none; }
+/* o convite inteiro dos dois destinos em destaque só aparece no desktop largo */
+.os-icon-btn__cta { display: none; }
 
 /* placa dos ícones: fosca, borda fina, sem brilho nem relevo — carvão no Obito, branca no Gojo */
 .os-icon {
@@ -1131,10 +1133,12 @@ details[open] .os-case__plus { transform: rotate(45deg); }
     --hy: clamp(18px, 3.6vh, 44px);                  /* da barra ao lema */
     --hs: clamp(30px, min(4vw, 7.2vh), 88px);        /* corpo do lema, em até duas linhas */
     --hgap: clamp(18px, 4.6vh, 56px);                /* lema → aplicativos */
-    --app: clamp(46px, 8.3vh, 68px);                 /* placa dos ícones */
+    --app: clamp(46px, 7.2vh, 64px);                 /* placa dos ícones */
     --cell: calc(var(--app) + 36px);                 /* célula quadrada: placa + rótulo de uma linha + respiros */
     --cgap: clamp(4px, 1.3vh, 14px);                 /* o mesmo respiro entre linhas e entre colunas */
-    --hcta: calc(var(--hy) + var(--hs) * 2 + var(--hgap) * .55);  /* lema → os dois convites da Matéria (styles/materia.css) */
+    --hcta: calc(var(--hy) + var(--hs) * 2 + var(--hgap) * .55);  /* lema → os dois destinos em destaque */
+    --hnav: calc(var(--hcta) + 104px + var(--hgap) * .4);         /* → os demais destinos (depois dos dois destaques, empilhados) */
+    --htalk: calc(var(--hnav) + var(--cell) * 2 + var(--cgap) + 14px);  /* → a conversa com a Matéria (styles/materia.css) */
   }
   /* janela baixa: lema, respiros e placas encolhem um pouco mais, para os convites da Matéria caberem entre o lema e a grade */
   @media (max-height: 680px) {
@@ -1153,26 +1157,35 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   /* a linha da assinatura fica sozinha onde estava, como rodapé */
   .os-sign__line { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); margin: 0; pointer-events: auto; }
 
-  /* aplicativos: grade 2 × 3 abaixo dos convites da Matéria (que ficam sob o lema); a placa da 1ª coluna alinha com o lema.
-     Duas colunas: as janelas abrem à direita delas, e os dois terços da direita são da cena — a figura e a dobra da tela. */
-  .os-icons { left: calc(var(--hx) - (var(--cell) - var(--app)) / 2); top: calc(var(--hcta) + 46px + var(--hgap) * .6); bottom: auto; }
+  /* a navegação da primeira tela, numa coluna que as janelas não cobrem (elas abrem à direita dela): dois destinos
+     em destaque — Projetos e Perfil, como botões, um sobre o outro — e os demais agrupados logo abaixo, em 2 × 2.
+     A ordem do DOM é a que se lê: registry.ts › DESKTOP_GRID. */
+  .os-icons { left: var(--hx); top: var(--hcta); bottom: auto; }
   .os-icons ul {
-    grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: none; grid-auto-rows: auto;
-    gap: var(--cgap); height: auto;
+    grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: 48px 48px auto auto; grid-auto-rows: auto;
+    gap: 8px var(--cgap); height: auto; justify-content: start;
   }
-  .os-icons li[data-app="projects"] { grid-area: 1 / 1; }
-  .os-icons li[data-app="services"] { grid-area: 1 / 2; }
-  .os-icons li[data-app="studio"] { grid-area: 2 / 1; }
-  .os-icons li[data-app="lab"] { grid-area: 2 / 2; }
-  .os-icons li[data-app="profile"] { grid-area: 3 / 1; }
-  .os-icons li[data-app="contact"] { grid-area: 3 / 2; }
+  .os-icons li[data-app="projects"] { grid-area: 1 / 1 / 2 / 3; }
+  .os-icons li[data-app="profile"] { grid-area: 2 / 1 / 3 / 3; }
+  .os-icons li[data-app="services"] { grid-area: 3 / 1; margin-top: calc(var(--hnav) - var(--hcta) - 112px); }
+  .os-icons li[data-app="studio"] { grid-area: 3 / 2; margin-top: calc(var(--hnav) - var(--hcta) - 112px); }
+  .os-icons li[data-app="lab"] { grid-area: 4 / 1; }
+  .os-icons li[data-app="contact"] { grid-area: 4 / 2; }
   .os-icon-btn { position: relative; width: var(--cell); gap: 8px; padding: 6px 4px 8px; }
   .os-icon-btn .os-icon { width: var(--app) !important; height: var(--app) !important; }
   .os-icon-btn__label { font-size: 11px; }
-  /* Contato em destaque: borda discreta no acento do tema (também no hover e no foco) */
-  .os-icons li[data-app="contact"] .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal) / .7), 0 0 16px rgb(var(--os-signal) / .14), var(--os-tile-shadow); }
-  .os-icons li[data-app="contact"] .os-icon-btn:hover .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22), var(--os-tile-shadow); }
-  .os-icons li[data-app="contact"] .os-icon-btn:focus-visible .os-icon { box-shadow: 0 0 0 2px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22); }
+  /* os dois destaques: placa cheia para Projetos, contorno para o Perfil; o rótulo é o convite inteiro */
+  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn {
+    flex-direction: row; justify-content: center; width: 100%; min-width: 0; height: 48px; padding: 0 10px; gap: 10px; border-radius: 999px;
+    border: 1px solid rgb(var(--os-fg)); background: rgb(var(--os-fg)); color: rgb(var(--os-bg));
+  }
+  .os-icons li[data-app="profile"] .os-icon-btn { background: rgb(var(--os-bg) / .6); color: rgb(var(--os-fg)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .os-icons li[data-app="projects"] .os-icon-btn:hover, .os-icons li[data-app="projects"] .os-icon-btn:focus-visible { background: rgb(var(--os-fg) / .86); }
+  .os-icons li[data-app="profile"] .os-icon-btn:hover, .os-icons li[data-app="profile"] .os-icon-btn:focus-visible { background: rgb(var(--os-bg) / .92); }
+  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn:focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
+  .os-icons li:is([data-app="projects"], [data-app="profile"]) :is(.os-icon, .os-icon-btn__label) { display: none; }
+  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn__cta { display: inline; font: 600 clamp(10.5px, .82vw, 12px)/1 var(--font-mono), monospace; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn::after { left: auto; right: 10px; bottom: calc(50% - 2px); }
   /* estado da janela no ícone, já que a dock não traz os apps: ponto = aberta, no acento = em primeiro plano,
      anel = minimizada (os mesmos sinais da dock); o estado também entra no nome acessível */
   .os-icon-btn::after { content: ""; position: absolute; left: calc(50% - 2px); bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--os-fg) / .55); opacity: 0; }
@@ -1260,3 +1273,9 @@ html[data-os-motion="reduce"] .os-hud__pulse { display: none !important; }
 html[data-os-motion="reduce"] .bounty, html[data-os-motion="reduce"] .bounty__track, html[data-os-motion="reduce"] .bounty__slot, html[data-os-motion="reduce"] .bounty__paper, html[data-os-motion="reduce"] .bounty__shadow, html[data-os-motion="reduce"] .bounty__img, html[data-os-motion="reduce"] .bounty__veil, html[data-os-motion="reduce"] .bounty__dossier, html[data-os-motion="reduce"] .bounty__case, html[data-os-motion="reduce"] .bounty__close, html[data-os-motion="reduce"] .bounty__all, html[data-os-motion="reduce"] .bounty__tick, html[data-os-motion="reduce"] .bounty__all-thumb { transition: none !important; animation: none !important; }
 html[data-os-motion="reduce"] .bounty[data-phase="open"] .bounty__case .os-case > * { animation: none !important; }
 html[data-os-motion="reduce"] .bounty__link:hover .bounty__paper { --lift: 0px; }
+
+/* o destaque da coleção leva ao site no ar: o botão é um link (mesma placa dos demais) */
+a.bounty__btn { text-decoration: none; }
+@container (max-width: 680px) {
+  .bounty__acts { flex-wrap: wrap; justify-content: center; width: max-content; max-width: calc(100% - 20px); }
+}

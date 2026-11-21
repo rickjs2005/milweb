@@ -88,7 +88,7 @@ export const pt: Dictionary = {
       similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",
       numbers: "Números", kind: "Tipo", year: "Ano", status: "Status", of: "de", count: "projetos", empty: "Nenhum projeto neste filtro.", interactive: "Interativo",
       dossier: "DOSSIÊ", rank: "CASO", collection: "COLEÇÃO DE RECOMPENSAS", missions: "missões", wall: "Mural de cartazes", position: "Posição na coleção", hint: "setas navegam · enter abre · esc fecha", swipe: "deslize para navegar", viewAll: "Todos os projetos", backToCollection: "Voltar à coleção",
-      tryIt: "Experimentar", made: "Ver como foi feito", madeTitle: "Como foi feito", sample: "Amostra", sampleHint: "role ou arraste para percorrer", problem: "O problema", contribution: "O que o Rick fez", decision: "Decisão de implementação", verify: "Conferir", discuss: "Quero discutir algo assim", full: "Abrir a experiência completa",
+      tryIt: "Experimentar", visitSite: "Visitar site", made: "Ver como foi feito", madeTitle: "Como foi feito", sample: "Amostra", sampleHint: "role ou arraste para percorrer", problem: "O problema", contribution: "O que o Rick fez", decision: "Decisão de implementação", verify: "Conferir", discuss: "Quero discutir algo assim", full: "Abrir a experiência completa",
       tier: { wanted: "PROCURA-SE", most: "MAIS PROCURADO", special: "MISSÃO ESPECIAL" },
       seal: { client: "CLIENTE", demo: "DEMO", experiment: "EXPERIMENTO", webgl: "WEBGL", product: "PRODUTO DIGITAL" },
     },

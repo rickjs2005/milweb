@@ -30,34 +30,32 @@
   }
 }
 
-/* A home: a ponta da dobra (--mh-x/--mh-y, na área do fundo; --mh-vx/--mh-vy, na janela) e px por unidade (--mh-k).
-   A figura fica ancorada na borda direita (materia/config.ts › COMPOSE.*.hero). */
+/* A escultura: o centro do quadro dela (--mh-x/--mh-y, na área do fundo) e a altura do quadro (--mh-h) — os
+   mesmos números de materia/config.ts › COMPOSE.*.hero. Os valores abaixo são o palpite de antes do JS. */
 .os-desktop {
-  --mh-k: min(calc((100dvh - var(--os-top)) * .22), 25vw);
-  --mh-x: calc(100vw - var(--mh-k) * 2.2); --mh-y: calc((100dvh - var(--os-top)) * .81);
-  --mh-vx: var(--mh-x); --mh-vy: calc(var(--os-top) + var(--mh-y));
+  --mh-h: min(calc((100dvh - var(--os-top)) * .86), 80vw);
+  --mh-x: 60vw; --mh-y: calc((100dvh - var(--os-top)) * .5);
 }
 @media (min-width: 1080px) {
-  .os-desktop { --mh-k: min(calc((100dvh - var(--os-top)) * .412), 24.72vw); --mh-x: calc(100vw - var(--mh-k) * 2.3); --mh-y: calc((100dvh - var(--os-top)) * .59); }
+  .os-desktop { --mh-h: min(calc((100dvh - var(--os-top)) * .93), 62vw); --mh-x: 66.5vw; }
 }
 @media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
-  .os-desktop { --mh-k: min(calc((100dvh - 350px) * .46), 55vw); --mh-x: 19vw; --mh-y: calc(50dvh - 127px - (100dvh - 350px) * .01); --mh-vy: var(--mh-y); --mh-floor: calc(100dvh - 306px); }
+  .os-desktop { --mh-h: min(calc((100dvh - 350px) * 1.06), 150vw); --mh-x: 56vw; --mh-y: calc(50dvh - 127px); --mh-floor: calc(100dvh - 306px); }
 }
 
-/* A cena da home como imagem: 1500 × 1100 px, com a ponta da dobra em (670, 510) e 350 px por unidade
-   (materia/config.ts › HERO_STILL). A página dela tem a cor exata de --os-bg: fora da imagem, o fundo continua. */
-.os-materia .os-scene__still {
-  background:
-    url("/art/materia-home-dark.webp") no-repeat calc(var(--mh-x) - var(--mh-k) * 1.91429) calc(var(--mh-y) - var(--mh-k) * 1.45714) / calc(var(--mh-k) * 4.28571) auto,
-    rgb(var(--os-bg));
+/* A cena como imagem: 2100 × 1250 px, com o centro do quadro da figura em (1050, 625) e o quadro com 1000 px de
+   altura (materia/config.ts › HERO_STILL). A luz do ateliê se apaga antes das bordas e a parede tem a cor exata de
+   --os-bg: fora da imagem, o fundo continua. Telas pequenas recebem a versão de metade do tamanho. */
+/* (o segundo seletor vence a regra do tema claro da cena antiga, em os.css) */
+.os-materia .os-scene__still, html[data-os-theme="gojo"] .os-materia .os-scene__still {
+  --still: url("/art/materia-home-dark.webp");
+  background: var(--still) no-repeat calc(var(--mh-x) - var(--mh-h) * 1.05) calc(var(--mh-y) - var(--mh-h) * .625) / calc(var(--mh-h) * 2.1) auto, rgb(var(--os-bg));
 }
-html[data-os-theme="gojo"] .os-materia .os-scene__still {
-  background:
-    url("/art/materia-home-light.webp") no-repeat calc(var(--mh-x) - var(--mh-k) * 1.91429) calc(var(--mh-y) - var(--mh-k) * 1.45714) / calc(var(--mh-k) * 4.28571) auto,
-    rgb(var(--os-bg));
-}
-/* Telefone: a cena se apaga antes da grade de apps (o motor faz o mesmo: engine.ts › heroFloor). */
+html[data-os-theme="gojo"] .os-materia .os-scene__still { --still: url("/art/materia-home-light.webp"); }
 @media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
+  .os-materia .os-scene__still { --still: url("/art/materia-home-dark-s.webp"); }
+  html[data-os-theme="gojo"] .os-materia .os-scene__still { --still: url("/art/materia-home-light-s.webp"); }
+  /* a cena se apaga antes da grade de apps (o motor faz o mesmo: engine.ts › heroFloor) */
   .os-materia:not([data-pose="brain"]) .os-scene__still::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(var(--os-bg) / 0) calc(var(--mh-floor) - 54px), rgb(var(--os-bg)) var(--mh-floor)); }
 }
 /* Na conversa, sem motor: a pose do cérebro, da mesma escultura. */
@@ -81,50 +79,47 @@ html[data-os-theme="gojo"] .os-materia[data-pose="brain"] .os-scene__still {
 .os-materia-ui > * { pointer-events: auto; }
 .os-materia-ui[data-open="1"] { opacity: 0; }
 .os-materia-ui[data-open="1"] > * { pointer-events: none; }
-/* A abertura da dobra é um botão: por baixo aparece a capa de um projeto de verdade, e ela leva ao case. O recorte
-   acompanha a forma da abertura em repouso (hero-shaders.ts › foldL/foldR); a etiqueta diz o que há ali. */
-.os-materia-fold {
-  position: fixed; z-index: 1; left: calc(var(--mh-vx) - var(--mh-k) * .3); top: var(--mh-vy); width: calc(var(--mh-k) * 1.54); height: calc(var(--mh-k) * 1.02);
-  padding: 0; border: 0; background: none; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  clip-path: polygon(19.5% 3%, 38% 30%, 61% 60%, 100% 100%, 0 100%, 7% 60%, 12% 30%);
-}
-.os-materia-fold__tag {
-  position: absolute; left: 30%; top: 47%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; white-space: nowrap;
-  border: 1px solid rgb(255 255 255 / .34); border-radius: 999px; background: rgb(6 8 14 / .56); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  font: 600 11px/1 var(--font-mono), monospace; letter-spacing: .1em; text-transform: uppercase; transition: border-color .25s, background-color .25s, transform .4s var(--os-ease);
-}
-.os-materia-fold:hover .os-materia-fold__tag { border-color: #fff; background: rgb(6 8 14 / .8); transform: translateX(-50%) translateY(-2px); }
-.os-materia-fold:focus-visible { outline: none; }
-.os-materia-fold:focus-visible .os-materia-fold__tag { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
-/* A ponta da dobra, para o dedo: só este círculo segura o toque (o resto da tela continua rolando). */
-.os-materia-tip { --tip: clamp(56px, calc(var(--mh-k) * .43), 92px); position: fixed; z-index: 1; left: calc(var(--mh-vx) - var(--tip) / 2); top: calc(var(--mh-vy) - var(--tip) / 2); width: var(--tip); height: var(--tip); border-radius: 50%; touch-action: none; cursor: grab; -webkit-tap-highlight-color: transparent; }
-/* Enquanto um destino chega pelas mãos da Matéria, o que é da dobra em repouso (a etiqueta, a alça) e a pílula da conversa saem de cena. */
-html[data-os-arriving] :is(.os-materia-fold, .os-materia-tip, .os-materia-bubble), html[data-os-fold="window"] :is(.os-materia-fold, .os-materia-tip) { opacity: 0 !important; pointer-events: none !important; }
-/* A janela de destino espera escondida enquanto as mãos da Matéria a trazem (a dobra que estica, a ficha na palma);
-   quando chega, aparece sem salto. Um toque ou uma tecla no meio do gesto a mostram na hora (materia-scene › hurry). */
-html[data-os-arriving="projects"] .os-window[data-app="projects"], html[data-os-arriving="profile"] .os-window[data-app="profile"], html[data-os-arriving="contact"] .os-window[data-app="contact"] { opacity: 0 !important; }
-.os-window:is([data-app="projects"], [data-app="profile"], [data-app="contact"]) { transition: opacity .24s var(--os-ease); }
-/* Os dois convites: a prévia ("Ver uma ideia para o meu site") é a ação principal; conversar, a secundária.
-   Desktop largo: na coluna do lema, logo abaixo dele. Tablet: no alto, ao lado da coluna de apps. Telefone: sob a cena. */
+/* Enquanto um destino chega pelo gesto da escultura, a janela JÁ está aberta (rota, dados, foco) e é recortada pelo
+   contorno que as mãos seguram: o motor publica o contorno quadro a quadro (materia-scene.tsx › --mp-clip) e o
+   `transform` que mostra a página pela abertura (--mp-tf). A animação de entrada da janela termina na hora — o gesto
+   é a entrada. Um toque ou uma tecla no meio entregam a janela inteira (materia-scene › hurry). */
+html[data-os-arriving] .os-materia-bubble { opacity: 0 !important; pointer-events: none !important; }
+.os-window[data-arriving="1"] { animation-duration: 1ms !important; transition: none !important; transform-origin: 0 0 !important; transform: var(--mp-tf, none) !important; clip-path: var(--mp-clip, inset(50%)) !important; will-change: transform, clip-path; }
+/* entre o clique e a primeira medida (um ou dois quadros) a janela espera sem aparecer */
+html[data-os-arriving="projects"] .os-window[data-app="projects"]:not([data-arriving]), html[data-os-arriving="profile"] .os-window[data-app="profile"]:not([data-arriving]), html[data-os-arriving="services"] .os-window[data-app="services"]:not([data-arriving]),
+html[data-os-arriving="studio"] .os-window[data-app="studio"]:not([data-arriving]), html[data-os-arriving="lab"] .os-window[data-app="lab"]:not([data-arriving]), html[data-os-arriving="contact"] .os-window[data-app="contact"]:not([data-arriving]) { opacity: 0 !important; }
+/* Na primeira tela: os dois destinos em destaque e a entrada discreta da conversa.
+   Desktop largo: "Ver projetos" e "Perfil e currículo" são os dois primeiros itens da navegação (styles/os.css), e aqui
+   fica só a conversa, logo abaixo dela. Tablet: os três no alto, ao lado da coluna de apps. Telefone: sob a cena. */
 .os-materia-cta { position: fixed; z-index: 2; left: 112px; top: calc(var(--os-top) + 18px); display: flex; flex-direction: row; align-items: center; gap: 8px; }
 /* só os botões recebem o ponteiro: a caixa que os agrupa não pode cobrir um ícone vizinho */
 .os-materia-ui > .os-materia-cta { pointer-events: none; }
 .os-materia-cta > * { pointer-events: auto; }
 .os-materia-ui[data-open="1"] .os-materia-cta > * { pointer-events: none; }
-.os-materia-talk, .os-materia-idea, .os-materia-portal__open {
-  display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 20px 0 16px; white-space: nowrap;
-  border: 1px solid rgb(var(--os-fg) / .24); border-radius: 999px;
-  background: rgb(var(--os-bg) / .74); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  color: rgb(var(--os-fg)); font: 600 12px/1 var(--font-mono), monospace; letter-spacing: .09em; text-transform: uppercase; cursor: pointer;
+.os-materia-go, .os-materia-idea, .os-materia-portal__open {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 20px; white-space: nowrap; text-decoration: none;
+  border: 1px solid rgb(var(--os-fg)); border-radius: 999px; background: rgb(var(--os-fg)); color: rgb(var(--os-bg));
+  font: 600 12px/1 var(--font-mono), monospace; letter-spacing: .09em; text-transform: uppercase; cursor: pointer;
   transition: border-color .25s, background-color .25s, transform .5s var(--os-ease);
 }
-.os-materia-talk:hover { border-color: rgb(var(--os-signal)); background: rgb(var(--os-bg) / .9); }
-/* A prévia é o convite mais forte: placa cheia, na cor do texto do tema. */
-.os-materia-idea, .os-materia-portal__open { padding: 0 20px; border-color: rgb(var(--os-fg)); background: rgb(var(--os-fg)); color: rgb(var(--os-bg)); }
-.os-materia-idea:hover, .os-materia-portal__open:hover { background: rgb(var(--os-fg) / .86); }
+.os-materia-go:hover, .os-materia-idea:hover, .os-materia-portal__open:hover { background: rgb(var(--os-fg) / .86); }
+/* o segundo destino: contorno, sobre a parede do ateliê */
+.os-materia-go[data-app="profile"] { background: rgb(var(--os-bg) / .74); color: rgb(var(--os-fg)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.os-materia-go[data-app="profile"]:hover { background: rgb(var(--os-bg) / .92); }
+/* a conversa: discreta — um ponto que pulsa e uma linha de texto — e fácil de encontrar */
+.os-materia-talk {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px 0 10px; white-space: nowrap;
+  border: 1px solid transparent; border-radius: 999px; background: none;
+  color: rgb(var(--os-fg) / .86); font: 600 11.5px/1 var(--font-mono), monospace; letter-spacing: .09em; text-transform: uppercase; cursor: pointer;
+  transition: border-color .25s, background-color .25s, color .25s;
+}
+.os-materia-talk:hover { border-color: rgb(var(--os-fg) / .3); background: rgb(var(--os-bg) / .7); color: rgb(var(--os-fg)); }
 .os-materia-portal__open .os-materia-talk__dot { animation: none; box-shadow: none; }
-.os-materia-talk:focus-visible, .os-materia-idea:focus-visible, .os-materia-bubble:focus-visible, .os-materia-portal :is(button):focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
-@media (min-width: 1080px) { .os-materia-cta { left: var(--hx); top: calc(var(--os-top) + var(--hcta)); gap: 10px; } }
+.os-materia-talk:focus-visible, .os-materia-go:focus-visible, .os-materia-idea:focus-visible, .os-materia-bubble:focus-visible, .os-materia-portal :is(button):focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
+@media (min-width: 1080px) {
+  .os-materia-go { display: none; }
+  .os-materia-cta { left: calc(var(--hx) - 10px); top: calc(var(--os-top) + var(--htalk)); }
+}
 .os-materia-talk__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--os-signal)); box-shadow: 0 0 0 0 rgb(var(--os-signal) / .5); animation: os-materia-pulse 2.4s ease-out infinite; }
 @keyframes os-materia-pulse { 0% { box-shadow: 0 0 0 0 rgb(var(--os-signal) / .55); } 70%, 100% { box-shadow: 0 0 0 9px rgb(var(--os-signal) / 0); } }
 html[data-os-event="halloween"] .os-materia-ui { display: none; }
@@ -246,11 +241,13 @@ html[data-os-arriving="idea"] .os-window[data-app="idea"] { opacity: 0 !importan
 .os-materia-shard { position: fixed; z-index: 320; pointer-events: none; background: #111 center top / cover no-repeat; will-change: left, top, width, height, clip-path, opacity; box-shadow: 0 0 60px rgb(var(--os-signal) / .35); }
 
 @media (max-width: 719px), ((max-height: 499px) and (max-width: 1079px)) {
-  .os-materia-talk, .os-materia-idea, .os-materia-portal__open { font-size: 11.5px; min-height: 48px; }
-  /* no telefone os dois convites ficam lado a lado, rentes à grade e ao alcance do polegar: a abertura da dobra continua à vista acima deles */
-  .os-materia-cta { left: 12px; right: 12px; top: calc(var(--ma-py) - 4px); justify-content: center; align-items: stretch; gap: 8px; }
-  .os-materia-cta > * { flex: 1 1 0; max-width: 200px; min-height: 52px; justify-content: center; white-space: normal; text-align: center; line-height: 1.25; padding: 6px 12px; }
-  .os-materia-fold__tag { left: 30%; top: 46%; padding: 6px 9px; gap: 6px; font-size: 9.5px; letter-spacing: .06em; }
+  .os-materia-go, .os-materia-idea, .os-materia-portal__open { font-size: 11.5px; min-height: 48px; }
+  /* no telefone os dois destinos ficam lado a lado, rentes à grade e ao alcance do polegar; a conversa, pequena, logo acima deles, à direita */
+  .os-materia-cta { left: 12px; right: 12px; top: calc(var(--ma-py) - 4px); flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 6px 8px; transform: translateY(-50px); }
+  .os-materia-go { flex: 1 1 0; max-width: 200px; min-height: 52px; justify-content: center; white-space: normal; text-align: center; line-height: 1.25; padding: 6px 12px; }
+  .os-materia-talk { order: -1; flex: 0 0 auto; margin-left: auto; min-height: 44px; padding: 0 12px 0 10px; font-size: 10.5px; background: rgb(var(--os-bg) / .6); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .os-materia-cta::before { content: ""; order: -1; flex: 1 1 100%; height: 0; }
+  .os-materia-cta .os-materia-talk { order: -2; }
   .os-materia-portal__bar { top: var(--ma-py); }
 
   .os-materia-panel {
@@ -271,12 +268,17 @@ html[data-os-arriving="idea"] .os-window[data-app="idea"] { opacity: 0 !importan
 /* telefone deitado (ou com o teclado aberto): a figura fica na coluna da direita e os convites cabem nela */
 @media (max-height: 499px) and (max-width: 1079px) {
   /* palpite de antes do JS: o palco é a coluna da direita */
-  .os-desktop { --mh-k: min(calc((100dvh - 96px) * .46), 27vw); --mh-x: 60vw; --mh-y: calc(48px + (100dvh - 96px) * .49); --mh-floor: calc(100dvh - 40px); }
-  .os-materia-cta { left: var(--ma-vx); right: auto; top: var(--ma-py); max-width: 46vw; flex-direction: column; align-items: center; transform: translate(-50%, calc(-100% + 48px)); }
-  .os-materia-cta > * { flex: none; max-width: 46vw; min-height: 44px; }
+  .os-desktop { --mh-h: min(calc((100dvh - 96px) * 1.06), 60vw); --mh-x: 72vw; --mh-y: calc(48px + (100dvh - 96px) * .5); --mh-floor: calc(100dvh - 40px); }
+  .os-materia-cta { left: var(--ma-vx); right: auto; top: var(--ma-py); max-width: 46vw; flex-direction: column; flex-wrap: nowrap; align-items: center; transform: translate(-50%, calc(-100% + 48px)); }
+  .os-materia-cta::before { display: none; }
+  .os-materia-cta > * { flex: none; max-width: 46vw; min-height: 44px; margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .os-materia-panel, .os-materia-bubble, .os-materia-talk__dot, .os-materia-panel__mic[data-on="1"], .os-materia-msg[data-thinking="1"] i { animation: none !important; }
-  .os-materia-ui, .os-materia-talk, .os-materia-idea, .os-materia-portal__bar { transition: none !important; }
+  .os-materia-ui, .os-materia-talk, .os-materia-go, .os-materia-idea, .os-materia-portal__bar { transition: none !important; }
 }
 html[data-os-motion="reduce"] :is(.os-materia-panel, .os-materia-bubble, .os-materia-talk__dot, .os-materia-panel__mic[data-on="1"], .os-materia-msg[data-thinking="1"] i) { animation: none !important; }
+
+/* Durante o gesto, os convites da primeira tela saem da frente: no telefone eles ficam sobre a borda que as mãos erguem. */
+html[data-os-arriving] .os-materia-cta { opacity: 0 !important; transition: opacity .2s var(--os-ease); }
+html[data-os-arriving] .os-materia-cta > * { pointer-events: none !important; }

@@ -3,15 +3,20 @@ import type { OsTheme } from "../theme";
 /**
  * MATÉRIA — a escultura do MilWeb OS.
  *
- * Na home, uma figura de mercúrio em superfície contínua (assets/materia/build_figure.py →
- * public/models/materia-figure{,-lite}.bin) segura uma dobra da própria tela; as moléculas
- * (assets/materia/build_materia.py → public/models/materia-{a,b}.bin) ficam nas bordas de ruptura.
- * As MESMAS moléculas formam o cérebro quando a conversa abre e o busto do recorte ("Ver uma ideia
- * para o meu site"): a molécula i do busto é a molécula i do cérebro. O arco que sai do ombro,
- * contorna a nuca e entra na cabeça reaparece no cérebro — e, na home, vira a fita de metal da dobra.
+ * Um ateliê: sobre a parede de carvão (ou de gesso, no tema claro) uma figura de mármore sustenta o peso sobre
+ * uma perna, com um ombro ainda preso ao bloco bruto; entre o antebraço e o punho faltam poucos centímetros de
+ * pedra, e grãos de prata sobem contra a gravidade para completar esse trecho. Cada destino do sistema tem a sua
+ * figura — a Curadora (Projetos), o Arquivista (Perfil), a Arquiteta (Serviços), o Gravador (Estúdio), a Inventora
+ * (Lab) e a Mensageira (Orçamento) — e o seu gesto, que abre a página de verdade (materia/acts.ts).
  *
- *   dark   · tema Obito: prata e grafite, uma faixa estreita de luz e um recorte carmesim
- *   light  · tema Gojo: metal frio, sombras azuladas, brilho de vidro
+ * As esculturas são esculpidas por distância assinada e vestidas no Blender (assets/materia/sculpt →
+ * public/models/sculpt-<figura>{,-lite}.bin); os braços são articulados (assets/materia/build_figure.py →
+ * materia-figure{,-lite}.bin, rig.ts). As moléculas (assets/materia/build_materia.py → materia-{a,b}.bin) são a
+ * prata: ficam guardadas na pedra, formam o cérebro quando a conversa abre e o busto do recorte ("Ver uma ideia
+ * para o meu site") — a molécula i do busto é a molécula i do cérebro.
+ *
+ *   dark   · tema Obito: carvão, luz rasante que destaca a borda da pedra
+ *   light  · tema Gojo: gesso, a sombra revela o volume
  *
  * Tudo aqui é número de ajuste. O motor é materia/engine.ts; a cola com a interface, materia-scene.tsx.
  */
@@ -23,7 +28,7 @@ export const THEME_OF: Record<Mood, OsTheme> = { dark: "obito", light: "gojo" };
 const REV = process.env.NEXT_PUBLIC_MATERIA_REV;
 const withRev = (url: string) => (REV ? `${url}?v=${REV}` : url);
 export const MATERIA_URLS = { a: withRev("/models/materia-a.bin"), b: withRev("/models/materia-b.bin") } as const;
-/** A figura da home em malha (assets/materia/build_figure.py): a completa e a leve (telefone, GPU sem folga). */
+/** Os braços e as mãos das esculturas (assets/materia/build_figure.py): a malha completa e a leve (telefone, GPU sem folga). */
 export const FIGURE_URLS = { full: withRev("/models/materia-figure.bin"), lite: withRev("/models/materia-figure-lite.bin") } as const;
 
 export const MATERIA = {
@@ -58,20 +63,30 @@ export const MATERIA = {
    * `sea`: na prévia de mergulho, a que altura do vão passa a linha do mar (fração da altura, de cima para baixo).
    */
   portal: { time: 1.6, close: 0.7, yaw: -1.47, c: [0.06, 0.1], r: [0.31, 0.37], inset: 0.93, sea: 0.38 },
+  /** O projeto em destaque: a peça de abertura da coleção (apps/bounty/mural.tsx). */
+  hero: { cover: "terral" },
   /**
-   * A home: a figura segura uma dobra da tela. `form`/`sweep`: quanto leva para a figura se formar e para a
-   * faixa de luz percorrer o braço até a cabeça quando a conversa abre (s). `reach`: até onde a ponta acompanha
-   * o gesto (unidades da dobra). `spring`: a mola da ponta — firme enquanto o visitante segura, solta depois
-   * (é a sobra dela que corre pelo metal como onda). `reveal`: a abertura cresce até a janela do case (s).
+   * As esculturas. `shift`: a transformação de uma figura em outra (s) — a pedra se desfaz, os grãos viajam, a
+   * nova se forma. `form`/`leave`: a escultura voltando da conversa e se recolhendo para ela; `formFast`: quando
+   * há um gesto à espera. `armOut`/`armIn`: os braços somem (o ombro por último) e se formam (os dedos primeiro).
+   * `grain` e `silver`: o tamanho de um grão da transformação e de um grão de prata do repouso (unidades).
    */
-  hero: { form: 1.15, sweep: 1.3, reach: 0.3, hold: { k: 150, c: 24 }, free: { k: 96, c: 7.5 }, reveal: 0.78, zone: 0.62, follow: 0.7, cover: "terral",
-    /** Abrir Projetos: a outra mão alcança a borda de baixo, as duas esticam a abertura até a janela, soltam (s). */
-    open: { reach: 0.32, stretch: 0.8, release: 0.34 },
-    /** Apresentar uma ficha (o perfil, o briefing): a mão a ergue, gira o punho e ela cresce até a janela (s). */
-    sheet: { raise: 0.42, turn: 0.3, grow: 0.46 },
-    /** Trocar de projeto na coleção: uma mão apresenta a próxima peça, a outra retira a anterior (s). */
-    swap: 0.75 },
+  sculpt: { shift: 0.66, form: 1.0, formFast: 0.42, leave: 0.9, armOut: 0.15, armIn: 0.28, grain: 0.05, silver: 0.045 },
 } as const;
+
+/**
+ * O enquadramento de cada escultura: o ponto da figura que fica no centro do quadro (`c`, unidades dela) e a
+ * meia altura do quadro (`half`). O chão (y = 0) cai na mesma altura da tela em todas: a base não salta na troca.
+ */
+export const FRAMES: Record<string, { c: readonly [number, number]; half: number }> = {
+  rest: { c: [0.25, 4.1], half: 4.75 },
+  projects: { c: [0.0, 2.6], half: 3.25 },
+  profile: { c: [0.0, 3.3], half: 3.95 },
+  services: { c: [-0.25, 4.25], half: 4.9 },
+  studio: { c: [0.2, 3.6], half: 4.25 },
+  lab: { c: [-0.2, 3.1], half: 3.75 },
+  contact: { c: [-0.1, 4.05], half: 4.7 },
+};
 
 /**
  * Composição: frações da área do fundo. `k` é quantos px vale uma unidade (a cabeça mede ~1).
@@ -80,11 +95,13 @@ export const MATERIA = {
  * cena é menor e fica embaixo, à direita: o alto da tela é do HUD das redes.
  */
 export const COMPOSE = {
-  desktop: { kH: 0.37, kW: 0.25, home: { x: 0.6, y: 0.37 }, talk: { x: 0.5, y: 0.44, k: 1.0 }, hero: { kH: 0.412, kW: 0.2472, right: 2.3, y: 0.59 } },
-  tablet: { kH: 0.3, kW: 0.4, home: { x: 0.6, y: 0.38 }, talk: { x: 0.52, y: 0.4, k: 0.95 }, hero: { kH: 0.22, kW: 0.25, right: 2.2, y: 0.81 } },
+  /** `hero`: o quadro da escultura — o centro (frações da área) e a altura (fração da altura, limitada pela largura). */
+  desktop: { kH: 0.37, kW: 0.25, home: { x: 0.6, y: 0.37 }, talk: { x: 0.5, y: 0.44, k: 1.0 }, hero: { x: 0.665, y: 0.5, h: 0.93, wMax: 0.62 } },
+  tablet: { kH: 0.3, kW: 0.4, home: { x: 0.6, y: 0.38 }, talk: { x: 0.52, y: 0.4, k: 0.95 }, hero: { x: 0.6, y: 0.5, h: 0.86, wMax: 0.8 } },
   /** Telefone: rosto e ombros de perto, dentro do palco; na conversa o cérebro sobe para a faixa livre acima da folha. */
   /** O rosto sobe um pouco: sob ele ficam os dois convites (a prévia e a conversa), sem cobrir o queixo. */
-  mobile: { kS: 0.78, kW: 0.84, homeDy: -0.135, talk: { y: 0.21, kW: 0.5 }, hero: { kS: 0.46, kW: 0.55, x: 0.19, y: 0.49 } },
+  /** `hero`: a escultura ocupa o palco — centro (frações do palco) e altura (fração da altura dele, limitada pela largura). */
+  mobile: { kS: 0.78, kW: 0.84, homeDy: -0.135, talk: { y: 0.21, kW: 0.5 }, hero: { x: 0.56, y: 0.5, h: 1.06, wMax: 1.5 } },
 } as const;
 
 /** Cores de tela (sRGB), por tema. */
@@ -96,8 +113,9 @@ export const PALETTE: Record<Mood, { base: string; deep: string; haze: string; m
 /** Imagens estáticas (scripts/materia-still.mjs): o centro da cabeça fica em (cx, cy), com `k` px por unidade. */
 export const MATERIA_STILL = { w: 1040, h: 1180, cx: 520, cy: 400, k: 520 } as const;
 /**
- * A cena da home como imagem (a mesma do motor, com a dobra aberta, sobre a página lisa na cor do tema): a ponta
- * da dobra fica em (x, y), com `k` px por unidade. Um enquadramento só — o CSS a posiciona pela ponta e pela
- * escala de cada tela (styles/materia.css), e a cor de `PALETTE.*.base` é a de `--os-bg`: as bordas não aparecem.
+ * A cena como imagem (a mesma do motor: a escultura em repouso e a luz do ateliê, sobre a parede lisa na cor do
+ * tema): o centro do quadro da figura fica em (x, y) e o quadro mede `fh` px de altura. Um enquadramento só — o
+ * CSS a posiciona pelo centro e pela altura do quadro em cada tela (styles/materia.css › --mh-x/--mh-y/--mh-h), e
+ * a luz do ateliê se apaga antes das bordas: fora da imagem o fundo continua na cor de `--os-bg`.
  */
-export const HERO_STILL = { w: 1500, h: 1100, x: 670, y: 510, k: 350 } as const;
+export const HERO_STILL = { w: 2100, h: 1250, x: 1050, y: 625, fh: 1000 } as const;

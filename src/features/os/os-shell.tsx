@@ -93,6 +93,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
    * fechar ao soltar) disparam duas navegações antes de a primeira chegar.
    */
   const ownNav = useRef(new Set<string>());
+  /** O visitante acabou de usar Voltar/Avançar: a janela que volta à frente recebe o foco do teclado. */
+  const popped = useRef(false);
   /** Para onde a URL está indo (a última pedida), ou onde está quando nada está em voo. */
   const headed = useRef(internal);
   /** Caminho interno em vigor (para o popstate distinguir "mesma URL" de "URL nova"). */
@@ -145,8 +147,11 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     // Navegação externa: nada que o shell pediu antes continua valendo.
     ownNav.current.clear();
     headed.current = internal;
-    if (route.app) store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
-    else if (route.kind === "desktop") {
+    if (route.app) {
+      store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
+      // Voltar/Avançar: o foco do teclado acompanha a janela que voltou à frente (num carregamento direto, não se mexe nele)
+      if (popped.current) store.setState({ pendingFocus: route.app });
+    } else if (route.kind === "desktop") {
       // A raiz é a área de trabalho: nenhum app em primeiro plano (Voltar, Início, marca, link direto) —
       // a não ser que esta entrada do histórico do telefone seja a de um app sem URL (Sobre, Ajustes).
       const overlay = phone ? readMark().overlay : null;
@@ -155,6 +160,16 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `route` deriva de `internal`
   }, [internal, store]);
+
+  // 1a) Voltar/Avançar marcam a próxima troca de rota: é o visitante andando pelo histórico.
+  useEffect(() => {
+    const onPop = () => {
+      popped.current = true;
+      window.setTimeout(() => (popped.current = false), 600);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   // 1b) Telefone: Voltar/Avançar sem mudar a URL só trocam a camada dos apps sem URL própria.
   useEffect(() => {

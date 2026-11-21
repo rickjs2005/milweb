@@ -88,7 +88,7 @@ export const en: Dictionary = {
       similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",
       numbers: "Numbers", kind: "Type", year: "Year", status: "Status", of: "of", count: "projects", empty: "No project matches this filter.", interactive: "Interactive",
       dossier: "DOSSIER", rank: "CASE", collection: "THE BOUNTY COLLECTION", missions: "missions", wall: "Poster wall", position: "Position in the collection", hint: "arrows navigate · enter opens · esc closes", swipe: "swipe to navigate", viewAll: "All projects", backToCollection: "Back to the collection",
-      tryIt: "Try it", made: "See how it was made", madeTitle: "How it was made", sample: "Sample", sampleHint: "scroll or drag to move through", problem: "The problem", contribution: "What Rick did", decision: "Implementation decision", verify: "Check it", discuss: "I want to discuss something like this", full: "Open the full experience",
+      tryIt: "Try it", visitSite: "Visit site", made: "See how it was made", madeTitle: "How it was made", sample: "Sample", sampleHint: "scroll or drag to move through", problem: "The problem", contribution: "What Rick did", decision: "Implementation decision", verify: "Check it", discuss: "I want to discuss something like this", full: "Open the full experience",
       tier: { wanted: "WANTED", most: "MOST WANTED", special: "SPECIAL MISSION" },
       seal: { client: "CLIENT PROJECT", demo: "DEMO", experiment: "EXPERIMENT", webgl: "WEBGL EXPERIENCE", product: "DIGITAL PRODUCT" },
     },
