@@ -58,19 +58,8 @@ export function ProjectGuide({ initialProject, initialService }: { initialProjec
       // Each tab keeps its own step. Returning the same object stops two tabs from echoing each other.
       if (other) setBrief((prev) => (TEXT.every((k) => prev[k] === other[k]) ? prev : { ...other, review: prev.review }));
     };
-    // A Matéria (materia/guide-panel.tsx) monta o pedido nesta mesma aba, onde o evento `storage` não dispara.
-    const onBrief = () => {
-      let raw: string | null = null;
-      try { raw = localStorage.getItem(DRAFT_KEY); } catch { /* sem armazenamento */ }
-      const next = parseDraft(raw);
-      if (next) setBrief(next);
-    };
     window.addEventListener("storage", onStorage);
-    window.addEventListener("milweb:brief", onBrief);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("milweb:brief", onBrief);
-    };
+    return () => window.removeEventListener("storage", onStorage);
   }, [linkProject, linkService]);
 
   useEffect(() => {

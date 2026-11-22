@@ -167,8 +167,6 @@
     border-radius: 0; box-shadow: none; transform: none; opacity: 1; visibility: visible; transition: none;
   }
   .os-window[data-screen="1"] { display: flex; pointer-events: auto; }
-  /* teclado virtual aberto (os-shell.tsx mede a janela visual): a tela termina acima dele */
-  .os-window { bottom: var(--os-kb, 0px); }
   /* abre crescendo do ícone; fecha encolhendo de volta a ele (variáveis escritas em window.tsx) */
   @keyframes os-m-open {
     from { transform: translate(var(--ox, 40vw), var(--oy, 50vh)) scale(var(--sx, .12), var(--sy, .08)); opacity: .25; border-radius: 28px; }

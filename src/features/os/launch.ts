@@ -4,7 +4,6 @@ import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "reac
 import type { Locale } from "@/i18n/config";
 import { APPS, DESKTOP_WIDE_MQ, type AppId } from "./registry";
 import { useOs } from "./os-shell";
-import { arrive } from "./materia/guide-store";
 import { pushOverlay } from "./mobile/history";
 
 /**
@@ -57,8 +56,6 @@ export function useLaunch() {
     }
     // Telefone: reabrir passa por `open` (mesma geometria/rolagem) para a tela entrar do ícone de novo.
     st.open(id, { route: route ?? w.route, origin: { x: r.left, y: r.top, w: r.width, h: r.height }, openedBy: el.id || null, source: "user", mode: "push" });
-    // Os seis destinos chegam pelo gesto da figura de cada um quando a cena está viva (senão, a janela já está lá).
-    arrive(id);
     // App sem URL própria (Sobre, Ajustes) no telefone: uma entrada no histórico, para o Voltar fechá-lo.
     if (mobile && APPS[id].route === null) pushOverlay(id);
   };

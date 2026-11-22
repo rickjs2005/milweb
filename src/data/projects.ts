@@ -144,17 +144,6 @@ export const MOOD: Record<string, { rgb: string; focus?: string }> = {
 /** Kavita (drones e institucional): sem link externo nem botão de visita no OS — pedido do Rick (18/10/2026). O case continua aberto. */
 export const NO_EXTERNAL = new Set(["kavita-drones", "kavita-institucional"]);
 
-/**
- * Endereços cadastrados que respondiam 404 (Vercel: DEPLOYMENT_NOT_FOUND) em 20/11/2026 — conferidos por
- * scripts/links-check.mjs. Só o botão "Visitar site" da coleção consulta esta lista: ele não é oferecido para um
- * endereço fora do ar. O cadastro (`live`), o status e o case continuam como estão; republicar, trocar o endereço
- * ou tirar o link é decisão do Rick. Quando um deles voltar, o script avisa e basta tirar o slug daqui.
- */
-export const LIVE_DOWN = new Set([
-  "aurex-motors", "atelier-vertex", "aurex-timepieces", "age-of-dragons", "as-copas", "ecoa", "loja-de-iphone", "kavita-institucional",
-  "akatsuki", "loja-joias", "nexus-geek", "lumen-architecture", "rjjstore", "rjs-laticinios", "logistics-demo",
-]);
-
 /** Turismo e guias — demos comerciais e conceitos (Melbourne, Miami, Los Angeles, Zanzibar, Tanzânia). */
 export const TOURISM = new Set(["debby-tour", "ace-diving-miami", "legends-of-hollywood-tours", "said-zanzibar", "mabrouk-zanzibar", "serengeti-wildlife-safaris"]);
 

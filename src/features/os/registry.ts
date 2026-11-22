@@ -12,9 +12,9 @@
  * Projetos e aparecem quando o visitante abre a pasta.
  */
 
-export type AppId = "profile" | "projects" | "studio" | "lab" | "services" | "about" | "contact" | "settings" | "idea";
+export type AppId = "profile" | "projects" | "studio" | "lab" | "services" | "about" | "contact" | "settings";
 
-export const APP_IDS = ["profile", "projects", "studio", "lab", "services", "about", "contact", "settings", "idea"] as const satisfies readonly AppId[];
+export const APP_IDS = ["profile", "projects", "studio", "lab", "services", "about", "contact", "settings"] as const satisfies readonly AppId[];
 
 export type AppDef = {
   id: AppId;
@@ -41,8 +41,6 @@ export const APPS = {
   about: { id: "about", route: null, size: { w: 640, h: 560 }, min: { w: 340, h: 300 }, dock: false, desktopIcon: false, mobileGrid: false },
   contact: { id: "contact", route: "/contact", size: { w: 780, h: 600 }, min: { w: 360, h: 300 }, dock: true, desktopIcon: true, mobileGrid: true },
   settings: { id: "settings", route: null, size: { w: 560, h: 520 }, min: { w: 340, h: 300 }, dock: true, desktopIcon: false, mobileGrid: true },
-  /** Prévia ("Ver uma ideia para o meu site"): quem abre é a Matéria, pelo recorte no rosto da escultura. Sem URL própria e fora da dock e das grades. */
-  idea: { id: "idea", route: null, size: { w: 980, h: 680 }, min: { w: 360, h: 420 }, dock: false, desktopIcon: false, mobileGrid: false },
 } as const satisfies Record<AppId, AppDef>;
 
 /** Ordem na dock do desktop (a dock do telefone é de redes — features/os/mobile/dock.tsx). */
@@ -52,11 +50,10 @@ export const ICON_ORDER: AppId[] = ["profile", "projects", "studio", "lab", "ser
 /** Ordem da grade da tela inicial do telefone (4 colunas; a busca entra como oitavo item no launcher). */
 export const MOBILE_GRID: AppId[] = ["profile", "projects", "studio", "lab", "services", "contact", "settings"];
 /**
- * A navegação da primeira tela no desktop largo (DESKTOP_WIDE_MQ), na ordem em que se lê: os dois destinos em
- * destaque — Projetos e Perfil, desenhados como botões — e os demais agrupados logo abaixo. No tablet continua a
- * coluna de ICON_ORDER.
+ * Grade da área de trabalho no desktop largo (DESKTOP_WIDE_MQ): duas colunas × três linhas, lida por linha —
+ * Projetos | Serviços, Estúdio | Lab, Perfil | Contato. No tablet continua a coluna de ICON_ORDER.
  */
-export const DESKTOP_GRID: AppId[] = ["projects", "profile", "services", "studio", "lab", "contact"];
+export const DESKTOP_GRID: AppId[] = ["projects", "services", "studio", "lab", "profile", "contact"];
 
 /**
  * Modo celular = pouco espaço, não "tem toque": largura de telefone, ou

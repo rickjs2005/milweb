@@ -6,9 +6,7 @@ import { LanguageSwitch } from "@/components/nav/language-switch";
 import { DESKTOP_GRID, DOCK_ORDER, ICON_ORDER, APPS, type AppId } from "./registry";
 import { useOs, useOsStore } from "./os-shell";
 import { AppGlyph, Glyph } from "./icons";
-import { MateriaScene } from "./materia/materia-scene";
-import { MateriaControls } from "./materia/guide-panel";
-import { stage } from "./materia/guide-store";
+import { OsScene } from "./scene/os-scene";
 import { SocialHud, SocialLinks } from "./social-hud";
 import { MobileLauncher } from "./mobile/launcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -25,14 +23,13 @@ const HalloweenScene = dynamic(() => import("./halloween/scene").then((m) => m.H
 /**
  * Área de trabalho e tela inicial.
  *
- * Desktop: barra superior, o fundo (materia/materia-scene.tsx: Matéria — a
- * figura de mercúrio que segura uma dobra da própria tela e vira cérebro na
- * conversa), coluna de aplicativos à esquerda, assinatura pequena numa área
+ * Desktop: barra superior, o fundo (scene/os-scene.tsx: a entidade — o
+ * personagem 3D que olha para o app destacado e leva a mão até o ícone
+ * ativado), coluna de aplicativos à esquerda, assinatura pequena numa área
  * livre e a dock. O palco (`.os-stage`) é a caixa invisível no centro em
  * volta da qual o HUD das redes se posiciona.
  * Desktop largo (≥ 1080 px, registry.ts › DESKTOP_WIDE_MQ): o lema sobe para
- * o alto à esquerda, com os dois convites da Matéria logo abaixo e os
- * aplicativos numa grade 2 × 3 sob eles (os dois terços da direita são da cena), a dock
+ * o alto à esquerda, os aplicativos viram uma grade 2 × 3 logo abaixo, a dock
  * fica só com Buscar, Ajustes e o tema, e as redes viram um grupo compacto no
  * canto inferior direito (com o WhatsApp). Tablet: tudo como acima.
  * Telefone: o mesmo DOM, com o launcher (mobile/launcher.tsx) no lugar da
@@ -100,7 +97,7 @@ export function Desktop() {
           <PumpkinFxHost />
         </>
       ) : (
-        <MateriaScene />
+        <OsScene />
       )}
 
       {/* Palco: caixa vazia e sem ponteiro no centro — a composição do fundo e o HUD medem por ela. */}
@@ -145,9 +142,6 @@ export function Desktop() {
 
       {/* Tela inicial do telefone: status, grade de ícones (o palco entre os dois mostra o fundo). */}
       <MobileLauncher />
-
-      {/* Matéria: os dois convites (a prévia e a conversa), a abertura da dobra (leva ao case) e a ponta que se arrasta. */}
-      {!halloween && <MateriaControls />}
     </div>
   );
 }
@@ -180,8 +174,6 @@ function DesktopApps() {
                 href={APPS[id].route ? payload.hrefs[id as keyof typeof payload.hrefs] ?? "#" : "#"}
                 className="os-icon-btn"
                 onClick={(e) => launch(e, id)}
-                onPointerEnter={() => stage.warm?.(id)}
-                onFocus={() => stage.warm?.(id)}
                 data-open={w.open ? "1" : "0"}
                 data-min={w.open && w.min ? "1" : "0"}
                 data-focused={focused === id ? "1" : "0"}
@@ -191,9 +183,6 @@ function DesktopApps() {
                   {halloween && <PumpkinFx variant={VARIANT_OF[id] ?? "a"} />}
                 </AppGlyph>
                 <span className="os-icon-btn__label">{s.apps[id]}</span>
-                {/* no desktop largo os dois destinos em destaque são botões com o convite inteiro (styles/os.css) */}
-                {id === "projects" && <span className="os-icon-btn__cta">{payload.materia.ui.goProjects}</span>}
-                {id === "profile" && <span className="os-icon-btn__cta">{payload.materia.ui.goProfile}</span>}
                 {state && <span className="os-icon-btn__state"> · {state}</span>}
               </a>
             </li>

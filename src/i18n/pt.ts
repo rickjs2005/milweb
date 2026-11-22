@@ -76,7 +76,7 @@ export const pt: Dictionary = {
   footer: { email: "E-mail", year: "Brasil" },
   preferred: { eyebrow: "GOOGLE / FONTES PREFERIDAS", title: ["MANTENHA A MILWEB", "NAS SUAS FONTES."], cta: "ADICIONAR MILWEB", loading: "ABRINDO O GOOGLE…", retry: "TENTAR DE NOVO", aria: "Adicionar MilWeb às fontes preferidas no Google" },
   os: {
-    apps: { profile: "Perfil", projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", about: "Sobre", contact: "Orçamento", settings: "Ajustes", idea: "Prévia", search: "Buscar" },
+    apps: { profile: "Perfil", projects: "Projetos", studio: "Estúdio", lab: "Lab", services: "Serviços", about: "Sobre", contact: "Orçamento", settings: "Ajustes", search: "Buscar" },
     regions: { desktop: "Área de trabalho", icons: "Atalhos da área de trabalho", dock: "Dock", topbar: "Barra do sistema", windows: "Janelas abertas", home: "Tela inicial", appGrid: "Aplicativos" },
     window: { minimize: "Minimizar", maximize: "Maximizar", restore: "Restaurar", close: "Fechar", keys: "Com a barra de título em foco: setas movem a janela, Shift + setas redimensionam, Esc fecha", resize: "Redimensionar", running: "aberto", focused: "em primeiro plano" },
     mobile: { back: "Voltar", home: "Início", open: "Abrir", apps: "Aplicativos", message: "Sites, sistemas e experiências digitais com design, código e motion." },
@@ -87,8 +87,7 @@ export const pt: Dictionary = {
       back: "Todos os projetos", open: "Abrir case", visit: "Abrir site", code: "Código", stack: "Stack", context: "Contexto", done: "O que foi feito", solutions: "Soluções", gallery: "Telas", result: "Resultado",
       similar: "Quero algo parecido", next: "Próximo projeto", prev: "Projeto anterior", client: "Trabalho para cliente", demo: "Demonstração", study: "Projeto autoral", live: "No ar", detail: "Detalhe técnico", idea: "A ideia", experience: "Experiência",
       numbers: "Números", kind: "Tipo", year: "Ano", status: "Status", of: "de", count: "projetos", empty: "Nenhum projeto neste filtro.", interactive: "Interativo",
-      dossier: "DOSSIÊ", rank: "CASO", collection: "COLEÇÃO DE RECOMPENSAS", missions: "missões", wall: "Mural de cartazes", position: "Posição na coleção", hint: "setas navegam · enter abre · esc fecha", swipe: "deslize para navegar", viewAll: "Todos os projetos", backToCollection: "Voltar à coleção",
-      tryIt: "Experimentar", visitSite: "Visitar site", made: "Ver como foi feito", madeTitle: "Como foi feito", sample: "Amostra", sampleHint: "role ou arraste para percorrer", problem: "O problema", contribution: "O que o Rick fez", decision: "Decisão de implementação", verify: "Conferir", discuss: "Quero discutir algo assim", full: "Abrir a experiência completa",
+      dossier: "DOSSIÊ", rank: "CASO", collection: "COLEÇÃO DE RECOMPENSAS", missions: "missões", wall: "Mural de cartazes", position: "Posição na coleção", hint: "setas navegam · enter abre · esc fecha", swipe: "deslize para navegar", viewAll: "Ver todos", backToCollection: "Voltar à coleção",
       tier: { wanted: "PROCURA-SE", most: "MAIS PROCURADO", special: "MISSÃO ESPECIAL" },
       seal: { client: "CLIENTE", demo: "DEMO", experiment: "EXPERIMENTO", webgl: "WEBGL", product: "PRODUTO DIGITAL" },
     },

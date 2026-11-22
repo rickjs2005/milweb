@@ -81,10 +81,10 @@ if (ONLY.includes("desktop")) {
   check("documento não rola", await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 1));
   check("raiz sem janela aberta", (await page.locator(".os-window").count()) === 0 && (await page.evaluate(() => window.__milwebOs?.getState().focused ?? null)) === null);
   check("sem Destaques nem atalhos de case na área de trabalho", (await page.locator("#os-icon-home, [data-shortcut], .os-highlights, #os-icon-kavita-drones").count()) === 0);
-  // desktop largo (≥ 1080 px): lema no alto, os convites da Matéria e a grade 2 × 3 sob ele (o DOM segue a ordem visual, para o Tab), dock só com o sistema
+  // desktop largo (≥ 1080 px): lema no alto, grade 2 × 3 sob ele (o DOM segue a ordem visual, para o Tab), dock só com o sistema
   const home = await page.evaluate(() => {
     const items = [...document.querySelectorAll('.os-icons li[data-desktop="1"]')].filter((li) => li.getClientRects().length);
-    const box = items.map((li) => { const b = li.querySelector(".os-icon-btn").getBoundingClientRect(); const cta = li.querySelector(".os-icon-btn__cta"); const shown = cta && cta.getClientRects().length ? cta : li.querySelector(".os-icon-btn__label"); return { id: li.dataset.app, x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), plate: li.querySelector(".os-icon").offsetWidth, text: shown.innerText.trim() }; }); // offsetWidth: a flutuação gira a placa e infla o retângulo
+    const box = items.map((li) => { const b = li.querySelector(".os-icon-btn").getBoundingClientRect(); return { id: li.dataset.app, x: Math.round(b.left), y: Math.round(b.top), plate: li.querySelector(".os-icon").offsetWidth }; }); // offsetWidth: a flutuação gira a placa e infla o retângulo
     const m = document.querySelector(".os-sign__motto"), mb = m.getBoundingClientRect(), top = document.querySelector(".os-topbar").getBoundingClientRect(), gb = document.querySelector(".os-icons ul").getBoundingClientRect();
     const rg = document.createRange();
     rg.selectNodeContents(m);
@@ -97,20 +97,18 @@ if (ONLY.includes("desktop")) {
       cols: new Set(box.map((b) => b.x)).size,
       rows: new Set(box.map((b) => b.y)).size,
       plates: box.map((b) => b.plate),
-      labels: box.map((b) => b.text).join("|"),
-      featured: box.slice(0, 2).map((b) => `${b.w}x${b.h}`),
-      // os quatro agrupados são navegação: nenhum disputa o destaque com os dois de cima (nem Orçamento ganha a borda no acento)
-      contact: ["services", "studio", "lab", "contact"].every((a) => !getComputedStyle(document.querySelector(`.os-icons li[data-app="${a}"] .os-icon`)).boxShadow.includes(sig)),
+      labels: items.map((li) => li.querySelector(".os-icon-btn__label").innerText).join("|"),
+      contact: getComputedStyle(document.querySelector('.os-icons li[data-app="contact"] .os-icon')).boxShadow.includes(sig) && !getComputedStyle(document.querySelector('.os-icons li[data-app="lab"] .os-icon')).boxShadow.includes(sig),
       motto: { left: Math.round(mb.left), gapTop: Math.round(mb.top - top.bottom), lines: new Set([...rg.getClientRects()].map((r) => Math.round(r.top))).size, color: getComputedStyle(m).color, want: document.documentElement.dataset.osTheme === "gojo" ? `rgb(${triple("--os-fg")})` : "rgb(255, 255, 255)", dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === `rgb(${sig})`, toGrid: Math.round(gb.top - mb.bottom), px: parseFloat(getComputedStyle(m).fontSize) },
       dock: [...document.querySelectorAll(".os-dock li")].filter((li) => li.getClientRects().length).map((li) => li.dataset.dockSys || li.dataset.dockApp).join(","),
     };
   });
-  check("navegação da primeira tela: dois destaques empilhados (Ver projetos, Perfil e currículo) e os demais em 2 × 2 — Serviços | Estúdio, Lab | Orçamento (DOM na ordem visual)", home.cols === 2 && home.rows === 4 && home.reading === "projects,profile,services,studio,lab,contact" && home.dom === home.reading && home.labels === "VER PROJETOS|PERFIL E CURRÍCULO|SERVIÇOS|ESTÚDIO|LAB|ORÇAMENTO" && home.featured.every((f) => Number(f.split("x")[1]) >= 44) && home.featured[0] === home.featured[1], JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels, featured: home.featured }));
-  check("os quatro destinos agrupados têm placas de 46–64 px com o nome sempre visível embaixo; nenhum disputa o destaque (sem borda no acento)", home.plates.slice(2).every((p) => p >= 46 && p <= 64) && home.contact, `${home.plates.join(",")} · sem acento ${home.contact}`);
+  check("grade 2 × 3: Projetos | Serviços, Estúdio | Lab, Perfil | Contato (DOM na ordem visual)", home.cols === 2 && home.rows === 3 && home.reading === "projects,services,studio,lab,profile,contact" && home.dom === home.reading && home.labels === "PROJETOS|SERVIÇOS|ESTÚDIO|LAB|PERFIL|ORÇAMENTO", JSON.stringify({ dom: home.dom, reading: home.reading, cols: home.cols, rows: home.rows, labels: home.labels }));
+  check("ícones de 60–68 px com o nome sempre visível embaixo; Contato com borda no acento do tema", home.plates.every((p) => p >= 60 && p <= 68) && home.contact, `${home.plates.join(",")} · contato ${home.contact}`);
   check("lema no alto à esquerda (branco no Obito, tinta no Gojo), até duas linhas, ponto no acento, respiro até a grade", home.motto.left <= 40 && home.motto.gapTop >= 8 && home.motto.gapTop <= 60 && home.motto.lines <= 2 && home.motto.color === home.motto.want && home.motto.dot && home.motto.toGrid >= 16 && home.motto.px >= 40, JSON.stringify(home.motto));
   check("dock: só Buscar, Ajustes e o tema, nessa ordem", home.dock === "search,settings,theme", home.dock);
   check("h1 na raiz é o lema", (await page.locator("h1").count()) === 1 && (await page.locator("h1").innerText()) === "Códigos movem o mundo.");
-  check("fundo presente como imagem (fallback estático do personagem no tema em vigor, fundo CSS)", await page.evaluate(() => /materia-home-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage)));
+  check("fundo presente como imagem (fallback estático do personagem no tema em vigor, fundo CSS)", await page.evaluate(() => /entity-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage)));
   check("fundo e palco não interceptam o ponteiro; nenhum olho grande no cenário", await page.evaluate(() => getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && !document.querySelector(".os-eye, .os-eye__still, .os-eye__canvas")));
   check("sem a escultura orbital (preload e arte)", (await page.locator('link[href*="orbital-sculpture"], .os-wallpaper__art').count()) === 0);
   const overlap = await page.evaluate(() => {
@@ -475,7 +473,7 @@ if (ONLY.includes("tablet")) {
       const sign = document.querySelector(".os-sign").getBoundingClientRect();
       return { labels, dock, social: vis(".os-social"), hud: vis(".os-hud"), mottoPx: parseFloat(getComputedStyle(motto).fontSize), corner: Math.round(sign.left) === 24 && innerHeight - sign.bottom > 84, dot: getComputedStyle(document.querySelector(".os-sign__dot")).color === getComputedStyle(motto).color, dots: document.querySelectorAll('.os-icon-btn__state').length };
     });
-    check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Orçamento", lay.labels === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|ORÇAMENTO", lay.labels);
+    check("coluna de aplicativos: Perfil, Projetos, Estúdio, Lab, Serviços, Contato", lay.labels === "PERFIL|PROJETOS|ESTÚDIO|LAB|SERVIÇOS|CONTATO", lay.labels);
     check("dock completa: os apps, o separador, Buscar e o tema", lay.dock === "profile,projects,studio,lab,services,contact,settings,|,search,theme", lay.dock);
     check("lema pequeno no canto inferior esquerdo, ponto na mesma cor; HUD à vista e sem o grupo compacto de redes", lay.corner && lay.mottoPx <= 21 && lay.dot && lay.hud && !lay.social, JSON.stringify(lay));
     const hud = await page.evaluate(() => {
@@ -566,8 +564,7 @@ if (ONLY.includes("mobile")) {
         heroHidden: !!sign && sign.width <= 1 && sign.height <= 1 && !!document.querySelector("h1.os-sign__motto"),
         noDesktopBits: !vis(".os-hud") && !vis(".os-social") && !vis(".os-dock") && !vis(".os-icons") && !vis(".os-topbar"),
         eyeBetween: !!eye && eye.top >= status.bottom - 1 && eye.bottom <= grid.top + 2 && eye.width > 0,
-        // o telefone recebe a mesma imagem na metade do tamanho (-s)
-        eyeImg: /materia-home-(dark|light)-s\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
+        eyeImg: /entity-(dark|light)\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage),
         eyeNoPointer: getComputedStyle(document.querySelector(".os-stage")).pointerEvents === "none" && getComputedStyle(document.querySelector(".os-scene")).pointerEvents === "none",
         gridAboveDock: grid.bottom <= dock.top + 1,
         dockIn: dock.bottom <= innerHeight + 1 && dock.left >= 0 && dock.right <= innerWidth,
@@ -946,7 +943,7 @@ if (ONLY.includes("controls")) {
 }
 
 // ----------------------------------------------------------------- projects
-// Projetos como THE BOUNTY COLLECTION: 25 cartazes no mural (um principal, vizinhos em degraus, distantes
+// Projetos como THE BOUNTY COLLECTION: 31 cartazes no mural (um principal, vizinhos em degraus, distantes
 // ocultos e sem imagem), cartaz íntegro (faixa/nome dentro do papel), filtros compactos, Kavita só com o link
 // interno, navegação por setas/Home/End/roda/arraste/fita/"ver todos", hover (inclinação), o voo do dossiê
 // (cartaz se desprende, outros recuam, folha com o cartaz à esquerda e o case ao lado), Esc e "voltar" revertem
@@ -972,12 +969,10 @@ if (ONLY.includes("projects")) {
   const slots = mural.locator(".bounty__slot");
   const activeSlug = () => mural.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug");
   const centered = () => mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => { const r = e.getBoundingClientRect(); const s = e.closest(".bounty__stage").getBoundingClientRect(); return Math.abs(r.left + r.width / 2 - (s.left + s.width / 2)) < 3; });
-  check("25 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 25 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
+  check("31 cartazes no mural, um principal, grade antiga ausente", (await slots.count()) === 31 && (await mural.locator('.bounty__slot[data-active="1"]').count()) === 1 && (await page.locator(".os-projects__board, .os-project__sheet").count()) === 0);
   check("cartaz principal: faixa, imagem, nome, identificador, selo e frase", await mural.locator('.bounty__slot[data-active="1"]').evaluate((e) => ["bounty__tier", "bounty__img", "bounty__name", "bounty__id", "bounty__seal", "bounty__line"].every((c) => e.querySelector("." + c))));
   check("faixa e nome cabem no papel (sem estourar)", await mural.locator('.bounty__slot[data-active="1"] .bounty__sheet').evaluate((s) => { const r = s.getBoundingClientRect(); return [...s.querySelectorAll(".bounty__tier, .bounty__name, .bounty__line")].every((el) => { const b = el.getBoundingClientRect(); return b.right <= r.right + 1 && el.scrollWidth <= el.clientWidth + 1; }); }));
-  check("a coleção abre com o TERRAL (02) em destaque", (await activeSlug()) === "terral" && (await mural.locator(".bounty__count").innerText()).startsWith("02"));
-  // o destaque é o segundo cartaz: um vizinho à esquerda, seis à direita
-  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 8 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 17 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
+  check("vizinhos parcialmente visíveis, distantes ocultos", (await mural.locator('.bounty__slot[data-far="0"]').count()) === 7 && (await mural.locator('.bounty__slot[data-far="1"]').count()) === 24 && (await mural.locator('.bounty__slot[data-d="1"]').evaluate((e) => getComputedStyle(e).visibility === "visible" && Number(getComputedStyle(e).opacity) < 1)));
   check("só os cartazes próximos carregam imagem", (await mural.locator(".bounty__img:not(.bounty__img--empty)").count()) <= 10);
   check("filtros compactos (7) com contagem e ativo marcado", (await mural.locator(".bounty__pill").count()) === 7 && (await mural.locator('.bounty__pill[aria-pressed="true"]').innerText()).includes("TODOS") && (await mural.locator(".bounty__pill").first().evaluate((e) => e.getBoundingClientRect().height <= 30)));
   check("Kavita: só o link interno do case, sem link externo", await mural.locator('.bounty__slot[data-slug^="kavita"] a').evaluateAll((as) => as.length === 2 && as.every((a) => a.getAttribute("href").startsWith("/projetos/kavita") && !a.target)));
@@ -986,9 +981,6 @@ if (ONLY.includes("projects")) {
 
   // navegação: teclado, roda, fita, ver todos, arraste
   await mural.locator(".bounty__stage").focus();
-  // (a coleção abre no destaque; as contas daqui em diante partem do primeiro cartaz)
-  await page.keyboard.press("Home");
-  await settle(page, 800);
   await page.keyboard.press("ArrowRight");
   await settle(page, 300);
   await page.keyboard.press("ArrowRight");
@@ -996,7 +988,7 @@ if (ONLY.includes("projects")) {
   check("setas movem o principal (→ → = 03) e o contador acompanha", (await activeSlug()) === "atelier-vertex" && (await mural.locator(".bounty__count").innerText()).startsWith("03") && (await centered()));
   await page.keyboard.press("End");
   await settle(page, 900);
-  check("End vai ao último (25)", (await activeSlug()) === "rjs-laticinios");
+  check("End vai ao último (31)", (await activeSlug()) === "imperio-cafe");
   await page.keyboard.press("Home");
   await settle(page, 900);
   await page.mouse.move(720, 480);
@@ -1008,7 +1000,7 @@ if (ONLY.includes("projects")) {
   check("fita de posição salta direto (10 = Ace Diving)", (await activeSlug()) === "ace-diving-miami" && /ACE/i.test(await mural.locator('.bounty__tick[aria-current="true"]').getAttribute("aria-label")));
   await mural.locator(".bounty__all-btn").click();
   await settle(page, 400);
-  check("ver todos: grade com os 25", (await mural.locator(".bounty__all-item").count()) === 25);
+  check("ver todos: grade com os 31", (await mural.locator(".bounty__all-item").count()) === 31);
   await mural.locator(".bounty__all-item").nth(13).click();
   await settle(page, 900);
   check("ver todos salta e fecha (14 = Serengeti)", (await activeSlug()) === "serengeti-wildlife-safaris" && (await mural.locator(".bounty__all").count()) === 0);
@@ -1018,7 +1010,7 @@ if (ONLY.includes("projects")) {
   await page.mouse.move(stage.x + stage.w * 0.3, stage.y + stage.h / 2, { steps: 8 });
   await page.mouse.up();
   await settle(page, 900);
-  check("arrastar para a esquerda avança (distância vira passos)", ["inkvision", "logistics-demo"].includes(await activeSlug()), await activeSlug());
+  check("arrastar para a esquerda avança (distância vira passos)", ["as-copas", "age-of-dragons"].includes(await activeSlug()), await activeSlug());
   const act = mural.locator('.bounty__slot[data-active="1"] .bounty__link');
   const ab = await act.boundingBox();
   await page.mouse.move(ab.x + ab.width * 0.75, ab.y + ab.height * 0.3);
@@ -1079,7 +1071,7 @@ if (ONLY.includes("projects")) {
   await settle(page, 800);
   check("reduced motion: mural pronto, sem animação", await mural.locator('.bounty__slot[data-active="1"] .bounty__paper').evaluate((e) => ["none", "matrix(1, 0, 0, 1, 0, 0)"].includes(getComputedStyle(e).transform)));
   await mural.locator('.bounty__slot[data-active="1"] .bounty__link').click();
-  await page.waitForURL(/\/projetos\/terral$/);
+  await page.waitForURL(/\/projetos\/kavita-drones$/);
   await settle(page, 500);
   check("reduced motion: dossiê abre direto", (await mural.getAttribute("data-phase")) === "open");
   await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -1087,7 +1079,7 @@ if (ONLY.includes("projects")) {
   // EN
   await page.goto(`${BASE}/en/work`, { waitUntil: "load" });
   await settle(page, 1500);
-  check("EN: faixa, selo e coleção traduzidos", (await mural.locator('.bounty__slot[data-slug="kavita-drones"] .bounty__tier').innerText()) === "MOST WANTED" && (await mural.locator('.bounty__slot[data-slug="kavita-drones"] .bounty__seal').innerText()) === "CLIENT PROJECT" && (await mural.locator(".bounty__eyebrow").first().innerText()).includes("BOUNTY COLLECTION"));
+  check("EN: faixa, selo e coleção traduzidos", (await mural.locator('.bounty__slot[data-active="1"] .bounty__tier').innerText()) === "MOST WANTED" && (await mural.locator('.bounty__slot[data-active="1"] .bounty__seal').innerText()) === "CLIENT PROJECT" && (await mural.locator(".bounty__eyebrow").first().innerText()).includes("BOUNTY COLLECTION"));
   check("sem erros de console/hidratação", errs.length === 0, errs.slice(0, 3).join(" | "));
   await shot(page, "p01-mural-en");
   await ctx.close();
@@ -1109,16 +1101,16 @@ if (ONLY.includes("projects")) {
   await mpage.mouse.move(st.x + st.w * 0.25, st.y + st.h / 2, { steps: 8 });
   await mpage.mouse.up();
   await settle(mpage, 900);
-  check("swipe avança um cartaz (do destaque, TERRAL, para o seguinte)", (await mact.getAttribute("data-slug")) === "atelier-vertex");
+  check("swipe avança um cartaz", (await mact.getAttribute("data-slug")) === "terral");
   await mact.locator(".bounty__link").tap();
-  await mpage.waitForURL(/\/projetos\/atelier-vertex$/);
+  await mpage.waitForURL(/\/projetos\/terral$/);
   await settle(mpage, 2000);
   check("toque abre o dossiê: cartaz no topo, case abaixo", (await mm.getAttribute("data-phase")) === "open" && (await mm.locator(".bounty__dossier-slot .bounty__paper").count()) === 1 && (await mm.locator(".bounty__case .os-case").count()) === 1);
   check("botão de voltar não cobre o cartaz", await mm.evaluate((r) => r.querySelector(".bounty__close").getBoundingClientRect().bottom <= r.querySelector(".bounty__dossier-slot").getBoundingClientRect().top + 1));
   await mm.locator(".bounty__close").tap();
   await mpage.waitForURL(/\/projetos$/);
   await settle(mpage, 1400);
-  check("fecha e continua no mesmo cartaz", (await mm.getAttribute("data-phase")) === "closed" && (await mact.getAttribute("data-slug")) === "atelier-vertex");
+  check("fecha e continua no mesmo cartaz", (await mm.getAttribute("data-phase")) === "closed" && (await mact.getAttribute("data-slug")) === "terral");
   check("sem erros de console/hidratação", merrs.length === 0, merrs.slice(0, 3).join(" | "));
   await shot(mpage, "p02-mural-mobile");
   await mctx.close();
@@ -1238,7 +1230,7 @@ if (ONLY.includes("phones")) {
     const allItems = await page.locator(".bounty__all-item").count();
     await page.locator(".bounty__all-item").nth(9).tap();
     await settle(page, 900);
-    check("Ver todos: grade com os 25 e salto direto (10)", allItems === 25 && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "ace-diving-miami");
+    check("Ver todos: grade com os 31 e salto direto (10)", allItems === 31 && (await page.locator('.bounty__slot[data-active="1"]').getAttribute("data-slug")) === "ace-diving-miami");
 
     // Contato
     await page.locator(".os-window__close").tap();
@@ -1379,7 +1371,7 @@ if (ONLY.includes("theme")) {
       const card = getComputedStyle(document.querySelector(".os-social__icon")).backgroundColor.match(/[\d.]+/g).map(Number);
       return { light: bg[0] > 235 && bg[1] > 235 && bg[2] > 235, darkText: fg[0] < 40 && fg[1] < 40 && fg[2] < 40, cardLight: card[0] > 240 && card[1] > 240 && card[2] > 240, still: getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage };
     });
-    check("Gojo: fundo gelo, texto escuro, placas das redes claras, imagem do personagem no tema claro", look.light && look.darkText && look.cardLight && /materia-home-light\.webp/.test(look.still), JSON.stringify(look));
+    check("Gojo: fundo gelo, texto escuro, placas das redes claras, imagem do personagem no tema claro", look.light && look.darkText && look.cardLight && /entity-light\.webp/.test(look.still), JSON.stringify(look));
     // áreas de leitura calmas: na margem da grade de apps, em volta do lema e da linha do rodapé, o fundo claro do tema
     const corners = await p.evaluate(async () => {
       const ic = document.querySelector(".os-icons ul").getBoundingClientRect();
@@ -1413,7 +1405,7 @@ if (ONLY.includes("theme")) {
     await settle(p, 900);
     const t1 = await themeOf(p);
     check("clique no olho: Obito aplicado, salvo como escolha, switch marcado, íris vermelha à vista", t1.attr === "obito" && t1.theme === "obito" && t1.auto === false && /"theme":"obito"/.test(t1.saved) && (await toggle.getAttribute("aria-checked")) === "true" && (await p.evaluate(() => getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--obito")).display !== "none" && getComputedStyle(document.querySelector(".os-dock__theme .os-eyecon__iris--gojo")).display === "none")), JSON.stringify(t1));
-    const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /materia-home-dark\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage); });
+    const dark = await p.evaluate(() => { const bg = getComputedStyle(document.querySelector(".os")).backgroundColor.match(/\d+/g).map(Number); return bg[0] < 20 && bg[1] < 20 && bg[2] < 20 && /entity-dark\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage); });
     check("Obito: fundo carvão e imagem do personagem no tema escuro", dark);
     const dName = await contrast(p, ".os-social__name", ".os", ".os");
     const dIcon = await contrast(p, ".os-social__icon", ".os-social__icon", ".os");
@@ -1460,7 +1452,7 @@ if (ONLY.includes("theme")) {
     await p.click(".os-dock__theme");
     await settle(p, 80);
     const t = await themeOf(p);
-    check("reduced motion: fundo estático, clique troca na hora (gojo), imagem do personagem no tema claro, íris azul sem piscar, nada pendente", (await p.getAttribute(".os-scene", "data-state")) === "still" && t.attr === "gojo" && t.pending === null && (await p.evaluate(() => /materia-home-light\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage) && document.querySelector(".os-dock__theme").dataset.iris === "gojo")), JSON.stringify(t));
+    check("reduced motion: fundo estático, clique troca na hora (gojo), imagem do personagem no tema claro, íris azul sem piscar, nada pendente", (await p.getAttribute(".os-scene", "data-state")) === "still" && t.attr === "gojo" && t.pending === null && (await p.evaluate(() => /entity-light\.webp/.test(getComputedStyle(document.querySelector(".os-scene__still")).backgroundImage) && document.querySelector(".os-dock__theme").dataset.iris === "gojo")), JSON.stringify(t));
     await c.close();
   }
 
@@ -1482,7 +1474,7 @@ if (ONLY.includes("theme")) {
       });
       const cLaunch = await contrast(p, ".os-launch__label", ".os", ".os");
       const cDock = await contrast(p, ".os-mdock__label", ".os-mdock ul", ".os");
-      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`materia-home-${theme === "gojo" ? "light" : "dark"}-s\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
+      check(`${w}×${h} ${theme}: olho do tema ≥ 48 px dentro da tela, rótulos da dock sem corte, sem rolagem horizontal, imagem do personagem, contraste rótulos ≥ 4.5`, m.w >= 48 && m.h >= 48 && m.inside && m.role === "switch" && m.labels.every((l) => !l.over) && !m.overflowX && (theme === "gojo") === m.light && new RegExp(`entity-${theme === "gojo" ? "light" : "dark"}\\.webp`).test(m.still) && cLaunch >= 4.5 && cDock >= 4.5, JSON.stringify({ ...m, labels: m.labels.filter((l) => l.over).map((l) => l.t), cLaunch, cDock }));
       if (w === 390 && theme === "obito") {
         await p.tap(".os-mdock__theme");
         await p.waitForFunction(() => document.documentElement.dataset.osTheme === "gojo", null, { timeout: 4000 }).catch(() => {});
@@ -1496,13 +1488,11 @@ if (ONLY.includes("theme")) {
     }
   }
 
-  // 5) fundo VIVO, com a GPU real (ANGLE/D3D11): uma travessia só, o tema da interface muda NO MEIO dela (quando o
-  //    universo novo chega às áreas de leitura), o universo de destino fica em cena, e o olho do controle troca de
-  //    íris com a pálpebra fechada. A cena da home (malha + dobra) passa de 100 ms por quadro na GPU por software:
-  //    ali quem não força o WebGL fica com a imagem estática, e a troca é imediata (bloco 4). Sem GPU, este bloco é pulado.
+  // 5) fundo VIVO (só se o canvas montar aqui: ?quality=high força o WebGL mesmo no SwiftShader, em resolução mínima):
+  //    uma travessia só, o tema da interface muda NO MEIO dela (quando o universo novo chega às áreas de leitura),
+  //    o universo de destino fica em cena, e o olho do controle troca de íris com a pálpebra fechada.
   {
-    const gpu = await chromium.launch({ args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"] });
-    const c = await gpu.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
+    const c = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "pt-BR" });
     await c.addInitScript((v) => { if (!localStorage.getItem("milweb-os:prefs")) localStorage.setItem("milweb-os:prefs", v); }, prefs("gojo"));
     const p = await c.newPage();
     const errs = errorsOf(p);
@@ -1545,7 +1535,6 @@ if (ONLY.includes("theme")) {
       check("fundo vivo: sem erros no console", errs.length === 0, errs.slice(0, 2).join(" | "));
     }
     await c.close();
-    await gpu.close();
   }
 
   // 6) fundo vivo em regime (revisão 15): os ícones da grade flutuam só na placa (botão e rótulo parados); no
@@ -1812,7 +1801,7 @@ if (ONLY.includes("profile")) {
     const errs = errorsOf(p);
     await p.goto(`${BASE}/`, { waitUntil: "load" });
     await settle(p, 1200);
-    check("Perfil é o segundo destaque: logo abaixo de Ver projetos, acima dos destinos agrupados, e fora da dock", (await p.locator("#os-icon-profile .os-icon[data-kind='profile']").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 0 && (await p.evaluate(() => { const r = (id) => document.querySelector(`#os-icon-${id}`).getBoundingClientRect(); return Math.round(r("profile").left) === Math.round(r("projects").left) && r("profile").top > r("projects").top && r("studio").top > r("profile").top && /currículo/i.test(document.querySelector("#os-icon-profile").innerText); })));
+    check("ícone Perfil (pessoa) na grade, 3ª linha à esquerda, e fora da dock", (await p.locator("#os-icon-profile .os-icon[data-kind='profile']").count()) === 1 && (await p.locator('[data-dock-id="profile"]').count()) === 0 && (await p.evaluate(() => { const r = (id) => document.querySelector(`#os-icon-${id}`).getBoundingClientRect(); return Math.round(r("profile").left) === Math.round(r("projects").left) && r("profile").top > r("studio").top && r("studio").top > r("projects").top; })));
     await openProfile(p);
     check("ícone abre a janela Perfil e a URL vira /perfil", (await urlIs(p, /\/perfil$/)) && (await win(p, "profile").count()) === 1);
     await settle(p, 900);

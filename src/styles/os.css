@@ -226,8 +226,6 @@ html[data-os-theme="gojo"] .os-scene__calm::after { opacity: 1; }
 }
 /* estado da janela no nome acessível do ícone: só no desktop largo (bloco no fim), onde a dock não traz os apps */
 .os-icon-btn__state { display: none; }
-/* o convite inteiro dos dois destinos em destaque só aparece no desktop largo */
-.os-icon-btn__cta { display: none; }
 
 /* placa dos ícones: fosca, borda fina, sem brilho nem relevo — carvão no Obito, branca no Gojo */
 .os-icon {
@@ -800,110 +798,6 @@ html[data-os-motion="reduce"] .os-showcase__shot[data-kind="still"]:hover .os-pr
 .bounty[data-phase="open"] .bounty__close { opacity: 1; pointer-events: auto; }
 .bounty__close:hover { background: rgb(var(--ink)); color: rgb(var(--paper)); }
 
-/* ── A coleção recebe o visitante: a capa do projeto em foco fica ao fundo, recuada. Quando a dobra da home vira esta
-   janela, a capa chega inteira (é a mesma que as mãos esticaram até as bordas) e só então recua para o mural aparecer. */
-.bounty { isolation: isolate; }
-.bounty__backdrop { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: .2; }
-.bounty__backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.bounty__backdrop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, rgb(var(--os-bg) / .25), rgb(var(--os-bg) / .9)); }
-.bounty[data-arrive="wait"] .bounty__backdrop { opacity: 1; }
-.bounty[data-arrive="wait"] .bounty__backdrop::after { opacity: 0; }
-.bounty[data-arrive="wait"] > :not(.bounty__backdrop) { opacity: 0; }
-.bounty[data-arrive="in"] .bounty__backdrop { animation: bounty-arrive 1.1s var(--os-ease) both; }
-.bounty[data-arrive="in"] .bounty__backdrop::after { animation: bounty-veil 1.1s var(--os-ease) both; }
-.bounty[data-arrive="in"] > :not(.bounty__backdrop) { animation: bounty-rise .7s var(--ease-out-expo) .1s both; }
-@keyframes bounty-arrive { from { opacity: 1; } to { opacity: .2; } }
-@keyframes bounty-veil { from { opacity: 0; } to { opacity: 1; } }
-
-/* ── A peça em foco tem dois lados: experimentar e ver como foi feito ── */
-.bounty__btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
-  border: 1px solid rgb(var(--btn, var(--os-fg))); border-radius: 999px; background: rgb(var(--btn, var(--os-fg))); color: rgb(var(--btn-ink, var(--os-bg)));
-  font: 600 11.5px/1 var(--font-mono), monospace; letter-spacing: .09em; text-transform: uppercase; text-decoration: none; white-space: nowrap; cursor: pointer;
-  transition: transform .3s var(--os-ease), background-color .2s;
-}
-.bounty__btn:hover { transform: translateY(-1px); }
-.bounty__btn--ghost { background: rgb(var(--btn-ink, var(--os-bg)) / .6); color: rgb(var(--btn, var(--os-fg))); border-color: rgb(var(--btn, var(--os-fg)) / .36); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.bounty__btn:focus-visible, .bounty__explore-back:focus-visible, .bounty__faces button:focus-visible, .bounty__sample:focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 2px; }
-.bounty__acts { position: absolute; left: 50%; bottom: 64px; z-index: 3; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; transition: opacity .3s; }
-.bounty__acts-name { display: none; }
-.bounty:not([data-phase="closed"]) .bounty__acts, .bounty[data-face] .bounty__acts { opacity: 0; pointer-events: none; }
-
-.bounty__explore {
-  position: absolute; inset: 0; z-index: 7; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 10px; padding: 12px 14px 14px;
-  background: rgb(var(--os-bg) / .9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: bounty-rise .45s var(--ease-out-expo) both;
-}
-.bounty__explore-bar { display: flex; align-items: center; gap: 12px; min-height: 40px; }
-.bounty__explore-back {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid rgb(var(--os-fg) / .3); border-radius: 999px;
-  background: none; color: rgb(var(--os-fg)); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; cursor: pointer;
-}
-.bounty__explore-back:hover { background: rgb(var(--os-fg)); color: rgb(var(--os-bg)); }
-.bounty__explore-name { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--os-fg) / .7); }
-.bounty__faces { display: inline-flex; padding: 3px; border: 1px solid rgb(var(--os-fg) / .22); border-radius: 999px; }
-.bounty__faces button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: rgb(var(--os-fg) / .82); font: 600 11px/1 var(--font-mono), monospace; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
-.bounty__faces button[aria-selected="true"] { background: rgb(var(--os-fg)); color: rgb(var(--os-bg)); }
-/* a mesma peça, dois lados: ela vira */
-.bounty__piece { position: relative; min-height: 0; perspective: 1800px; }
-.bounty__flip { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.2, .7, .2, 1); }
-.bounty__explore[data-face="made"] .bounty__flip { transform: rotateY(180deg); }
-.bounty__face { position: absolute; inset: 0; overflow: hidden; border-radius: 10px; -webkit-backface-visibility: hidden; backface-visibility: hidden; box-shadow: 0 24px 70px rgb(0 0 0 / .5); }
-.bounty__face--try { --btn: 255 255 255; --btn-ink: 11 10 9; background: #0b0a09; color: #fff; }
-.bounty__face--made { --btn: var(--ink); --btn-ink: var(--paper); transform: rotateY(180deg); display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 18px; padding: clamp(18px, 4cqw, 44px); overflow: auto; background: rgb(var(--paper)); color: rgb(var(--ink)); }
-/* experimentar: capítulos para percorrer com o scroll ou o dedo */
-.bounty__sample { position: absolute; inset: 0; overflow-y: auto; scroll-snap-type: y mandatory; overscroll-behavior: contain; scrollbar-width: none; outline-offset: -3px; }
-.bounty__sample::-webkit-scrollbar { display: none; }
-.bounty__chapter { position: relative; height: 100%; overflow: hidden; scroll-snap-align: start; scroll-snap-stop: always; }
-.bounty__chapter img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.07); transition: transform 1.4s var(--ease-out-expo); user-select: none; }
-.bounty__chapter[data-on="1"] img { transform: none; }
-.bounty__chapter::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgb(0 0 0 / .8), rgb(0 0 0 / .12) 55%, rgb(0 0 0 / .3)); pointer-events: none; }
-.bounty__chapter-text { position: absolute; z-index: 1; left: clamp(16px, 4cqw, 48px); right: clamp(34px, 6cqw, 64px); bottom: clamp(18px, 6cqh, 56px); display: grid; gap: 8px; max-width: 48ch; opacity: 0; transform: translateY(16px); transition: opacity .6s, transform .8s var(--ease-out-expo); }
-.bounty__chapter[data-on="1"] .bounty__chapter-text { opacity: 1; transform: none; }
-.bounty__chapter-text > p { margin: 0; font-size: clamp(14px, 1.9cqw, 17px); line-height: 1.45; }
-.bounty__chapter-text > p.t-mono { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
-.bounty__chapter-text h3 { margin: 0; font-family: var(--font-display), sans-serif; font-weight: 800; font-size: clamp(30px, 8cqw, 92px); line-height: .92; letter-spacing: -.03em; font-variation-settings: normal; text-transform: none; }
-.bounty__chapter--end { display: grid; place-items: center; background: #0b0a09; }
-.bounty__chapter--end::after { display: none; }
-.bounty__chapter--end .bounty__chapter-text { position: static; }
-.bounty__explore-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.bounty__rail { position: absolute; z-index: 2; right: 12px; top: 50%; transform: translateY(-50%); display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.bounty__rail li { width: 6px; height: 6px; border-radius: 3px; background: rgb(255 255 255 / .42); cursor: pointer; transition: height .3s, background-color .3s; }
-.bounty__rail li[data-on="1"] { height: 22px; background: #fff; }
-.bounty__sample-hint { position: absolute; z-index: 2; right: 30px; bottom: 18px; margin: 0; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgb(255 255 255 / .82); opacity: 0; transition: opacity .4s; pointer-events: none; }
-.bounty__sample-hint[data-on="1"] { opacity: 1; }
-/* ver como foi feito: o verso */
-.bounty__made-eyebrow { margin: 0; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--ink) / .62); }
-.bounty__made { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 3cqw, 34px); margin: 0; }
-.bounty__made dt { margin-bottom: 8px; font: 600 11px/1.2 var(--font-mono), monospace; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--ink) / .62); }
-.bounty__made dd { margin: 0; font-size: clamp(14px, 1.9cqw, 17px); line-height: 1.5; }
-.bounty__made-proof { display: flex; width: max-content; max-width: 100%; gap: 6px; margin-top: 12px; padding: 9px 12px; border: 1px solid rgb(var(--ink) / .3); border-radius: 999px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: inherit; text-decoration: none; }
-.bounty__made-proof:hover { background: rgb(var(--ink)); color: rgb(var(--paper)); }
-.bounty__made-stack { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
-.bounty__made-stack li { padding: 6px 10px; border: 1px solid rgb(var(--ink) / .2); border-radius: 999px; }
-@container (max-width: 680px) {
-  .bounty__made { grid-template-columns: minmax(0, 1fr); }
-  .bounty__explore-name { display: none; }
-  .bounty__explore-bar { justify-content: space-between; }
-  .bounty__faces button { padding: 0 10px; font-size: 10px; }
-  .bounty__acts { bottom: 70px; }
-  /* telefone: a pílula da Matéria fica logo acima do pé; as ações da peça e o fim da peça ficam acima dela */
-  .bounty[data-mobile="1"] .bounty__acts { bottom: 122px; }
-  .bounty[data-mobile="1"] .bounty__explore { padding-bottom: 116px; }
-  .bounty__acts .bounty__btn { min-height: 44px; padding: 0 14px; font-size: 10.5px; }
-}
-/* estreito (telefone): a barra cabe na largura — voltar vira só a seta (o nome continua para leitores de tela) e os dois lados dividem o resto */
-@container (max-width: 520px) {
-  .bounty__explore-bar { gap: 10px; }
-  .bounty__explore-back { position: relative; flex: none; justify-content: center; width: 44px; min-height: 44px; padding: 0; font-size: 14px; letter-spacing: 0; }
-  .bounty__explore-back-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .bounty__faces { flex: 1; min-width: 0; }
-  .bounty__faces button { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bounty__flip, .bounty__chapter img, .bounty__chapter-text, .bounty__explore, .bounty[data-arrive] .bounty__backdrop, .bounty[data-arrive] > * { transition: none !important; animation: none !important; }
-}
-html[data-os-motion="reduce"] :is(.bounty__flip, .bounty__chapter img, .bounty__chapter-text, .bounty__explore) { transition: none !important; animation: none !important; }
-
 /* pé: posição, fita de acesso direto, setas e "ver todos" */
 .bounty__foot { position: relative; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 8px 18px 12px; }
 .bounty__count { margin: 0; font: 11px/1 var(--font-mono), monospace; letter-spacing: .12em; color: rgb(var(--os-fg) / .65); white-space: nowrap; }
@@ -1133,19 +1027,10 @@ details[open] .os-case__plus { transform: rotate(45deg); }
     --hy: clamp(18px, 3.6vh, 44px);                  /* da barra ao lema */
     --hs: clamp(30px, min(4vw, 7.2vh), 88px);        /* corpo do lema, em até duas linhas */
     --hgap: clamp(18px, 4.6vh, 56px);                /* lema → aplicativos */
-    --app: clamp(46px, 7.2vh, 64px);                 /* placa dos ícones */
+    --app: clamp(46px, 8.3vh, 68px);                 /* placa dos ícones */
     --cell: calc(var(--app) + 36px);                 /* célula quadrada: placa + rótulo de uma linha + respiros */
     --cgap: clamp(4px, 1.3vh, 14px);                 /* o mesmo respiro entre linhas e entre colunas */
-    --hcta: calc(var(--hy) + var(--hs) * 2 + var(--hgap) * .55);  /* lema → os dois destinos em destaque */
-    --hnav: calc(var(--hcta) + 104px + var(--hgap) * .4);         /* → os demais destinos (depois dos dois destaques, empilhados) */
-    --htalk: calc(var(--hnav) + var(--cell) * 2 + var(--cgap) + 14px);  /* → a conversa com a Matéria (styles/materia.css) */
   }
-  /* janela baixa: lema, respiros e placas encolhem um pouco mais, para os convites da Matéria caberem entre o lema e a grade */
-  @media (max-height: 680px) {
-    .os-desktop { --hs: clamp(30px, min(4vw, 6.3vh), 88px); --hgap: clamp(14px, 3.6vh, 56px); --app: clamp(46px, 7.6vh, 68px); }
-  }
-  /* o palco (a régua da cena) fica nos dois terços da direita: é ali que a figura segura a dobra da tela */
-  .os-stage { left: 68%; }
   /* lema: branco no Obito, tinta do tema no Gojo; forte; o ponto final no acento do tema */
   .os-sign { inset: 0; max-width: none; pointer-events: none; }
   .os-sign__motto {
@@ -1157,35 +1042,25 @@ details[open] .os-case__plus { transform: rotate(45deg); }
   /* a linha da assinatura fica sozinha onde estava, como rodapé */
   .os-sign__line { position: absolute; left: 24px; bottom: calc(var(--os-dock-space) + 10px); margin: 0; pointer-events: auto; }
 
-  /* a navegação da primeira tela, numa coluna que as janelas não cobrem (elas abrem à direita dela): dois destinos
-     em destaque — Projetos e Perfil, como botões, um sobre o outro — e os demais agrupados logo abaixo, em 2 × 2.
-     A ordem do DOM é a que se lê: registry.ts › DESKTOP_GRID. */
-  .os-icons { left: var(--hx); top: var(--hcta); bottom: auto; }
+  /* aplicativos: grade 2 × 3 logo abaixo das duas linhas do lema; a placa da 1ª coluna alinha com o lema */
+  .os-icons { left: calc(var(--hx) - (var(--cell) - var(--app)) / 2); top: calc(var(--hy) + var(--hs) * 2 + var(--hgap)); bottom: auto; }
   .os-icons ul {
-    grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: 48px 48px auto auto; grid-auto-rows: auto;
-    gap: 8px var(--cgap); height: auto; justify-content: start;
+    grid-auto-flow: row; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: none; grid-auto-rows: auto;
+    gap: var(--cgap); height: auto;
   }
-  .os-icons li[data-app="projects"] { grid-area: 1 / 1 / 2 / 3; }
-  .os-icons li[data-app="profile"] { grid-area: 2 / 1 / 3 / 3; }
-  .os-icons li[data-app="services"] { grid-area: 3 / 1; margin-top: calc(var(--hnav) - var(--hcta) - 112px); }
-  .os-icons li[data-app="studio"] { grid-area: 3 / 2; margin-top: calc(var(--hnav) - var(--hcta) - 112px); }
-  .os-icons li[data-app="lab"] { grid-area: 4 / 1; }
-  .os-icons li[data-app="contact"] { grid-area: 4 / 2; }
+  .os-icons li[data-app="projects"] { grid-area: 1 / 1; }
+  .os-icons li[data-app="services"] { grid-area: 1 / 2; }
+  .os-icons li[data-app="studio"] { grid-area: 2 / 1; }
+  .os-icons li[data-app="lab"] { grid-area: 2 / 2; }
+  .os-icons li[data-app="profile"] { grid-area: 3 / 1; }
+  .os-icons li[data-app="contact"] { grid-area: 3 / 2; }
   .os-icon-btn { position: relative; width: var(--cell); gap: 8px; padding: 6px 4px 8px; }
   .os-icon-btn .os-icon { width: var(--app) !important; height: var(--app) !important; }
   .os-icon-btn__label { font-size: 11px; }
-  /* os dois destaques: placa cheia para Projetos, contorno para o Perfil; o rótulo é o convite inteiro */
-  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn {
-    flex-direction: row; justify-content: center; width: 100%; min-width: 0; height: 48px; padding: 0 10px; gap: 10px; border-radius: 999px;
-    border: 1px solid rgb(var(--os-fg)); background: rgb(var(--os-fg)); color: rgb(var(--os-bg));
-  }
-  .os-icons li[data-app="profile"] .os-icon-btn { background: rgb(var(--os-bg) / .6); color: rgb(var(--os-fg)); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-  .os-icons li[data-app="projects"] .os-icon-btn:hover, .os-icons li[data-app="projects"] .os-icon-btn:focus-visible { background: rgb(var(--os-fg) / .86); }
-  .os-icons li[data-app="profile"] .os-icon-btn:hover, .os-icons li[data-app="profile"] .os-icon-btn:focus-visible { background: rgb(var(--os-bg) / .92); }
-  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn:focus-visible { outline: 2px solid rgb(var(--os-signal)); outline-offset: 3px; }
-  .os-icons li:is([data-app="projects"], [data-app="profile"]) :is(.os-icon, .os-icon-btn__label) { display: none; }
-  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn__cta { display: inline; font: 600 clamp(10.5px, .82vw, 12px)/1 var(--font-mono), monospace; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
-  .os-icons li:is([data-app="projects"], [data-app="profile"]) .os-icon-btn::after { left: auto; right: 10px; bottom: calc(50% - 2px); }
+  /* Contato em destaque: borda discreta no acento do tema (também no hover e no foco) */
+  .os-icons li[data-app="contact"] .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal) / .7), 0 0 16px rgb(var(--os-signal) / .14), var(--os-tile-shadow); }
+  .os-icons li[data-app="contact"] .os-icon-btn:hover .os-icon { box-shadow: inset 0 0 0 1px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22), var(--os-tile-shadow); }
+  .os-icons li[data-app="contact"] .os-icon-btn:focus-visible .os-icon { box-shadow: 0 0 0 2px rgb(var(--os-signal)), 0 0 20px rgb(var(--os-signal) / .22); }
   /* estado da janela no ícone, já que a dock não traz os apps: ponto = aberta, no acento = em primeiro plano,
      anel = minimizada (os mesmos sinais da dock); o estado também entra no nome acessível */
   .os-icon-btn::after { content: ""; position: absolute; left: calc(50% - 2px); bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: rgb(var(--os-fg) / .55); opacity: 0; }
@@ -1273,9 +1148,3 @@ html[data-os-motion="reduce"] .os-hud__pulse { display: none !important; }
 html[data-os-motion="reduce"] .bounty, html[data-os-motion="reduce"] .bounty__track, html[data-os-motion="reduce"] .bounty__slot, html[data-os-motion="reduce"] .bounty__paper, html[data-os-motion="reduce"] .bounty__shadow, html[data-os-motion="reduce"] .bounty__img, html[data-os-motion="reduce"] .bounty__veil, html[data-os-motion="reduce"] .bounty__dossier, html[data-os-motion="reduce"] .bounty__case, html[data-os-motion="reduce"] .bounty__close, html[data-os-motion="reduce"] .bounty__all, html[data-os-motion="reduce"] .bounty__tick, html[data-os-motion="reduce"] .bounty__all-thumb { transition: none !important; animation: none !important; }
 html[data-os-motion="reduce"] .bounty[data-phase="open"] .bounty__case .os-case > * { animation: none !important; }
 html[data-os-motion="reduce"] .bounty__link:hover .bounty__paper { --lift: 0px; }
-
-/* o destaque da coleção leva ao site no ar: o botão é um link (mesma placa dos demais) */
-a.bounty__btn { text-decoration: none; }
-@container (max-width: 680px) {
-  .bounty__acts { flex-wrap: wrap; justify-content: center; width: max-content; max-width: calc(100% - 20px); }
-}

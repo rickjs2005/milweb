@@ -4,12 +4,10 @@
 import { getDict } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { BRAND } from "@/data/brand";
-import { AUTORAL_INDEX, LIVE_DOWN, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } from "@/data/projects";
+import { AUTORAL_INDEX, MOOD, NO_EXTERNAL, PROJECT_INDEX, type ProjectEntry } from "@/data/projects";
 import { SELECTED_WORK } from "@/data/work";
 import { SOCIAL } from "@/data/social";
 import { PROFILE_DATA } from "@/data/profile";
-import { buildIdea } from "@/data/idea";
-import { buildCaseIndex, buildMateria } from "@/data/materia";
 import { buildProjectGuide } from "@/data/project-guide";
 import { CONTACT_PAGE, SERVICES_PAGE, STUDIO } from "@/data/studio";
 import { SERVICES } from "@/lib/services";
@@ -51,7 +49,6 @@ export function buildOsPayload(locale: Locale): OsPayload {
       client: p.clientWork ? p.clientName ?? d.archive.filters.client : null,
       clientWork: !!p.clientWork,
       live: NO_EXTERNAL.has(p.slug) ? null : (p.live ?? null),
-      visit: NO_EXTERNAL.has(p.slug) || LIVE_DOWN.has(p.slug) ? null : (p.live ?? null),
       image: p.image ?? "/shots/" + p.slug + ".webp",
       mood: MOOD[p.slug]?.rgb ?? null,
       focus: MOOD[p.slug]?.focus ?? null,
@@ -152,9 +149,6 @@ export function buildOsPayload(locale: Locale): OsPayload {
       guide: buildProjectGuide(locale),
       statuses: QUOTE.statuses.map((o) => ({ key: o.key, label: t(o.label) })),
     },
-    // O índice dos cases usa os três idiomas: quem escreve em inglês no site em português acha a mesma referência.
-    materia: buildMateria(locale, buildCaseIndex([...PROJECT_INDEX, ...AUTORAL_INDEX].map((p) => ({ slug: p.slug, head: [p.title, ...Object.values(p.tagline)], body: Object.values(p.problem) })))),
-    idea: buildIdea(locale),
     profile: {
       name: PROFILE_DATA.name,
       title: PROFILE_DATA.title,

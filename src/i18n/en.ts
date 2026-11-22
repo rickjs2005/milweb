@@ -76,7 +76,7 @@ export const en: Dictionary = {
   footer: { email: "Email", year: "Brazil" },
   preferred: { eyebrow: "GOOGLE / PREFERRED SOURCES", title: ["KEEP MILWEB", "IN YOUR SOURCES."], cta: "ADD MILWEB", loading: "OPENING GOOGLE…", retry: "TRY AGAIN", aria: "Add MilWeb to Preferred Sources on Google" },
   os: {
-    apps: { profile: "Profile", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Hire Rick", settings: "Settings", idea: "Preview", search: "Search" },
+    apps: { profile: "Profile", projects: "Projects", studio: "Studio", lab: "Lab", services: "Services", about: "About", contact: "Hire Rick", settings: "Settings", search: "Search" },
     regions: { desktop: "Desktop", icons: "Desktop shortcuts", dock: "Dock", topbar: "System bar", windows: "Open windows", home: "Home screen", appGrid: "Apps" },
     window: { minimize: "Minimize", maximize: "Maximize", restore: "Restore", close: "Close", keys: "With the title bar focused: arrow keys move the window, Shift + arrows resize, Esc closes", resize: "Resize", running: "open", focused: "in front" },
     mobile: { back: "Back", home: "Home", open: "Open", apps: "Apps", message: "Websites, systems and digital experiences with design, code and motion." },
@@ -87,8 +87,7 @@ export const en: Dictionary = {
       back: "All projects", open: "Open case", visit: "Open site", code: "Code", stack: "Stack", context: "Context", done: "What was done", solutions: "Solutions", gallery: "Screens", result: "Result",
       similar: "I want something similar", next: "Next project", prev: "Previous project", client: "Client work", demo: "Demo", study: "Studio project", live: "Live", detail: "Technical detail", idea: "The idea", experience: "Experience",
       numbers: "Numbers", kind: "Type", year: "Year", status: "Status", of: "of", count: "projects", empty: "No project matches this filter.", interactive: "Interactive",
-      dossier: "DOSSIER", rank: "CASE", collection: "THE BOUNTY COLLECTION", missions: "missions", wall: "Poster wall", position: "Position in the collection", hint: "arrows navigate · enter opens · esc closes", swipe: "swipe to navigate", viewAll: "All projects", backToCollection: "Back to the collection",
-      tryIt: "Try it", visitSite: "Visit site", made: "See how it was made", madeTitle: "How it was made", sample: "Sample", sampleHint: "scroll or drag to move through", problem: "The problem", contribution: "What Rick did", decision: "Implementation decision", verify: "Check it", discuss: "I want to discuss something like this", full: "Open the full experience",
+      dossier: "DOSSIER", rank: "CASE", collection: "THE BOUNTY COLLECTION", missions: "missions", wall: "Poster wall", position: "Position in the collection", hint: "arrows navigate · enter opens · esc closes", swipe: "swipe to navigate", viewAll: "View all", backToCollection: "Back to the collection",
       tier: { wanted: "WANTED", most: "MOST WANTED", special: "SPECIAL MISSION" },
       seal: { client: "CLIENT PROJECT", demo: "DEMO", experiment: "EXPERIMENT", webgl: "WEBGL EXPERIENCE", product: "DIGITAL PRODUCT" },
     },

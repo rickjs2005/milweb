@@ -1,5 +1,3 @@
-import type { IdeaData } from "@/data/idea";
-import type { MateriaData } from "@/data/materia";
 import type { ProjectGuideData } from "@/data/project-guide";
 import type { Dictionary } from "@/i18n/types";
 import type { Locale } from "@/i18n/config";
@@ -26,8 +24,6 @@ export type OsProject = {
   client: string | null;
   clientWork: boolean;
   live: string | null;
-  /** O endereço público para o botão "Visitar site" da coleção: o mesmo de `live`, quando respondeu na última conferência (data/projects.ts › LIVE_DOWN). */
-  visit: string | null;
   /** Captura principal (public/shots). */
   image: string;
   tagline: string;
@@ -103,10 +99,6 @@ export type OsPayload = {
   nav: { work: string; lab: string; studio: string; services: string; contact: string; profile: string; menu: string; close: string; primary: string; selectLanguage: string; langNames: Record<Locale, string>; sound: { label: string; on: string; off: string } };
   /** URLs públicas localizadas das raízes de cada app. */
   hrefs: { home: string; profile: string; projects: string; studio: string; lab: string; services: string; contact: string };
-  /** Matéria: frases da guia e recomendações por setor (data/materia.ts). */
-  materia: MateriaData;
-  /** Prévia: textos das ideias que a Matéria abre numa janela (data/idea.ts). */
-  idea: IdeaData;
   /** Perfil profissional (app Perfil / rota /profile). */
   profile: OsProfile;
   projects: OsProject[];

@@ -60,7 +60,7 @@ export type Dictionary = {
   preferred: { eyebrow: string; title: [string, string]; cta: string; loading: string; retry: string; aria: string };
   /** MilWeb OS — camada de apresentação em janelas (desktop) e tela inicial (celular). */
   os: {
-    apps: { profile: string; projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; idea: string; search: string };
+    apps: { profile: string; projects: string; studio: string; lab: string; services: string; about: string; contact: string; settings: string; search: string };
     regions: { desktop: string; icons: string; dock: string; topbar: string; windows: string; home: string; appGrid: string };
     window: { minimize: string; maximize: string; restore: string; close: string; keys: string; resize: string; running: string; focused: string };
     mobile: { back: string; home: string; open: string; apps: string; message: string };
@@ -76,7 +76,6 @@ export type Dictionary = {
       numbers: string; kind: string; year: string; status: string; of: string; count: string; empty: string; interactive: string;
       /** Mural de cartazes (THE BOUNTY COLLECTION): faixa do cartaz, selo por tipo, navegação e dossiê. */
       dossier: string; rank: string; collection: string; missions: string; wall: string; position: string; hint: string; swipe: string; viewAll: string; backToCollection: string;
-      tryIt: string; visitSite: string; made: string; madeTitle: string; sample: string; sampleHint: string; problem: string; contribution: string; decision: string; verify: string; discuss: string; full: string;
       tier: { wanted: string; most: string; special: string };
       seal: { client: string; demo: string; experiment: string; webgl: string; product: string };
     };

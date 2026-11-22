@@ -17,7 +17,6 @@ import { SearchDialog } from "./apps/search";
 import { SimpleShell } from "./simple-shell";
 import { MobileDock } from "./mobile/dock";
 import { OsBoot } from "./boot";
-import { MateriaGuide } from "./materia/guide-panel";
 import { readMark, stampEntry } from "./mobile/history";
 import { readHalloweenNow, useHalloweenActive } from "./halloween/clock";
 
@@ -93,8 +92,6 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
    * fechar ao soltar) disparam duas navegações antes de a primeira chegar.
    */
   const ownNav = useRef(new Set<string>());
-  /** O visitante acabou de usar Voltar/Avançar: a janela que volta à frente recebe o foco do teclado. */
-  const popped = useRef(false);
   /** Para onde a URL está indo (a última pedida), ou onde está quando nada está em voo. */
   const headed = useRef(internal);
   /** Caminho interno em vigor (para o popstate distinguir "mesma URL" de "URL nova"). */
@@ -147,11 +144,8 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     // Navegação externa: nada que o shell pediu antes continua valendo.
     ownNav.current.clear();
     headed.current = internal;
-    if (route.app) {
-      store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
-      // Voltar/Avançar: o foco do teclado acompanha a janela que voltou à frente (num carregamento direto, não se mexe nele)
-      if (popped.current) store.setState({ pendingFocus: route.app });
-    } else if (route.kind === "desktop") {
+    if (route.app) store.getState().open(route.app, { route: internal, source: "route", mode: "replace" });
+    else if (route.kind === "desktop") {
       // A raiz é a área de trabalho: nenhum app em primeiro plano (Voltar, Início, marca, link direto) —
       // a não ser que esta entrada do histórico do telefone seja a de um app sem URL (Sobre, Ajustes).
       const overlay = phone ? readMark().overlay : null;
@@ -160,16 +154,6 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `route` deriva de `internal`
   }, [internal, store]);
-
-  // 1a) Voltar/Avançar marcam a próxima troca de rota: é o visitante andando pelo histórico.
-  useEffect(() => {
-    const onPop = () => {
-      popped.current = true;
-      window.setTimeout(() => (popped.current = false), 600);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
 
   // 1b) Telefone: Voltar/Avançar sem mudar a URL só trocam a camada dos apps sem URL própria.
   useEffect(() => {
@@ -240,28 +224,6 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
     };
   }, [isOs, shell, theme, motion, hydrated, halloween]);
 
-  // 4a) Telefone: com o teclado virtual aberto, a tela do app termina acima dele (styles/os-mobile.css › --os-kb).
-  // Assim o campo em edição e o resto do formulário rolam dentro da área que a pessoa vê — o pedido de proposta
-  // é revisado sem o teclado cobrir a mensagem. Só vale para um encolhimento do tamanho de um teclado.
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (shell !== "mobile" || !vv) return;
-    const h = document.documentElement;
-    const fit = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      if (kb > 120) h.style.setProperty("--os-kb", `${kb.toFixed(0)}px`);
-      else h.style.removeProperty("--os-kb");
-    };
-    fit();
-    vv.addEventListener("resize", fit);
-    vv.addEventListener("scroll", fit);
-    return () => {
-      vv.removeEventListener("resize", fit);
-      vv.removeEventListener("scroll", fit);
-      h.style.removeProperty("--os-kb");
-    };
-  }, [shell]);
-
   // 4b) Sem escolha salva, o tema segue o sistema — inclusive quando ele muda com a página aberta.
   useEffect(() => {
     if (!hydrated || !themeAuto) return;
@@ -329,8 +291,6 @@ export function OsShell({ locale, payload, footer, children }: { locale: Locale;
         <Dock />
         <MobileDock />
         <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
-        {/* A conversa com a Matéria fica acima das janelas: continua enquanto o visitante navega pelo OS. */}
-        <MateriaGuide />
       </div>
     </OsCtx.Provider>
   );

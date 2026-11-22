@@ -80,13 +80,6 @@ const GLYPH: Record<LaunchKind, React.ReactNode> = {
       <circle cx="16" cy="34" r="4.2" fill="currentColor" stroke="#0f1318" strokeWidth="1.6" />
     </>
   ),
-  idea: (
-    <>
-      <rect x="8" y="9" width="32" height="30" rx="5" fill="currentColor" opacity=".96" />
-      <path d="M8 17h32" stroke="#0f1318" strokeWidth="1.6" opacity=".35" />
-      <ellipse cx="24" cy="28" rx="7" ry="6" className="os-micon__accent" />
-    </>
-  ),
   search: (
     <>
       <circle cx="21" cy="21" r="11" fill="none" stroke="currentColor" strokeWidth="4" />

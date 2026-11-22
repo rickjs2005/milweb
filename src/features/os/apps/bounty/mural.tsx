@@ -4,9 +4,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { APPS } from "../../registry";
 import { useOs, useOsStore } from "../../os-shell";
 import type { OsProject } from "../../types";
-import { MATERIA } from "../../materia/config";
-import { ProjectExplore, type Face } from "./explore";
-import { projectsIntent, useProjectsIntent } from "./intent";
 import { Poster, posterSeal } from "./poster";
 
 /**
@@ -69,8 +66,6 @@ export function matchesFilter(p: OsProject, f: Filter): boolean {
 }
 
 type Gsap = typeof import("@/animations/gsap");
-/** O projeto em destaque quando a coleção abre: o mesmo que aparece sob a dobra da home. */
-const FEATURED = MATERIA.hero.cover;
 
 export function BountyMural({ dossier, slug, active: winActive }: { dossier: ReactNode | null; slug: string | null; active: boolean }) {
   const { payload, navigate } = useOs();
@@ -83,12 +78,7 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
 
   const [filter, setFilter] = useState<Filter>("all");
   const list = useMemo(() => all.filter((p) => matchesFilter(p, filter)), [all, filter]);
-  const [activeSlug, setActiveSlug] = useState<string>(() => (slug && all.some((p) => p.slug === slug) ? slug : (all.find((p) => p.slug === FEATURED)?.slug ?? all[0]?.slug ?? "")));
-  // Os dois lados da peça em foco: experimentar (a amostra) e ver como foi feito. null = o mural.
-  const want = useProjectsIntent();
-  const [face, setFace] = useState<Face | null>(null);
-  // A capa do projeto em foco fica ao fundo; quando a dobra da home vira esta janela, ela chega inteira e recua.
-  const [arrive, setArrive] = useState<"wait" | "in" | null>(() => (typeof document !== "undefined" && document.documentElement.dataset.osArriving === "projects" ? "wait" : null));
+  const [activeSlug, setActiveSlug] = useState<string>(() => (slug && all.some((p) => p.slug === slug) ? slug : (all[0]?.slug ?? "")));
   const active = Math.max(0, list.findIndex((p) => p.slug === activeSlug));
   const current = list[active] ?? all[0];
   const [phase, setPhase] = useState<Phase>(() => (slug ? "open" : "closed"));
@@ -131,35 +121,6 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
     },
     [list],
   );
-
-  // A Matéria (ou o perfil) pede um projeto já com um dos lados aberto: "ver como foi feito" é a entrada do recrutador.
-  useEffect(() => {
-    if (!want) return;
-    if (all.some((p) => p.slug === want.slug)) {
-      setFilter("all");
-      setActiveSlug(want.slug);
-      setFace(want.face);
-    }
-    projectsIntent.clear();
-  }, [want, all]);
-  // um case aberto ocupa a janela: os lados da peça fecham
-  useEffect(() => {
-    if (slug) setFace(null);
-  }, [slug]);
-  // a chegada: espera a dobra virar a janela e então deixa a capa recuar para o fundo
-  useEffect(() => {
-    if (arrive !== "wait") return;
-    const html = document.documentElement;
-    const done = () => html.dataset.osArriving !== "projects" && setArrive("in");
-    const mo = new MutationObserver(done);
-    mo.observe(html, { attributes: true, attributeFilter: ["data-os-arriving"] });
-    done();
-    const t = window.setTimeout(() => setArrive("in"), 2400);
-    return () => {
-      mo.disconnect();
-      window.clearTimeout(t);
-    };
-  }, [arrive]);
 
   // ---- filtro: mantém o projeto em foco quando ele continua na lista; senão, o primeiro ----
   const pickFilter = (f: Filter) => {
@@ -274,22 +235,20 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
 
   // ---- Esc: fecha a grade "ver todos" ou o dossiê antes de chegar à janela ----
   useEffect(() => {
-    if (!allOpen && phase === "closed" && !face) return;
+    if (!allOpen && phase === "closed") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select, [contenteditable=true], dialog[open]")) return;
       if (!rootRef.current?.closest(".os-window")?.matches('[data-focused="1"]') && !rootRef.current?.closest("#os-simple")) return;
       e.preventDefault();
-      e.stopPropagation();
       if (allOpen) setAllOpen(false);
-      else if (face && phase === "closed") setFace(null);
       else closeDossier();
     };
     document.addEventListener("keydown", onKey, { capture: true });
     return () => document.removeEventListener("keydown", onKey, { capture: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allOpen, phase, face]);
+  }, [allOpen, phase]);
 
   // ---- humor do projeto em foco → luz do mural (variáveis registradas, transição no CSS) ----
   const [mr, mg, mb] = (current?.mood ?? "70 76 84").split(" ");
@@ -425,14 +384,7 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
   const style = { "--mood-r": mr, "--mood-g": mg, "--mood-b": mb } as CSSProperties;
 
   return (
-    <div ref={rootRef} className="os-projects bounty" data-phase={phase} data-mobile={mobile ? "1" : "0"} data-filters={filtersOpen ? "1" : "0"} data-arrive={arrive ?? undefined} data-face={face ?? undefined} style={style} onAnimationEnd={(e) => e.animationName === "bounty-arrive" && setArrive(null)}>
-      {/* a capa do projeto em foco, ao fundo: é ela que a dobra da home traz até aqui */}
-      {current && (
-        <div className="bounty__backdrop" aria-hidden="true" key={current.slug}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- a mesma capa do cartaz, já em cache */}
-          <img src={current.image} alt="" decoding="async" draggable={false} />
-        </div>
-      )}
+    <div ref={rootRef} className="os-projects bounty" data-phase={phase} data-mobile={mobile ? "1" : "0"} data-filters={filtersOpen ? "1" : "0"} style={style}>
       {/* barra: coleção + filtros compactos */}
       <div className="bounty__bar">
         <p className="bounty__eyebrow">
@@ -486,27 +438,6 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
         )}
         <div className="bounty__veil" aria-hidden="true" />
       </div>
-
-      {/* a peça em foco tem dois lados: experimentar e ver como foi feito */}
-      {current && (
-        <div className="bounty__acts" role="group" aria-label={current.title}>
-          <span className="bounty__acts-name t-mono" aria-hidden="true">
-            {current.title}
-          </span>
-          <button type="button" className="bounty__btn" data-act="try" onClick={() => setFace("try")}>
-            {P.tryIt}
-          </button>
-          <button type="button" className="bounty__btn bounty__btn--ghost" data-act="made" onClick={() => setFace("made")}>
-            {P.made}
-          </button>
-          {/* o site no ar, em um gesto (só quando o projeto tem endereço público que respondeu na última conferência) */}
-          {current.visit && (
-            <a className="bounty__btn bounty__btn--ghost" data-act="visit" href={current.visit} target="_blank" rel="noopener noreferrer">
-              {P.visitSite} <span aria-hidden="true">↗</span>
-            </a>
-          )}
-        </div>
-      )}
 
       {/* pé: posição, fita e acesso direto */}
       <div className="bounty__foot">
@@ -577,18 +508,6 @@ export function BountyMural({ dossier, slug, active: winActive }: { dossier: Rea
             ))}
           </ul>
         </div>
-      )}
-
-      {face && current && !slug && (
-        <ProjectExplore
-          project={current}
-          face={face}
-          onFace={setFace}
-          onClose={() => {
-            setFace(null);
-            stageRef.current?.focus({ preventScroll: true });
-          }}
-        />
       )}
 
       {/* dossiê: a folha com o cartaz à esquerda e o case à direita */}
